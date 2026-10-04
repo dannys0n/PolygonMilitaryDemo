@@ -181,6 +181,7 @@ GameObject:
   - component: {fileID: 5574722245917982648}
   - component: {fileID: 6085547841522442669}
   - component: {fileID: 8101999772365049230}
+  - component: {fileID: 910000000000000004}
   m_Layer: 0
   m_Name: Player_Soldier_blk_m
   m_TagString: Untagged
@@ -257,11 +258,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c867a1b36366a1d419e643373c73e99e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::SoldierLook
-  aimTarget: {fileID: 910000000000000003}
-  bodyPitchLimit: 45
   playerCamera: {fileID: 3662357502914975405}
   animator: {fileID: 7133732875838334634}
   sensitivity: 2
+  aimTarget: {fileID: 3972557141331592072}
+  bodyPitchLimit: 45
 --- !u!1001 &2967043830806405611
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -376,6 +377,10 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 1924770431161041462, guid: 869b04fa5ab694049a78cbce8a409ce5, type: 3}
+      propertyPath: m_Data.m_Offset.x
+      value: 50
+      objectReference: {fileID: 0}
     - target: {fileID: 5628930478322988226, guid: 869b04fa5ab694049a78cbce8a409ce5, type: 3}
       propertyPath: m_ApplyRootMotion
       value: 0
@@ -433,6 +438,11 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 1800831438173662904, guid: 869b04fa5ab694049a78cbce8a409ce5, type: 3}
   m_PrefabInstance: {fileID: 3251007614813803112}
   m_PrefabAsset: {fileID: 0}
+--- !u!4 &3972557141331592072 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 1890594435529691616, guid: 869b04fa5ab694049a78cbce8a409ce5, type: 3}
+  m_PrefabInstance: {fileID: 3251007614813803112}
+  m_PrefabAsset: {fileID: 0}
 --- !u!4 &6769745591544749286 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 8137742344823475854, guid: 869b04fa5ab694049a78cbce8a409ce5, type: 3}
@@ -443,8 +453,16 @@ Animator:
   m_CorrespondingSourceObject: {fileID: 5628930478322988226, guid: 869b04fa5ab694049a78cbce8a409ce5, type: 3}
   m_PrefabInstance: {fileID: 3251007614813803112}
   m_PrefabAsset: {fileID: 0}
---- !u!4 &910000000000000003 stripped
-Transform:
-  m_CorrespondingSourceObject: {fileID: 1890594435529691616, guid: 869b04fa5ab694049a78cbce8a409ce5, type: 3}
-  m_PrefabInstance: {fileID: 3251007614813803112}
+--- !u!114 &910000000000000004
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4375023179566475058}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d073f8767fd142ff83b65dae0412a8e7, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::SoldierActions
+  animator: {fileID: 7133732875838334634}
