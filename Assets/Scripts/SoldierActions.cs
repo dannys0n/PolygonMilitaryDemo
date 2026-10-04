@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.Animations.Rigging;
 
 public class SoldierActions : MonoBehaviour
 {
@@ -10,6 +11,7 @@ public class SoldierActions : MonoBehaviour
 
     public Animator animator;
     public SoldierMovement movement;
+    public TwoBoneIKConstraint leftHandIK;
     public FireMode fireMode = FireMode.SemiAutomatic;
     [Min(1f)] public float roundsPerMinute = 600f;
 
@@ -26,17 +28,21 @@ public class SoldierActions : MonoBehaviour
 
     void Update()
     {
+        bool reloading = reloadLayer >= 0 &&
+            (animator.GetCurrentAnimatorStateInfo(reloadLayer).IsName("Reload") ||
+             animator.IsInTransition(reloadLayer));
+        bool reloadPressed = Cursor.lockState == CursorLockMode.Locked
+                          && Input.GetKeyDown(KeyCode.R);
+
+        leftHandIK.weight = Mathf.Clamp01(animator.GetFloat("LeftHandIKWeight"));
+
         if (Cursor.lockState != CursorLockMode.Locked)
             return;
 
         if (Input.GetKeyDown(KeyCode.Space))
             movement.RequestJump();
 
-        bool reloading = reloadLayer >= 0 &&
-            (animator.GetCurrentAnimatorStateInfo(reloadLayer).IsName("Reload") ||
-             animator.IsInTransition(reloadLayer));
-
-        if (Input.GetKeyDown(KeyCode.R))
+        if (reloadPressed)
         {
             if (!reloading)
                 animator.SetTrigger("Reload");
