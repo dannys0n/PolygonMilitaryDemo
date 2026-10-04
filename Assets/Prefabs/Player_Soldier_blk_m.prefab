@@ -246,6 +246,7 @@ MonoBehaviour:
   animator: {fileID: 7133732875838334634}
   controller: {fileID: 5574722245917982648}
   moveSpeed: 4
+  jumpHeight: 1.2
 --- !u!114 &8101999772365049230
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -263,6 +264,22 @@ MonoBehaviour:
   sensitivity: 2
   aimTarget: {fileID: 3972557141331592072}
   bodyPitchLimit: 45
+--- !u!114 &910000000000000004
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4375023179566475058}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d073f8767fd142ff83b65dae0412a8e7, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::SoldierActions
+  animator: {fileID: 7133732875838334634}
+  movement: {fileID: 6085547841522442669}
+  fireMode: 1
+  roundsPerMinute: 600
 --- !u!1001 &2967043830806405611
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -315,11 +332,48 @@ PrefabInstance:
       propertyPath: m_Name
       value: SM_Wep_Preset_B_Rifle_01
       objectReference: {fileID: 0}
+    - target: {fileID: 7918840770829546543, guid: 866b47d531f2e7341b91507d5ff42758, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: -0.029732954
+      objectReference: {fileID: 0}
+    - target: {fileID: 7918840770829546543, guid: 866b47d531f2e7341b91507d5ff42758, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 0.058865737
+      objectReference: {fileID: 0}
+    - target: {fileID: 7918840770829546543, guid: 866b47d531f2e7341b91507d5ff42758, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 0.28217345
+      objectReference: {fileID: 0}
+    - target: {fileID: 7918840770829546543, guid: 866b47d531f2e7341b91507d5ff42758, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 0.057133567
+      objectReference: {fileID: 0}
+    - target: {fileID: 7918840770829546543, guid: 866b47d531f2e7341b91507d5ff42758, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: 0.52109224
+      objectReference: {fileID: 0}
+    - target: {fileID: 7918840770829546543, guid: 866b47d531f2e7341b91507d5ff42758, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: -0.021101318
+      objectReference: {fileID: 0}
+    - target: {fileID: 7918840770829546543, guid: 866b47d531f2e7341b91507d5ff42758, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: -0.85132456
+      objectReference: {fileID: 0}
+    - target: {fileID: 7918840770829546543, guid: 866b47d531f2e7341b91507d5ff42758, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 866b47d531f2e7341b91507d5ff42758, type: 3}
+--- !u!4 &4956300576160093636 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 7918840770829546543, guid: 866b47d531f2e7341b91507d5ff42758, type: 3}
+  m_PrefabInstance: {fileID: 2967043830806405611}
+  m_PrefabAsset: {fileID: 0}
 --- !u!4 &7647249127113782863 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 4831643545363453860, guid: 866b47d531f2e7341b91507d5ff42758, type: 3}
@@ -337,6 +391,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: Characters@T-Pose (3)
       objectReference: {fileID: 0}
+    - target: {fileID: 1450331225844402480, guid: 869b04fa5ab694049a78cbce8a409ce5, type: 3}
+      propertyPath: m_Data.m_Target
+      value: 
+      objectReference: {fileID: 4956300576160093636}
     - target: {fileID: 1800831438173662904, guid: 869b04fa5ab694049a78cbce8a409ce5, type: 3}
       propertyPath: m_LocalPosition.x
       value: 0
@@ -387,7 +445,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 8137742344823475854, guid: 869b04fa5ab694049a78cbce8a409ce5, type: 3}
       propertyPath: m_LocalPosition.x
-      value: 0.116
+      value: 0.111
       objectReference: {fileID: 0}
     - target: {fileID: 8137742344823475854, guid: 869b04fa5ab694049a78cbce8a409ce5, type: 3}
       propertyPath: m_LocalPosition.y
@@ -395,7 +453,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 8137742344823475854, guid: 869b04fa5ab694049a78cbce8a409ce5, type: 3}
       propertyPath: m_LocalPosition.z
-      value: -0.02
+      value: -0.023
       objectReference: {fileID: 0}
     - target: {fileID: 8137742344823475854, guid: 869b04fa5ab694049a78cbce8a409ce5, type: 3}
       propertyPath: m_LocalRotation.w
@@ -453,17 +511,3 @@ Animator:
   m_CorrespondingSourceObject: {fileID: 5628930478322988226, guid: 869b04fa5ab694049a78cbce8a409ce5, type: 3}
   m_PrefabInstance: {fileID: 3251007614813803112}
   m_PrefabAsset: {fileID: 0}
---- !u!114 &910000000000000004
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 4375023179566475058}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: d073f8767fd142ff83b65dae0412a8e7, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::SoldierActions
-  movement: {fileID: 6085547841522442669}
-  animator: {fileID: 7133732875838334634}
