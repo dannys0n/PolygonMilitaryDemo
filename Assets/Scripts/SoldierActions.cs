@@ -9,6 +9,7 @@ public class SoldierActions : MonoBehaviour
     }
 
     public Animator animator;
+    public SoldierMovement movement;
     public FireMode fireMode = FireMode.SemiAutomatic;
     [Min(1f)] public float roundsPerMinute = 600f;
 
@@ -18,21 +19,18 @@ public class SoldierActions : MonoBehaviour
 
     void Awake()
     {
-        if (animator == null)
-            animator = GetComponentInChildren<Animator>();
-
-        if (animator != null)
-        {
-            fireLayer = animator.GetLayerIndex("Fire");
-            reloadLayer = animator.GetLayerIndex("Reload");
-            animator.ResetTrigger("Fire");
-        }
+        fireLayer = animator.GetLayerIndex("Fire");
+        reloadLayer = animator.GetLayerIndex("Reload");
+        animator.ResetTrigger("Fire");
     }
 
     void Update()
     {
-        if (animator == null || Cursor.lockState != CursorLockMode.Locked)
+        if (Cursor.lockState != CursorLockMode.Locked)
             return;
+
+        if (Input.GetKeyDown(KeyCode.Space))
+            movement.RequestJump();
 
         bool reloading = reloadLayer >= 0 &&
             (animator.GetCurrentAnimatorStateInfo(reloadLayer).IsName("Reload") ||
