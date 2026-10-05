@@ -9,6 +9,7 @@ public class SoldierActions : MonoBehaviour
     }
 
     public Animator animator;
+    public SoldierFirstPersonView firstPersonView;
     public SoldierMovement movement;
     public FireMode fireMode = FireMode.SemiAutomatic;
     [Min(1f)] public float roundsPerMinute = 600f;
@@ -31,6 +32,7 @@ public class SoldierActions : MonoBehaviour
         bool reloading = reloadLayer >= 0 &&
             (animator.GetCurrentAnimatorStateInfo(reloadLayer).IsName("Reload") ||
              animator.IsInTransition(reloadLayer));
+        reloading |= firstPersonView.IsReloading;
         bool reloadPressed = Cursor.lockState == CursorLockMode.Locked
                           && Input.GetKeyDown(KeyCode.R);
 
@@ -47,7 +49,10 @@ public class SoldierActions : MonoBehaviour
         if (reloadPressed)
         {
             if (!reloading)
+            {
                 animator.SetTrigger("Reload");
+                firstPersonView.PlayReload();
+            }
             animator.ResetTrigger("Fire");
             return;
         }
@@ -67,6 +72,7 @@ public class SoldierActions : MonoBehaviour
             // Restart the shot immediately instead of leaving an Animator trigger pending.
             animator.ResetTrigger("Fire");
             animator.CrossFadeInFixedTime("Fire", 0.05f, fireLayer, 0f);
+            firstPersonView.PlayFire();
         }
     }
 

@@ -31,7 +31,8 @@ Transform:
   m_LocalPosition: {x: 0.63, y: 0, z: -1.091}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
-  m_Children: []
+  m_Children:
+  - {fileID: 950000000000000003}
   m_Father: {fileID: 3662357502914975405}
   m_LocalEulerAnglesHint: {x: 5.702, y: -6.186, z: 0}
 --- !u!20 &2969228857482371883
@@ -244,6 +245,7 @@ GameObject:
   - component: {fileID: 6085547841522442669}
   - component: {fileID: 8101999772365049230}
   - component: {fileID: 910000000000000004}
+  - component: {fileID: 950000000000000001}
   m_Layer: 0
   m_Name: Player_Soldier_blk_m
   m_TagString: Untagged
@@ -338,6 +340,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d073f8767fd142ff83b65dae0412a8e7, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::SoldierActions
+  firstPersonView: {fileID: 950000000000000001}
   animator: {fileID: 7133732875838334634}
   movement: {fileID: 6085547841522442669}
   fireMode: 1
@@ -710,3 +713,60 @@ MonoBehaviour:
   liftFadeStart: 0.04
   liftFadeEnd: 0.18
   drawDebug: 0
+--- !u!1001 &950000000000000002
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 8897695346348666139}
+    m_Modifications: []
+    m_RemovedComponents: []
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents: []
+  m_SourcePrefab: {fileID: 100100000, guid: 7bc016e46a8c4fceab0a53c8f669a071, type: 3}
+--- !u!4 &950000000000000003 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 8479647377699197980, guid: 7bc016e46a8c4fceab0a53c8f669a071, type: 3}
+  m_PrefabInstance: {fileID: 950000000000000002}
+  m_PrefabAsset: {fileID: 0}
+--- !u!95 &950000000000000004 stripped
+Animator:
+  m_CorrespondingSourceObject: {fileID: 3320314160785962872, guid: 7bc016e46a8c4fceab0a53c8f669a071, type: 3}
+  m_PrefabInstance: {fileID: 950000000000000002}
+  m_PrefabAsset: {fileID: 0}
+--- !u!95 &950000000000000005 stripped
+Animator:
+  m_CorrespondingSourceObject: {fileID: 960000000000000005, guid: 7bc016e46a8c4fceab0a53c8f669a071, type: 3}
+  m_PrefabInstance: {fileID: 950000000000000002}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &950000000000000001
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4375023179566475058}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7bc016e46a8c4fceab0a53c8f669a074, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::SoldierFirstPersonView
+  playerCamera: {fileID: 2969228857482371883}
+  thirdPersonRoot: {fileID: 3882156298114137296}
+  firstPersonRoot: {fileID: 950000000000000003}
+  armsAnimator: {fileID: 950000000000000004}
+  weaponAnimator: {fileID: 950000000000000005}
+  controller: {fileID: 5574722245917982648}
+  locomotionWeight: 1
+  aimTransitionWeight: 1
+  motionBlendTime: 0.12
+  walkingSpeed: 4
+  firstPerson: 1
+  viewOffset: {x: 0, y: 0, z: 0}
+  aimFieldOfView: 50
+  aimBlendSpeed: 8
+  aimOffset: {x: 0, y: 0, z: 0}
+  firstPersonLayer: 8
+  thirdPersonLayer: 9
