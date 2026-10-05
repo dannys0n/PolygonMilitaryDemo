@@ -613,6 +613,9 @@ PrefabInstance:
     m_AddedComponents:
     - targetCorrespondingSourceObject: {fileID: 1420329373675959298, guid: 869b04fa5ab694049a78cbce8a409ce5, type: 3}
       insertIndex: -1
+      addedObject: {fileID: 940000000000000001}
+    - targetCorrespondingSourceObject: {fileID: 1420329373675959298, guid: 869b04fa5ab694049a78cbce8a409ce5, type: 3}
+      insertIndex: -1
       addedObject: {fileID: 920000000000000006}
   m_SourcePrefab: {fileID: 100100000, guid: 869b04fa5ab694049a78cbce8a409ce5, type: 3}
 --- !u!4 &437608061655797978 stripped
@@ -676,3 +679,32 @@ Animator:
   m_CorrespondingSourceObject: {fileID: 5628930478322988226, guid: 869b04fa5ab694049a78cbce8a409ce5, type: 3}
   m_PrefabInstance: {fileID: 3251007614813803112}
   m_PrefabAsset: {fileID: 0}
+--- !u!114 &940000000000000001
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4515949587811477098}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b45b8d2859bb41749a5142c39c43faf2, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::SoldierFootIK
+  animator: {fileID: 7133732875838334634}
+  controller: {fileID: 5574722245917982648}
+  groundLayers:
+    serializedVersion: 2
+    m_Bits: 9
+  soleClearance: 0.015
+  castHeight: 0.5
+  maxFootOffset: 0.35
+  maxPelvisDrop: 0.25
+  smoothing: 12
+  rotationWeight: 0.5
+  maxFootTilt: 25
+  kneeHintWeight: 0.5
+  kneeForwardOffset: 0.4
+  liftFadeStart: 0.04
+  liftFadeEnd: 0.18
+  drawDebug: 0
