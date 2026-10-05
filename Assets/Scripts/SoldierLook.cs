@@ -49,6 +49,11 @@ public class SoldierLook : MonoBehaviour
 
         playerCamera.localRotation = Quaternion.Euler(pitch, 0f, 0f);
 
+        UpdateAimTarget();
+    }
+
+    public void UpdateAimTarget()
+    {
         Ray centerRay = aimCamera.ViewportPointToRay(new Vector3(0.5f, 0.5f, 0f));
         aimTarget.position = centerRay.GetPoint(10f);
     }

@@ -31,8 +31,7 @@ Transform:
   m_LocalPosition: {x: 0.63, y: 0, z: -1.091}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
-  m_Children:
-  - {fileID: 950000000000000003}
+  m_Children: []
   m_Father: {fileID: 3662357502914975405}
   m_LocalEulerAnglesHint: {x: 5.702, y: -6.186, z: 0}
 --- !u!20 &2969228857482371883
@@ -230,6 +229,7 @@ Transform:
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 8897695346348666139}
+  - {fileID: 950000000000000003}
   m_Father: {fileID: 8775104157877625437}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &4375023179566475058
@@ -246,6 +246,7 @@ GameObject:
   - component: {fileID: 8101999772365049230}
   - component: {fileID: 910000000000000004}
   - component: {fileID: 950000000000000001}
+  - component: {fileID: 980000000000000001}
   m_Layer: 0
   m_Name: Player_Soldier_blk_m
   m_TagString: Untagged
@@ -719,7 +720,7 @@ PrefabInstance:
   serializedVersion: 2
   m_Modification:
     serializedVersion: 3
-    m_TransformParent: {fileID: 8897695346348666139}
+    m_TransformParent: {fileID: 3662357502914975405}
     m_Modifications: []
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -770,3 +771,25 @@ MonoBehaviour:
   aimOffset: {x: 0, y: 0, z: 0}
   firstPersonLayer: 8
   thirdPersonLayer: 9
+--- !u!4 &980000000000000002 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 6864261471799679059, guid: 7bc016e46a8c4fceab0a53c8f669a071, type: 3}
+  m_PrefabInstance: {fileID: 950000000000000002}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &980000000000000001
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4375023179566475058}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7bc016e46a8c4fceab0a53c8f669a076, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::SoldierFirstPersonCamera
+  view: {fileID: 950000000000000001}
+  look: {fileID: 8101999772365049230}
+  animatedCamera: {fileID: 980000000000000002}
+  positionWeight: 1
+  rotationWeight: 1
