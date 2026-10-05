@@ -26,9 +26,12 @@ public class SoldierMagazineReload : MonoBehaviour
         float gripWeight = Mathf.Clamp01(animator.GetFloat("LeftHandIKWeight"));
 
         // The grab target stays on the weapon, even while the magazine follows the hand.
-        blendedHandTarget.SetPositionAndRotation(
-            Vector3.Lerp(forwardGrip.position, magazineGrabTarget.position, grabWeight),
-            Quaternion.Slerp(forwardGrip.rotation, magazineGrabTarget.rotation, grabWeight));
+        // All three targets are rifle children. Blend in weapon space so pelvis
+        // and aim corrections move the weapon and hand target together this frame.
+        blendedHandTarget.localPosition = Vector3.Lerp(
+            forwardGrip.localPosition, magazineGrabTarget.localPosition, grabWeight);
+        blendedHandTarget.localRotation = Quaternion.Slerp(
+            forwardGrip.localRotation, magazineGrabTarget.localRotation, grabWeight);
         leftHandIK.weight = Mathf.Max(gripWeight, grabWeight);
     }
 
