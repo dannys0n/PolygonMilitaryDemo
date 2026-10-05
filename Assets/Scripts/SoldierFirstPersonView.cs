@@ -10,6 +10,11 @@ public class SoldierFirstPersonView : MonoBehaviour
     public Animator armsAnimator;
     public Animator weaponAnimator;
     public CharacterController controller;
+    [Header("Combined arms and weapon reload")]
+    public bool useCombinedReload;
+    public AnimationClip combinedReloadClip;
+    private bool combinedReloadPlaying;
+    private float reloadTime;
     [Header("First person motion")]
     [Range(0f, 1f)] public float locomotionWeight = 1f;
     [Range(0f, 1f)] public float aimTransitionWeight = 1f;
@@ -34,7 +39,7 @@ public class SoldierFirstPersonView : MonoBehaviour
     private int locomotionLayer;
     private int aimTransitionLayer;
 
-    public bool IsReloading => firstPerson &&
+    public bool IsReloading => useCombinedReload ? combinedReloadPlaying : firstPerson &&
         (armsAnimator.GetCurrentAnimatorStateInfo(0).IsName("Reload") ||
          (armsAnimator.IsInTransition(0) && armsAnimator.GetNextAnimatorStateInfo(0).IsName("Reload")));
 
@@ -79,6 +84,18 @@ public class SoldierFirstPersonView : MonoBehaviour
 
     void LateUpdate()
     {
+        if (combinedReloadPlaying)
+        {
+            reloadTime = Mathf.Min(reloadTime + Time.deltaTime, combinedReloadClip.length);
+            combinedReloadClip.SampleAnimation(firstPersonRoot.gameObject, reloadTime);
+            if (reloadTime >= combinedReloadClip.length)
+            {
+                combinedReloadPlaying = false;
+                if (firstPerson)
+                    armsAnimator.Play("Idle", 0, 0f);
+            }
+        }
+
         if (!firstPerson)
             return;
 
@@ -100,6 +117,12 @@ public class SoldierFirstPersonView : MonoBehaviour
         wasAiming = false;
         playerCamera.fieldOfView = originalFieldOfView;
         firstPersonRoot.gameObject.SetActive(enabled);
+        if (enabled && useCombinedReload)
+        {
+            armsAnimator.Play(combinedReloadPlaying ? "Reload" : "Idle", 0,
+                combinedReloadPlaying ? reloadTime / combinedReloadClip.length : 0f);
+            weaponAnimator.Play("Idle", 0, 0f);
+        }
         playerCamera.transform.localPosition = enabled ? Vector3.zero : thirdPersonCameraPosition;
         playerCamera.transform.localRotation = enabled ? Quaternion.identity : thirdPersonCameraRotation;
         playerCamera.nearClipPlane = enabled ? 0.03f : originalNearClip;
@@ -118,13 +141,26 @@ public class SoldierFirstPersonView : MonoBehaviour
 
     public void PlayReload()
     {
+        if (useCombinedReload)
+        {
+            if (combinedReloadPlaying)
+                return;
+            combinedReloadPlaying = true;
+            reloadTime = 0f;
+        }
         if (!firstPerson)
             return;
         armsAnimator.Play("Empty", aimTransitionLayer, 0f);
         armsAnimator.SetLayerWeight(locomotionLayer, 0f);
         armsAnimator.SetLayerWeight(aimTransitionLayer, 0f);
-        // The arms and weapon clips are a matching authored pair.
+        // Combined reloads already contain weapon-part movement in the arms clip.
         armsAnimator.Play("Reload", 0, 0f);
-        weaponAnimator.Play("Reload", 0, 0f);
+        weaponAnimator.Play(useCombinedReload ? "Idle" : "Reload", 0, 0f);
+    }
+    void OnDisable()
+    {
+        if (combinedReloadPlaying)
+            combinedReloadClip.SampleAnimation(firstPersonRoot.gameObject, combinedReloadClip.length);
+        combinedReloadPlaying = false;
     }
 }
