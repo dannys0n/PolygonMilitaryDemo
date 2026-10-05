@@ -16,11 +16,13 @@ public class SoldierActions : MonoBehaviour
     private float nextFireTime;
     private int fireLayer;
     private int reloadLayer;
+    private int hitReactionLayer;
 
     void Awake()
     {
         fireLayer = animator.GetLayerIndex("Fire");
         reloadLayer = animator.GetLayerIndex("Reload");
+        hitReactionLayer = animator.GetLayerIndex("HitReaction");
         animator.ResetTrigger("Fire");
     }
 
@@ -34,6 +36,10 @@ public class SoldierActions : MonoBehaviour
 
         if (Cursor.lockState != CursorLockMode.Locked)
             return;
+
+        // Temporary test input until damage calls PlayHitReaction().
+        if (Input.GetKeyDown(KeyCode.H))
+            PlayHitReaction();
 
         if (Input.GetKeyDown(KeyCode.Space))
             movement.RequestJump();
@@ -62,5 +68,10 @@ public class SoldierActions : MonoBehaviour
             animator.ResetTrigger("Fire");
             animator.CrossFadeInFixedTime("Fire", 0.05f, fireLayer, 0f);
         }
+    }
+
+    public void PlayHitReaction()
+    {
+        animator.CrossFadeInFixedTime("HitReaction", 0.05f, hitReactionLayer, 0f);
     }
 }
