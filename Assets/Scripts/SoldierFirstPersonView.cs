@@ -1,6 +1,7 @@
 using UnityEngine;
 using UnityEngine.Rendering;
 
+[DefaultExecutionOrder(-10)]
 public class SoldierFirstPersonView : MonoBehaviour
 {
     public Camera playerCamera;

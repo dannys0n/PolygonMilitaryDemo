@@ -6,7 +6,7 @@ public class SoldierLook : MonoBehaviour
     public Animator animator;
     public float sensitivity = 2f;
     public Transform aimTarget;
-    public float bodyPitchLimit = 45f;
+    public Camera aimCamera;
 
     private float pitch;
 
@@ -49,10 +49,7 @@ public class SoldierLook : MonoBehaviour
 
         playerCamera.localRotation = Quaternion.Euler(pitch, 0f, 0f);
 
-        float bodyPitch = Mathf.Clamp(pitch, -bodyPitchLimit, bodyPitchLimit);
-        Vector3 aimDirection = transform.rotation
-                             * Quaternion.Euler(bodyPitch, 0f, 0f)
-                             * Vector3.forward;
-        aimTarget.position = playerCamera.position + aimDirection * 10f;
+        Ray centerRay = aimCamera.ViewportPointToRay(new Vector3(0.5f, 0.5f, 0f));
+        aimTarget.position = centerRay.GetPoint(10f);
     }
 }
