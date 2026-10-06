@@ -1724,8 +1724,6 @@ MonoBehaviour:
   animator: {fileID: 7958695151974473148}
   firstPersonView: {fileID: 7144161857019655017}
   movement: {fileID: 792666939293088606}
-  fireMode: 1
-  roundsPerMinute: 600
 --- !u!114 &7144161857019655017
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1746,18 +1744,7 @@ MonoBehaviour:
   controller: {fileID: 9083394086796427758}
   synchronizeReload: 1
   characterAnimator: {fileID: 7958695151974473148}
-  reloadSwayWeight: 1
-  reloadWalkWeight: 1
-  locomotionWeight: 1
-  aimTransitionWeight: 1
-  motionBlendTime: 0.12
-  walkingSpeed: 4
   firstPerson: 1
-  viewOffset: {x: 0, y: 0, z: 0}
-  hipFireOffset: {x: 0, y: -0.05, z: 0.08}
-  aimFieldOfView: 50
-  aimBlendSpeed: 8
-  aimOffset: {x: -0.020788347, y: -0.043, z: 0.05}
   firstPersonLayer: 8
   thirdPersonLayer: 9
 --- !u!114 &3441521247488082235
@@ -1776,8 +1763,6 @@ MonoBehaviour:
   look: {fileID: 2797259594997580802}
   animatedCamera: {fileID: 3472213071196498390}
   bodyAimTarget: {fileID: 7291433338316472042}
-  positionWeight: 1
-  rotationWeight: 1
 --- !u!114 &8744048732807330759
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1794,7 +1779,7 @@ MonoBehaviour:
   characterAnimator: {fileID: 7958695151974473148}
   controller: {fileID: 9083394086796427758}
   view: {fileID: 7144161857019655017}
-  animationSet: {fileID: 11400000, guid: e375cc2802880dd448949e02bbde5c21, type: 2}
+  weapon: {fileID: 2625650574314006234}
   aimPivot: {fileID: 835338321155840577}
   weaponRoot: {fileID: 5273240820011501935}
   partsAnimator: {fileID: 7556960581377311332}
@@ -6933,6 +6918,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 587347088568956073}
+  - component: {fileID: 2625650574314006234}
   m_Layer: 9
   m_Name: W_AK12_ReloadEmpty
   m_TagString: Untagged
@@ -6956,6 +6942,19 @@ Transform:
   - {fileID: 8223566150628740537}
   m_Father: {fileID: 5273240820011501935}
   m_LocalEulerAnglesHint: {x: -90, y: 179.99992, z: 0}
+--- !u!114 &2625650574314006234
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7490339468236577332}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ec3ca3df3a531bc4b8c934e57ace27a7, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::SoldierWeapon
+  definition: {fileID: 11400000, guid: e375cc2802880dd448949e02bbde5c21, type: 2}
 --- !u!1 &7547301507050626575
 GameObject:
   m_ObjectHideFlags: 0

@@ -11,8 +11,9 @@ public class SoldierActions : MonoBehaviour
     public Animator animator;
     public SoldierFirstPersonView firstPersonView;
     public SoldierMovement movement;
-    public FireMode fireMode = FireMode.SemiAutomatic;
-    [Min(1f)] public float roundsPerMinute = 600f;
+    private SoldierWeaponPresentation presentation;
+    public FireMode fireMode => presentation.weapon.definition.fireMode;
+    public float roundsPerMinute => presentation.weapon.definition.roundsPerMinute;
     public event System.Action FireStarted;
     public event System.Action ReloadStarted;
 
@@ -23,6 +24,7 @@ public class SoldierActions : MonoBehaviour
 
     void Awake()
     {
+        presentation = GetComponent<SoldierWeaponPresentation>();
         fireLayer = animator.GetLayerIndex("Fire");
         reloadLayer = animator.GetLayerIndex("Reload");
         hitReactionLayer = animator.GetLayerIndex("HitReaction");

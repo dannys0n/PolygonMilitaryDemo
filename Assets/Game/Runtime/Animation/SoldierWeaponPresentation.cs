@@ -8,7 +8,7 @@ public class SoldierWeaponPresentation : MonoBehaviour
     public Animator characterAnimator;
     public CharacterController controller;
     public SoldierFirstPersonView view;
-    public SoldierWeaponAnimationSet animationSet;
+    public SoldierWeapon weapon;
     public Transform aimPivot;
     public Transform weaponRoot;
     public Animator partsAnimator;
@@ -21,19 +21,25 @@ public class SoldierWeaponPresentation : MonoBehaviour
 
     void Awake()
     {
-        ApplyAnimationSet(animationSet);
+        ApplyWeapon(weapon);
         actions.FireStarted += PlayFire;
         actions.ReloadStarted += PlayReload;
     }
 
-    public void ApplyAnimationSet(SoldierWeaponAnimationSet set)
+    public void ApplyWeapon(SoldierWeapon selectedWeapon)
     {
-        animationSet = set;
+        weapon = selectedWeapon;
+        SoldierWeaponDefinition set = weapon.definition;
         view.armsAnimator.runtimeAnimatorController = set.firstPerson;
         view.weaponAnimator.runtimeAnimatorController = set.firstPersonParts;
         characterAnimator.runtimeAnimatorController = set.thirdPerson;
         partsAnimator.runtimeAnimatorController = set.firstPersonParts;
         partsAnimator.cullingMode = AnimatorCullingMode.AlwaysAnimate;
+        view.armsAnimator.Rebind();
+        view.weaponAnimator.Rebind();
+        partsAnimator.Rebind();
+        characterAnimator.Rebind();
+        view.ApplyWeaponDefinition(set);
         characterSwayLayer = characterAnimator.GetLayerIndex("SourceSway");
         weaponPoseLayer = characterAnimator.GetLayerIndex("WeaponPose");
         weaponSwayLayer = characterAnimator.GetLayerIndex("WeaponSway");

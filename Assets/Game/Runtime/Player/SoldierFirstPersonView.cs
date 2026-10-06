@@ -10,27 +10,25 @@ public class SoldierFirstPersonView : MonoBehaviour
     public Animator armsAnimator;
     public Animator weaponAnimator;
     public CharacterController controller;
-    [Header("Reload continuity between views")]
     public bool synchronizeReload;
     public Animator characterAnimator;
-    [Header("First person motion")]
-    [Range(0f, 1f)] public float reloadSwayWeight = 0.65f;
-    [Range(0f, 1f)] public float reloadWalkWeight = 0.35f;
-    [Range(0f, 1f)] public float locomotionWeight = 1f;
-    [Range(0f, 1f)] public float aimTransitionWeight = 1f;
-    [Min(0.01f)] public float motionBlendTime = 0.12f;
-    [Min(0.01f)] public float walkingSpeed = 4f;
     public bool firstPerson = true;
-    public Vector3 viewOffset;
-    [Header("Hip-fire placement")]
-    [Tooltip("Camera-local offset for the arms and weapon when not aiming. Blends out during ADS.")]
-    public Vector3 hipFireOffset;
-    [Header("Aim down sights")]
-    [Range(20f, 90f)] public float aimFieldOfView = 50f;
-    [Min(0.01f)] public float aimBlendSpeed = 8f;
-    public Vector3 aimOffset;
     public int firstPersonLayer = 8;
     public int thirdPersonLayer = 9;
+
+    private SoldierWeaponDefinition definition;
+    public event System.Action WeaponChanged;
+    public float reloadSwayWeight => definition.reloadSwayWeight;
+    public float reloadWalkWeight => definition.reloadWalkWeight;
+    public float locomotionWeight => definition.locomotionWeight;
+    public float aimTransitionWeight => definition.aimTransitionWeight;
+    public float motionBlendTime => definition.motionBlendTime;
+    public float walkingSpeed => definition.walkingSpeed;
+    public Vector3 viewOffset => definition.viewOffset;
+    public Vector3 hipFireOffset => definition.hipFireOffset;
+    public float aimFieldOfView => definition.aimFieldOfView;
+    public float aimBlendSpeed => definition.aimBlendSpeed;
+    public Vector3 aimOffset => definition.aimOffset;
 
     private Vector3 thirdPersonCameraPosition;
     private Quaternion thirdPersonCameraRotation;
@@ -52,6 +50,7 @@ public class SoldierFirstPersonView : MonoBehaviour
 
     private void Awake()
     {
+        definition = GetComponent<SoldierWeaponPresentation>().weapon.definition;
         thirdPersonCameraPosition = playerCamera.transform.localPosition;
         thirdPersonCameraRotation = playerCamera.transform.localRotation;
         originalCullingMask = playerCamera.cullingMask;
@@ -103,6 +102,20 @@ public class SoldierFirstPersonView : MonoBehaviour
         armsAnimator.SetLayerWeight(locomotionLayer, Mathf.MoveTowards(
             armsAnimator.GetLayerWeight(locomotionLayer), weight, Time.deltaTime / motionBlendTime));
         armsAnimator.SetLayerWeight(aimTransitionLayer, IsReloading ? 0f : aimTransitionWeight);
+    }
+
+    public void ApplyWeaponDefinition(SoldierWeaponDefinition selectedDefinition)
+    {
+        definition = selectedDefinition;
+        aimBlend = 0f;
+        wasAiming = false;
+        locomotionLayer = armsAnimator.GetLayerIndex("Locomotion");
+        aimTransitionLayer = armsAnimator.GetLayerIndex("Aim Transitions");
+        firstPersonRoot.localPosition = viewOffset + hipFireOffset;
+        playerCamera.fieldOfView = originalFieldOfView;
+        armsAnimator.Update(0f);
+        weaponAnimator.Update(0f);
+        WeaponChanged?.Invoke();
     }
 
     public void SetFirstPerson(bool enabled)

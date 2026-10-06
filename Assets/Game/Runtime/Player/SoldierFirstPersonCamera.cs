@@ -9,13 +9,19 @@ public class SoldierFirstPersonCamera : MonoBehaviour
     public SoldierLook look;
     public Transform animatedCamera;
     public Transform bodyAimTarget;
-    [Range(0f, 1f)] public float positionWeight = 1f;
-    [Range(0f, 1f)] public float rotationWeight = 1f;
+    private SoldierWeaponPresentation presentation;
+    public float positionWeight => presentation.weapon.definition.cameraPositionWeight;
+    public float rotationWeight => presentation.weapon.definition.cameraRotationWeight;
 
     private Vector3 referencePosition;
     private Quaternion referenceRotation;
 
-    void Start()
+    void Awake() => presentation = view.GetComponent<SoldierWeaponPresentation>();
+    void OnEnable() => view.WeaponChanged += RefreshReferencePose;
+    void OnDisable() => view.WeaponChanged -= RefreshReferencePose;
+    void Start() => RefreshReferencePose();
+
+    void RefreshReferencePose()
     {
         // Sample the imported idle pose rather than the FBX's bind pose.
         bool wasActive = view.firstPersonRoot.gameObject.activeSelf;
