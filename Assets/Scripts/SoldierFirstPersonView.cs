@@ -42,11 +42,11 @@ public class SoldierFirstPersonView : MonoBehaviour
     private int locomotionLayer;
     private int aimTransitionLayer;
 
-    public virtual bool IsReloading => firstPerson &&
+    public bool IsReloading => firstPerson &&
         (armsAnimator.GetCurrentAnimatorStateInfo(0).IsName("Reload") ||
          (armsAnimator.IsInTransition(0) && armsAnimator.GetNextAnimatorStateInfo(0).IsName("Reload")));
 
-    protected virtual void Awake()
+    private void Awake()
     {
         thirdPersonCameraPosition = playerCamera.transform.localPosition;
         thirdPersonCameraRotation = playerCamera.transform.localRotation;
@@ -67,7 +67,7 @@ public class SoldierFirstPersonView : MonoBehaviour
         SetFirstPerson(firstPerson);
     }
 
-    protected virtual void Update()
+    private void Update()
     {
         if (Cursor.lockState == CursorLockMode.Locked && Input.GetKeyDown(KeyCode.V))
             SetFirstPerson(!firstPerson);
@@ -85,7 +85,7 @@ public class SoldierFirstPersonView : MonoBehaviour
         firstPersonRoot.localPosition = viewOffset + hipFireOffset * (1f - aimBlend) + aimOffset * aimBlend;
     }
 
-    protected virtual void LateUpdate()
+    private void LateUpdate()
     {
         if (!firstPerson)
             return;
@@ -102,7 +102,7 @@ public class SoldierFirstPersonView : MonoBehaviour
         armsAnimator.SetLayerWeight(aimTransitionLayer, IsReloading ? 0f : aimTransitionWeight);
     }
 
-    public virtual void SetFirstPerson(bool enabled)
+    public void SetFirstPerson(bool enabled)
     {
         firstPerson = enabled;
         aimBlend = 0f;
@@ -132,7 +132,7 @@ public class SoldierFirstPersonView : MonoBehaviour
             : originalCullingMask & ~(1 << firstPersonLayer);
     }
 
-    public virtual void PlayFire()
+    public void PlayFire()
     {
         if (!firstPerson)
             return;
@@ -140,7 +140,7 @@ public class SoldierFirstPersonView : MonoBehaviour
         weaponAnimator.Play("Fire", 0, 0f);
     }
 
-    public virtual void PlayReload()
+    public void PlayReload()
     {
         if (!firstPerson) return;
         armsAnimator.Play("Empty", aimTransitionLayer, 0f);
@@ -148,6 +148,5 @@ public class SoldierFirstPersonView : MonoBehaviour
         armsAnimator.CrossFadeInFixedTime("Reload", motionBlendTime, 0, 0f);
         weaponAnimator.CrossFadeInFixedTime("Reload", motionBlendTime, 0, 0f);
     }
-
-    protected virtual void OnDisable() { }
 }
+
