@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.Serialization;
 
 [CreateAssetMenu(menuName = "Soldier/Weapon definition")]
 public class SoldierWeaponDefinition : ScriptableObject
@@ -20,7 +21,9 @@ public class SoldierWeaponDefinition : ScriptableObject
     [Range(0f, 1f)] public float reloadWalkWeight = .35f;
     [Range(0f, 1f)] public float locomotionWeight = 1f;
     [Range(0f, 1f)] public float aimTransitionWeight = 1f;
-    [Min(.01f)] public float motionBlendTime = .12f;
+    [FormerlySerializedAs("motionBlendTime")]
+    [Tooltip("Damping for movement parameters and sway weights. State blend times live in Animator transitions.")]
+    [Min(.01f)] public float motionSmoothingTime = .12f;
     [Min(.01f)] public float walkingSpeed = 4f;
     [Range(0f, 1f)] public float cameraPositionWeight = 1f;
     [Range(0f, 1f)] public float cameraRotationWeight = 1f;

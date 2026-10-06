@@ -79,13 +79,19 @@ public class SoldierWeaponPresentation : MonoBehaviour
             Quaternion.LookRotation(aimTarget.position - aimPivot.position, transform.up);
         aimPivot.localRotation = Quaternion.Slerp(aiming, Quaternion.identity, weight);
     }
-    void PlayFire() => characterAnimator.CrossFadeInFixedTime("Fire", .05f, weaponFireLayer, 0f);
+    void PlayFire()
+    {
+        characterAnimator.ResetTrigger("WeaponFire");
+        characterAnimator.SetTrigger("WeaponFire");
+    }
 
     void PlayReload()
     {
-        characterAnimator.Play("Empty", weaponFireLayer, 0f);
-        characterAnimator.CrossFadeInFixedTime("Reload", view.motionBlendTime, weaponPoseLayer, 0f);
-        partsAnimator.CrossFadeInFixedTime("Reload", view.motionBlendTime, 0, 0f);
+        characterAnimator.ResetTrigger("WeaponFire");
+        characterAnimator.SetTrigger("CancelWeaponFire");
+        characterAnimator.SetTrigger("WeaponReload");
+        partsAnimator.ResetTrigger("Fire");
+        partsAnimator.SetTrigger("Reload");
     }
 }
 

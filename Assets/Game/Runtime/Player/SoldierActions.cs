@@ -18,9 +18,7 @@ public class SoldierActions : MonoBehaviour
     public event System.Action ReloadStarted;
 
     private float nextFireTime;
-    private int fireLayer;
     private int reloadLayer;
-    private int hitReactionLayer;
 
     public bool IsReloading =>
         animator.GetCurrentAnimatorStateInfo(reloadLayer).IsName("Reload") ||
@@ -29,9 +27,7 @@ public class SoldierActions : MonoBehaviour
     void Awake()
     {
         presentation = GetComponent<SoldierWeaponPresentation>();
-        fireLayer = animator.GetLayerIndex("Fire");
         reloadLayer = animator.GetLayerIndex("Reload");
-        hitReactionLayer = animator.GetLayerIndex("HitReaction");
         animator.ResetTrigger("Fire");
     }
 
@@ -85,13 +81,14 @@ public class SoldierActions : MonoBehaviour
 
     public void PlayHitReaction()
     {
-        animator.CrossFadeInFixedTime("HitReaction", 0.05f, hitReactionLayer, 0f);
+        animator.ResetTrigger("HitReaction");
+        animator.SetTrigger("HitReaction");
     }
 
     public void PlayFire()
     {
         animator.ResetTrigger("Fire");
-        animator.CrossFadeInFixedTime("Fire", 0.05f, fireLayer, 0f);
+        animator.SetTrigger("Fire");
         firstPersonView.PlayFire();
         FireStarted?.Invoke();
     }
