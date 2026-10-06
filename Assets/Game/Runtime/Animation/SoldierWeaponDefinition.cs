@@ -9,6 +9,10 @@ public class SoldierWeaponDefinition : ScriptableObject
     public RuntimeAnimatorController firstPersonParts;
     public RuntimeAnimatorController thirdPerson;
 
+    [Header("Weapon switching")]
+    [Min(.01f)] public float equipDuration = .5f;
+    [Min(.01f)] public float unequipDuration = .5f;
+
     [Header("Third-person placement")]
     public Vector3 thirdPersonHipAimPosition;
     public Vector3 thirdPersonAimPosition;

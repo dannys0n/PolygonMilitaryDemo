@@ -29,7 +29,7 @@ public class SoldierWeaponPresentation : MonoBehaviour
     // Call after the matching first- and third-person visual rigs have been equipped.
     public bool TryApplyWeapon(SoldierWeapon selectedWeapon)
     {
-        if (actions.IsReloading) return false;
+        if (actions.IsReloading || view.IsEquipping) return false;
         ApplyWeapon(selectedWeapon);
         return true;
     }
@@ -41,6 +41,7 @@ public class SoldierWeaponPresentation : MonoBehaviour
         view.armsAnimator.runtimeAnimatorController = set.firstPerson;
         view.weaponAnimator.runtimeAnimatorController = set.firstPersonParts;
         characterAnimator.runtimeAnimatorController = set.thirdPerson;
+        characterAnimator.cullingMode = AnimatorCullingMode.AlwaysAnimate;
         partsAnimator.runtimeAnimatorController = set.firstPersonParts;
         partsAnimator.cullingMode = AnimatorCullingMode.AlwaysAnimate;
         view.armsAnimator.Rebind();
@@ -102,5 +103,3 @@ public class SoldierWeaponPresentation : MonoBehaviour
         partsAnimator.SetTrigger("Reload");
     }
 }
-
-

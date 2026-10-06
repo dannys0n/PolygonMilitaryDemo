@@ -53,7 +53,7 @@ public class SoldierActions : MonoBehaviour
             return;
         }
 
-        if (IsReloading)
+        if (IsReloading || firstPersonView.IsEquipping)
             return;
 
         bool wantsToFire = fireMode == FireMode.Automatic
@@ -66,7 +66,7 @@ public class SoldierActions : MonoBehaviour
     // These admission methods can also be called by an input or network command driver.
     public bool TryFire()
     {
-        if (IsReloading || Time.time < nextFireTime) return false;
+        if (IsReloading || firstPersonView.IsEquipping || Time.time < nextFireTime) return false;
         nextFireTime = Time.time + 60f / Mathf.Max(roundsPerMinute, 1f);
         PlayFire();
         return true;
@@ -74,7 +74,7 @@ public class SoldierActions : MonoBehaviour
 
     public bool TryReload()
     {
-        if (IsReloading) return false;
+        if (IsReloading || firstPersonView.IsEquipping) return false;
         PlayReload();
         return true;
     }

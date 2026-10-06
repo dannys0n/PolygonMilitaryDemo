@@ -36,6 +36,7 @@ public class SoldierFirstPersonView : MonoBehaviour
     private float aimBlend;
     public float AimBlend => aimBlend;
     public float PlacementAimBlend => 1f - (1f - aimBlend) * (1f - aimBlend);
+    public bool IsEquipping { get; set; }
     private bool wasAiming;
     private bool reloadRequested;
     private int locomotionLayer;
@@ -58,6 +59,15 @@ public class SoldierFirstPersonView : MonoBehaviour
         originalNearClip = playerCamera.nearClipPlane;
         originalFieldOfView = playerCamera.fieldOfView;
 
+        RefreshVisuals();
+
+        locomotionLayer = armsAnimator.GetLayerIndex("Locomotion");
+        aimTransitionLayer = armsAnimator.GetLayerIndex("Aim Transitions");
+        SetFirstPerson(firstPerson);
+    }
+
+    public void RefreshVisuals()
+    {
         // These are visibility groups, not gameplay or networking ownership.
         foreach (Transform child in thirdPersonRoot.GetComponentsInChildren<Transform>(true))
             child.gameObject.layer = thirdPersonLayer;
@@ -69,9 +79,17 @@ public class SoldierFirstPersonView : MonoBehaviour
         foreach (Renderer mesh in firstPersonRenderers)
             mesh.shadowCastingMode = ShadowCastingMode.Off;
 
-        locomotionLayer = armsAnimator.GetLayerIndex("Locomotion");
-        aimTransitionLayer = armsAnimator.GetLayerIndex("Aim Transitions");
-        SetFirstPerson(firstPerson);
+    }
+
+    public void CancelAim()
+    {
+        aimBlend = 0f;
+        wasAiming = false;
+        armsAnimator.SetFloat("AimBlend", 0f);
+        armsAnimator.ResetTrigger("AimIn");
+        armsAnimator.ResetTrigger("AimOut");
+        armsAnimator.SetTrigger("CancelAim");
+        playerCamera.fieldOfView = originalFieldOfView;
     }
 
     private void Update()
@@ -79,7 +97,7 @@ public class SoldierFirstPersonView : MonoBehaviour
         if (Cursor.lockState == CursorLockMode.Locked && Input.GetKeyDown(KeyCode.V))
             SetFirstPerson(!firstPerson);
         bool aiming = Cursor.lockState == CursorLockMode.Locked
-            && Input.GetMouseButton(1) && !IsReloading;
+            && Input.GetMouseButton(1) && !IsReloading && !IsEquipping;
         aimBlend = Mathf.MoveTowards(aimBlend, aiming ? 1f : 0f, aimBlendSpeed * Time.deltaTime);
         if (aiming != wasAiming && !IsReloading)
         {
