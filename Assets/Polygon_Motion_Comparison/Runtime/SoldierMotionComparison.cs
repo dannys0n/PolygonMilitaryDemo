@@ -5,6 +5,7 @@ using UnityEngine.Animations.Rigging;
 public class SoldierMotionComparison : MonoBehaviour
 {
     public bool weaponDriven;
+    public bool releaseFiringHandDuringReload;
     public Animator characterAnimator;
     public CharacterController controller;
     public SoldierFirstPersonView view;
@@ -34,7 +35,7 @@ public class SoldierMotionComparison : MonoBehaviour
         float weight = characterAnimator.GetFloat("WeaponReloadWeight");
         chestAim.weight = 1f - weight;
         supportHand.weight = 1f - weight;
-        if (weaponDriven) firingHand.weight = 1f;
+        if (weaponDriven) firingHand.weight = releaseFiringHandDuringReload ? 1f - weight : 1f;
         Vector3 velocity = controller.velocity; velocity.y = 0;
         float speed = controller.isGrounded ? Mathf.Clamp01(velocity.magnitude / view.walkingSpeed) : 0;
         characterAnimator.SetFloat("MotionSpeed", speed, .12f, Time.deltaTime);
