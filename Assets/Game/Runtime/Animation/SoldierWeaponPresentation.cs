@@ -76,9 +76,8 @@ public class SoldierWeaponPresentation : MonoBehaviour
         characterAnimator.SetLayerWeight(weaponSwayLayer, 1f - weight);
         characterAnimator.SetLayerWeight(weaponFireLayer, 1f - weight);
         SoldierWeaponDefinition set = weapon.definition;
-        // Ease out as the weapon reaches the ADS position.
-        float aimBlend = view.AimBlend;
-        aimBlend = 1f - (1f - aimBlend) * (1f - aimBlend);
+        // Share the first-person placement blend and its exact duration.
+        float aimBlend = view.PlacementAimBlend;
         Vector3 holdPosition = Vector3.Lerp(set.thirdPersonHipAimPosition,
             set.thirdPersonAimPosition, aimBlend);
         // Reload clips are authored relative to the ADS pivot. Fade back to

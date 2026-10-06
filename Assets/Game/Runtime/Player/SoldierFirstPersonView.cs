@@ -35,6 +35,7 @@ public class SoldierFirstPersonView : MonoBehaviour
     private float originalFieldOfView;
     private float aimBlend;
     public float AimBlend => aimBlend;
+    public float PlacementAimBlend => 1f - (1f - aimBlend) * (1f - aimBlend);
     private bool wasAiming;
     private bool reloadRequested;
     private int locomotionLayer;
@@ -88,7 +89,7 @@ public class SoldierFirstPersonView : MonoBehaviour
         wasAiming = aiming;
         armsAnimator.SetFloat("AimBlend", aimBlend);
         if (firstPerson) playerCamera.fieldOfView = Mathf.Lerp(originalFieldOfView, aimFieldOfView, aimBlend);
-        firstPersonRoot.localPosition = viewOffset + hipFireOffset * (1f - aimBlend) + aimOffset * aimBlend;
+        firstPersonRoot.localPosition = Vector3.Lerp(viewOffset + hipFireOffset, viewOffset + aimOffset, PlacementAimBlend);
     }
 
     private void LateUpdate()
