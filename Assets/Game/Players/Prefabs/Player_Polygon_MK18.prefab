@@ -4003,7 +4003,7 @@ MonoBehaviour:
     m_SourceObjects:
       m_Length: 1
       m_Item0:
-        transform: {fileID: 3858282954425138915}
+        transform: {fileID: 7197399166231288833}
         weight: 1
       m_Item1:
         transform: {fileID: 0}
@@ -8560,6 +8560,37 @@ MeshRenderer:
   m_SortingOrder: 0
   m_MaskInteraction: 0
   m_AdditionalVertexStreams: {fileID: 0}
+--- !u!1 &6997266519041279832
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 7197399166231288833}
+  m_Layer: 0
+  m_Name: BodyAimTarget
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &7197399166231288833
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6997266519041279832}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 1.5, z: 10}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 5521066776183980272}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &7000456118863441358
 GameObject:
   m_ObjectHideFlags: 0
@@ -10867,6 +10898,7 @@ Transform:
   m_Children:
   - {fileID: 9162614346773495888}
   - {fileID: 6889534468673074542}
+  - {fileID: 7197399166231288833}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!143 &2307601721304991840
@@ -10993,6 +11025,7 @@ MonoBehaviour:
   view: {fileID: 3857842616418219034}
   look: {fileID: 6869284405060730759}
   animatedCamera: {fileID: 7576369353201771825}
+  bodyAimTarget: {fileID: 7197399166231288833}
   positionWeight: 1
   rotationWeight: 1
 --- !u!114 &200064873301141975

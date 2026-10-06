@@ -8,6 +8,7 @@ public class SoldierFirstPersonCamera : MonoBehaviour
     public SoldierFirstPersonView view;
     public SoldierLook look;
     public Transform animatedCamera;
+    public Transform bodyAimTarget;
     [Range(0f, 1f)] public float positionWeight = 1f;
     [Range(0f, 1f)] public float rotationWeight = 1f;
 
@@ -27,17 +28,22 @@ public class SoldierFirstPersonCamera : MonoBehaviour
 
     void LateUpdate()
     {
-        if (!view.firstPerson)
-            return;
-
         Vector3 position = view.firstPersonRoot.InverseTransformPoint(animatedCamera.position);
         Quaternion rotation = Quaternion.Inverse(view.firstPersonRoot.rotation) * animatedCamera.rotation;
         Transform cameraTransform = view.playerCamera.transform;
-        cameraTransform.localPosition = (position - referencePosition) * positionWeight;
-        cameraTransform.localRotation = Quaternion.Slerp(Quaternion.identity,
+        cameraTransform.localPosition = view.CameraRestPosition +
+            view.CameraRestRotation * ((position - referencePosition) * positionWeight);
+        cameraTransform.localRotation = view.CameraRestRotation * Quaternion.Slerp(Quaternion.identity,
             rotation * Quaternion.Inverse(referenceRotation), rotationWeight);
 
-        // The target follows the rendered camera, including its authored recoil.
+        // Body aim follows the player look and recoil source, independently of camera placement.
+        Vector3 recoilPosition = (position - referencePosition) * positionWeight;
+        Quaternion recoilRotation = Quaternion.Slerp(Quaternion.identity, rotation * Quaternion.Inverse(referenceRotation), rotationWeight);
+        Transform cameraMount = cameraTransform.parent;
+        bodyAimTarget.position = cameraMount.TransformPoint(recoilPosition) +
+            cameraMount.rotation * recoilRotation * Vector3.forward * 10f;
+
+        // Weapon aim still follows the center of the rendered camera.
         look.UpdateAimTarget();
     }
 }

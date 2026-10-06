@@ -465,7 +465,7 @@ MonoBehaviour:
     m_SourceObjects:
       m_Length: 1
       m_Item0:
-        transform: {fileID: 6023576929763249371}
+        transform: {fileID: 7291433338316472042}
         weight: 1
       m_Item1:
         transform: {fileID: 0}
@@ -1648,6 +1648,7 @@ Transform:
   m_Children:
   - {fileID: 4987749923851806210}
   - {fileID: 8260868523167132348}
+  - {fileID: 7291433338316472042}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!143 &9083394086796427758
@@ -1774,6 +1775,7 @@ MonoBehaviour:
   view: {fileID: 7144161857019655017}
   look: {fileID: 2797259594997580802}
   animatedCamera: {fileID: 3472213071196498390}
+  bodyAimTarget: {fileID: 7291433338316472042}
   positionWeight: 1
   rotationWeight: 1
 --- !u!114 &8744048732807330759
@@ -6057,6 +6059,37 @@ Transform:
   m_Children:
   - {fileID: 7926847241776589937}
   m_Father: {fileID: 1320003910454765947}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &6588597443094327755
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 7291433338316472042}
+  m_Layer: 0
+  m_Name: BodyAimTarget
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &7291433338316472042
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6588597443094327755}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 1.5, z: 10}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 398732832469690383}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &6629429527086443971
 GameObject:

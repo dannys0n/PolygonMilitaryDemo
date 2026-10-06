@@ -41,8 +41,12 @@ public class SoldierFirstPersonView : MonoBehaviour
     private bool wasAiming;
     private int locomotionLayer;
     private int aimTransitionLayer;
+    private Renderer[] firstPersonRenderers;
 
-    public bool IsReloading => firstPerson &&
+    public Vector3 CameraRestPosition => firstPerson ? Vector3.zero : thirdPersonCameraPosition;
+    public Quaternion CameraRestRotation => firstPerson ? Quaternion.identity : thirdPersonCameraRotation;
+
+    public bool IsReloading =>
         (armsAnimator.GetCurrentAnimatorStateInfo(0).IsName("Reload") ||
          (armsAnimator.IsInTransition(0) && armsAnimator.GetNextAnimatorStateInfo(0).IsName("Reload")));
 
@@ -59,7 +63,10 @@ public class SoldierFirstPersonView : MonoBehaviour
             child.gameObject.layer = thirdPersonLayer;
         foreach (Transform child in firstPersonRoot.GetComponentsInChildren<Transform>(true))
             child.gameObject.layer = firstPersonLayer;
-        foreach (Renderer mesh in firstPersonRoot.GetComponentsInChildren<Renderer>(true))
+        firstPersonRenderers = firstPersonRoot.GetComponentsInChildren<Renderer>(true);
+        armsAnimator.cullingMode = AnimatorCullingMode.AlwaysAnimate;
+        weaponAnimator.cullingMode = AnimatorCullingMode.AlwaysAnimate;
+        foreach (Renderer mesh in firstPersonRenderers)
             mesh.shadowCastingMode = ShadowCastingMode.Off;
 
         locomotionLayer = armsAnimator.GetLayerIndex("Locomotion");
@@ -74,22 +81,18 @@ public class SoldierFirstPersonView : MonoBehaviour
         bool aiming = firstPerson && Cursor.lockState == CursorLockMode.Locked
             && Input.GetMouseButton(1) && !IsReloading;
         aimBlend = Mathf.MoveTowards(aimBlend, aiming ? 1f : 0f, aimBlendSpeed * Time.deltaTime);
-        if (firstPerson)
         {
             if (aiming != wasAiming && !IsReloading)
                 armsAnimator.CrossFadeInFixedTime(aiming ? "Aim In" : "Aim Out", 0.05f, aimTransitionLayer, 0f);
             wasAiming = aiming;
             armsAnimator.SetFloat("AimBlend", aimBlend);
-            playerCamera.fieldOfView = Mathf.Lerp(originalFieldOfView, aimFieldOfView, aimBlend);
+            if (firstPerson) playerCamera.fieldOfView = Mathf.Lerp(originalFieldOfView, aimFieldOfView, aimBlend);
         }
         firstPersonRoot.localPosition = viewOffset + hipFireOffset * (1f - aimBlend) + aimOffset * aimBlend;
     }
 
     private void LateUpdate()
     {
-        if (!firstPerson)
-            return;
-
         // Use actual movement so walking bob stops against walls and in the air.
         Vector3 velocity = controller.velocity;
         velocity.y = 0f;
@@ -108,7 +111,8 @@ public class SoldierFirstPersonView : MonoBehaviour
         aimBlend = 0f;
         wasAiming = false;
         playerCamera.fieldOfView = originalFieldOfView;
-        firstPersonRoot.gameObject.SetActive(enabled);
+        firstPersonRoot.gameObject.SetActive(true);
+        foreach (Renderer mesh in firstPersonRenderers) mesh.enabled = enabled;
         if (enabled && synchronizeReload)
         {
             int layer = characterAnimator.GetLayerIndex("Reload");
@@ -134,15 +138,12 @@ public class SoldierFirstPersonView : MonoBehaviour
 
     public void PlayFire()
     {
-        if (!firstPerson)
-            return;
         armsAnimator.CrossFadeInFixedTime("Fire", 0.03f, 0, 0f);
         weaponAnimator.Play("Fire", 0, 0f);
     }
 
     public void PlayReload()
     {
-        if (!firstPerson) return;
         armsAnimator.Play("Empty", aimTransitionLayer, 0f);
         armsAnimator.SetLayerWeight(aimTransitionLayer, 0f);
         armsAnimator.CrossFadeInFixedTime("Reload", motionBlendTime, 0, 0f);
