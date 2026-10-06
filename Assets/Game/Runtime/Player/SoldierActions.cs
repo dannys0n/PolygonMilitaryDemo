@@ -66,7 +66,7 @@ public class SoldierActions : MonoBehaviour
     // These admission methods can also be called by an input or network command driver.
     public bool TryFire()
     {
-        if (IsReloading || firstPersonView.IsEquipping || Time.time < nextFireTime) return false;
+        if (IsReloading || firstPersonView.IsEquipping || movement.IsRunning || Time.time < nextFireTime) return false;
         nextFireTime = Time.time + 60f / Mathf.Max(roundsPerMinute, 1f);
         PlayFire();
         return true;

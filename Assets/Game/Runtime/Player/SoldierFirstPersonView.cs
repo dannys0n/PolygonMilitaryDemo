@@ -37,6 +37,8 @@ public class SoldierFirstPersonView : MonoBehaviour
     public float AimBlend => aimBlend;
     public float PlacementAimBlend => 1f - (1f - aimBlend) * (1f - aimBlend);
     public bool IsEquipping { get; set; }
+    public bool WantsToAim { get; private set; }
+    private SoldierMovement movement;
     private bool wasAiming;
     private bool reloadRequested;
     private int locomotionLayer;
@@ -53,6 +55,7 @@ public class SoldierFirstPersonView : MonoBehaviour
     private void Awake()
     {
         definition = GetComponent<SoldierWeaponPresentation>().weapon.definition;
+        movement = GetComponent<SoldierMovement>();
         thirdPersonCameraPosition = playerCamera.transform.localPosition;
         thirdPersonCameraRotation = playerCamera.transform.localRotation;
         originalCullingMask = playerCamera.cullingMask;
@@ -96,8 +99,9 @@ public class SoldierFirstPersonView : MonoBehaviour
     {
         if (Cursor.lockState == CursorLockMode.Locked && Input.GetKeyDown(KeyCode.V))
             SetFirstPerson(!firstPerson);
-        bool aiming = Cursor.lockState == CursorLockMode.Locked
+        WantsToAim = Cursor.lockState == CursorLockMode.Locked
             && Input.GetMouseButton(1) && !IsReloading && !IsEquipping;
+        bool aiming = WantsToAim && !movement.IsRunning;
         aimBlend = Mathf.MoveTowards(aimBlend, aiming ? 1f : 0f, aimBlendSpeed * Time.deltaTime);
         if (aiming != wasAiming && !IsReloading)
         {
@@ -179,4 +183,3 @@ public class SoldierFirstPersonView : MonoBehaviour
         weaponAnimator.SetTrigger("Reload");
     }
 }
-
