@@ -11,6 +11,7 @@ public class SoldierWeaponPresentation : MonoBehaviour
     public SoldierWeaponAnimationSet animationSet;
     public Transform aimPivot;
     public Transform weaponRoot;
+    public Animator partsAnimator;
     public Transform aimTarget;
     public MultiAimConstraint chestAim;
     public TwoBoneIKConstraint supportHand;
@@ -31,6 +32,8 @@ public class SoldierWeaponPresentation : MonoBehaviour
         view.armsAnimator.runtimeAnimatorController = set.firstPerson;
         view.weaponAnimator.runtimeAnimatorController = set.firstPersonParts;
         characterAnimator.runtimeAnimatorController = set.thirdPerson;
+        partsAnimator.runtimeAnimatorController = set.firstPersonParts;
+        partsAnimator.cullingMode = AnimatorCullingMode.AlwaysAnimate;
         characterSwayLayer = characterAnimator.GetLayerIndex("SourceSway");
         weaponPoseLayer = characterAnimator.GetLayerIndex("WeaponPose");
         weaponSwayLayer = characterAnimator.GetLayerIndex("WeaponSway");
@@ -68,6 +71,7 @@ public class SoldierWeaponPresentation : MonoBehaviour
     {
         characterAnimator.Play("Empty", weaponFireLayer, 0f);
         characterAnimator.CrossFadeInFixedTime("Reload", view.motionBlendTime, weaponPoseLayer, 0f);
+        partsAnimator.CrossFadeInFixedTime("Reload", view.motionBlendTime, 0, 0f);
     }
 }
 
