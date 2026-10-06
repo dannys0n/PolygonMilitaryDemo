@@ -9,6 +9,10 @@ public class SoldierWeaponDefinition : ScriptableObject
     public RuntimeAnimatorController firstPersonParts;
     public RuntimeAnimatorController thirdPerson;
 
+    [Header("Third-person placement")]
+    public Vector3 thirdPersonHipAimPosition;
+    public Vector3 thirdPersonAimPosition;
+
     [Header("First-person placement")]
     public Vector3 viewOffset;
     public Vector3 hipFireOffset;

@@ -75,6 +75,15 @@ public class SoldierWeaponPresentation : MonoBehaviour
         characterAnimator.SetLayerWeight(weaponPoseLayer, weight);
         characterAnimator.SetLayerWeight(weaponSwayLayer, 1f - weight);
         characterAnimator.SetLayerWeight(weaponFireLayer, 1f - weight);
+        SoldierWeaponDefinition set = weapon.definition;
+        // Ease out as the weapon reaches the ADS position.
+        float aimBlend = view.AimBlend;
+        aimBlend = 1f - (1f - aimBlend) * (1f - aimBlend);
+        Vector3 holdPosition = Vector3.Lerp(set.thirdPersonHipAimPosition,
+            set.thirdPersonAimPosition, aimBlend);
+        // Reload clips are authored relative to the ADS pivot. Fade back to
+        // that reference position as the reload takes control of the weapon.
+        aimPivot.localPosition = Vector3.Lerp(holdPosition, set.thirdPersonAimPosition, weight);
         Quaternion aiming = Quaternion.Inverse(aimPivot.parent.rotation) *
             Quaternion.LookRotation(aimTarget.position - aimPivot.position, transform.up);
         aimPivot.localRotation = Quaternion.Slerp(aiming, Quaternion.identity, weight);

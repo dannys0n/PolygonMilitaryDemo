@@ -34,6 +34,7 @@ public class SoldierFirstPersonView : MonoBehaviour
     private float originalNearClip;
     private float originalFieldOfView;
     private float aimBlend;
+    public float AimBlend => aimBlend;
     private bool wasAiming;
     private bool reloadRequested;
     private int locomotionLayer;
@@ -76,7 +77,7 @@ public class SoldierFirstPersonView : MonoBehaviour
     {
         if (Cursor.lockState == CursorLockMode.Locked && Input.GetKeyDown(KeyCode.V))
             SetFirstPerson(!firstPerson);
-        bool aiming = firstPerson && Cursor.lockState == CursorLockMode.Locked
+        bool aiming = Cursor.lockState == CursorLockMode.Locked
             && Input.GetMouseButton(1) && !IsReloading;
         aimBlend = Mathf.MoveTowards(aimBlend, aiming ? 1f : 0f, aimBlendSpeed * Time.deltaTime);
         if (aiming != wasAiming && !IsReloading)
@@ -127,8 +128,6 @@ public class SoldierFirstPersonView : MonoBehaviour
     public void SetFirstPerson(bool enabled)
     {
         firstPerson = enabled;
-        aimBlend = 0f;
-        wasAiming = false;
         playerCamera.fieldOfView = originalFieldOfView;
         firstPersonRoot.gameObject.SetActive(true);
         foreach (Renderer mesh in firstPersonRenderers) mesh.enabled = enabled;
