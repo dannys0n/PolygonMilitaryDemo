@@ -13,6 +13,8 @@ public class SoldierActions : MonoBehaviour
     public SoldierMovement movement;
     public FireMode fireMode = FireMode.SemiAutomatic;
     [Min(1f)] public float roundsPerMinute = 600f;
+    public event System.Action FireStarted;
+    public event System.Action ReloadStarted;
 
     private float nextFireTime;
     private int fireLayer;
@@ -50,8 +52,7 @@ public class SoldierActions : MonoBehaviour
         {
             if (!reloading)
             {
-                animator.SetTrigger("Reload");
-                firstPersonView.PlayReload();
+                PlayReload();
             }
             animator.ResetTrigger("Fire");
             return;
@@ -70,14 +71,28 @@ public class SoldierActions : MonoBehaviour
             nextFireTime = Time.time + 60f / Mathf.Max(roundsPerMinute, 1f);
 
             // Restart the shot immediately instead of leaving an Animator trigger pending.
-            animator.ResetTrigger("Fire");
-            animator.CrossFadeInFixedTime("Fire", 0.05f, fireLayer, 0f);
-            firstPersonView.PlayFire();
+            PlayFire();
         }
     }
 
     public void PlayHitReaction()
     {
         animator.CrossFadeInFixedTime("HitReaction", 0.05f, hitReactionLayer, 0f);
+    }
+
+    public void PlayFire()
+    {
+        animator.ResetTrigger("Fire");
+        animator.CrossFadeInFixedTime("Fire", 0.05f, fireLayer, 0f);
+        firstPersonView.PlayFire();
+        FireStarted?.Invoke();
+    }
+
+    public void PlayReload()
+    {
+        animator.SetTrigger("Reload");
+        animator.ResetTrigger("Fire");
+        firstPersonView.PlayReload();
+        ReloadStarted?.Invoke();
     }
 }

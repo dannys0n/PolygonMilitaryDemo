@@ -13,13 +13,7 @@ public class SoldierFirstPersonView : MonoBehaviour
     [Header("Reload continuity between views")]
     public bool synchronizeReload;
     public Animator characterAnimator;
-    [Header("Combined arms and weapon reload")]
-    public bool useCombinedReload;
-    public AnimationClip combinedReloadClip;
-    private bool combinedReloadPlaying;
-    private float reloadTime;
     [Header("First person motion")]
-    public bool sharedReloadSway;
     [Range(0f, 1f)] public float reloadSwayWeight = 0.65f;
     [Range(0f, 1f)] public float reloadWalkWeight = 0.35f;
     [Range(0f, 1f)] public float locomotionWeight = 1f;
@@ -48,11 +42,11 @@ public class SoldierFirstPersonView : MonoBehaviour
     private int locomotionLayer;
     private int aimTransitionLayer;
 
-    public bool IsReloading => useCombinedReload ? combinedReloadPlaying : firstPerson &&
+    public virtual bool IsReloading => firstPerson &&
         (armsAnimator.GetCurrentAnimatorStateInfo(0).IsName("Reload") ||
          (armsAnimator.IsInTransition(0) && armsAnimator.GetNextAnimatorStateInfo(0).IsName("Reload")));
 
-    void Awake()
+    protected virtual void Awake()
     {
         thirdPersonCameraPosition = playerCamera.transform.localPosition;
         thirdPersonCameraRotation = playerCamera.transform.localRotation;
@@ -73,7 +67,7 @@ public class SoldierFirstPersonView : MonoBehaviour
         SetFirstPerson(firstPerson);
     }
 
-    void Update()
+    protected virtual void Update()
     {
         if (Cursor.lockState == CursorLockMode.Locked && Input.GetKeyDown(KeyCode.V))
             SetFirstPerson(!firstPerson);
@@ -91,20 +85,8 @@ public class SoldierFirstPersonView : MonoBehaviour
         firstPersonRoot.localPosition = viewOffset + hipFireOffset * (1f - aimBlend) + aimOffset * aimBlend;
     }
 
-    void LateUpdate()
+    protected virtual void LateUpdate()
     {
-        if (combinedReloadPlaying)
-        {
-            reloadTime = Mathf.Min(reloadTime + Time.deltaTime, combinedReloadClip.length);
-            combinedReloadClip.SampleAnimation(firstPersonRoot.gameObject, reloadTime);
-            if (reloadTime >= combinedReloadClip.length)
-            {
-                combinedReloadPlaying = false;
-                if (firstPerson)
-                    armsAnimator.Play("Idle", 0, 0f);
-            }
-        }
-
         if (!firstPerson)
             return;
 
@@ -112,15 +94,15 @@ public class SoldierFirstPersonView : MonoBehaviour
         Vector3 velocity = controller.velocity;
         velocity.y = 0f;
         float movement = controller.isGrounded ? Mathf.Clamp01(velocity.magnitude / walkingSpeed) : 0f;
-        if (sharedReloadSway && IsReloading) movement *= reloadWalkWeight;
+        if (IsReloading) movement *= reloadWalkWeight;
         armsAnimator.SetFloat("Movement", movement, motionBlendTime, Time.deltaTime);
-        float weight = IsReloading ? (sharedReloadSway ? locomotionWeight * reloadSwayWeight : 0f) : locomotionWeight;
+        float weight = IsReloading ? locomotionWeight * reloadSwayWeight : locomotionWeight;
         armsAnimator.SetLayerWeight(locomotionLayer, Mathf.MoveTowards(
             armsAnimator.GetLayerWeight(locomotionLayer), weight, Time.deltaTime / motionBlendTime));
         armsAnimator.SetLayerWeight(aimTransitionLayer, IsReloading ? 0f : aimTransitionWeight);
     }
 
-    public void SetFirstPerson(bool enabled)
+    public virtual void SetFirstPerson(bool enabled)
     {
         firstPerson = enabled;
         aimBlend = 0f;
@@ -142,12 +124,6 @@ public class SoldierFirstPersonView : MonoBehaviour
                 weaponAnimator.Play("Reload", 0, Mathf.Clamp01(state.normalizedTime));
             }
         }
-        if (enabled && useCombinedReload)
-        {
-            armsAnimator.Play(combinedReloadPlaying ? "Reload" : "Idle", 0,
-                combinedReloadPlaying ? reloadTime / combinedReloadClip.length : 0f);
-            weaponAnimator.Play("Idle", 0, 0f);
-        }
         playerCamera.transform.localPosition = enabled ? Vector3.zero : thirdPersonCameraPosition;
         playerCamera.transform.localRotation = enabled ? Quaternion.identity : thirdPersonCameraRotation;
         playerCamera.nearClipPlane = enabled ? 0.03f : originalNearClip;
@@ -156,7 +132,7 @@ public class SoldierFirstPersonView : MonoBehaviour
             : originalCullingMask & ~(1 << firstPersonLayer);
     }
 
-    public void PlayFire()
+    public virtual void PlayFire()
     {
         if (!firstPerson)
             return;
@@ -164,37 +140,14 @@ public class SoldierFirstPersonView : MonoBehaviour
         weaponAnimator.Play("Fire", 0, 0f);
     }
 
-    public void PlayReload()
+    public virtual void PlayReload()
     {
-        if (useCombinedReload)
-        {
-            if (combinedReloadPlaying)
-                return;
-            combinedReloadPlaying = true;
-            reloadTime = 0f;
-        }
-        if (!firstPerson)
-            return;
+        if (!firstPerson) return;
         armsAnimator.Play("Empty", aimTransitionLayer, 0f);
-        if (!sharedReloadSway) armsAnimator.SetLayerWeight(locomotionLayer, 0f);
         armsAnimator.SetLayerWeight(aimTransitionLayer, 0f);
-        // Combined reloads already contain weapon-part movement in the arms clip.
-        if (sharedReloadSway)
-        {
-            armsAnimator.CrossFadeInFixedTime("Reload", motionBlendTime, 0, 0f);
-            weaponAnimator.CrossFadeInFixedTime("Reload", motionBlendTime, 0, 0f);
-        }
-        else
-        {
-            armsAnimator.Play("Reload", 0, 0f);
-            weaponAnimator.Play(useCombinedReload ? "Idle" : "Reload", 0, 0f);
-        }
+        armsAnimator.CrossFadeInFixedTime("Reload", motionBlendTime, 0, 0f);
+        weaponAnimator.CrossFadeInFixedTime("Reload", motionBlendTime, 0, 0f);
     }
-    void OnDisable()
-    {
-        if (combinedReloadPlaying)
-            combinedReloadClip.SampleAnimation(firstPersonRoot.gameObject, combinedReloadClip.length);
-        combinedReloadPlaying = false;
-    }
-}
 
+    protected virtual void OnDisable() { }
+}
