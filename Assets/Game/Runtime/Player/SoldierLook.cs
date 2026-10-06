@@ -36,8 +36,14 @@ public class SoldierLook : MonoBehaviour
             return;
         }
 
-        float mouseX = Input.GetAxis("Mouse X") * sensitivity;
-        float mouseY = Input.GetAxis("Mouse Y") * sensitivity;
+        ApplyLookDelta(new Vector2(Input.GetAxis("Mouse X"), Input.GetAxis("Mouse Y")) * sensitivity);
+    }
+
+    // Angular mouse/input deltas in degrees; the caller chooses input sensitivity.
+    public void ApplyLookDelta(Vector2 delta)
+    {
+        float mouseX = delta.x;
+        float mouseY = delta.y;
 
         transform.Rotate(0f, mouseX, 0f);
 

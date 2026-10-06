@@ -26,6 +26,14 @@ public class SoldierWeaponPresentation : MonoBehaviour
         actions.ReloadStarted += PlayReload;
     }
 
+    // Call after the matching first- and third-person visual rigs have been equipped.
+    public bool TryApplyWeapon(SoldierWeapon selectedWeapon)
+    {
+        if (actions.IsReloading) return false;
+        ApplyWeapon(selectedWeapon);
+        return true;
+    }
+
     public void ApplyWeapon(SoldierWeapon selectedWeapon)
     {
         weapon = selectedWeapon;

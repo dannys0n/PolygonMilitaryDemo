@@ -10,8 +10,6 @@ public class SoldierFirstPersonView : MonoBehaviour
     public Animator armsAnimator;
     public Animator weaponAnimator;
     public CharacterController controller;
-    public bool synchronizeReload;
-    public Animator characterAnimator;
     public bool firstPerson = true;
     public int firstPersonLayer = 8;
     public int thirdPersonLayer = 9;
@@ -80,13 +78,11 @@ public class SoldierFirstPersonView : MonoBehaviour
         bool aiming = firstPerson && Cursor.lockState == CursorLockMode.Locked
             && Input.GetMouseButton(1) && !IsReloading;
         aimBlend = Mathf.MoveTowards(aimBlend, aiming ? 1f : 0f, aimBlendSpeed * Time.deltaTime);
-        {
-            if (aiming != wasAiming && !IsReloading)
-                armsAnimator.CrossFadeInFixedTime(aiming ? "Aim In" : "Aim Out", 0.05f, aimTransitionLayer, 0f);
-            wasAiming = aiming;
-            armsAnimator.SetFloat("AimBlend", aimBlend);
-            if (firstPerson) playerCamera.fieldOfView = Mathf.Lerp(originalFieldOfView, aimFieldOfView, aimBlend);
-        }
+        if (aiming != wasAiming && !IsReloading)
+            armsAnimator.CrossFadeInFixedTime(aiming ? "Aim In" : "Aim Out", 0.05f, aimTransitionLayer, 0f);
+        wasAiming = aiming;
+        armsAnimator.SetFloat("AimBlend", aimBlend);
+        if (firstPerson) playerCamera.fieldOfView = Mathf.Lerp(originalFieldOfView, aimFieldOfView, aimBlend);
         firstPersonRoot.localPosition = viewOffset + hipFireOffset * (1f - aimBlend) + aimOffset * aimBlend;
     }
 
@@ -126,21 +122,6 @@ public class SoldierFirstPersonView : MonoBehaviour
         playerCamera.fieldOfView = originalFieldOfView;
         firstPersonRoot.gameObject.SetActive(true);
         foreach (Renderer mesh in firstPersonRenderers) mesh.enabled = enabled;
-        if (enabled && synchronizeReload)
-        {
-            int layer = characterAnimator.GetLayerIndex("Reload");
-            var state = characterAnimator.GetCurrentAnimatorStateInfo(layer);
-            if (characterAnimator.IsInTransition(layer))
-            {
-                var next = characterAnimator.GetNextAnimatorStateInfo(layer);
-                if (next.IsName("Reload")) state = next;
-            }
-            if (state.IsName("Reload"))
-            {
-                armsAnimator.Play("Reload", 0, Mathf.Clamp01(state.normalizedTime));
-                weaponAnimator.Play("Reload", 0, Mathf.Clamp01(state.normalizedTime));
-            }
-        }
         playerCamera.transform.localPosition = enabled ? Vector3.zero : thirdPersonCameraPosition;
         playerCamera.transform.localRotation = enabled ? Quaternion.identity : thirdPersonCameraRotation;
         playerCamera.nearClipPlane = enabled ? 0.03f : originalNearClip;

@@ -22,6 +22,11 @@ public class SoldierMovement : MonoBehaviour
             Input.GetAxisRaw("Vertical")
         );
 
+        SimulateMovement(input, Time.deltaTime);
+    }
+
+    public void SimulateMovement(Vector2 input, float deltaTime)
+    {
         input = Vector2.ClampMagnitude(input, 1f);
 
         Vector3 movement = transform.right * input.x
@@ -34,17 +39,17 @@ public class SoldierMovement : MonoBehaviour
             verticalSpeed = Mathf.Sqrt(jumpHeight * -2f * Physics.gravity.y);
         jumpRequested = false;
 
-        verticalSpeed += Physics.gravity.y * Time.deltaTime;
+        verticalSpeed += Physics.gravity.y * deltaTime;
 
         Vector3 velocity = movement * moveSpeed;
         velocity.y = verticalSpeed;
 
-        CollisionFlags collisions = controller.Move(velocity * Time.deltaTime);
+        CollisionFlags collisions = controller.Move(velocity * deltaTime);
         if ((collisions & CollisionFlags.Above) != 0 && verticalSpeed > 0f)
             verticalSpeed = 0f;
 
-        animator.SetFloat("MoveX", input.x, 0.05f, Time.deltaTime);
-        animator.SetFloat("MoveZ", input.y, 0.05f, Time.deltaTime);
+        animator.SetFloat("MoveX", input.x, 0.05f, deltaTime);
+        animator.SetFloat("MoveZ", input.y, 0.05f, deltaTime);
         animator.SetBool("Grounded", controller.isGrounded);
         animator.SetFloat("VerticalSpeed", verticalSpeed);
     }

@@ -22,6 +22,10 @@ public class SoldierActions : MonoBehaviour
     private int reloadLayer;
     private int hitReactionLayer;
 
+    public bool IsReloading =>
+        animator.GetCurrentAnimatorStateInfo(reloadLayer).IsName("Reload") ||
+        animator.IsInTransition(reloadLayer) || firstPersonView.IsReloading;
+
     void Awake()
     {
         presentation = GetComponent<SoldierWeaponPresentation>();
@@ -33,10 +37,6 @@ public class SoldierActions : MonoBehaviour
 
     void Update()
     {
-        bool reloading = reloadLayer >= 0 &&
-            (animator.GetCurrentAnimatorStateInfo(reloadLayer).IsName("Reload") ||
-             animator.IsInTransition(reloadLayer));
-        reloading |= firstPersonView.IsReloading;
         bool reloadPressed = Cursor.lockState == CursorLockMode.Locked
                           && Input.GetKeyDown(KeyCode.R);
 
@@ -52,29 +52,35 @@ public class SoldierActions : MonoBehaviour
 
         if (reloadPressed)
         {
-            if (!reloading)
-            {
-                PlayReload();
-            }
+            TryReload();
             animator.ResetTrigger("Fire");
             return;
         }
 
-        if (reloading || fireLayer < 0)
+        if (IsReloading)
             return;
 
         bool wantsToFire = fireMode == FireMode.Automatic
             ? Input.GetMouseButton(0)
             : Input.GetMouseButtonDown(0);
 
-        // Early semi-auto clicks are discarded; full-auto checks again while held.
-        if (wantsToFire && Time.time >= nextFireTime)
-        {
-            nextFireTime = Time.time + 60f / Mathf.Max(roundsPerMinute, 1f);
+        if (wantsToFire) TryFire();
+    }
 
-            // Restart the shot immediately instead of leaving an Animator trigger pending.
-            PlayFire();
-        }
+    // These admission methods can also be called by an input or network command driver.
+    public bool TryFire()
+    {
+        if (IsReloading || Time.time < nextFireTime) return false;
+        nextFireTime = Time.time + 60f / Mathf.Max(roundsPerMinute, 1f);
+        PlayFire();
+        return true;
+    }
+
+    public bool TryReload()
+    {
+        if (IsReloading) return false;
+        PlayReload();
+        return true;
     }
 
     public void PlayHitReaction()
