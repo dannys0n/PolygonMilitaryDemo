@@ -10,6 +10,9 @@ public class SoldierFirstPersonView : MonoBehaviour
     public Animator armsAnimator;
     public Animator weaponAnimator;
     public CharacterController controller;
+    [Header("Reload continuity between views")]
+    public bool synchronizeReload;
+    public Animator characterAnimator;
     [Header("Combined arms and weapon reload")]
     public bool useCombinedReload;
     public AnimationClip combinedReloadClip;
@@ -117,6 +120,21 @@ public class SoldierFirstPersonView : MonoBehaviour
         wasAiming = false;
         playerCamera.fieldOfView = originalFieldOfView;
         firstPersonRoot.gameObject.SetActive(enabled);
+        if (enabled && synchronizeReload)
+        {
+            int layer = characterAnimator.GetLayerIndex("Reload");
+            var state = characterAnimator.GetCurrentAnimatorStateInfo(layer);
+            if (characterAnimator.IsInTransition(layer))
+            {
+                var next = characterAnimator.GetNextAnimatorStateInfo(layer);
+                if (next.IsName("Reload")) state = next;
+            }
+            if (state.IsName("Reload"))
+            {
+                armsAnimator.Play("Reload", 0, Mathf.Clamp01(state.normalizedTime));
+                weaponAnimator.Play("Reload", 0, Mathf.Clamp01(state.normalizedTime));
+            }
+        }
         if (enabled && useCombinedReload)
         {
             armsAnimator.Play(combinedReloadPlaying ? "Reload" : "Idle", 0,
