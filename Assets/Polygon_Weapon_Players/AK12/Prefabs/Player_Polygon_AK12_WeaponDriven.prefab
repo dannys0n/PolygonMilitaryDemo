@@ -1189,7 +1189,6 @@ Transform:
   m_Children:
   - {fileID: 1633159079326765062}
   - {fileID: 4902958399174638731}
-  - {fileID: 4255770193072561599}
   m_Father: {fileID: 6387977568344958692}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!95 &3035616101495543824
@@ -3747,8 +3746,8 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 4611456231110244133}
   serializedVersion: 2
-  m_LocalRotation: {x: -0.000000007946632, y: 6.1232336e-17, z: 6.123234e-17, w: 1}
-  m_LocalPosition: {x: 0.12070627, y: 1.444122, z: 0.36964118}
+  m_LocalRotation: {x: -0.000000007829301, y: -0.00000009355446, z: -4.7590154e-11, w: 1}
+  m_LocalPosition: {x: 0.12070622, y: 1.444122, z: 0.36964127}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -5871,7 +5870,7 @@ Transform:
   - {fileID: 1705464161878495356}
   - {fileID: 4040884855588373139}
   - {fileID: 8621359078565367819}
-  m_Father: {fileID: 5516059827155223578}
+  m_Father: {fileID: 1633159079326765062}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &7311048900847974451
 MonoBehaviour:
@@ -5911,7 +5910,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 6803839354460989967}
   serializedVersion: 2
-  m_LocalRotation: {x: 0.00000020861624, y: 0.000000047414822, z: -0.000000036878735, w: 1}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
@@ -6056,12 +6055,16 @@ MonoBehaviour:
   characterAnimator: {fileID: 8202989932341041373}
   useCombinedReload: 0
   combinedReloadClip: {fileID: 0}
+  sharedReloadSway: 1
+  reloadSwayWeight: 1
+  reloadWalkWeight: 1
   locomotionWeight: 1
   aimTransitionWeight: 1
   motionBlendTime: 0.12
   walkingSpeed: 4
   firstPerson: 1
   viewOffset: {x: 0, y: 0, z: 0}
+  hipFireOffset: {x: 0, y: 0, z: 0}
   aimFieldOfView: 50
   aimBlendSpeed: 8
   aimOffset: {x: -0.020788364, y: -0.059959054, z: 0}
@@ -7597,6 +7600,7 @@ Transform:
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 1263398592565994884}
+  - {fileID: 4255770193072561599}
   m_Father: {fileID: 5516059827155223578}
   m_LocalEulerAnglesHint: {x: -0, y: 0, z: 0}
 --- !u!1 &8588654033479442382

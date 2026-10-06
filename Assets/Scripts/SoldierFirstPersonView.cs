@@ -19,12 +19,18 @@ public class SoldierFirstPersonView : MonoBehaviour
     private bool combinedReloadPlaying;
     private float reloadTime;
     [Header("First person motion")]
+    public bool sharedReloadSway;
+    [Range(0f, 1f)] public float reloadSwayWeight = 0.65f;
+    [Range(0f, 1f)] public float reloadWalkWeight = 0.35f;
     [Range(0f, 1f)] public float locomotionWeight = 1f;
     [Range(0f, 1f)] public float aimTransitionWeight = 1f;
     [Min(0.01f)] public float motionBlendTime = 0.12f;
     [Min(0.01f)] public float walkingSpeed = 4f;
     public bool firstPerson = true;
     public Vector3 viewOffset;
+    [Header("Hip-fire placement")]
+    [Tooltip("Camera-local offset for the arms and weapon when not aiming. Blends out during ADS.")]
+    public Vector3 hipFireOffset;
     [Header("Aim down sights")]
     [Range(20f, 90f)] public float aimFieldOfView = 50f;
     [Min(0.01f)] public float aimBlendSpeed = 8f;
@@ -82,7 +88,7 @@ public class SoldierFirstPersonView : MonoBehaviour
             armsAnimator.SetFloat("AimBlend", aimBlend);
             playerCamera.fieldOfView = Mathf.Lerp(originalFieldOfView, aimFieldOfView, aimBlend);
         }
-        firstPersonRoot.localPosition = viewOffset + aimOffset * aimBlend;
+        firstPersonRoot.localPosition = viewOffset + hipFireOffset * (1f - aimBlend) + aimOffset * aimBlend;
     }
 
     void LateUpdate()
@@ -106,8 +112,9 @@ public class SoldierFirstPersonView : MonoBehaviour
         Vector3 velocity = controller.velocity;
         velocity.y = 0f;
         float movement = controller.isGrounded ? Mathf.Clamp01(velocity.magnitude / walkingSpeed) : 0f;
+        if (sharedReloadSway && IsReloading) movement *= reloadWalkWeight;
         armsAnimator.SetFloat("Movement", movement, motionBlendTime, Time.deltaTime);
-        float weight = IsReloading ? 0f : locomotionWeight;
+        float weight = IsReloading ? (sharedReloadSway ? locomotionWeight * reloadSwayWeight : 0f) : locomotionWeight;
         armsAnimator.SetLayerWeight(locomotionLayer, Mathf.MoveTowards(
             armsAnimator.GetLayerWeight(locomotionLayer), weight, Time.deltaTime / motionBlendTime));
         armsAnimator.SetLayerWeight(aimTransitionLayer, IsReloading ? 0f : aimTransitionWeight);
@@ -169,11 +176,19 @@ public class SoldierFirstPersonView : MonoBehaviour
         if (!firstPerson)
             return;
         armsAnimator.Play("Empty", aimTransitionLayer, 0f);
-        armsAnimator.SetLayerWeight(locomotionLayer, 0f);
+        if (!sharedReloadSway) armsAnimator.SetLayerWeight(locomotionLayer, 0f);
         armsAnimator.SetLayerWeight(aimTransitionLayer, 0f);
         // Combined reloads already contain weapon-part movement in the arms clip.
-        armsAnimator.Play("Reload", 0, 0f);
-        weaponAnimator.Play(useCombinedReload ? "Idle" : "Reload", 0, 0f);
+        if (sharedReloadSway)
+        {
+            armsAnimator.CrossFadeInFixedTime("Reload", motionBlendTime, 0, 0f);
+            weaponAnimator.CrossFadeInFixedTime("Reload", motionBlendTime, 0, 0f);
+        }
+        else
+        {
+            armsAnimator.Play("Reload", 0, 0f);
+            weaponAnimator.Play(useCombinedReload ? "Idle" : "Reload", 0, 0f);
+        }
     }
     void OnDisable()
     {
@@ -182,3 +197,4 @@ public class SoldierFirstPersonView : MonoBehaviour
         combinedReloadPlaying = false;
     }
 }
+
