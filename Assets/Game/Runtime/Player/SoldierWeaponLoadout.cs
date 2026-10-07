@@ -83,11 +83,13 @@ public class SoldierWeaponLoadout : MonoBehaviour
     void Bind(Slot slot)
     {
         SetVisible(slot, true);
-        slot.weapon.firstPersonHands.Apply(firstPersonGripRig.leftHand, firstPersonGripRig.rightHand);
-        slot.weapon.thirdPersonHands.Apply(presentation.supportHand, presentation.firingHand);
-        slot.weapon.sprintSocket.Apply(sprintSocket);
         presentation.view.weaponAnimator = slot.weaponAnimator;
         presentation.partsAnimator = slot.partsAnimator;
         presentation.ApplyWeapon(slot.weapon);
+        // Changing controllers restores their transform defaults. Apply the
+        // selected weapon's grip settings after that reset has completed.
+        slot.weapon.firstPersonHands.Apply(firstPersonGripRig.leftHand, firstPersonGripRig.rightHand);
+        slot.weapon.thirdPersonHands.Apply(presentation.supportHand, presentation.firingHand);
+        slot.weapon.sprintSocket.Apply(sprintSocket);
     }
 }

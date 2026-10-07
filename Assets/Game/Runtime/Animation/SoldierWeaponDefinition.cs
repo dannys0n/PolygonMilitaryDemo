@@ -16,6 +16,8 @@ public class SoldierWeaponDefinition : ScriptableObject
     [Header("Third-person placement")]
     public Vector3 thirdPersonHipAimPosition;
     public Vector3 thirdPersonAimPosition;
+    [Tooltip("Authored reload placement, kept separate from hip/ADS pose tuning.")]
+    public Vector3 thirdPersonReloadPosition;
 
     [Header("First-person placement")]
     public Vector3 viewOffset;
@@ -37,6 +39,8 @@ public class SoldierWeaponDefinition : ScriptableObject
     [Range(0f, 1f)] public float cameraRotationWeight = 1f;
 
     [Header("Firing")]
+    [Tooltip("Blend into the recoil pose. Use zero for an immediate shot with synchronized moving weapon parts.")]
+    [Min(0f)] public float fireBlendTime = .03f;
     public SoldierActions.FireMode fireMode;
     [Min(1f)] public float roundsPerMinute = 600f;
 }

@@ -4,7 +4,7 @@ Work through these stages in order. Check off items when complete; keep unfinish
 
 ## 1. Finish the character and animation prototype
 
-- [ ] Add pistols to the shared FPS/TPS weapon setup.
+- [x] Add pistols to the shared FPS/TPS weapon setup (MK23 in slot 6, with recoil, reload, and running).
 - [ ] Add and tune pistol idle, aim, fire, reload, equip, and unequip animations.
 - [ ] Make a second pass on hand grips, fingers, wrists, and elbow hints for every weapon.
 - [ ] Polish FPS shoulder/arm offsets and consistency between weapons during swapping.

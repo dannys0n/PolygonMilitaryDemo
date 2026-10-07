@@ -92,9 +92,8 @@ public class SoldierWeaponPresentation : MonoBehaviour
         float aimBlend = view.PlacementAimBlend;
         Vector3 holdPosition = Vector3.Lerp(set.thirdPersonHipAimPosition,
             set.thirdPersonAimPosition, aimBlend);
-        // Reload clips are authored relative to the ADS pivot. Fade back to
-        // that reference position as the reload takes control of the weapon.
-        aimPivot.localPosition = Vector3.Lerp(holdPosition, set.thirdPersonAimPosition, weight);
+        // Fade to the authored reload pivot independently of the hold pose.
+        aimPivot.localPosition = Vector3.Lerp(holdPosition, set.thirdPersonReloadPosition, weight);
         Quaternion aiming = Quaternion.Inverse(aimPivot.parent.rotation) *
             Quaternion.LookRotation(aimTarget.position - aimPivot.position, transform.up);
         aimPivot.localRotation = Quaternion.Slerp(aiming, Quaternion.identity, weight);
@@ -102,7 +101,9 @@ public class SoldierWeaponPresentation : MonoBehaviour
     void PlayFire()
     {
         characterAnimator.ResetTrigger("WeaponFire");
-        characterAnimator.SetTrigger("WeaponFire");
+        characterAnimator.CrossFadeInFixedTime("Fire", weapon.definition.fireBlendTime, weaponFireLayer, 0f);
+        partsAnimator.ResetTrigger("Fire");
+        partsAnimator.Play("Fire", 0, 0f);
     }
 
     void PlayReload()

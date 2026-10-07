@@ -162,8 +162,8 @@ public class SoldierFirstPersonView : MonoBehaviour
     {
         armsAnimator.ResetTrigger("Fire");
         weaponAnimator.ResetTrigger("Fire");
-        armsAnimator.SetTrigger("Fire");
-        weaponAnimator.SetTrigger("Fire");
+        armsAnimator.CrossFadeInFixedTime("Fire", definition.fireBlendTime, 0, 0f);
+        weaponAnimator.Play("Fire", 0, 0f);
     }
 
     public void PlayReload()
