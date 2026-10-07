@@ -16,8 +16,9 @@ public class SoldierWeaponPresentation : MonoBehaviour
     public MultiAimConstraint chestAim;
     public TwoBoneIKConstraint supportHand;
     public TwoBoneIKConstraint firingHand;
+    public MultiParentConstraint runWeaponFollow;
 
-    int characterSwayLayer, weaponPoseLayer, weaponSwayLayer, weaponFireLayer;
+    int characterSwayLayer, weaponPoseLayer, weaponSwayLayer, weaponFireLayer, sprintBodyLayer, sprintArmsLayer;
 
     void Awake()
     {
@@ -53,6 +54,8 @@ public class SoldierWeaponPresentation : MonoBehaviour
         weaponPoseLayer = characterAnimator.GetLayerIndex("WeaponPose");
         weaponSwayLayer = characterAnimator.GetLayerIndex("WeaponSway");
         weaponFireLayer = characterAnimator.GetLayerIndex("WeaponFire");
+        sprintBodyLayer = characterAnimator.GetLayerIndex("SprintBody");
+        sprintArmsLayer = characterAnimator.GetLayerIndex("SprintArms");
     }
 
     void OnDestroy()
@@ -64,7 +67,17 @@ public class SoldierWeaponPresentation : MonoBehaviour
     void Update()
     {
         float weight = characterAnimator.GetFloat("WeaponReloadWeight");
-        chestAim.weight = supportHand.weight = firingHand.weight = 1f - weight;
+        float sprint = Mathf.Clamp01(characterAnimator.GetFloat("RunBlend"));
+        // Animator damping approaches the target asymptotically. Finish the blend
+        // exactly so a tiny remaining run value cannot keep IK disabled.
+        if (sprint < .001f) sprint = 0f;
+        else if (sprint > .999f) sprint = 1f;
+        sprint *= 1f - weight;
+        characterAnimator.SetLayerWeight(sprintBodyLayer, sprint);
+        characterAnimator.SetLayerWeight(sprintArmsLayer, sprint);
+        chestAim.weight = firingHand.weight = (1f - weight) * (1f - sprint);
+        supportHand.weight = 1f - weight;
+        runWeaponFollow.weight = sprint;
         Vector3 velocity = controller.velocity;
         velocity.y = 0f;
         float speed = controller.isGrounded ? Mathf.Clamp01(velocity.magnitude / view.walkingSpeed) : 0f;

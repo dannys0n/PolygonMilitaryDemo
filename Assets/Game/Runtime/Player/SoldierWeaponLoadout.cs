@@ -22,6 +22,7 @@ public class SoldierWeaponLoadout : MonoBehaviour
         public MultiAimConstraint chestAim;
         public TwoBoneIKConstraint supportHand;
         public TwoBoneIKConstraint firingHand;
+        public MultiParentConstraint runWeaponFollow;
         public Transform animatedCamera;
     }
 
@@ -105,6 +106,7 @@ public class SoldierWeaponLoadout : MonoBehaviour
         presentation.chestAim = slot.chestAim;
         presentation.supportHand = slot.supportHand;
         presentation.firingHand = slot.firingHand;
+        presentation.runWeaponFollow = slot.runWeaponFollow;
         cameraMotion.animatedCamera = slot.animatedCamera;
         look.animator = movement.animator = actions.animator = slot.characterAnimator;
         view.RefreshVisuals();

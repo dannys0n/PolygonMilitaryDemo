@@ -44,7 +44,9 @@ public class SoldierFootIK : MonoBehaviour
         public bool foundGround;
     }
 
-    void OnEnable()
+    void OnEnable() => ResetFeet();
+
+    void ResetFeet()
     {
         left = new FootState { normal = Vector3.up };
         right = new FootState { normal = Vector3.up };
@@ -57,6 +59,20 @@ public class SoldierFootIK : MonoBehaviour
         // Only the Base Layer has IK Pass enabled.
         if (layerIndex != 0)
             return;
+
+        // Running owns the entire body pose, including pelvis and feet.
+        float correctionWeight = 1f - animator.GetLayerWeight(animator.GetLayerIndex("SprintBody"));
+        if (correctionWeight <= 0f)
+        {
+            animator.SetIKPositionWeight(AvatarIKGoal.LeftFoot, 0f);
+            animator.SetIKPositionWeight(AvatarIKGoal.RightFoot, 0f);
+            animator.SetIKRotationWeight(AvatarIKGoal.LeftFoot, 0f);
+            animator.SetIKRotationWeight(AvatarIKGoal.RightFoot, 0f);
+            animator.SetIKHintPositionWeight(AvatarIKHint.LeftKnee, 0f);
+            animator.SetIKHintPositionWeight(AvatarIKHint.RightKnee, 0f);
+            ResetFeet();
+            return;
+        }
 
         float blend = 1f - Mathf.Exp(-smoothing * Time.deltaTime);
         bool grounded = controller.isGrounded && animator.GetFloat("VerticalSpeed") <= 0f;
@@ -83,11 +99,11 @@ public class SoldierFootIK : MonoBehaviour
         pelvisOffset = Mathf.Lerp(pelvisOffset, desiredPelvis, blend);
 
         Vector3 body = animator.bodyPosition;
-        body.y += pelvisOffset * groundedWeight;
+        body.y += pelvisOffset * groundedWeight * correctionWeight;
         animator.bodyPosition = body;
 
-        ApplyFoot(AvatarIKGoal.LeftFoot, AvatarIKHint.LeftKnee, leftSample, left, body);
-        ApplyFoot(AvatarIKGoal.RightFoot, AvatarIKHint.RightKnee, rightSample, right, body);
+        ApplyFoot(AvatarIKGoal.LeftFoot, AvatarIKHint.LeftKnee, leftSample, left, body, correctionWeight);
+        ApplyFoot(AvatarIKGoal.RightFoot, AvatarIKHint.RightKnee, rightSample, right, body, correctionWeight);
     }
 
     FootSample SampleFoot(AvatarIKGoal goal, float soleHeight, float referenceFloor,
@@ -145,9 +161,9 @@ public class SoldierFootIK : MonoBehaviour
     }
 
     void ApplyFoot(AvatarIKGoal goal, AvatarIKHint hint, FootSample sample,
-        FootState state, Vector3 body)
+        FootState state, Vector3 body, float correctionWeight)
     {
-        float weight = state.weight * groundedWeight;
+        float weight = state.weight * groundedWeight * correctionWeight;
         animator.SetIKPositionWeight(goal, weight);
         animator.SetIKRotationWeight(goal, weight * rotationWeight);
         animator.SetIKPosition(goal, sample.position);

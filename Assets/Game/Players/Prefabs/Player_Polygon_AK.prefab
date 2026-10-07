@@ -1387,6 +1387,89 @@ Transform:
   - {fileID: 8068581431145239034}
   m_Father: {fileID: 1363538951739041040}
   m_LocalEulerAnglesHint: {x: -5.8318014, y: 4.602514, z: 64.14881}
+--- !u!1 &1432727661976827048
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 4881849340866653595}
+  - component: {fileID: 4766000469421188276}
+  m_Layer: 0
+  m_Name: RunWeaponFollow
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &4881849340866653595
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1432727661976827048}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 7285562418550374699}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &4766000469421188276
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1432727661976827048}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8935e03361a14ec4b8edc872f76bc822, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Unity.Animation.Rigging::UnityEngine.Animations.Rigging.MultiParentConstraint
+  m_Weight: 0
+  m_Data:
+    m_ConstrainedObject: {fileID: 5273240820011501935}
+    m_SourceObjects:
+      m_Length: 1
+      m_Item0:
+        transform: {fileID: 8282443533375024316}
+        weight: 1
+      m_Item1:
+        transform: {fileID: 0}
+        weight: 0
+      m_Item2:
+        transform: {fileID: 0}
+        weight: 0
+      m_Item3:
+        transform: {fileID: 0}
+        weight: 0
+      m_Item4:
+        transform: {fileID: 0}
+        weight: 0
+      m_Item5:
+        transform: {fileID: 0}
+        weight: 0
+      m_Item6:
+        transform: {fileID: 0}
+        weight: 0
+      m_Item7:
+        transform: {fileID: 0}
+        weight: 0
+    m_ConstrainedPositionAxes:
+      x: 1
+      y: 1
+      z: 1
+    m_ConstrainedRotationAxes:
+      x: 1
+      y: 1
+      z: 1
+    m_MaintainPositionOffset: 0
+    m_MaintainRotationOffset: 0
 --- !u!1 &1435740289375024806
 GameObject:
   m_ObjectHideFlags: 0
@@ -1449,6 +1532,37 @@ Transform:
   m_Children:
   - {fileID: 3614149462298020254}
   m_Father: {fileID: 3283059338537310709}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &1539150058483356815
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 8282443533375024316}
+  m_Layer: 0
+  m_Name: RunWeaponSocket
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &8282443533375024316
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1539150058483356815}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0.5462794, y: 0.2772053, z: -0.62047964, w: 0.4896338}
+  m_LocalPosition: {x: 0.2376756, y: 0.027545419, z: -0.05095928}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 4643079378765300987}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1614622049737123930
 GameObject:
@@ -1786,6 +1900,7 @@ MonoBehaviour:
   chestAim: {fileID: 2644936823690152498}
   supportHand: {fileID: 2045711228111922280}
   firingHand: {fileID: 120296872602924930}
+  runWeaponFollow: {fileID: 4766000469421188276}
 --- !u!1 &1964398528450439577
 GameObject:
   m_ObjectHideFlags: 0
@@ -2268,6 +2383,7 @@ Transform:
   - {fileID: 4310453657936707959}
   - {fileID: 7042326930147969290}
   - {fileID: 2232737882317187180}
+  - {fileID: 8282443533375024316}
   m_Father: {fileID: 435485842650175345}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &2575291117371096501
@@ -6145,6 +6261,7 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
+  - {fileID: 4881849340866653595}
   - {fileID: 1304409356782505817}
   - {fileID: 5471972395539770864}
   - {fileID: 8821099183467380025}

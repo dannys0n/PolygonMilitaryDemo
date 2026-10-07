@@ -207,6 +207,7 @@ Transform:
   - {fileID: 2970507662860732671}
   - {fileID: 654552856206867902}
   - {fileID: 916264512311037233}
+  - {fileID: 1665893735196853104}
   m_Father: {fileID: 7869143385543920435}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &135556480152137166
@@ -292,7 +293,7 @@ Animator:
   m_LinearVelocityBlending: 0
   m_StabilizeFeet: 0
   m_AnimatePhysics: 0
-  m_WarningMessage:
+  m_WarningMessage: 
   m_HasTransformHierarchy: 1
   m_AllowConstantClipSamplingOptimization: 1
   m_KeepAnimatorStateOnDisable: 0
@@ -646,7 +647,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: e3c430f382484144e925c097c2d33cfe, type: 3}
-  m_Name:
+  m_Name: 
   m_EditorClassIdentifier: Unity.Animation.Rigging::UnityEngine.Animations.Rigging.MultiAimConstraint
   m_Weight: 1
   m_Data:
@@ -1348,7 +1349,7 @@ Animator:
   m_LinearVelocityBlending: 0
   m_StabilizeFeet: 0
   m_AnimatePhysics: 0
-  m_WarningMessage:
+  m_WarningMessage: 
   m_HasTransformHierarchy: 1
   m_AllowConstantClipSamplingOptimization: 1
   m_KeepAnimatorStateOnDisable: 0
@@ -1363,7 +1364,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: fff0960ef4ea6e04eac66b4a7fd2189d, type: 3}
-  m_Name:
+  m_Name: 
   m_EditorClassIdentifier: Unity.Animation.Rigging::UnityEngine.Animations.Rigging.RigBuilder
   m_RigLayers:
   - m_Rig: {fileID: 7311048900847974451}
@@ -1379,7 +1380,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 5baef559b67f4e944921d6ec4d4c0542, type: 3}
-  m_Name:
+  m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::SoldierMotionGrip
   animator: {fileID: 3035616101495543824}
   leftHand: {fileID: 5923882945042702520}
@@ -1713,7 +1714,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: aeda7bfbf984f2a4da5ab4b8967b115d, type: 3}
-  m_Name:
+  m_Name: 
   m_EditorClassIdentifier: Unity.Animation.Rigging::UnityEngine.Animations.Rigging.TwoBoneIKConstraint
   m_Weight: 1
   m_Data:
@@ -2085,7 +2086,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: aeda7bfbf984f2a4da5ab4b8967b115d, type: 3}
-  m_Name:
+  m_Name: 
   m_EditorClassIdentifier: Unity.Animation.Rigging::UnityEngine.Animations.Rigging.TwoBoneIKConstraint
   m_Weight: 1
   m_Data:
@@ -3487,6 +3488,89 @@ Transform:
   - {fileID: 4365385575158596802}
   m_Father: {fileID: 3829528514926716646}
   m_LocalEulerAnglesHint: {x: 0.07961798, y: 179.82214, z: -162.31487}
+--- !u!1 &4301981727196824654
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 7187471709340329716}
+  - component: {fileID: 8277465392826103626}
+  m_Layer: 0
+  m_Name: RunWeaponFollow
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &7187471709340329716
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4301981727196824654}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 3985211590928491435}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &8277465392826103626
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4301981727196824654}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8935e03361a14ec4b8edc872f76bc822, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Unity.Animation.Rigging::UnityEngine.Animations.Rigging.MultiParentConstraint
+  m_Weight: 0
+  m_Data:
+    m_ConstrainedObject: {fileID: 5051531251706300752}
+    m_SourceObjects:
+      m_Length: 1
+      m_Item0:
+        transform: {fileID: 1665893735196853104}
+        weight: 1
+      m_Item1:
+        transform: {fileID: 0}
+        weight: 0
+      m_Item2:
+        transform: {fileID: 0}
+        weight: 0
+      m_Item3:
+        transform: {fileID: 0}
+        weight: 0
+      m_Item4:
+        transform: {fileID: 0}
+        weight: 0
+      m_Item5:
+        transform: {fileID: 0}
+        weight: 0
+      m_Item6:
+        transform: {fileID: 0}
+        weight: 0
+      m_Item7:
+        transform: {fileID: 0}
+        weight: 0
+    m_ConstrainedPositionAxes:
+      x: 1
+      y: 1
+      z: 1
+    m_ConstrainedRotationAxes:
+      x: 1
+      y: 1
+      z: 1
+    m_MaintainPositionOffset: 0
+    m_MaintainRotationOffset: 0
 --- !u!1 &4364621622352787046
 GameObject:
   m_ObjectHideFlags: 0
@@ -3517,6 +3601,7 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
+  - {fileID: 7187471709340329716}
   - {fileID: 4762423553880938821}
   - {fileID: 6516474474967079008}
   - {fileID: 8621359078565367819}
@@ -3532,7 +3617,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 70b342d8ce5c2fd48b8fa3147d48d1d1, type: 3}
-  m_Name:
+  m_Name: 
   m_EditorClassIdentifier: Unity.Animation.Rigging::UnityEngine.Animations.Rigging.Rig
   m_Weight: 1
   m_Effectors: []
@@ -3984,7 +4069,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 48948dfe9d76b07488dacd46a7955fa1, type: 3}
-  m_Name:
+  m_Name: 
   m_EditorClassIdentifier: Unity.Animation.Rigging::UnityEngine.Animations.Rigging.RigTransform
 --- !u!1 &4644657539104177685
 GameObject:
@@ -4061,7 +4146,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: ec3ca3df3a531bc4b8c934e57ace27a7, type: 3}
-  m_Name:
+  m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::SoldierWeapon
   definition: {fileID: 11400000, guid: 87de0c0f34fe93447b24ca12770166a0, type: 2}
 --- !u!1 &4655938762469538713
@@ -4517,7 +4602,7 @@ Animator:
   m_LinearVelocityBlending: 0
   m_StabilizeFeet: 0
   m_AnimatePhysics: 0
-  m_WarningMessage:
+  m_WarningMessage: 
   m_HasTransformHierarchy: 1
   m_AllowConstantClipSamplingOptimization: 1
   m_KeepAnimatorStateOnDisable: 0
@@ -5029,7 +5114,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 48948dfe9d76b07488dacd46a7955fa1, type: 3}
-  m_Name:
+  m_Name: 
   m_EditorClassIdentifier: Unity.Animation.Rigging::UnityEngine.Animations.Rigging.RigTransform
 --- !u!1 &5605641590703201067
 GameObject:
@@ -5175,7 +5260,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: a79441f348de89743a2939f4d699eac1, type: 3}
-  m_Name:
+  m_Name: 
   m_EditorClassIdentifier: Unity.RenderPipelines.Universal.Runtime::UnityEngine.Rendering.Universal.UniversalAdditionalCameraData
   m_RenderShadows: 1
   m_RequiresDepthTextureOption: 2
@@ -5722,7 +5807,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: aeda7bfbf984f2a4da5ab4b8967b115d, type: 3}
-  m_Name:
+  m_Name: 
   m_EditorClassIdentifier: Unity.Animation.Rigging::UnityEngine.Animations.Rigging.TwoBoneIKConstraint
   m_Weight: 1
   m_Data:
@@ -5986,7 +6071,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 70b342d8ce5c2fd48b8fa3147d48d1d1, type: 3}
-  m_Name:
+  m_Name: 
   m_EditorClassIdentifier: Unity.Animation.Rigging::UnityEngine.Animations.Rigging.Rig
   m_Weight: 1
   m_Effectors: []
@@ -6097,7 +6182,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: d6a238fa8fe2e9047a2c9f2689f0479d, type: 3}
-  m_Name:
+  m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::SoldierMovement
   animator: {fileID: 8202989932341041373}
   controller: {fileID: 7365597536771733472}
@@ -6114,7 +6199,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: c867a1b36366a1d419e643373c73e99e, type: 3}
-  m_Name:
+  m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::SoldierLook
   playerCamera: {fileID: 6387977568344958692}
   animator: {fileID: 8202989932341041373}
@@ -6131,7 +6216,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: d073f8767fd142ff83b65dae0412a8e7, type: 3}
-  m_Name:
+  m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::SoldierActions
   animator: {fileID: 8202989932341041373}
   firstPersonView: {fileID: 5228480447792613997}
@@ -6146,7 +6231,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 7bc016e46a8c4fceab0a53c8f669a074, type: 3}
-  m_Name:
+  m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::SoldierFirstPersonView
   playerCamera: {fileID: 7638593361270853464}
   thirdPersonRoot: {fileID: 6955019194211361348}
@@ -6167,7 +6252,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 7bc016e46a8c4fceab0a53c8f669a076, type: 3}
-  m_Name:
+  m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::SoldierFirstPersonCamera
   view: {fileID: 5228480447792613997}
   look: {fileID: 7013163042219475740}
@@ -6183,7 +6268,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 9f5b90530907cb7418a178c17e0e6063, type: 3}
-  m_Name:
+  m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::SoldierMotionComparison
   actions: {fileID: 1334842614951100878}
   characterAnimator: {fileID: 8202989932341041373}
@@ -6197,6 +6282,7 @@ MonoBehaviour:
   chestAim: {fileID: 8032161006810849726}
   supportHand: {fileID: 6263476301949258880}
   firingHand: {fileID: 6787359116224459397}
+  runWeaponFollow: {fileID: 8277465392826103626}
 --- !u!1 &6834753064600508304
 GameObject:
   m_ObjectHideFlags: 0
@@ -6397,6 +6483,37 @@ Transform:
   m_Children:
   - {fileID: 8498037408784770594}
   m_Father: {fileID: 9003613737355491325}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &6996552438258221086
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1665893735196853104}
+  m_Layer: 0
+  m_Name: RunWeaponSocket
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1665893735196853104
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6996552438258221086}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0.5462794, y: 0.2772053, z: -0.62047964, w: 0.4896338}
+  m_LocalPosition: {x: 0.2376756, y: 0.027545419, z: -0.05095928}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 8498037408784770594}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &7058837979065230967
 GameObject:
@@ -6837,7 +6954,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: aeda7bfbf984f2a4da5ab4b8967b115d, type: 3}
-  m_Name:
+  m_Name: 
   m_EditorClassIdentifier: Unity.Animation.Rigging::UnityEngine.Animations.Rigging.TwoBoneIKConstraint
   m_Weight: 1
   m_Data:
@@ -7065,7 +7182,7 @@ Animator:
   m_LinearVelocityBlending: 0
   m_StabilizeFeet: 0
   m_AnimatePhysics: 0
-  m_WarningMessage:
+  m_WarningMessage: 
   m_HasTransformHierarchy: 1
   m_AllowConstantClipSamplingOptimization: 1
   m_KeepAnimatorStateOnDisable: 0
@@ -7080,7 +7197,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: fff0960ef4ea6e04eac66b4a7fd2189d, type: 3}
-  m_Name:
+  m_Name: 
   m_EditorClassIdentifier: Unity.Animation.Rigging::UnityEngine.Animations.Rigging.RigBuilder
   m_RigLayers:
   - m_Rig: {fileID: 9129572973700496137}
@@ -7096,7 +7213,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: b45b8d2859bb41749a5142c39c43faf2, type: 3}
-  m_Name:
+  m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::SoldierFootIK
   animator: {fileID: 8202989932341041373}
   controller: {fileID: 7365597536771733472}
@@ -7322,7 +7439,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 48948dfe9d76b07488dacd46a7955fa1, type: 3}
-  m_Name:
+  m_Name: 
   m_EditorClassIdentifier: Unity.Animation.Rigging::UnityEngine.Animations.Rigging.RigTransform
 --- !u!1 &8320864628108676970
 GameObject:
