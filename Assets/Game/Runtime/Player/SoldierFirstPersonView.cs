@@ -88,9 +88,7 @@ public class SoldierFirstPersonView : MonoBehaviour
         aimBlend = 0f;
         wasAiming = false;
         armsAnimator.SetFloat("AimBlend", 0f);
-        armsAnimator.ResetTrigger("AimIn");
-        armsAnimator.ResetTrigger("AimOut");
-        armsAnimator.SetTrigger("CancelAim");
+        armsAnimator.Play("Empty", aimTransitionLayer, 0f);
         playerCamera.fieldOfView = originalFieldOfView;
     }
 
@@ -104,8 +102,9 @@ public class SoldierFirstPersonView : MonoBehaviour
         aimBlend = Mathf.MoveTowards(aimBlend, aiming ? 1f : 0f, aimBlendSpeed * Time.deltaTime);
         if (aiming != wasAiming && !IsReloading)
         {
-            armsAnimator.ResetTrigger(aiming ? "AimOut" : "AimIn");
-            armsAnimator.SetTrigger(aiming ? "AimIn" : "AimOut");
+            // Address this layer directly so a pending cancellation cannot consume a new aim.
+            armsAnimator.CrossFadeInFixedTime(aiming ? "Aim In" : "Aim Out",
+                .05f, aimTransitionLayer, 0f);
         }
         wasAiming = aiming;
         armsAnimator.SetFloat("AimBlend", aimBlend);
@@ -140,6 +139,8 @@ public class SoldierFirstPersonView : MonoBehaviour
         wasAiming = false;
         locomotionLayer = armsAnimator.GetLayerIndex("Locomotion");
         aimTransitionLayer = armsAnimator.GetLayerIndex("Aim Transitions");
+        armsAnimator.Play("Empty", aimTransitionLayer, 0f);
+        armsAnimator.SetFloat("AimBlend", 0f);
         firstPersonRoot.localPosition = viewOffset + hipFireOffset;
         playerCamera.fieldOfView = originalFieldOfView;
     }
@@ -169,11 +170,9 @@ public class SoldierFirstPersonView : MonoBehaviour
     public void PlayReload()
     {
         reloadRequested = true;
-        armsAnimator.ResetTrigger("AimIn");
-        armsAnimator.ResetTrigger("AimOut");
         armsAnimator.ResetTrigger("Fire");
         weaponAnimator.ResetTrigger("Fire");
-        armsAnimator.SetTrigger("CancelAim");
+        armsAnimator.Play("Empty", aimTransitionLayer, 0f);
         armsAnimator.SetLayerWeight(aimTransitionLayer, 0f);
         armsAnimator.SetTrigger("Reload");
         weaponAnimator.SetTrigger("Reload");
