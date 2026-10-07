@@ -27,7 +27,7 @@ public class SoldierWeaponPresentation : MonoBehaviour
         actions.ReloadStarted += PlayReload;
     }
 
-    // Call after the matching first- and third-person visual rigs have been equipped.
+    // Apply equipment settings to the persistent body and arms rigs.
     public bool TryApplyWeapon(SoldierWeapon selectedWeapon)
     {
         if (actions.IsReloading || view.IsEquipping) return false;
@@ -45,10 +45,8 @@ public class SoldierWeaponPresentation : MonoBehaviour
         characterAnimator.cullingMode = AnimatorCullingMode.AlwaysAnimate;
         partsAnimator.runtimeAnimatorController = set.firstPersonParts;
         partsAnimator.cullingMode = AnimatorCullingMode.AlwaysAnimate;
-        view.armsAnimator.Rebind();
         view.weaponAnimator.Rebind();
         partsAnimator.Rebind();
-        characterAnimator.Rebind();
         view.ApplyWeaponDefinition(set);
         characterSwayLayer = characterAnimator.GetLayerIndex("SourceSway");
         weaponPoseLayer = characterAnimator.GetLayerIndex("WeaponPose");

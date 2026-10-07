@@ -1,9 +1,7 @@
 using System.Collections;
 using UnityEngine;
-using UnityEngine.Animations.Rigging;
 
-// Each slot keeps the weapon's paired visual rigs and configuration together.
-// The player, camera, movement, and action components remain on one root.
+// Body and arms stay alive. Slots contain only equipment and its grip settings.
 public class SoldierWeaponLoadout : MonoBehaviour
 {
     [System.Serializable]
@@ -11,38 +9,26 @@ public class SoldierWeaponLoadout : MonoBehaviour
     {
         public string name;
         public SoldierWeapon weapon;
-        public Transform firstPersonRoot;
-        public Transform thirdPersonRoot;
-        public Animator armsAnimator;
+        public Transform firstPersonWeapon;
+        public Transform thirdPersonWeapon;
         public Animator weaponAnimator;
-        public Animator characterAnimator;
         public Animator partsAnimator;
-        public Transform aimPivot;
-        public Transform weaponRoot;
-        public MultiAimConstraint chestAim;
-        public TwoBoneIKConstraint supportHand;
-        public TwoBoneIKConstraint firingHand;
-        public MultiParentConstraint runWeaponFollow;
-        public Transform animatedCamera;
     }
 
+    public SoldierMotionGrip firstPersonGripRig;
+    public Transform sprintSocket;
     public Slot[] slots;
     public SoldierWeaponPresentation presentation;
-    public SoldierFirstPersonCamera cameraMotion;
-    public SoldierLook look;
-    public SoldierMovement movement;
     public SoldierActions actions;
     public int selectedSlot;
     public bool IsSwitching { get; private set; }
 
     void Start()
     {
-        for (int i = 0; i < slots.Length; i++)
-        {
-            slots[i].firstPersonRoot.gameObject.SetActive(i == selectedSlot);
-            slots[i].thirdPersonRoot.gameObject.SetActive(i == selectedSlot);
-        }
+        for (int i = 0; i < slots.Length; i++) SetVisible(slots[i], i == selectedSlot);
         Bind(slots[selectedSlot]);
+        presentation.view.RefreshVisuals();
+        presentation.view.SetFirstPerson(presentation.view.firstPerson);
     }
 
     void Update()
@@ -55,7 +41,7 @@ public class SoldierWeaponLoadout : MonoBehaviour
             TrySelectWeapon((selectedSlot + (wheel > 0f ? 1 : slots.Length - 1)) % slots.Length);
     }
 
-    // Call this from an input or network command driver instead of duplicating swapping logic.
+    // Input and future network commands use the same action admission.
     public bool TrySelectWeapon(int index)
     {
         if (index < 0 || index >= slots.Length || index == selectedSlot ||
@@ -69,11 +55,9 @@ public class SoldierWeaponLoadout : MonoBehaviour
         IsSwitching = true;
         presentation.view.IsEquipping = true;
         presentation.view.CancelAim();
-        SoldierWeaponDefinition old = presentation.weapon.definition;
         Play("Unequip");
-        yield return new WaitForSeconds(old.unequipDuration);
-        slots[selectedSlot].firstPersonRoot.gameObject.SetActive(false);
-        slots[selectedSlot].thirdPersonRoot.gameObject.SetActive(false);
+        yield return new WaitForSeconds(presentation.weapon.definition.unequipDuration);
+        SetVisible(slots[selectedSlot], false);
         selectedSlot = index;
         Bind(slots[index]);
         Play("Equip");
@@ -84,33 +68,26 @@ public class SoldierWeaponLoadout : MonoBehaviour
 
     void Play(string state)
     {
-        var view = presentation.view;
-        view.armsAnimator.Play(state, view.armsAnimator.GetLayerIndex("WeaponSwitch"), 0f);
-        presentation.characterAnimator.Play(state,
-            presentation.characterAnimator.GetLayerIndex("WeaponSwitch"), 0f);
+        var arms = presentation.view.armsAnimator;
+        arms.Play(state, arms.GetLayerIndex("WeaponSwitch"), 0f);
+        var body = presentation.characterAnimator;
+        body.Play(state, body.GetLayerIndex("WeaponSwitch"), 0f);
+    }
+
+    static void SetVisible(Slot slot, bool visible)
+    {
+        slot.firstPersonWeapon.gameObject.SetActive(visible);
+        slot.thirdPersonWeapon.gameObject.SetActive(visible);
     }
 
     void Bind(Slot slot)
     {
-        slot.firstPersonRoot.gameObject.SetActive(true);
-        slot.thirdPersonRoot.gameObject.SetActive(true);
-        var view = presentation.view;
-        view.firstPersonRoot = slot.firstPersonRoot;
-        view.thirdPersonRoot = slot.thirdPersonRoot;
-        view.armsAnimator = slot.armsAnimator;
-        view.weaponAnimator = slot.weaponAnimator;
-        presentation.characterAnimator = slot.characterAnimator;
+        SetVisible(slot, true);
+        slot.weapon.firstPersonHands.Apply(firstPersonGripRig.leftHand, firstPersonGripRig.rightHand);
+        slot.weapon.thirdPersonHands.Apply(presentation.supportHand, presentation.firingHand);
+        slot.weapon.sprintSocket.Apply(sprintSocket);
+        presentation.view.weaponAnimator = slot.weaponAnimator;
         presentation.partsAnimator = slot.partsAnimator;
-        presentation.aimPivot = slot.aimPivot;
-        presentation.weaponRoot = slot.weaponRoot;
-        presentation.chestAim = slot.chestAim;
-        presentation.supportHand = slot.supportHand;
-        presentation.firingHand = slot.firingHand;
-        presentation.runWeaponFollow = slot.runWeaponFollow;
-        cameraMotion.animatedCamera = slot.animatedCamera;
-        look.animator = movement.animator = actions.animator = slot.characterAnimator;
-        view.RefreshVisuals();
         presentation.ApplyWeapon(slot.weapon);
-        view.SetFirstPerson(view.firstPerson);
     }
 }

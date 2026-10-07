@@ -15,7 +15,6 @@ public class SoldierFirstPersonView : MonoBehaviour
     public int thirdPersonLayer = 9;
 
     private SoldierWeaponDefinition definition;
-    public event System.Action WeaponChanged;
     public float reloadSwayWeight => definition.reloadSwayWeight;
     public float reloadWalkWeight => definition.reloadWalkWeight;
     public float locomotionWeight => definition.locomotionWeight;
@@ -143,9 +142,6 @@ public class SoldierFirstPersonView : MonoBehaviour
         aimTransitionLayer = armsAnimator.GetLayerIndex("Aim Transitions");
         firstPersonRoot.localPosition = viewOffset + hipFireOffset;
         playerCamera.fieldOfView = originalFieldOfView;
-        armsAnimator.Update(0f);
-        weaponAnimator.Update(0f);
-        WeaponChanged?.Invoke();
     }
 
     public void SetFirstPerson(bool enabled)

@@ -17,8 +17,6 @@ public class SoldierFirstPersonCamera : MonoBehaviour
     private Quaternion referenceRotation;
 
     void Awake() => presentation = view.GetComponent<SoldierWeaponPresentation>();
-    void OnEnable() => view.WeaponChanged += RefreshReferencePose;
-    void OnDisable() => view.WeaponChanged -= RefreshReferencePose;
     void Start() => RefreshReferencePose();
 
     void RefreshReferencePose()
