@@ -6,6 +6,8 @@ public class SoldierMovement : MonoBehaviour
     public CharacterController controller;
     public float moveSpeed = 4f;
     [Min(0f)] public float runSpeed = 6f;
+    [Min(0.01f)] public float firstPersonSprintBlendDuration = 0.3f;
+    private float firstPersonRunBlend;
     public bool IsRunning { get; private set; }
     private SoldierFirstPersonView view;
 
@@ -58,7 +60,9 @@ public class SoldierMovement : MonoBehaviour
             verticalSpeed = 0f;
 
         animator.SetFloat("RunBlend", IsRunning ? 1f : 0f, .15f, deltaTime);
-        view.armsAnimator.SetFloat("RunBlend", IsRunning ? 1f : 0f, .15f, deltaTime);
+        firstPersonRunBlend = Mathf.MoveTowards(firstPersonRunBlend,
+            IsRunning ? 1f : 0f, deltaTime / firstPersonSprintBlendDuration);
+        view.armsAnimator.SetFloat("RunBlend", Mathf.SmoothStep(0f, 1f, firstPersonRunBlend));
         animator.SetFloat("MoveX", input.x, 0.05f, deltaTime);
         animator.SetFloat("MoveZ", input.y, 0.05f, deltaTime);
         animator.SetBool("Grounded", controller.isGrounded);
