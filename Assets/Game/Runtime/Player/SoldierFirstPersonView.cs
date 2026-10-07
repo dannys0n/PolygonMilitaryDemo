@@ -38,7 +38,6 @@ public class SoldierFirstPersonView : MonoBehaviour
     public bool IsEquipping { get; set; }
     public bool WantsToAim { get; private set; }
     private SoldierMovement movement;
-    private bool wasAiming;
     private bool reloadRequested;
     private int locomotionLayer;
     private int aimTransitionLayer;
@@ -86,9 +85,8 @@ public class SoldierFirstPersonView : MonoBehaviour
     public void CancelAim()
     {
         aimBlend = 0f;
-        wasAiming = false;
         armsAnimator.SetFloat("AimBlend", 0f);
-        armsAnimator.Play("Empty", aimTransitionLayer, 0f);
+        armsAnimator.SetBool("Aim", false);
         playerCamera.fieldOfView = originalFieldOfView;
     }
 
@@ -100,13 +98,7 @@ public class SoldierFirstPersonView : MonoBehaviour
             && Input.GetMouseButton(1) && !IsReloading && !IsEquipping;
         bool aiming = WantsToAim && !movement.IsRunning;
         aimBlend = Mathf.MoveTowards(aimBlend, aiming ? 1f : 0f, aimBlendSpeed * Time.deltaTime);
-        if (aiming != wasAiming && !IsReloading)
-        {
-            // Address this layer directly so a pending cancellation cannot consume a new aim.
-            armsAnimator.CrossFadeInFixedTime(aiming ? "Aim In" : "Aim Out",
-                .05f, aimTransitionLayer, 0f);
-        }
-        wasAiming = aiming;
+        armsAnimator.SetBool("Aim", aiming);
         armsAnimator.SetFloat("AimBlend", aimBlend);
         if (firstPerson) playerCamera.fieldOfView = Mathf.Lerp(originalFieldOfView, aimFieldOfView, aimBlend);
         firstPersonRoot.localPosition = Vector3.Lerp(viewOffset + hipFireOffset, viewOffset + aimOffset, PlacementAimBlend);
@@ -128,7 +120,8 @@ public class SoldierFirstPersonView : MonoBehaviour
         float weight = IsReloading ? locomotionWeight * reloadSwayWeight : locomotionWeight;
         armsAnimator.SetLayerWeight(locomotionLayer, Mathf.MoveTowards(
             armsAnimator.GetLayerWeight(locomotionLayer), weight, Time.deltaTime / motionSmoothingTime));
-        armsAnimator.SetLayerWeight(aimTransitionLayer, IsReloading ? 0f : aimTransitionWeight);
+        armsAnimator.SetLayerWeight(aimTransitionLayer,
+            IsReloading || IsEquipping ? 0f : aimTransitionWeight);
     }
 
     public void ApplyWeaponDefinition(SoldierWeaponDefinition selectedDefinition)
@@ -136,10 +129,9 @@ public class SoldierFirstPersonView : MonoBehaviour
         definition = selectedDefinition;
         reloadRequested = false;
         aimBlend = 0f;
-        wasAiming = false;
         locomotionLayer = armsAnimator.GetLayerIndex("Locomotion");
         aimTransitionLayer = armsAnimator.GetLayerIndex("Aim Transitions");
-        armsAnimator.Play("Empty", aimTransitionLayer, 0f);
+        armsAnimator.SetBool("Aim", false);
         armsAnimator.SetFloat("AimBlend", 0f);
         firstPersonRoot.localPosition = viewOffset + hipFireOffset;
         playerCamera.fieldOfView = originalFieldOfView;
@@ -172,7 +164,7 @@ public class SoldierFirstPersonView : MonoBehaviour
         reloadRequested = true;
         armsAnimator.ResetTrigger("Fire");
         weaponAnimator.ResetTrigger("Fire");
-        armsAnimator.Play("Empty", aimTransitionLayer, 0f);
+        armsAnimator.SetBool("Aim", false);
         armsAnimator.SetLayerWeight(aimTransitionLayer, 0f);
         armsAnimator.SetTrigger("Reload");
         weaponAnimator.SetTrigger("Reload");
