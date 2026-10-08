@@ -16,8 +16,6 @@ public class ArenaScoreboard : MonoBehaviour
     readonly List<RectTransform> redRows = new List<RectTransform>(), blueRows = new List<RectTransform>();
     SoldierLocalInput localInput;
     ArenaAISpectator spectator;
-    bool inputWasBlocked, spectatorWasBlocked, previousVisible;
-    CursorLockMode previousCursor;
     float nextRefresh;
 
     void Awake()
@@ -33,25 +31,12 @@ public class ArenaScoreboard : MonoBehaviour
         nextRefresh = Time.unscaledTime + .25f;
         RefreshRows();
     }
-    void LateUpdate() { if (IsVisible) { Cursor.lockState = CursorLockMode.None; Cursor.visible = true; } }
     public void SetVisible(bool visible)
     {
         if (visible == IsVisible) return;
-        IsVisible = visible; panel.SetActive(visible);
-        if (visible)
-        {
-            previousCursor = Cursor.lockState; previousVisible = Cursor.visible;
-            if (localInput) { inputWasBlocked = localInput.InputBlocked; localInput.InputBlocked = true; }
-            if (spectator) { spectatorWasBlocked = spectator.ControlsBlocked; spectator.ControlsBlocked = true; }
-            Cursor.lockState = CursorLockMode.None; Cursor.visible = true;
-            nextRefresh = 0f; RefreshRows();
-        }
-        else
-        {
-            if (localInput) localInput.InputBlocked = inputWasBlocked;
-            if (spectator) spectator.ControlsBlocked = spectatorWasBlocked;
-            Cursor.lockState = previousCursor; Cursor.visible = previousVisible;
-        }
+        IsVisible = visible;
+        panel.SetActive(visible);
+        if (visible) { nextRefresh = 0f; RefreshRows(); }
     }
     void OnDisable() => SetVisible(false);
     public void RefreshRows()
@@ -79,7 +64,8 @@ public class ArenaScoreboard : MonoBehaviour
             row.Find("Score").GetComponent<TMP_Text>().text=actor.Score.ToString("N0");
             row.Find("Kills").GetComponent<TMP_Text>().text=actor.Kills.ToString();
             row.Find("Deaths").GetComponent<TMP_Text>().text=actor.Deaths.ToString();
-            row.Find("Status").GetComponent<TMP_Text>().text=actor.health.IsDead?"DOWN":"--";
+            // Ping will be supplied by the networking backend; this demo is local.
+            row.Find("Ping").GetComponent<TMP_Text>().text="—";
         }
     }
 }
