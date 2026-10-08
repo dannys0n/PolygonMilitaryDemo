@@ -13,6 +13,12 @@ public class ArenaAISpectator : MonoBehaviour
     public float zoomSpeed = 2f;
     public ArenaParticipant FollowedCharacter { get; private set; }
     Transform followedHead;
+    public bool FirstPersonSpectating { get; private set; }
+    SoldierFirstPersonView observedView;
+    bool previousFirstPerson, previousCameraEnabled, previousSpectatorEnabled;
+    int previousCameraMask;
+    Renderer[] hiddenBody;
+    UnityEngine.Rendering.ShadowCastingMode[] previousShadows;
     float yaw, pitch;
     bool showLabels = true;
 
@@ -33,10 +39,20 @@ public class ArenaAISpectator : MonoBehaviour
         }
         if (Input.GetKeyDown(KeyCode.X)) CycleCharacter(1);
         if (Input.GetKeyDown(KeyCode.Z)) CycleCharacter(-1);
+        if (Input.GetKeyDown(KeyCode.C))
+        {
+            if (FirstPersonSpectating) ExitPerspective();
+            else
+            {
+                if (!FollowedCharacter) CycleCharacter(1);
+                if (FollowedCharacter) EnterPerspective();
+            }
+        }
         if (FollowedCharacter && !FollowedCharacter.isActiveAndEnabled) StopFollowing();
-        if (FollowedCharacter)
+        if (FirstPersonSpectating && (!FollowedCharacter || !observedView)) StopFollowing();
+        if (FollowedCharacter && !FirstPersonSpectating)
             orbitDistance = Mathf.Clamp(orbitDistance - Input.GetAxis("Mouse ScrollWheel") * zoomSpeed, .5f, 8f);
-        bool looking = Input.GetMouseButton(1);
+        bool looking = !FirstPersonSpectating && Input.GetMouseButton(1);
         Cursor.lockState = looking ? CursorLockMode.Locked : CursorLockMode.None;
         Cursor.visible = !looking;
         if (!looking) return;
@@ -52,13 +68,72 @@ public class ArenaAISpectator : MonoBehaviour
 
     public void Follow(ArenaParticipant character)
     {
+        bool perspective = FirstPersonSpectating;
+        if (FollowedCharacter) FollowedCharacter.health.Died -= OnFollowedCharacterDied;
+        ExitPerspective();
         FollowedCharacter = character;
+        FollowedCharacter.health.Died += OnFollowedCharacterDied;
         followedHead = character.player.actions.animator.GetBoneTransform(HumanBodyBones.Head);
+        if (perspective) EnterPerspective();
     }
 
     public void StopFollowing()
     {
+        if (FollowedCharacter) FollowedCharacter.health.Died -= OnFollowedCharacterDied;
+        ExitPerspective();
         FollowedCharacter = null; followedHead = null;
+    }
+
+    void OnFollowedCharacterDied(GameObject source)
+    {
+        var killer = source ? source.GetComponentInParent<ArenaParticipant>() : null;
+        if (killer && killer != FollowedCharacter && killer.match == match
+            && killer.isActiveAndEnabled && killer.player && !killer.health.IsDead && !killer.IsAwaitingSpawn)
+            Follow(killer);
+    }
+
+    void EnterPerspective()
+    {
+        observedView = FollowedCharacter.player.view;
+        FirstPersonSpectating = true;
+        var camera = observedView.playerCamera;
+        previousFirstPerson = observedView.firstPerson;
+        previousCameraEnabled = camera.enabled;
+        previousCameraMask = camera.cullingMask;
+        previousSpectatorEnabled = spectatorCamera.enabled;
+        var aimRotation = camera.transform.localRotation;
+        observedView.SetFirstPerson(true);
+        camera.transform.localRotation = aimRotation;
+        // Other soldiers remain visible. Only the observed body becomes shadow-only.
+        camera.cullingMask |= 1 << observedView.thirdPersonLayer;
+        hiddenBody = observedView.thirdPersonRoot.GetComponentsInChildren<Renderer>(true);
+        previousShadows = new UnityEngine.Rendering.ShadowCastingMode[hiddenBody.Length];
+        for (int i = 0; i < hiddenBody.Length; i++)
+        {
+            previousShadows[i] = hiddenBody[i].shadowCastingMode;
+            hiddenBody[i].shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.ShadowsOnly;
+        }
+        spectatorCamera.enabled = false;
+        camera.enabled = true;
+    }
+
+    void ExitPerspective()
+    {
+        if (!FirstPersonSpectating) return;
+        if (observedView)
+        {
+            var camera = observedView.playerCamera;
+            var aimRotation = camera.transform.localRotation;
+            observedView.SetFirstPerson(previousFirstPerson);
+            camera.transform.localRotation = aimRotation;
+            camera.cullingMask = previousCameraMask;
+            camera.enabled = previousCameraEnabled;
+        }
+        for (int i = 0; i < hiddenBody.Length; i++)
+            if (hiddenBody[i]) hiddenBody[i].shadowCastingMode = previousShadows[i];
+        spectatorCamera.enabled = previousSpectatorEnabled;
+        observedView = null;
+        FirstPersonSpectating = false;
     }
 
     void CycleCharacter(int direction)
@@ -91,7 +166,7 @@ public class ArenaAISpectator : MonoBehaviour
         transform.position = pivot + backward * distance;
     }
 
-    void OnDisable() { Cursor.lockState = CursorLockMode.None; Cursor.visible = true; }
+    void OnDisable() { StopFollowing(); Cursor.lockState = CursorLockMode.None; Cursor.visible = true; }
 
     void OnGUI()
     {
@@ -100,12 +175,14 @@ public class ArenaAISpectator : MonoBehaviour
         GUI.Label(new Rect(24, 38, 510, 25), "Hold RMB + WASD to fly | Q/E down/up | Shift faster | Tab labels");
         GUI.Label(new Rect(24, 63, 510, 25), (match.IsRunning ? Mathf.CeilToInt(match.TimeRemaining) + "s" : match.Result)
             + " | Backspace restarts");
-        GUI.Label(new Rect(24, 88, 630, 25), "F follow/free | Z/X select bot | RMB orbit | Scroll zoom | "
+        GUI.Label(new Rect(24, 88, 630, 25), "F follow/free | Z/X bot | C FPS/orbit | RMB orbit | Scroll zoom | "
             + (FollowedCharacter ? "Following: " + FollowedCharacter.name : "Free camera"));
         if (!showLabels) return;
         foreach (var participant in match.participants)
         {
-            Vector3 screen = spectatorCamera.WorldToScreenPoint(participant.transform.position + Vector3.up * 2.1f);
+            if (FirstPersonSpectating && participant == FollowedCharacter) continue;
+            var camera = FirstPersonSpectating ? observedView.playerCamera : spectatorCamera;
+            Vector3 screen = camera.WorldToScreenPoint(participant.transform.position + Vector3.up * 2.1f);
             if (screen.z <= 0f || screen.x < 0 || screen.x > Screen.width || screen.y < 0 || screen.y > Screen.height) continue;
             var bot = participant.GetComponent<ArenaAIInput>();
             GUI.color = participant.team == ArenaParticipant.Team.Red ? new Color(1f, .4f, .4f) : new Color(.4f, .7f, 1f);
