@@ -13,6 +13,41 @@ public class SoldierWeaponLoadout : MonoBehaviour
         public Transform thirdPersonWeapon;
         public Animator weaponAnimator;
         public Animator partsAnimator;
+        public Transform firstPersonMuzzle;
+        public Transform thirdPersonMuzzle;
+        [System.NonSerialized] public WeaponState state;
+    }
+
+    // One runtime state per owned slot, never on the shared weapon definition.
+    public class WeaponState
+    {
+        public int MagazineAmmo { get; private set; }
+        public int ReserveAmmo { get; private set; }
+        private float nextFireTime;
+
+        public WeaponState(SoldierWeaponDefinition definition)
+        {
+            MagazineAmmo = definition.magazineCapacity;
+            ReserveAmmo = definition.startingReserveAmmo;
+        }
+
+        public bool TryConsumeRound(float now, SoldierWeaponDefinition definition)
+        {
+            if (MagazineAmmo <= 0 || now < nextFireTime) return false;
+            MagazineAmmo--;
+            nextFireTime = now + 60f / Mathf.Max(definition.roundsPerMinute, 1f);
+            return true;
+        }
+
+        public bool CanReload(SoldierWeaponDefinition definition) =>
+            MagazineAmmo < definition.magazineCapacity && ReserveAmmo > 0;
+
+        public void CompleteReload(SoldierWeaponDefinition definition)
+        {
+            int count = Mathf.Min(definition.magazineCapacity - MagazineAmmo, ReserveAmmo);
+            MagazineAmmo += count;
+            ReserveAmmo -= count;
+        }
     }
 
     public SoldierMotionGrip firstPersonGripRig;
@@ -25,8 +60,19 @@ public class SoldierWeaponLoadout : MonoBehaviour
     public int selectedSlot;
     public bool IsSwitching { get; private set; }
     public SoldierWeapon EquippedWeapon => slots[selectedSlot].weapon;
+    public WeaponState EquippedState => slots[selectedSlot].state;
+    public Transform EquippedMuzzle => presentation.view.firstPerson
+        ? slots[selectedSlot].firstPersonMuzzle : slots[selectedSlot].thirdPersonMuzzle;
     private Coroutine switchRoutine;
     private bool initialized;
+
+    void Awake() => ResetAmmunition();
+
+    public void ResetAmmunition()
+    {
+        actions.CancelActions();
+        foreach (Slot slot in slots) slot.state = new WeaponState(slot.weapon.definition);
+    }
 
     void Start()
     {

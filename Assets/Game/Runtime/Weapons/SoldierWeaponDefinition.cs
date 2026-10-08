@@ -13,6 +13,13 @@ public class SoldierWeaponDefinition : ScriptableObject
     [Tooltip("Gameplay reload duration in seconds. Keep presentation clips aligned with this timing.")]
     [Min(.01f)] public float reloadDuration = 3f;
 
+    [Header("Gameplay weapon settings")]
+    [Min(1)] public int magazineCapacity = 30;
+    [Min(0)] public int startingReserveAmmo = 90;
+    [Min(0f)] public float damage = 25f;
+    [Min(.01f)] public float range = 100f;
+    [Min(1f)] public float headshotMultiplier = 2f;
+
     [Header("Weapon switching")]
     [Min(.01f)] public float equipDuration = .5f;
     [Min(.01f)] public float unequipDuration = .5f;

@@ -7,6 +7,7 @@ public class SoldierActions : MonoBehaviour
     public Animator animator;
     public SoldierFirstPersonView firstPersonView;
     public SoldierMovement movement;
+    public SoldierHitscan shooting;
     private SoldierWeaponLoadout loadout;
     public FireMode fireMode => loadout.EquippedWeapon.definition.fireMode;
     public float roundsPerMinute => loadout.EquippedWeapon.definition.roundsPerMinute;
@@ -14,11 +15,12 @@ public class SoldierActions : MonoBehaviour
     public event System.Action ReloadStarted;
     public event System.Action ReloadCompleted;
     public event System.Action ReloadCanceled;
-    private float nextFireTime;
+    private SoldierWeaponLoadout.WeaponState reloadingWeapon;
+    private SoldierWeaponDefinition reloadDefinition;
     private float reloadEndTime;
     public bool IsReloading { get; private set; }
     public float ReloadProgress => IsReloading
-        ? Mathf.Clamp01(1f - (reloadEndTime - Time.time) / loadout.EquippedWeapon.definition.reloadDuration)
+        ? Mathf.Clamp01(1f - (reloadEndTime - Time.time) / reloadDefinition.reloadDuration)
         : 0f;
 
     void Awake() => loadout = GetComponent<SoldierWeaponLoadout>();
@@ -27,13 +29,15 @@ public class SoldierActions : MonoBehaviour
     {
         if (!IsReloading || Time.time < reloadEndTime) return;
         IsReloading = false;
+        reloadingWeapon.CompleteReload(reloadDefinition);
         ReloadCompleted?.Invoke();
     }
 
     public bool TryFire()
     {
-        if (IsReloading || loadout.IsSwitching || movement.IsRunning || Time.time < nextFireTime) return false;
-        nextFireTime = Time.time + 60f / Mathf.Max(roundsPerMinute, 1f);
+        if (IsReloading || loadout.IsSwitching || movement.IsRunning) return false;
+        if (!loadout.EquippedState.TryConsumeRound(Time.time, loadout.EquippedWeapon.definition)) return false;
+        shooting.Fire(loadout.EquippedWeapon.definition, loadout.EquippedMuzzle);
         PresentFire();
         return true;
     }
@@ -41,8 +45,11 @@ public class SoldierActions : MonoBehaviour
     public bool TryReload()
     {
         if (IsReloading || loadout.IsSwitching) return false;
+        if (!loadout.EquippedState.CanReload(loadout.EquippedWeapon.definition)) return false;
         IsReloading = true;
-        reloadEndTime = Time.time + loadout.EquippedWeapon.definition.reloadDuration;
+        reloadingWeapon = loadout.EquippedState;
+        reloadDefinition = loadout.EquippedWeapon.definition;
+        reloadEndTime = Time.time + reloadDefinition.reloadDuration;
         animator.SetTrigger("Reload");
         animator.ResetTrigger("Fire");
         firstPersonView.PlayReload();
@@ -65,7 +72,6 @@ public class SoldierActions : MonoBehaviour
     {
         CancelReload();
         loadout.CancelSwitch();
-        nextFireTime = Time.time;
         firstPersonView.CancelAim();
     }
 

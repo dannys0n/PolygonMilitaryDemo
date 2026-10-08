@@ -8,6 +8,7 @@ Work through these stages in order. Check off items when complete; keep unfinish
 - [x] Add and tune pistol idle, aim, fire, reload, equip, and unequip animations.
 - [x] Make a second pass on hand grips, fingers, wrists, and elbow hints for every weapon (accepted prototype baseline).
 - [ ] Polish FPS shoulder/arm offsets and consistency between weapons during swapping.
+- [ ] Verify a second Polygon character variant with the shared player setup: FPS/TPS visibility, grips, reloads, sprint, and foot IK; keep appearance separate from gameplay.
 - [x] Refine the TPS equip/unequip animations.
 
 ## 2. Clean up and organize the project
@@ -28,6 +29,8 @@ Build a small Call of Duty-style team deathmatch prototype: two teams, fixed sta
 
 Shared systems belong under `Assets/Game/Runtime`, with reusable assets in the existing player, character, and weapon folders. Put arena-specific code, prefabs, and scenes under `Assets/Game/ArenaShooter/Runtime`, `Prefabs`, and `Scenes` as needed. Shared code must not depend on arena code.
 
+Support multiple Polygon character appearances through player prefab variants that share gameplay scripts, weapon definitions, and animation controllers. Prefer reusing the existing skeleton/rig and replacing compatible meshes and materials; a different skeleton needs its own valid Humanoid Avatar and reassigned bone/constraint references. Character choice must not change weapon or arena rules.
+
 Keep movement, look, equipment, weapon state, shooting, health/damage, and animation presentation reusable. Arena code owns team assignment, starting loadouts, spawn selection, respawn policy, scoring, and match lifecycle. Keep the seven-weapon setup as an animation/equipment test fixture.
 
 Use the old Input Manager. Input requests actions; gameplay validates and owns action state; presentation responds to accepted actions. Keep the implementation local and straightforward. Preserve entry points that a future network driver can call, without adding networking abstractions yet. Later the server will validate actions and own ammo, damage, and scores.
@@ -45,14 +48,14 @@ Do not build classes, dynamic pickups, conquest, battle royale, persistence, pro
 
 ### 3.2 Make one weapon and one target playable
 
-- [ ] Add shared weapon settings for damage, range, magazine capacity, reserve ammo, and reload duration alongside the existing fire mode/rate.
-- [ ] Store magazine and reserve counts per owned weapon; keep counts when switching equipment.
-- [ ] Admit semi-auto and automatic shots using the existing fire cadence; consume one round only for an accepted shot and reject firing when empty.
-- [ ] Resolve hitscan aim from the camera center in both FPS and TPS; check muzzle obstruction so shots cannot pass through nearby cover. Exclude the shooter's own colliders.
-- [ ] Add shared damageable health and body/head hit regions with a configurable headshot multiplier.
-- [ ] Add a stationary damageable target in an arena gameplay test scene; verify hits, misses, range, cover obstruction, and headshots.
-- [ ] Add reload rules: reject full-magazine/no-reserve reloads, transfer only available ammunition, block conflicting actions, and define cancellation on death.
-- [ ] Verify shooting, damage, empty-magazine behavior, and reload completion with one weapon before applying settings to all seven weapons.
+- [x] Add shared weapon settings for damage, range, magazine capacity, reserve ammo, and reload duration alongside the existing fire mode/rate.
+- [x] Store magazine and reserve counts per owned weapon; keep counts when switching equipment.
+- [x] Admit semi-auto and automatic shots using the existing fire cadence; consume one round only for an accepted shot and reject firing when empty.
+- [x] Resolve hitscan aim from the camera center in both FPS and TPS; check muzzle obstruction so shots cannot pass through nearby cover. Exclude the shooter's own colliders.
+- [x] Add shared damageable health and body/head hit regions with a configurable headshot multiplier.
+- [x] Add a stationary damageable target in an arena gameplay test scene; verify hits, misses, range, cover obstruction, and headshots.
+- [x] Add reload rules: reject full-magazine/no-reserve reloads, transfer only available ammunition, block conflicting actions, and expose cancellation through CancelActions (player death hookup in 3.3).
+- [x] Verify shooting, damage, empty-magazine behavior, and reload completion with one weapon before applying settings to all seven weapons.
 
 ### 3.3 Add character death and arena respawning
 
