@@ -113,15 +113,17 @@ Most of this stage can use stub implementations before real networking is added.
 
 ## 5.1 Build gameplay UI
 
-- [ ] Hit marker
-- [ ] Team point count
-- [ ] Weapon Name
-- [ ] Ammo Counter
-- [ ] Health Counter
-- [ ] Recoil based working crosshair 
-- [ ] kill feed
-- [ ] Kill medal
-- [ ] Minimap?
+- [x] Hit marker (orange for kills).
+- [x] Team point count, progress, and match timer.
+- [x] Weapon name and equipped slots.
+- [x] Live magazine/reserve ammo counter and reload/fire mode status.
+- [x] Health counter and bar.
+- [x] Cosmetic crosshair expansion from accepted shots and movement; hide during ADS/sprint/death.
+- [x] Timed kill feed.
+- [x] Hold-Tab two-team leaderboard with live score/kills/deaths, local-row highlight, variable rosters, and scrollable tables. Personal stats persist across respawn and reset on match restart.
+- [x] Kill medal, rapid multi-kill feedback, and life kill streak.
+- [x] Nearby teammate radar and health list (terrain minimap remains optional polish).
+- [ ] User visual pass on the white/orange HUD inspired by the supplied Battlefield reference; placeholder weapon/medal icons can be replaced later.
 
 ## 6. Create the working NGO baseline
 

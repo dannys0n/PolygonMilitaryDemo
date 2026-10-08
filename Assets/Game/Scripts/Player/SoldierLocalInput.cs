@@ -4,11 +4,13 @@ using UnityEngine;
 public class SoldierLocalInput : SoldierInputSource
 {
     public float sensitivity = 2f;
+    public bool InputBlocked { get; set; }
 
     void Start() => SetCursorLocked(true);
 
     public override SoldierInputFrame ReadInput()
     {
+        if (InputBlocked) return default;
         if (Input.GetKeyDown(KeyCode.Escape)) SetCursorLocked(false);
         if (Input.GetMouseButtonDown(0)) SetCursorLocked(true);
         if (Cursor.lockState != CursorLockMode.Locked) return default;

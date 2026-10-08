@@ -18,6 +18,8 @@ public class ArenaMatch : MonoBehaviour
     public float TimeRemaining { get; private set; }
     public string Result { get; private set; } = "";
     public event System.Action MatchEnded;
+    public event System.Action MatchStarted;
+    public event System.Action<ArenaParticipant, ArenaParticipant> KillRecorded;
     public Transform RedOpeningPoint { get; private set; }
     public Transform BlueOpeningPoint { get; private set; }
     readonly System.Collections.Generic.Dictionary<Transform, float> spawnHistory = new System.Collections.Generic.Dictionary<Transform, float>();
@@ -84,6 +86,7 @@ public class ArenaMatch : MonoBehaviour
         RedOpeningPoint = BlueOpeningPoint = null;
         foreach (var participant in participants)
         {
+            participant.Kills = participant.Deaths = 0;
             participant.CancelRespawn();
             if (participant.player) participant.player.SetGameplayAllowed(false);
         }
@@ -102,6 +105,7 @@ public class ArenaMatch : MonoBehaviour
         if (red) spawnHistory[red] = Time.time;
         if (blue) spawnHistory[blue] = Time.time;
         Physics.SyncTransforms();
+        MatchStarted?.Invoke();
     }
 
     // Explicit entry point also makes local rule checks independent of real-time waits.
@@ -133,10 +137,13 @@ public class ArenaMatch : MonoBehaviour
     internal void RecordKill(ArenaParticipant victim, GameObject source)
     {
         if (!IsRunning) return;
+        victim.Deaths++;
         var attacker = source ? source.GetComponentInParent<ArenaParticipant>() : null;
         if (!attacker || attacker == victim || attacker.match != this || attacker.team == victim.team) return;
+        attacker.Kills++;
         if (attacker.team == ArenaParticipant.Team.Red) RedScore++;
         else BlueScore++;
+        KillRecorded?.Invoke(attacker, victim);
         if (RedScore >= settings.scoreLimit || BlueScore >= settings.scoreLimit) EndMatch();
     }
 

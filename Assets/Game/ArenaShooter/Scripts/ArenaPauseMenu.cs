@@ -45,7 +45,7 @@ public class ArenaPauseMenu : MonoBehaviour
     }
     public void ReturnToMenu()
     {
-        Resume(); transition.Load("Assets/Game/ArenaShooter/Scenes/MainMenu.unity");
+        Resume(); transition.Load("Assets/Game/MainMenu.unity");
     }
     void OnDestroy() { if (IsPaused) Time.timeScale = previousTimeScale; }
 }

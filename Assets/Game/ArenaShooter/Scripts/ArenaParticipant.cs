@@ -9,6 +9,9 @@ public class ArenaParticipant : MonoBehaviour
     public SoldierLife player;
     [Tooltip("Optional in a scene with one ArenaMatch; assigned automatically for newly added actors.")]
     public ArenaMatch match;
+    public int Kills { get; internal set; }
+    public int Deaths { get; internal set; }
+    public int Score => Kills * 100;
     private float respawnAt = -1f;
     private float nextSpawnAttempt;
     public bool IsRespawning => respawnAt >= 0f && health.IsDead;
