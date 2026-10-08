@@ -102,12 +102,14 @@ Do not build classes, dynamic pickups, conquest, battle royale, persistence, pro
 
 Most of this stage can use stub implementations before real networking is added.
 
-- [ ] Create the main menu scene.
-- [ ] Create the lobby scene/flow.
-- [ ] Create matchmaking screens and a stub matchmaking flow.
-- [ ] Create a server browser and stub server listings/join flow.
-- [ ] Connect menu, lobby, matchmaking/server browser, and gameplay scenes.
-- [ ] Add basic connection, loading, failure, and return-to-menu UI states.
+- [x] Use a fresh SlimUI Demo1 copy as MainMenu. Play discovers project scenes at startup, prioritizes Assets/Game, and pages the list; builds list included scenes.
+- [ ] Create the local lobby flow.
+- [ ] Create matchmaking screens and a cancellable stub.
+- [ ] Create a server browser with listings/join stubs.
+- [ ] Connect lobby and matchmaking/server browser flows to gameplay. The temporary scene launcher already loads scenes directly.
+- [x] Add gameplay pause/resume and return-to-menu controls.
+- [ ] Add connection/loading/failure states for the final application flow.
+- [ ] User walkthrough of the Demo1 scene launcher, settings, and Escape pause/resume. SlimUI settings remain demo controls until their gameplay integration is added.
 
 ## 5.1 Build gameplay UI
 
