@@ -180,14 +180,18 @@ MonoBehaviour:
   life: {fileID: 9041023027752945603}
   participant: {fileID: 6521040689250086825}
   agent: {fileID: 4000602008927823826}
-  sightRange: 45
+  sightRange: 50
   fieldOfView: 140
-  attackRange: 18
+  attackRange: 22
   turnSpeed: 180
   reactionTime: 0.35
   memoryDuration: 4
   repathInterval: 0.3
-  sprintDistance: 8
+  perceptionInterval: 0.15
+  sprintDistance: 14
+  sprintStopDistance: 6
+  combatReadyDuration: 6
+  hearingRange: 20
   strafeDistance: 2
   repositionInterval: {x: 1.5, y: 3}
   coverSearchRadius: 12
@@ -196,8 +200,8 @@ MonoBehaviour:
   retreatHealth: 0.4
   hideDuration: {x: 0.6, y: 1.2}
   peekDuration: {x: 1, y: 2}
-  initialAimError: 3
-  settledAimError: 1
+  initialAimError: 2.5
+  settledAimError: 0.8
   aimSettleTime: 1.5
   aimTrackingTime: 0.18
   aimNoiseInterval: 0.4

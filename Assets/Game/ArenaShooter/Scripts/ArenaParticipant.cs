@@ -12,6 +12,8 @@ public class ArenaParticipant : MonoBehaviour
     public int Kills { get; internal set; }
     public int Deaths { get; internal set; }
     public int Score => Kills * 100;
+    public float LastShotTime { get; private set; } = float.NegativeInfinity;
+    public Vector3 LastShotPosition { get; private set; }
     private float respawnAt = -1f;
     private float nextSpawnAttempt;
     public bool IsRespawning => respawnAt >= 0f && health.IsDead;
@@ -27,6 +29,7 @@ public class ArenaParticipant : MonoBehaviour
     {
         health.Died += OnDied;
         health.DamageFilter = CanReceiveDamage;
+        if (player) player.actions.FireStarted += RecordShot;
         match.Register(this);
     }
 
@@ -34,11 +37,13 @@ public class ArenaParticipant : MonoBehaviour
     {
         health.Died -= OnDied;
         health.DamageFilter = null;
+        if (player) player.actions.FireStarted -= RecordShot;
         CancelRespawn();
         match.Unregister(this);
     }
 
     bool CanReceiveDamage(GameObject source) => match.CanDamage(this, source);
+    void RecordShot() { LastShotTime = Time.time; LastShotPosition = transform.position; }
 
     void OnDied(GameObject source)
     {
@@ -61,6 +66,7 @@ public class ArenaParticipant : MonoBehaviour
     public void Respawn(Vector3 position, Quaternion rotation)
     {
         CancelRespawn();
+        LastShotTime = float.NegativeInfinity;
         IsAwaitingSpawn = false;
         if (player)
         {

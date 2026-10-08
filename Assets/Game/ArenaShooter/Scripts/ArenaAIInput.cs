@@ -19,9 +19,12 @@ public class ArenaAIInput : SoldierInputSource
     public float memoryDuration = 4f;
     public float repathInterval = .3f;
     public float perceptionInterval = .15f;
-    public float sprintDistance = 8f;
+    public float sprintDistance = 14f;
     [Tooltip("Keep sprinting until this close to the destination. Must be below Sprint Distance.")]
-    public float sprintStopDistance = 4f;
+    public float sprintStopDistance = 6f;
+    [Header("Combat readiness")]
+    [Min(0f)] public float combatReadyDuration = 6f;
+    [Min(0f)] public float hearingRange = 20f;
     public float strafeDistance = 2f;
     public Vector2 repositionInterval = new Vector2(1.5f, 3f);
     [Header("Cover")]
@@ -53,6 +56,7 @@ public class ArenaAIInput : SoldierInputSource
     public Vector3 CoverPosition => cover.position;
     public Vector3 PeekPosition => cover.peek;
     public bool WantsToSprint { get; private set; }
+    public bool IsCombatAlert => Time.time < combatAlertUntil;
     float ArrivalDistance => Mathf.Max(.35f, agent.stoppingDistance + .1f);
 
     ArenaParticipant target;
@@ -68,20 +72,37 @@ public class ArenaAIInput : SoldierInputSource
     int lastPatrolIndex = -1;
     bool hasPatrolDestination, targetVisible;
     bool wasVisible;
+    float combatAlertUntil, heardAt = float.NegativeInfinity, investigationUntil, nextLook;
+    Vector3 investigationPoint, openLook;
+    bool investigating;
 
     void Awake()
     {
         queryPath = new NavMeshPath();
         agent.updatePosition = agent.updateRotation = agent.updateUpAxis = false;
     }
-    void OnEnable() { life.Respawned += ResetIntent; life.health.Died += OnDied; }
-    void OnDisable() { life.Respawned -= ResetIntent; life.health.Died -= OnDied; ResetIntent(); }
+    void OnEnable() { life.Respawned += ResetIntent; life.health.Died += OnDied; life.health.Damaged += OnDamaged; }
+    void OnDisable() { life.Respawned -= ResetIntent; life.health.Died -= OnDied; life.health.Damaged -= OnDamaged; ResetIntent(); }
     void OnDied(GameObject source) => ResetIntent();
+    void OnDamaged(float amount, GameObject source)
+    {
+        combatAlertUntil = Time.time + combatReadyDuration;
+        if (source && !target) Investigate(source.transform.position);
+    }
+    void Investigate(Vector3 point)
+    {
+        // A sound/damage location is evidence, not a visible target to shoot through walls.
+        if (!ArenaAITactics.Reachable(this, point, queryPath, out investigationPoint, out _)) return;
+        investigating = true; investigationUntil = Time.time + memoryDuration;
+        hasPatrolDestination = false; patrolWaitUntil = 0f;
+    }
 
     void ResetIntent()
     {
         target = null; HasCover = wasVisible = false; State = Behavior.Inactive;
         WantsToSprint = false;
+        combatAlertUntil = investigationUntil = nextLook = 0f;
+        heardAt = float.NegativeInfinity; investigating = false; openLook = transform.forward;
         seenAt = float.NegativeInfinity;
         nextPath = nextCover = nextReposition = nextWeapon = nextNoise = 0f;
         nextPerception = Time.time + Random.value * perceptionInterval;
@@ -110,8 +131,7 @@ public class ArenaAIInput : SoldierInputSource
         RecoverStuckPath();
         bool wantsAim = visible && distance <= attackRange && State != Behavior.MoveToCover && State != Behavior.Hide;
         bool busy = soldier.actions.IsReloading || soldier.loadout.IsSwitching || selection != 0;
-        bool faceMemory = target && (State == Behavior.Peek || State == Behavior.Hide
-            || State == Behavior.Search && HorizontalDistance(transform.position, Destination) < 1f);
+        bool faceMemory = target && State == Behavior.Peek;
         Vector3 direction = wantsAim ? GetImperfectAim() - life.look.aimCamera.transform.position
             : faceMemory ? lastSeen + Vector3.up * 1.25f - life.look.aimCamera.transform.position
             : agent.steeringTarget - transform.position;
@@ -119,17 +139,23 @@ public class ArenaAIInput : SoldierInputSource
             ? Mathf.Atan2(direction.x, direction.z) * Mathf.Rad2Deg : transform.eulerAngles.y;
         float up = wantsAim ? Mathf.Atan2(direction.y, new Vector2(direction.x, direction.z).magnitude) * Mathf.Rad2Deg : 0f;
         if (wantsAim) { yaw += aimNoise.x; up += aimNoise.y; }
-        else if (State == Behavior.Idle) yaw = transform.eulerAngles.y + Mathf.Sin(Time.time * .7f) * 30f * Time.deltaTime;
+        else
+        {
+            if (State == Behavior.Hide) direction = cover.peek - transform.position;
+            direction = GetOpenLook(direction);
+            yaw = Mathf.Atan2(direction.x, direction.z) * Mathf.Rad2Deg;
+        }
         float yawError = Mathf.DeltaAngle(transform.eulerAngles.y, yaw), pitchError = up + life.look.Pitch;
         float step = turnSpeed * Time.deltaTime;
         var look = new Vector2(Mathf.Clamp(yawError, -step, step), Mathf.Clamp(pitchError, -step, step));
         bool arrived = HorizontalDistance(transform.position, Destination) <= ArrivalDistance;
         float travelRemaining = agent.hasPath && !agent.pathPending && !float.IsInfinity(agent.remainingDistance)
             ? agent.remainingDistance : Vector3.Distance(transform.position, Destination);
-        bool travelState = State == Behavior.Patrol || State == Behavior.Search || State == Behavior.Approach || State == Behavior.MoveToCover;
+        bool travelState = State == Behavior.Patrol && !target && !investigating && !IsCombatAlert;
         float sprintThreshold = WantsToSprint ? Mathf.Min(sprintStopDistance, sprintDistance) : sprintDistance;
         WantsToSprint = travelState && !wantsAim && !busy && !reload && !arrived
-            && travelRemaining > sprintThreshold && Mathf.Abs(yawError) < (WantsToSprint ? 40f : 25f);
+            && travelRemaining > sprintThreshold && HorizontalDistance(transform.position, agent.steeringTarget) > 4f
+            && Mathf.Abs(yawError) < (WantsToSprint ? 30f : 15f);
         // Plan at the speed the shared movement actually admits (grounding and ADS can delay sprint).
         agent.speed = soldier.movement.IsRunning ? soldier.movement.runSpeed : soldier.movement.moveSpeed;
         Vector3 velocity = arrived ? Vector3.zero : agent.desiredVelocity;
@@ -155,6 +181,19 @@ public class ArenaAIInput : SoldierInputSource
         { target = null; targetVisible = false; HasCover = false; nextPerception = 0f; }
         if (Time.time < nextPerception) return target && !target.health.IsDead && targetVisible;
         nextPerception = Time.time + Mathf.Max(.02f, perceptionInterval);
+        float newestSound = heardAt;
+        Vector3 soundPoint = default;
+        bool heardEnemy = false;
+        foreach (var actor in participant.match.participants)
+        {
+            if (actor == participant || actor.LastShotTime < heardAt || Time.time - actor.LastShotTime > 1f
+                || (actor.LastShotPosition - transform.position).sqrMagnitude > hearingRange * hearingRange) continue;
+            combatAlertUntil = Mathf.Max(combatAlertUntil, actor.LastShotTime + combatReadyDuration);
+            if (actor.LastShotTime >= newestSound && actor.team != participant.team)
+            { newestSound = actor.LastShotTime; soundPoint = actor.LastShotPosition; heardEnemy = true; }
+        }
+        heardAt = Time.time;
+        if (heardEnemy && !target && !investigating) Investigate(soundPoint);
         ArenaParticipant visible = null; float nearest = sightRange * sightRange;
         foreach (var enemy in participant.match.participants)
         {
@@ -174,6 +213,8 @@ public class ArenaAIInput : SoldierInputSource
             if (target != visible)
             { HasCover = false; nextCover = Time.time + Random.value; nextReposition = 0f; hasPatrolDestination = false; }
             target = visible; lastSeen = visible.transform.position; seenAt = Time.time;
+            combatAlertUntil = Time.time + combatReadyDuration;
+            investigating = false;
         }
         else if (target && (target.health.IsDead || Time.time - seenAt > memoryDuration))
         { target = null; HasCover = false; nextReposition = 0f; }
@@ -211,6 +252,9 @@ public class ArenaAIInput : SoldierInputSource
         if (!target)
         {
             HasCover = false;
+            if (investigating && Time.time < investigationUntil && HorizontalDistance(transform.position, investigationPoint) > 1.2f)
+            { State = Behavior.Search; SetDestination(investigationPoint); return; }
+            investigating = false;
             Patrol(); return;
         }
         Vector3 threat = lastSeen + Vector3.up * 1.25f;
@@ -245,7 +289,13 @@ public class ArenaAIInput : SoldierInputSource
                 return;
             }
         }
-        if (!visible) { State = Behavior.Search; SetDestination(lastSeen); return; }
+        if (!visible)
+        {
+            if (HorizontalDistance(transform.position, lastSeen) <= 1.2f)
+            { target = null; targetVisible = false; HasCover = false; hasPatrolDestination = false; patrolWaitUntil = 0f; Patrol(); }
+            else { State = Behavior.Search; SetDestination(lastSeen); }
+            return;
+        }
         if (distance > attackRange) { State = Behavior.Approach; SetDestination(lastSeen); return; }
         State = Behavior.Strafe;
         if (Time.time >= nextReposition)
@@ -271,7 +321,7 @@ public class ArenaAIInput : SoldierInputSource
         if (hasPatrolDestination && HorizontalDistance(transform.position, patrolDestination) < 1.2f)
         {
             hasPatrolDestination = false;
-            patrolWaitUntil = Time.time + Random.Range(.5f, 1.5f);
+            patrolWaitUntil = IsCombatAlert ? Time.time : Time.time + Random.Range(.3f, .7f);
             State = Behavior.Idle; SetDestination(transform.position); return;
         }
         if (!hasPatrolDestination)
@@ -323,6 +373,27 @@ public class ArenaAIInput : SoldierInputSource
         }
         aimNoise = Vector2.Lerp(aimNoise, desiredNoise, 1f - Mathf.Exp(-Time.deltaTime * 8f));
         return trackedAim;
+    }
+
+    Vector3 GetOpenLook(Vector3 preferred)
+    {
+        preferred = Vector3.ProjectOnPlane(preferred, Vector3.up);
+        if (preferred.sqrMagnitude < .01f) preferred = transform.forward;
+        preferred.Normalize();
+        Vector3 origin = life.look.aimCamera.transform.position;
+        if (State != Behavior.Idle && !ArenaAITactics.WorldBlocked(this, origin, origin + preferred * 2f)) return preferred;
+        if (Time.time < nextLook) return openLook;
+        nextLook = Time.time + 1f;
+        float best = float.NegativeInfinity;
+        foreach (float angle in new[] { 0f, -35f, 35f, -70f, 70f, -110f, 110f })
+        {
+            Vector3 candidate = Quaternion.Euler(0, angle, 0) * preferred;
+            float clearance = ArenaAITactics.WorldBlocked(this, origin, origin + candidate * 2f) ? 0f
+                : ArenaAITactics.WorldBlocked(this, origin, origin + candidate * 6f) ? 2f : 6f;
+            float score = clearance - Mathf.Abs(angle) * .015f;
+            if (score > best) { best = score; openLook = candidate; }
+        }
+        return openLook;
     }
 
     bool InBurst()
