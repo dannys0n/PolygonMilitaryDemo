@@ -11,6 +11,9 @@ public class ArenaMatchSettings : ScriptableObject
     [Min(0f)] public float unsafeEnemyDistance = 8f;
     [Min(.5f)] public float spawnClearance = 1.2f;
     [Min(0f)] public float recentSpawnTime = 8f;
+    [Header("Opening team placement")]
+    [Min(2f)] public float openingTeamRadius = 6f;
+    [Min(0f)] public float openingTeamSeparation = 30f;
     [Tooltip("Indices in the shared player's equipment catalog. First entry is the starting weapon.")]
     public int[] redLoadout = { 0, 5 };
     public int[] blueLoadout = { 0, 5 };

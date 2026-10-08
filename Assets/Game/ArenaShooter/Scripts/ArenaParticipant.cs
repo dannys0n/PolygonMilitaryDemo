@@ -44,7 +44,9 @@ public class ArenaParticipant : MonoBehaviour
 
     public void CancelRespawn() => respawnAt = -1f;
 
-    public void Respawn(Transform spawn)
+    public void Respawn(Transform spawn) => Respawn(spawn.position, spawn.rotation);
+
+    public void Respawn(Vector3 position, Quaternion rotation)
     {
         CancelRespawn();
         if (player)
@@ -52,11 +54,11 @@ public class ArenaParticipant : MonoBehaviour
             int[] slots = team == Team.Red ? match.settings.redLoadout : match.settings.blueLoadout;
             player.SetGameplayAllowed(false);
             player.loadout.ConfigureAvailableSlots(slots);
-            player.Respawn(spawn.position, spawn.rotation);
+            player.Respawn(position, rotation);
         }
         else
         {
-            transform.SetPositionAndRotation(spawn.position, spawn.rotation);
+            transform.SetPositionAndRotation(position, rotation);
             health.ResetHealth();
         }
     }

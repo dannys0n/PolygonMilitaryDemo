@@ -5,8 +5,8 @@ public class ArenaMatch : MonoBehaviour
 {
     public ArenaMatchSettings settings;
     public ArenaParticipant[] participants;
-    public Transform[] redSpawns = System.Array.Empty<Transform>();
-    public Transform[] blueSpawns = System.Array.Empty<Transform>();
+    [Tooltip("Shared by both teams for respawns and opening-team anchor selection.")]
+    public Transform[] spawnPoints = System.Array.Empty<Transform>();
     [Tooltip("Map patrol routes and encounter areas, separate from respawn locations.")]
     public Transform[] patrolPoints = System.Array.Empty<Transform>();
     public bool IsRunning { get; private set; }
@@ -15,6 +15,8 @@ public class ArenaMatch : MonoBehaviour
     public float TimeRemaining { get; private set; }
     public string Result { get; private set; } = "";
     public event System.Action MatchEnded;
+    public Transform RedOpeningPoint { get; private set; }
+    public Transform BlueOpeningPoint { get; private set; }
     readonly System.Collections.Generic.Dictionary<Transform, float> spawnHistory = new System.Collections.Generic.Dictionary<Transform, float>();
 
     void Start() => BeginMatch();
@@ -26,8 +28,26 @@ public class ArenaMatch : MonoBehaviour
         spawnHistory.Clear();
         TimeRemaining = settings.matchDuration;
         Result = "";
+        IsRunning = false;
+        foreach (var participant in participants)
+        {
+            participant.CancelRespawn();
+            if (participant.player) participant.player.SetGameplayAllowed(false);
+        }
+        // Plan both complete formations before teleporting anyone. Old positions on a
+        // restart must not influence the opening, and partial team starts are rejected.
+        if (!ArenaSpawnSelection.TryPlanOpening(this, out var placements, out var red, out var blue))
+        {
+            Result = "No room for the opening teams. Check spawn points and opening radius.";
+            Debug.LogWarning(Result, this);
+            return;
+        }
+        RedOpeningPoint = red; BlueOpeningPoint = blue;
         IsRunning = true;
-        foreach (ArenaParticipant participant in participants) Spawn(participant);
+        foreach (var placement in placements)
+            placement.participant.Respawn(placement.position, placement.rotation);
+        spawnHistory[red] = spawnHistory[blue] = Time.time;
+        Physics.SyncTransforms();
     }
 
     // Explicit entry point also makes local rule checks independent of real-time waits.
@@ -90,9 +110,13 @@ public class ArenaMatch : MonoBehaviour
 
     void OnDrawGizmosSelected()
     {
-        DrawPoints(redSpawns, Color.red);
-        DrawPoints(blueSpawns, Color.blue);
+        DrawPoints(spawnPoints, Color.cyan);
         DrawPoints(patrolPoints, Color.yellow);
+        if (Application.isPlaying && RedOpeningPoint && BlueOpeningPoint)
+        {
+            Gizmos.color = Color.red; Gizmos.DrawWireSphere(RedOpeningPoint.position, settings.openingTeamRadius);
+            Gizmos.color = Color.blue; Gizmos.DrawWireSphere(BlueOpeningPoint.position, settings.openingTeamRadius);
+        }
     }
 
     static void DrawPoints(Transform[] points, Color color)
