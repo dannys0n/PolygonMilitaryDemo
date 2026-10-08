@@ -1,12 +1,18 @@
 using UnityEngine;
 
 // Minimal observation controls and feedback for the AI-versus-AI test scene.
+[DefaultExecutionOrder(200)]
 public class ArenaAISpectator : MonoBehaviour
 {
     public ArenaMatch match;
     public Camera spectatorCamera;
     public float moveSpeed = 15f;
     public float lookSensitivity = 2f;
+    [Header("Follow camera")]
+    [Min(.5f)] public float orbitDistance = 2.5f;
+    public float zoomSpeed = 2f;
+    public ArenaParticipant FollowedCharacter { get; private set; }
+    Transform followedHead;
     float yaw, pitch;
     bool showLabels = true;
 
@@ -20,6 +26,16 @@ public class ArenaAISpectator : MonoBehaviour
     {
         if (Input.GetKeyDown(KeyCode.Backspace)) match.BeginMatch();
         if (Input.GetKeyDown(KeyCode.Tab)) showLabels = !showLabels;
+        if (Input.GetKeyDown(KeyCode.F))
+        {
+            if (FollowedCharacter) StopFollowing();
+            else CycleCharacter(1);
+        }
+        if (Input.GetKeyDown(KeyCode.X)) CycleCharacter(1);
+        if (Input.GetKeyDown(KeyCode.Z)) CycleCharacter(-1);
+        if (FollowedCharacter && !FollowedCharacter.isActiveAndEnabled) StopFollowing();
+        if (FollowedCharacter)
+            orbitDistance = Mathf.Clamp(orbitDistance - Input.GetAxis("Mouse ScrollWheel") * zoomSpeed, .5f, 8f);
         bool looking = Input.GetMouseButton(1);
         Cursor.lockState = looking ? CursorLockMode.Locked : CursorLockMode.None;
         Cursor.visible = !looking;
@@ -27,21 +43,65 @@ public class ArenaAISpectator : MonoBehaviour
         yaw += Input.GetAxis("Mouse X") * lookSensitivity;
         pitch = Mathf.Clamp(pitch - Input.GetAxis("Mouse Y") * lookSensitivity, -85f, 85f);
         transform.rotation = Quaternion.Euler(pitch, yaw, 0);
+        if (FollowedCharacter) return;
         Vector3 move = new Vector3(Input.GetAxisRaw("Horizontal"),
             (Input.GetKey(KeyCode.E) ? 1f : 0f) - (Input.GetKey(KeyCode.Q) ? 1f : 0f), Input.GetAxisRaw("Vertical"));
         transform.position += transform.TransformDirection(Vector3.ClampMagnitude(move, 1f)) * moveSpeed
             * (Input.GetKey(KeyCode.LeftShift) ? 3f : 1f) * Time.deltaTime;
     }
 
+    public void Follow(ArenaParticipant character)
+    {
+        FollowedCharacter = character;
+        followedHead = character.player.actions.animator.GetBoneTransform(HumanBodyBones.Head);
+    }
+
+    public void StopFollowing()
+    {
+        FollowedCharacter = null; followedHead = null;
+    }
+
+    void CycleCharacter(int direction)
+    {
+        var actors = match.participants;
+        if (actors.Length == 0) { StopFollowing(); return; }
+        int current = System.Array.IndexOf(actors, FollowedCharacter);
+        int start = current < 0 ? (direction > 0 ? -1 : 0) : current;
+        for (int i = 1; i <= actors.Length; i++)
+        {
+            var actor = actors[(start + direction * i + actors.Length * 2) % actors.Length];
+            if (actor.player && actor.isActiveAndEnabled) { Follow(actor); return; }
+        }
+        StopFollowing();
+    }
+
+    void LateUpdate()
+    {
+        if (!FollowedCharacter) return;
+        // Follow the animated head after movement/animation; keep yaw independent of the bot.
+        Vector3 pivot = followedHead.position;
+        Vector3 backward = -transform.forward;
+        float distance = orbitDistance;
+        foreach (var hit in Physics.SphereCastAll(pivot, .15f, backward, distance,
+                     Physics.DefaultRaycastLayers, QueryTriggerInteraction.Ignore))
+        {
+            if (hit.collider.GetComponentInParent<ArenaParticipant>()) continue;
+            distance = Mathf.Min(distance, Mathf.Max(0f, hit.distance - .05f));
+        }
+        transform.position = pivot + backward * distance;
+    }
+
     void OnDisable() { Cursor.lockState = CursorLockMode.None; Cursor.visible = true; }
 
     void OnGUI()
     {
-        GUI.Box(new Rect(12, 12, 530, 85), "AI arena (" + match.TeamSize(ArenaParticipant.Team.Red) + " v "
+        GUI.Box(new Rect(12, 12, 650, 110), "AI arena (" + match.TeamSize(ArenaParticipant.Team.Red) + " v "
             + match.TeamSize(ArenaParticipant.Team.Blue) + "): Red " + match.RedScore + " : " + match.BlueScore + " Blue");
         GUI.Label(new Rect(24, 38, 510, 25), "Hold RMB + WASD to fly | Q/E down/up | Shift faster | Tab labels");
         GUI.Label(new Rect(24, 63, 510, 25), (match.IsRunning ? Mathf.CeilToInt(match.TimeRemaining) + "s" : match.Result)
             + " | Backspace restarts");
+        GUI.Label(new Rect(24, 88, 630, 25), "F follow/free | Z/X select bot | RMB orbit | Scroll zoom | "
+            + (FollowedCharacter ? "Following: " + FollowedCharacter.name : "Free camera"));
         if (!showLabels) return;
         foreach (var participant in match.participants)
         {
