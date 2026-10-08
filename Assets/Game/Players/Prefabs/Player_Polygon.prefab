@@ -3129,6 +3129,76 @@ Transform:
   m_Children: []
   m_Father: {fileID: 6520394518023390531}
   m_LocalEulerAnglesHint: {x: -0, y: 0, z: 0}
+--- !u!1 &1410299004263429317
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 6069383696898035806}
+  - component: {fileID: 4264537081075623197}
+  - component: {fileID: 8828280241524215924}
+  m_Layer: 0
+  m_Name: GameplayBodyHit
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &6069383696898035806
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1410299004263429317}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 5521066776183980272}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!136 &4264537081075623197
+CapsuleCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1410299004263429317}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 1
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 2
+  m_Radius: 0.28
+  m_Height: 1.4
+  m_Direction: 1
+  m_Center: {x: 0, y: 0.82, z: 0}
+--- !u!114 &8828280241524215924
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1410299004263429317}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ea1e5bf66b2071d42a2aa17081884ae9, type: 3}
+  m_Name:
+  m_EditorClassIdentifier: Assembly-CSharp::SoldierHitRegion
+  health: {fileID: 6569938417668010096}
+  head: 0
 --- !u!1 &1418208447650431524
 GameObject:
   m_ObjectHideFlags: 0
@@ -7969,6 +8039,7 @@ Transform:
   - {fileID: 1483201689760400803}
   - {fileID: 7862882597731022206}
   - {fileID: 1970475100241743972}
+  - {fileID: 5949632593761137254}
   m_Father: {fileID: 976455593650857101}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &3600924680167111260
@@ -12298,6 +12369,74 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 5252251481922640816}
   m_Mesh: {fileID: 4300000, guid: 42528800a5862f544ba4759717e77515, type: 3}
+--- !u!1 &5360193486706395679
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 5949632593761137254}
+  - component: {fileID: 2079510398084610438}
+  - component: {fileID: 2369907161514375353}
+  m_Layer: 0
+  m_Name: GameplayHeadHit
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &5949632593761137254
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5360193486706395679}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 2808935568896177306}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!135 &2079510398084610438
+SphereCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5360193486706395679}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 1
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Radius: 0.14
+  m_Center: {x: 0, y: 0, z: 0}
+--- !u!114 &2369907161514375353
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5360193486706395679}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ea1e5bf66b2071d42a2aa17081884ae9, type: 3}
+  m_Name:
+  m_EditorClassIdentifier: Assembly-CSharp::SoldierHitRegion
+  health: {fileID: 6569938417668010096}
+  head: 1
 --- !u!1 &5370799006495326302
 GameObject:
   m_ObjectHideFlags: 0
@@ -19593,6 +19732,8 @@ GameObject:
   - component: {fileID: 8866584782723430131}
   - component: {fileID: 4481885378340585173}
   - component: {fileID: 8840285972060040731}
+  - component: {fileID: 6569938417668010096}
+  - component: {fileID: 5927823626716615906}
   m_Layer: 0
   m_Name: Player_Polygon
   m_TagString: Untagged
@@ -19616,6 +19757,7 @@ Transform:
   - {fileID: 9162614346773495888}
   - {fileID: 6889534468673074542}
   - {fileID: 7197399166231288833}
+  - {fileID: 6069383696898035806}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!143 &2307601721304991840
@@ -19865,6 +20007,38 @@ MonoBehaviour:
     m_Bits: 4294967291
   muzzleClearance: 0.01
   drawDebug: 1
+--- !u!114 &6569938417668010096
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8863008050220851912}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a12cc8a31dbad3243a26113807d21600, type: 3}
+  m_Name:
+  m_EditorClassIdentifier: Assembly-CSharp::SoldierHealth
+  maxHealth: 100
+--- !u!114 &5927823626716615906
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8863008050220851912}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: da7cb17233e87be48b78db7580b9d147, type: 3}
+  m_Name:
+  m_EditorClassIdentifier: Assembly-CSharp::SoldierLife
+  health: {fileID: 6569938417668010096}
+  actions: {fileID: 8705140395176685010}
+  movement: {fileID: 3167560685877921255}
+  look: {fileID: 6869284405060730759}
+  loadout: {fileID: 8866584782723430131}
+  view: {fileID: 3857842616418219034}
+  controller: {fileID: 2307601721304991840}
 --- !u!1 &8876015804472855225
 GameObject:
   m_ObjectHideFlags: 0

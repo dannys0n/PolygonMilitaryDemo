@@ -35,7 +35,7 @@ public class SoldierActions : MonoBehaviour
 
     public bool TryFire()
     {
-        if (IsReloading || loadout.IsSwitching || movement.IsRunning) return false;
+        if (!enabled || IsReloading || loadout.IsSwitching || movement.IsRunning) return false;
         if (!loadout.EquippedState.TryConsumeRound(Time.time, loadout.EquippedWeapon.definition)) return false;
         shooting.Fire(loadout.EquippedWeapon.definition, loadout.EquippedMuzzle);
         PresentFire();
@@ -44,7 +44,7 @@ public class SoldierActions : MonoBehaviour
 
     public bool TryReload()
     {
-        if (IsReloading || loadout.IsSwitching) return false;
+        if (!enabled || IsReloading || loadout.IsSwitching) return false;
         if (!loadout.EquippedState.CanReload(loadout.EquippedWeapon.definition)) return false;
         IsReloading = true;
         reloadingWeapon = loadout.EquippedState;
@@ -73,6 +73,9 @@ public class SoldierActions : MonoBehaviour
         CancelReload();
         loadout.CancelSwitch();
         firstPersonView.CancelAim();
+        firstPersonView.SetAimRequested(false);
+        animator.ResetTrigger("Fire");
+        animator.ResetTrigger("HitReaction");
     }
 
     public void PlayHitReaction()

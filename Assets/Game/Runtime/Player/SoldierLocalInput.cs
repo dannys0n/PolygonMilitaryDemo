@@ -16,6 +16,11 @@ public class SoldierLocalInput : MonoBehaviour
     {
         if (Input.GetKeyDown(KeyCode.Escape)) SetCursorLocked(false);
         if (Input.GetMouseButtonDown(0)) SetCursorLocked(true);
+        if (!actions.enabled)
+        {
+            view.SetAimRequested(false);
+            return;
+        }
         bool active = Cursor.lockState == CursorLockMode.Locked;
         view.SetAimRequested(active && Input.GetMouseButton(1));
         look.ApplyLookDelta(active
@@ -36,11 +41,15 @@ public class SoldierLocalInput : MonoBehaviour
         else if (actions.fireMode == SoldierActions.FireMode.Automatic
             ? Input.GetMouseButton(0) : Input.GetMouseButtonDown(0)) actions.TryFire();
 
-        for (int i = 0; i < Mathf.Min(loadout.slots.Length, 9); i++)
-            if (Input.GetKeyDown((KeyCode)((int)KeyCode.Alpha1 + i))) loadout.TrySelectWeapon(i);
+        int[] available = loadout.AvailableSlots;
+        for (int i = 0; i < Mathf.Min(available.Length, 9); i++)
+            if (Input.GetKeyDown((KeyCode)((int)KeyCode.Alpha1 + i))) loadout.TrySelectWeapon(available[i]);
         float wheel = Input.GetAxis("Mouse ScrollWheel");
-        if (wheel != 0f) loadout.TrySelectWeapon((loadout.selectedSlot +
-            (wheel > 0f ? 1 : loadout.slots.Length - 1)) % loadout.slots.Length);
+        if (wheel != 0f)
+        {
+            int current = System.Array.IndexOf(available, loadout.selectedSlot);
+            loadout.TrySelectWeapon(available[(current + (wheel > 0f ? 1 : available.Length - 1)) % available.Length]);
+        }
     }
 
     static void SetCursorLocked(bool locked)

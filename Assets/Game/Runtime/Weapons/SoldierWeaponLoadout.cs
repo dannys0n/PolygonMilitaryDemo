@@ -65,8 +65,28 @@ public class SoldierWeaponLoadout : MonoBehaviour
         ? slots[selectedSlot].firstPersonMuzzle : slots[selectedSlot].thirdPersonMuzzle;
     private Coroutine switchRoutine;
     private bool initialized;
+    public int[] AvailableSlots { get; private set; }
 
-    void Awake() => ResetAmmunition();
+    void Awake()
+    {
+        AvailableSlots = new int[slots.Length];
+        for (int i = 0; i < slots.Length; i++) AvailableSlots[i] = i;
+        ResetAmmunition();
+    }
+
+    // Game modes choose a subset of the existing catalog without rebuilding equipment.
+    public void ConfigureAvailableSlots(int[] indices)
+    {
+        if (indices.Length == 0) throw new System.ArgumentException("Loadout needs at least one slot.");
+        for (int i = 0; i < indices.Length; i++)
+        {
+            if (indices[i] < 0 || indices[i] >= slots.Length || System.Array.IndexOf(indices, indices[i]) != i)
+                throw new System.ArgumentException("Loadout slots must be valid and unique.");
+        }
+        actions.CancelActions();
+        AvailableSlots = (int[])indices.Clone();
+        SetStartingSlot(AvailableSlots[0]);
+    }
 
     public void ResetAmmunition()
     {
@@ -86,7 +106,8 @@ public class SoldierWeaponLoadout : MonoBehaviour
     // Input and future network commands use the same action admission.
     public bool TrySelectWeapon(int index)
     {
-        if (index < 0 || index >= slots.Length || index == selectedSlot ||
+        if (!enabled || index < 0 || index >= slots.Length || index == selectedSlot ||
+            System.Array.IndexOf(AvailableSlots, index) < 0 ||
             IsSwitching || actions.IsReloading) return false;
         switchRoutine = StartCoroutine(SwitchWeapon(index));
         return true;

@@ -13,6 +13,7 @@ public class SoldierLook : MonoBehaviour
     // Angular mouse/input deltas in degrees; the caller chooses input sensitivity.
     public void ApplyLookDelta(Vector2 delta)
     {
+        if (!enabled) return;
         float mouseX = delta.x;
         float mouseY = delta.y;
 
@@ -33,5 +34,13 @@ public class SoldierLook : MonoBehaviour
     {
         Ray centerRay = aimCamera.ViewportPointToRay(new Vector3(0.5f, 0.5f, 0f));
         aimTarget.position = centerRay.GetPoint(10f);
+    }
+
+    public void ResetLook()
+    {
+        pitch = 0f;
+        playerCamera.localRotation = Quaternion.identity;
+        animator.SetFloat("Turn", 0f);
+        UpdateAimTarget();
     }
 }

@@ -7,6 +7,8 @@ public class SoldierHealth : MonoBehaviour
     public bool IsDead => CurrentHealth <= 0f;
     public event System.Action<float, GameObject> Damaged;
     public event System.Action<GameObject> Died;
+    // Optional rules supplied by the owning game mode (teams, invulnerability, etc.).
+    public System.Func<GameObject, bool> DamageFilter { get; set; }
 
     void Awake() => ResetHealth();
 
@@ -15,6 +17,7 @@ public class SoldierHealth : MonoBehaviour
     public bool ApplyDamage(float amount, GameObject source)
     {
         if (IsDead || amount <= 0f) return false;
+        if (DamageFilter != null && !DamageFilter(source)) return false;
         CurrentHealth = Mathf.Max(0f, CurrentHealth - amount);
         bool died = IsDead;
         Damaged?.Invoke(amount, source);

@@ -20,11 +20,26 @@ public class SoldierMovement : MonoBehaviour
 
     public void RequestJump()
     {
+        if (!enabled) return;
         jumpRequested = true;
+    }
+
+    public void ResetMovement()
+    {
+        verticalSpeed = 0f;
+        jumpRequested = false;
+        IsRunning = false;
+        firstPersonRunBlend = 0f;
+        animator.SetFloat("RunBlend", 0f);
+        animator.SetFloat("MoveX", 0f);
+        animator.SetFloat("MoveZ", 0f);
+        animator.SetFloat("VerticalSpeed", 0f);
+        view.armsAnimator.SetFloat("RunBlend", 0f);
     }
 
     public void SimulateMovement(Vector2 input, float deltaTime, bool runRequested = false)
     {
+        if (!enabled) return;
         input = Vector2.ClampMagnitude(input, 1f);
         IsRunning = runRequested && input.y > .1f && controller.isGrounded
             && !view.IsReloading && !view.IsEquipping && view.AimBlend < .01f

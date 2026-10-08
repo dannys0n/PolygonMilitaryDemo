@@ -14,6 +14,7 @@ public class SoldierHitscan : MonoBehaviour
         public Vector3 point;
         public Collider collider;
         public bool damaged;
+        public bool killed;
     }
 
     public ShotResult Fire(SoldierWeaponDefinition weapon, Transform muzzle)
@@ -26,9 +27,9 @@ public class SoldierHitscan : MonoBehaviour
         var result = new ShotResult { origin = origin, point = point };
         // A muzzle inside cover must not shoot out through its back face.
         foreach (Collider collider in Physics.OverlapSphere(origin, muzzleClearance,
-            hitLayers, QueryTriggerInteraction.Ignore))
+            hitLayers, QueryTriggerInteraction.Collide))
         {
-            if (IsOwnCollider(collider)) continue;
+            if (!IsShotCollider(collider)) continue;
             result.collider = collider;
             result.point = collider.ClosestPoint(origin);
             return Finish(result, weapon);
@@ -60,7 +61,10 @@ public class SoldierHitscan : MonoBehaviour
     {
         // Missing hit regions represent ordinary world surfaces, not damageable actors.
         if (result.collider && result.collider.TryGetComponent(out SoldierHitRegion region))
+        {
             result.damaged = region.ApplyHit(weapon, gameObject);
+            result.killed = result.damaged && region.health.IsDead;
+        }
         if (drawDebug) Debug.DrawLine(result.origin, result.point, Color.yellow, 1f);
         ShotResolved?.Invoke(result);
         return result;
@@ -68,13 +72,17 @@ public class SoldierHitscan : MonoBehaviour
 
     bool IsOwnCollider(Collider collider) => collider.transform.IsChildOf(transform);
 
+    bool IsShotCollider(Collider collider) => !IsOwnCollider(collider)
+        && !(collider is CharacterController)
+        && (!collider.isTrigger || collider.TryGetComponent<SoldierHitRegion>(out _));
+
     bool ClosestHit(Ray ray, float distance, out RaycastHit closest)
     {
         closest = default;
         bool found = false;
-        foreach (RaycastHit hit in Physics.RaycastAll(ray, distance, hitLayers, QueryTriggerInteraction.Ignore))
+        foreach (RaycastHit hit in Physics.RaycastAll(ray, distance, hitLayers, QueryTriggerInteraction.Collide))
         {
-            if (IsOwnCollider(hit.collider) || (found && hit.distance >= closest.distance)) continue;
+            if (!IsShotCollider(hit.collider) || (found && hit.distance >= closest.distance)) continue;
             closest = hit;
             found = true;
         }

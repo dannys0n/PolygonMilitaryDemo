@@ -59,19 +59,19 @@ Do not build classes, dynamic pickups, conquest, battle royale, persistence, pro
 
 ### 3.3 Add character death and arena respawning
 
-- [ ] Apply health/damage to the shared player; emit death once, stop movement/combat, and cancel pending actions.
-- [ ] Add arena-owned team assignment and friendly-fire policy.
-- [ ] Add team spawn points and a configurable respawn delay; reset player health and equipment state according to arena rules.
-- [ ] Verify that death during reload/switching cannot complete stale actions after respawn, and controls/presentation recover correctly.
+- [x] Apply health/damage to the shared player; emit death once, stop movement/combat, and cancel pending actions.
+- [x] Add arena-owned team assignment and friendly-fire policy.
+- [x] Add team spawn points and a configurable respawn delay; reset player health and equipment state according to arena rules.
+- [x] Verify that death during reload/switching cannot complete stale actions after respawn, and controls/presentation recover correctly.
 
 ### 3.4 Add the team deathmatch loop and feedback
 
-- [ ] Supply fixed starting loadouts from arena configuration, using the existing weapon catalog.
-- [ ] Award one team point per valid enemy kill; prevent duplicate points and define suicide/friendly-fire handling.
-- [ ] Add a configurable score limit and match timer, a match-end result, and a local restart.
-- [ ] Add a minimal arena HUD: crosshair, magazine/reserve ammo, health, team scores, timer, and respawn countdown.
-- [ ] Add basic hit/kill feedback while preserving existing recoil, camera shake, and weapon animation presentation.
-- [ ] Test the complete local loop with controlled damage/death scenarios: spawn, move, aim, fire, reload, switch, die, respawn, score, and end/restart the match.
+- [x] Supply fixed starting loadouts from arena configuration, using the existing weapon catalog.
+- [x] Award one team point per valid enemy kill; prevent duplicate points and define suicide/friendly-fire handling.
+- [x] Add a configurable score limit and match timer, a match-end result, and a local restart.
+- [x] Add a minimal arena HUD: crosshair, magazine/reserve ammo, health, team scores, timer, and respawn countdown.
+- [x] Add basic hit/kill feedback while preserving existing recoil, camera shake, and weapon animation presentation.
+- [ ] User Play Mode walkthrough of the complete local loop: spawn, move, aim, fire, reload, switch, die, respawn, score, and end/restart. Focused rule checks passed; visual/input walkthrough is deferred.
 
 ## 4. Add a map
 
