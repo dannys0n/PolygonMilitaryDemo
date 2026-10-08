@@ -5,7 +5,7 @@ using UnityEngine.AI;
 // Explicit combat/search states: Sergio Ocio, Game AI Pro 3, chapter 7.
 public class ArenaAIInput : SoldierInputSource
 {
-    public enum Behavior { Inactive, Patrol, Search, Approach, Strafe, MoveToCover, Hide, Peek }
+    public enum Behavior { Inactive, Idle, Patrol, Search, Approach, Strafe, MoveToCover, Hide, Peek }
     public SoldierController soldier;
     public SoldierLife life;
     public ArenaParticipant participant;
@@ -18,6 +18,7 @@ public class ArenaAIInput : SoldierInputSource
     public float reactionTime = .35f;
     public float memoryDuration = 4f;
     public float repathInterval = .3f;
+    public float perceptionInterval = .15f;
     public float sprintDistance = 8f;
     public float strafeDistance = 2f;
     public Vector2 repositionInterval = new Vector2(1.5f, 3f);
@@ -59,7 +60,10 @@ public class ArenaAIInput : SoldierInputSource
     float seenAt = float.NegativeInfinity, acquiredAt, readyAt, nextPath;
     float nextCover, nextReposition, phaseUntil, nextNoise, burstUntil, pauseUntil, nextSemi, nextWeapon;
     float progressAt, recoveryUntil;
-    int patrolIndex;
+    Vector3 patrolDestination;
+    float patrolWaitUntil, nextPerception;
+    int lastPatrolIndex = -1;
+    bool hasPatrolDestination, targetVisible;
     bool wasVisible;
 
     void Awake()
@@ -76,6 +80,11 @@ public class ArenaAIInput : SoldierInputSource
         target = null; HasCover = wasVisible = false; State = Behavior.Inactive;
         seenAt = float.NegativeInfinity;
         nextPath = nextCover = nextReposition = nextWeapon = nextNoise = 0f;
+        nextPerception = Time.time + Random.value * perceptionInterval;
+        nextCover = Time.time + Random.value;
+        patrolWaitUntil = 0f;
+        hasPatrolDestination = targetVisible = false;
+        lastPatrolIndex = -1;
         burstUntil = pauseUntil = nextSemi = phaseUntil = recoveryUntil = 0f;
         aimNoise = desiredNoise = Vector2.zero;
         progressPosition = Destination = transform.position; progressAt = Time.time;
@@ -105,6 +114,7 @@ public class ArenaAIInput : SoldierInputSource
             ? Mathf.Atan2(direction.x, direction.z) * Mathf.Rad2Deg : transform.eulerAngles.y;
         float up = wantsAim ? Mathf.Atan2(direction.y, new Vector2(direction.x, direction.z).magnitude) * Mathf.Rad2Deg : 0f;
         if (wantsAim) { yaw += aimNoise.x; up += aimNoise.y; }
+        else if (State == Behavior.Idle) yaw = transform.eulerAngles.y + Mathf.Sin(Time.time * .7f) * 30f * Time.deltaTime;
         float yawError = Mathf.DeltaAngle(transform.eulerAngles.y, yaw), pitchError = up + life.look.Pitch;
         float step = turnSpeed * Time.deltaTime;
         var look = new Vector2(Mathf.Clamp(yawError, -step, step), Mathf.Clamp(pitchError, -step, step));
@@ -117,7 +127,8 @@ public class ArenaAIInput : SoldierInputSource
         Vector3 local = Quaternion.Inverse(Quaternion.Euler(0f, transform.eulerAngles.y + look.x, 0f))
             * velocity / Mathf.Max(agent.speed, .01f);
         bool fire = wantsAim && !busy && !reload && Time.time >= readyAt
-            && Mathf.Abs(yawError) < 4f && Mathf.Abs(pitchError) < 4f && InBurst();
+            && Mathf.Abs(yawError) < 4f && Mathf.Abs(pitchError) < 4f
+            && ArenaAITactics.ClearShot(this, life.look.aimCamera.transform.position, AimPoint(target), target) && InBurst();
         bool pressed = fire && Time.time >= nextSemi;
         if (pressed) nextSemi = Time.time + Mathf.Max(semiAutoInterval, 60f / soldier.actions.roundsPerMinute);
         wasVisible = visible;
@@ -130,6 +141,8 @@ public class ArenaAIInput : SoldierInputSource
 
     bool UpdatePerception()
     {
+        if (Time.time < nextPerception) return target && !target.health.IsDead && targetVisible;
+        nextPerception = Time.time + Mathf.Max(.02f, perceptionInterval);
         ArenaParticipant visible = null; float nearest = sightRange * sightRange;
         foreach (var enemy in participant.match.participants)
         {
@@ -146,12 +159,14 @@ public class ArenaAIInput : SoldierInputSource
                 readyAt = Time.time + reactionTime; acquiredAt = Time.time; trackedAim = AimPoint(visible);
                 burstUntil = pauseUntil = 0f;
             }
-            if (target != visible) { HasCover = false; nextCover = nextReposition = 0f; }
+            if (target != visible)
+            { HasCover = false; nextCover = Time.time + Random.value; nextReposition = 0f; hasPatrolDestination = false; }
             target = visible; lastSeen = visible.transform.position; seenAt = Time.time;
         }
         else if (target && (target.health.IsDead || Time.time - seenAt > memoryDuration))
         { target = null; HasCover = false; nextReposition = 0f; }
-        return visible;
+        targetVisible = visible;
+        return targetVisible;
     }
 
     int ChooseWeapon(float distance)
@@ -183,12 +198,8 @@ public class ArenaAIInput : SoldierInputSource
     {
         if (!target)
         {
-            HasCover = false; State = Behavior.Patrol;
-            var patrol = participant.team == ArenaParticipant.Team.Red ? participant.match.blueSpawns : participant.match.redSpawns;
-            Vector3 point = patrol[patrolIndex % patrol.Length].position;
-            if (HorizontalDistance(transform.position, point) < 2f)
-            { patrolIndex++; point = patrol[patrolIndex % patrol.Length].position; }
-            SetDestination(point); return;
+            HasCover = false;
+            Patrol(); return;
         }
         Vector3 threat = lastSeen + Vector3.up * 1.25f;
         bool mustHide = needsReload || soldier.actions.IsReloading;
@@ -239,6 +250,41 @@ public class ArenaAIInput : SoldierInputSource
         Destination = point;
         if (!force && Time.time < nextPath) return;
         agent.SetDestination(point); nextPath = Time.time + Mathf.Max(.05f, repathInterval);
+    }
+
+    void Patrol()
+    {
+        if (Time.time < patrolWaitUntil)
+        { State = Behavior.Idle; SetDestination(transform.position); return; }
+        if (hasPatrolDestination && HorizontalDistance(transform.position, patrolDestination) < 1.2f)
+        {
+            hasPatrolDestination = false;
+            patrolWaitUntil = Time.time + Random.Range(.5f, 1.5f);
+            State = Behavior.Idle; SetDestination(transform.position); return;
+        }
+        if (!hasPatrolDestination)
+        {
+            var points = participant.match.patrolPoints;
+            int start = points.Length > 0 ? Random.Range(0, points.Length) : 0;
+            for (int i = 0; i < points.Length; i++)
+            {
+                int index = (start + i) % points.Length;
+                if (index == lastPatrolIndex || HorizontalDistance(transform.position, points[index].position) < 3f) continue;
+                if (!ArenaAITactics.Reachable(this, points[index].position, queryPath, out patrolDestination, out _)) continue;
+                lastPatrolIndex = index; hasPatrolDestination = true; break;
+            }
+            // Scenes without authored patrol points wander locally, never toward enemy spawns.
+            if (points.Length == 0)
+                for (int i = 0; i < 4 && !hasPatrolDestination; i++)
+                {
+                    Vector2 offset = Random.insideUnitCircle.normalized * 10f;
+                    hasPatrolDestination = ArenaAITactics.Reachable(this, transform.position + new Vector3(offset.x, 0, offset.y),
+                        queryPath, out patrolDestination, out _);
+                }
+            if (!hasPatrolDestination)
+            { State = Behavior.Idle; patrolWaitUntil = Time.time + 1f; SetDestination(transform.position); return; }
+        }
+        State = Behavior.Patrol; SetDestination(patrolDestination);
     }
 
     void RecoverStuckPath()

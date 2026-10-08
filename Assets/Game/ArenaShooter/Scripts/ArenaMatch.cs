@@ -5,22 +5,25 @@ public class ArenaMatch : MonoBehaviour
 {
     public ArenaMatchSettings settings;
     public ArenaParticipant[] participants;
-    public Transform[] redSpawns;
-    public Transform[] blueSpawns;
+    public Transform[] redSpawns = System.Array.Empty<Transform>();
+    public Transform[] blueSpawns = System.Array.Empty<Transform>();
+    [Tooltip("Map patrol routes and encounter areas, separate from respawn locations.")]
+    public Transform[] patrolPoints = System.Array.Empty<Transform>();
     public bool IsRunning { get; private set; }
     public int RedScore { get; private set; }
     public int BlueScore { get; private set; }
     public float TimeRemaining { get; private set; }
     public string Result { get; private set; } = "";
     public event System.Action MatchEnded;
-    private int nextRedSpawn, nextBlueSpawn;
+    readonly System.Collections.Generic.Dictionary<Transform, float> spawnHistory = new System.Collections.Generic.Dictionary<Transform, float>();
 
     void Start() => BeginMatch();
     void Update() => Tick(Time.deltaTime);
 
     public void BeginMatch()
     {
-        RedScore = BlueScore = nextRedSpawn = nextBlueSpawn = 0;
+        RedScore = BlueScore = 0;
+        spawnHistory.Clear();
         TimeRemaining = settings.matchDuration;
         Result = "";
         IsRunning = true;
@@ -63,12 +66,11 @@ public class ArenaMatch : MonoBehaviour
     public void Spawn(ArenaParticipant participant)
     {
         if (!IsRunning) return;
-        Transform spawn;
-        if (participant.team == ArenaParticipant.Team.Red)
-            spawn = redSpawns[nextRedSpawn++ % redSpawns.Length];
-        else
-            spawn = blueSpawns[nextBlueSpawn++ % blueSpawns.Length];
+        if (!ArenaSpawnSelection.TryChoose(this, participant, spawnHistory, out var spawn)) return;
         participant.Respawn(spawn);
+        spawnHistory[spawn] = Time.time;
+        // Successive spawns in the same frame must see the previous actor's new collider position.
+        Physics.SyncTransforms();
     }
 
     public void EndMatch()
@@ -85,4 +87,24 @@ public class ArenaMatch : MonoBehaviour
     }
 
     void OnDisable() => EndMatch();
+
+    void OnDrawGizmosSelected()
+    {
+        DrawPoints(redSpawns, Color.red);
+        DrawPoints(blueSpawns, Color.blue);
+        DrawPoints(patrolPoints, Color.yellow);
+    }
+
+    static void DrawPoints(Transform[] points, Color color)
+    {
+        Gizmos.color = color;
+        foreach (var point in points)
+        {
+            Gizmos.DrawWireSphere(point.position + Vector3.up * .5f, .5f);
+            Gizmos.DrawLine(point.position, point.position + point.forward * 1.5f);
+#if UNITY_EDITOR
+            UnityEditor.Handles.Label(point.position + Vector3.up, point.name);
+#endif
+        }
+    }
 }

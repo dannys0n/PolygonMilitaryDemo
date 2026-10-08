@@ -7,6 +7,10 @@ public class ArenaMatchSettings : ScriptableObject
     [Min(1f)] public float matchDuration = 300f;
     [Min(.1f)] public float respawnDelay = 3f;
     public bool friendlyFire;
+    [Header("Respawn safety")]
+    [Min(0f)] public float unsafeEnemyDistance = 8f;
+    [Min(.5f)] public float spawnClearance = 1.2f;
+    [Min(0f)] public float recentSpawnTime = 8f;
     [Tooltip("Indices in the shared player's equipment catalog. First entry is the starting weapon.")]
     public int[] redLoadout = { 0, 5 };
     public int[] blueLoadout = { 0, 5 };

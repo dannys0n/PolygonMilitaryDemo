@@ -9,6 +9,7 @@ public class ArenaParticipant : MonoBehaviour
     public SoldierLife player;
     public ArenaMatch match;
     private float respawnAt = -1f;
+    private float nextSpawnAttempt;
     public bool IsRespawning => respawnAt >= 0f && health.IsDead;
     public float RespawnRemaining => IsRespawning ? Mathf.Max(0f, respawnAt - Time.time) : 0f;
 
@@ -30,12 +31,15 @@ public class ArenaParticipant : MonoBehaviour
     void OnDied(GameObject source)
     {
         respawnAt = Time.time + match.settings.respawnDelay;
+        nextSpawnAttempt = respawnAt;
         match.RecordKill(this, source);
     }
 
     public void TickRespawn()
     {
-        if (IsRespawning && Time.time >= respawnAt) match.Spawn(this);
+        if (!IsRespawning || Time.time < nextSpawnAttempt) return;
+        nextSpawnAttempt = Time.time + .5f;
+        match.Spawn(this);
     }
 
     public void CancelRespawn() => respawnAt = -1f;
