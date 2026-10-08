@@ -6,6 +6,8 @@ public class ArenaAISpectator : MonoBehaviour
 {
     public ArenaMatch match;
     public Camera spectatorCamera;
+    public GameObject hudPrefab;
+    ArenaHud followHud;
     public float moveSpeed = 15f;
     public float lookSensitivity = 2f;
     [Header("Follow camera")]
@@ -97,6 +99,7 @@ public class ArenaAISpectator : MonoBehaviour
         FollowedCharacter = character;
         FollowedCharacter.health.Died += OnFollowedCharacterDied;
         followedHead = character.player.actions.animator.GetBoneTransform(HumanBodyBones.Head);
+        ShowFollowHud(character);
         if (perspective) EnterPerspective();
     }
 
@@ -106,6 +109,29 @@ public class ArenaAISpectator : MonoBehaviour
         if (FollowedCharacter) FollowedCharacter.health.Died -= OnFollowedCharacterDied;
         ExitPerspective();
         FollowedCharacter = null; followedHead = null;
+        if (followHud)
+        {
+            if (localPlayer) followHud.SetPlayer(localPlayer);
+            else followHud.gameObject.SetActive(false);
+        }
+    }
+
+    void ShowFollowHud(ArenaParticipant character)
+    {
+        if (!followHud) followHud = FindAnyObjectByType<ArenaHud>();
+        if (!followHud)
+        {
+            // Configure the shared prefab before activating its player event subscriptions.
+            var container = new GameObject("Spectator HUD");
+            container.SetActive(false);
+            followHud = Instantiate(hudPrefab, container.transform).GetComponent<ArenaHud>();
+            followHud.match = match;
+            followHud.allowLocalShortcuts = false;
+            followHud.SetPlayer(character);
+            container.SetActive(true);
+        }
+        else followHud.SetPlayer(character);
+        followHud.gameObject.SetActive(true);
     }
 
     void OnFollowedCharacterDied(GameObject source)

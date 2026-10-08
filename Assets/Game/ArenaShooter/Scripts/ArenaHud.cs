@@ -9,6 +9,7 @@ public class ArenaHud : MonoBehaviour
 {
     public ArenaMatch match;
     public ArenaParticipant player;
+    public bool allowLocalShortcuts = true;
     public TMP_Text redScore, blueScore, timer, mode, weaponName, ammunition, fireMode, slots, health, teammates, medal, deathStatus;
     public Sprite rifleSprite, pistolSprite;
     public TMP_Text[] killerNames, victimNames, equipmentKeys;
@@ -45,6 +46,10 @@ public class ArenaHud : MonoBehaviour
     void OnEnable()
     {
         match.KillRecorded += OnKill; match.MatchStarted += ResetFeedback;
+        SubscribePlayer();
+    }
+    void SubscribePlayer()
+    {
         player.player.actions.shooting.ShotResolved += OnShot;
         player.player.actions.FireStarted += OnFire;
         player.player.Respawned += OnRespawn;
@@ -52,9 +57,22 @@ public class ArenaHud : MonoBehaviour
     void OnDisable()
     {
         match.KillRecorded -= OnKill; match.MatchStarted -= ResetFeedback;
+        UnsubscribePlayer();
+    }
+    void UnsubscribePlayer()
+    {
         player.player.actions.shooting.ShotResolved -= OnShot;
         player.player.actions.FireStarted -= OnFire;
         player.player.Respawned -= OnRespawn;
+    }
+    public void SetPlayer(ArenaParticipant character)
+    {
+        if (player == character) return;
+        bool listening = isActiveAndEnabled;
+        if (listening) UnsubscribePlayer();
+        player = character;
+        OnRespawn(); hitUntil = medalUntil = 0f; lastKill = -100f; nextRefresh = 0f;
+        if (listening) SubscribePlayer();
     }
     void OnRespawn() { streak = multiKill = 0; shotSpread = 0f; }
     void OnFire()
@@ -94,8 +112,9 @@ public class ArenaHud : MonoBehaviour
     static string Escape(string value) => value.Replace("<", "").Replace(">", "");
     void Update()
     {
-        if (Input.GetKeyDown(KeyCode.Backspace)) match.BeginMatch();
-        if (Input.GetKeyDown(KeyCode.K)) player.health.ApplyDamage(player.health.maxHealth, player.gameObject);
+        if (allowLocalShortcuts && Input.GetKeyDown(KeyCode.Backspace)) match.BeginMatch();
+        if (allowLocalShortcuts && player.GetComponent<SoldierLocalInput>() && Input.GetKeyDown(KeyCode.K))
+            player.health.ApplyDamage(player.health.maxHealth, player.gameObject);
         var life = player.player;
         // Keep AtlasNet's centered, smoothed visibility; shot bloom moves the arms independently.
         bool visible = !player.health.IsDead && !life.view.WantsToAim
