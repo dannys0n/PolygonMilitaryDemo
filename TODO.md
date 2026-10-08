@@ -6,7 +6,7 @@ Work through these stages in order. Check off items when complete; keep unfinish
 
 - [x] Add pistols to the shared FPS/TPS weapon setup.
 - [x] Add and tune pistol idle, aim, fire, reload, equip, and unequip animations.
-- [ ] Make a second pass on hand grips, fingers, wrists, and elbow hints for every weapon.
+- [x] Make a second pass on hand grips, fingers, wrists, and elbow hints for every weapon (accepted prototype baseline).
 - [ ] Polish FPS shoulder/arm offsets and consistency between weapons during swapping.
 - [x] Refine the TPS equip/unequip animations.
 
@@ -14,9 +14,11 @@ Work through these stages in order. Check off items when complete; keep unfinish
 
 - [ ] Remove unused assets, test prefabs, clips, and obsolete code after checking references.
 - [ ] Refactor where it makes responsibilities clearer, without unnecessary script fragmentation.
-- [ ] Group and move files for clearer separation between player, weapons, animation, gameplay, and imported assets.
+- [x] Group current player, weapon, animation, and test files; keep imported assets isolated.
 - [ ] Keep the FPS_Animator source import isolated; put actively used game assets in Assets/Game.
 - [ ] Simplify the prefab/configuration workflow for adding and tuning weapons.
+
+Current organization: main player at `Assets/Game/Players/Prefabs/Player_Polygon.prefab`; weapon-test scenes and player variants at `Assets/Game/Tests`; weapon configuration and loadout scripts at `Assets/Game/Runtime/Weapons`. Original animation clips remain available for rollback.
 
 ## 3. Implement basic gameplay
 
