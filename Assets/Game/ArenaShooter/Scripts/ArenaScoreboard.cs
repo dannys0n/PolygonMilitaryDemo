@@ -9,27 +9,31 @@ public class ArenaScoreboard : MonoBehaviour
     public ArenaMatch match;
     public ArenaParticipant localPlayer;
     public GameObject panel;
-    public TMP_Text matchInfo, redHeader, blueHeader;
+    public TMP_Text matchInfo, redHeader, blueHeader, instructions;
     public RectTransform redContent, blueContent, rowTemplate;
     public Color accent = new Color(1,.686f,0);
     public bool IsVisible { get; private set; }
+    public bool ResultsVisible { get; private set; }
     readonly List<RectTransform> redRows = new List<RectTransform>(), blueRows = new List<RectTransform>();
-    SoldierLocalInput localInput;
     ArenaAISpectator spectator;
     float nextRefresh;
 
     void Awake()
     {
-        localInput = FindAnyObjectByType<SoldierLocalInput>();
         spectator = FindAnyObjectByType<ArenaAISpectator>();
         rowTemplate.gameObject.SetActive(false); panel.SetActive(false);
     }
     void Update()
     {
-        SetVisible(Input.GetKey(KeyCode.Tab));
+        SetVisible(ResultsVisible || Input.GetKey(KeyCode.Tab));
         if (!IsVisible || Time.unscaledTime < nextRefresh) return;
         nextRefresh = Time.unscaledTime + .25f;
         RefreshRows();
+    }
+    public void SetResultsVisible(bool visible)
+    {
+        ResultsVisible = visible;
+        SetVisible(visible);
     }
     public void SetVisible(bool visible)
     {
@@ -41,6 +45,7 @@ public class ArenaScoreboard : MonoBehaviour
     void OnDisable() => SetVisible(false);
     public void RefreshRows()
     {
+        instructions.text = ResultsVisible ? "MATCH COMPLETE  /  FINAL STANDINGS" : "HOLD TAB TO VIEW  /  SCROLL EACH TEAM  /  100 POINTS PER ENEMY KILL";
         int seconds = Mathf.CeilToInt(match.TimeRemaining);
         matchInfo.text = $"TEAM DEATHMATCH  /  {match.RedScore} : {match.BlueScore}  /  {seconds/60:00}:{seconds%60:00}";
         UpdateTeam(ArenaParticipant.Team.Red,redContent,redRows,redHeader);
