@@ -37,7 +37,8 @@ public class ArenaAISpectator : MonoBehaviour
 
     void OnGUI()
     {
-        GUI.Box(new Rect(12, 12, 530, 85), "AI arena: Red " + match.RedScore + " : " + match.BlueScore + " Blue");
+        GUI.Box(new Rect(12, 12, 530, 85), "AI arena (" + match.TeamSize(ArenaParticipant.Team.Red) + " v "
+            + match.TeamSize(ArenaParticipant.Team.Blue) + "): Red " + match.RedScore + " : " + match.BlueScore + " Blue");
         GUI.Label(new Rect(24, 38, 510, 25), "Hold RMB + WASD to fly | Q/E down/up | Shift faster | Tab labels");
         GUI.Label(new Rect(24, 63, 510, 25), (match.IsRunning ? Mathf.CeilToInt(match.TimeRemaining) + "s" : match.Result)
             + " | Backspace restarts");
@@ -49,7 +50,7 @@ public class ArenaAISpectator : MonoBehaviour
             var bot = participant.GetComponent<ArenaAIInput>();
             GUI.color = participant.team == ArenaParticipant.Team.Red ? new Color(1f, .4f, .4f) : new Color(.4f, .7f, 1f);
             string state = participant.health.IsDead ? "Respawn " + participant.RespawnRemaining.ToString("F1")
-                : bot.State + " | " + participant.health.CurrentHealth.ToString("F0") + " HP";
+                : bot.State + (bot.soldier.movement.IsRunning ? " / Sprint" : "") + " | " + participant.health.CurrentHealth.ToString("F0") + " HP";
             GUI.Label(new Rect(screen.x - 80f, Screen.height - screen.y, 220f, 40f), participant.name + "\n" + state);
         }
         GUI.color = Color.white;

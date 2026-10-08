@@ -65,7 +65,7 @@ public static class ArenaAITactics
         point = default; length = 0f;
         if (!NavMesh.SamplePosition(proposed, out var hit, 1f, bot.agent.areaMask)) return false;
         point = hit.position;
-        if (Mathf.Abs(point.y - bot.transform.position.y) > 2f) return false;
+        // A complete navigation path decides connectivity, including ramps between floors.
         var controller = bot.life.controller; float radius = controller.radius;
         Vector3 center = point + controller.center;
         float halfSegment = Mathf.Max(0f, controller.height * .5f - radius);

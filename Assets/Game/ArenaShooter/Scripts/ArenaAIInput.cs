@@ -20,6 +20,8 @@ public class ArenaAIInput : SoldierInputSource
     public float repathInterval = .3f;
     public float perceptionInterval = .15f;
     public float sprintDistance = 8f;
+    [Tooltip("Keep sprinting until this close to the destination. Must be below Sprint Distance.")]
+    public float sprintStopDistance = 4f;
     public float strafeDistance = 2f;
     public Vector2 repositionInterval = new Vector2(1.5f, 3f);
     [Header("Cover")]
@@ -50,6 +52,7 @@ public class ArenaAIInput : SoldierInputSource
     public bool HasCover { get; private set; }
     public Vector3 CoverPosition => cover.position;
     public Vector3 PeekPosition => cover.peek;
+    public bool WantsToSprint { get; private set; }
     float ArrivalDistance => Mathf.Max(.35f, agent.stoppingDistance + .1f);
 
     ArenaParticipant target;
@@ -78,6 +81,7 @@ public class ArenaAIInput : SoldierInputSource
     void ResetIntent()
     {
         target = null; HasCover = wasVisible = false; State = Behavior.Inactive;
+        WantsToSprint = false;
         seenAt = float.NegativeInfinity;
         nextPath = nextCover = nextReposition = nextWeapon = nextNoise = 0f;
         nextPerception = Time.time + Random.value * perceptionInterval;
@@ -88,14 +92,15 @@ public class ArenaAIInput : SoldierInputSource
         burstUntil = pauseUntil = nextSemi = phaseUntil = recoveryUntil = 0f;
         aimNoise = desiredNoise = Vector2.zero;
         progressPosition = Destination = transform.position; progressAt = Time.time;
+        if (!agent.isActiveAndEnabled) return;
         if (agent.isOnNavMesh) agent.ResetPath();
         if (NavMesh.SamplePosition(transform.position, out var hit, 2f, agent.areaMask)) agent.Warp(hit.position);
     }
 
     public override SoldierInputFrame ReadInput()
     {
-        if (!soldier.actions.enabled || !participant.match.IsRunning || !agent.isOnNavMesh)
-        { State = Behavior.Inactive; return default; }
+        if (!soldier.actions.enabled || participant.IsAwaitingSpawn || !participant.match.IsRunning || !agent.isOnNavMesh)
+        { State = Behavior.Inactive; WantsToSprint = false; return default; }
         agent.nextPosition = transform.position;
         bool visible = UpdatePerception();
         float distance = target ? Vector3.Distance(transform.position, lastSeen) : float.PositiveInfinity;
@@ -119,9 +124,14 @@ public class ArenaAIInput : SoldierInputSource
         float step = turnSpeed * Time.deltaTime;
         var look = new Vector2(Mathf.Clamp(yawError, -step, step), Mathf.Clamp(pitchError, -step, step));
         bool arrived = HorizontalDistance(transform.position, Destination) <= ArrivalDistance;
-        bool sprint = !wantsAim && !busy && !reload && !arrived
-            && Vector3.Distance(transform.position, Destination) > sprintDistance && Mathf.Abs(yawError) < 25f;
-        agent.speed = sprint ? soldier.movement.runSpeed : soldier.movement.moveSpeed;
+        float travelRemaining = agent.hasPath && !agent.pathPending && !float.IsInfinity(agent.remainingDistance)
+            ? agent.remainingDistance : Vector3.Distance(transform.position, Destination);
+        bool travelState = State == Behavior.Patrol || State == Behavior.Search || State == Behavior.Approach || State == Behavior.MoveToCover;
+        float sprintThreshold = WantsToSprint ? Mathf.Min(sprintStopDistance, sprintDistance) : sprintDistance;
+        WantsToSprint = travelState && !wantsAim && !busy && !reload && !arrived
+            && travelRemaining > sprintThreshold && Mathf.Abs(yawError) < (WantsToSprint ? 40f : 25f);
+        // Plan at the speed the shared movement actually admits (grounding and ADS can delay sprint).
+        agent.speed = soldier.movement.IsRunning ? soldier.movement.runSpeed : soldier.movement.moveSpeed;
         Vector3 velocity = arrived ? Vector3.zero : agent.desiredVelocity;
         // The controller applies yaw before movement.
         Vector3 local = Quaternion.Inverse(Quaternion.Euler(0f, transform.eulerAngles.y + look.x, 0f))
@@ -134,19 +144,21 @@ public class ArenaAIInput : SoldierInputSource
         wasVisible = visible;
         return new SoldierInputFrame {
             move = Vector2.ClampMagnitude(new Vector2(local.x, local.z), 1f), lookDelta = look,
-            aim = wantsAim && !busy, sprint = sprint, fireHeld = fire, firePressed = pressed,
+            aim = wantsAim && !busy, sprint = WantsToSprint, fireHeld = fire, firePressed = pressed,
             reload = reload && selection == 0, weaponSelection = selection
         };
     }
 
     bool UpdatePerception()
     {
+        if (target && (!target.isActiveAndEnabled || target.IsAwaitingSpawn))
+        { target = null; targetVisible = false; HasCover = false; nextPerception = 0f; }
         if (Time.time < nextPerception) return target && !target.health.IsDead && targetVisible;
         nextPerception = Time.time + Mathf.Max(.02f, perceptionInterval);
         ArenaParticipant visible = null; float nearest = sightRange * sightRange;
         foreach (var enemy in participant.match.participants)
         {
-            if (enemy.team == participant.team || enemy.health.IsDead) continue;
+            if (enemy.team == participant.team || enemy.health.IsDead || enemy.IsAwaitingSpawn) continue;
             float distance = (AimPoint(enemy) - life.look.aimCamera.transform.position).sqrMagnitude;
             float score = enemy == target ? distance * .8f : distance;
             if (distance <= sightRange * sightRange && score < nearest && CanSee(enemy))
@@ -273,8 +285,8 @@ public class ArenaAIInput : SoldierInputSource
                 if (!ArenaAITactics.Reachable(this, points[index].position, queryPath, out patrolDestination, out _)) continue;
                 lastPatrolIndex = index; hasPatrolDestination = true; break;
             }
-            // Scenes without authored patrol points wander locally, never toward enemy spawns.
-            if (points.Length == 0)
+            // Fall back when authored points are absent OR temporarily unreachable.
+            if (!hasPatrolDestination)
                 for (int i = 0; i < 4 && !hasPatrolDestination; i++)
                 {
                     Vector2 offset = Random.insideUnitCircle.normalized * 10f;

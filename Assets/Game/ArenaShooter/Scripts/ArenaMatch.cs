@@ -4,7 +4,10 @@ using UnityEngine;
 public class ArenaMatch : MonoBehaviour
 {
     public ArenaMatchSettings settings;
-    public ArenaParticipant[] participants;
+    // Runtime roster, not a second manually maintained scene configuration.
+    public ArenaParticipant[] participants { get; private set; } = System.Array.Empty<ArenaParticipant>();
+    readonly System.Collections.Generic.List<ArenaParticipant> roster = new System.Collections.Generic.List<ArenaParticipant>();
+    readonly System.Collections.Generic.List<ArenaParticipant> pendingJoins = new System.Collections.Generic.List<ArenaParticipant>();
     [Tooltip("Shared by both teams for respawns and opening-team anchor selection.")]
     public Transform[] spawnPoints = System.Array.Empty<Transform>();
     [Tooltip("Map patrol routes and encounter areas, separate from respawn locations.")]
@@ -22,13 +25,63 @@ public class ArenaMatch : MonoBehaviour
     void Start() => BeginMatch();
     void Update() => Tick(Time.deltaTime);
 
+    public int TeamSize(ArenaParticipant.Team team)
+    {
+        int count = 0;
+        foreach (var participant in roster) if (participant.team == team) count++;
+        return count;
+    }
+
+    public void Register(ArenaParticipant participant)
+    {
+        if (participant.match != this || roster.Contains(participant)) return;
+        roster.Add(participant);
+        participants = roster.ToArray();
+        // Defer placement until Update, after a newly instantiated actor's Awake/Start.
+        participant.IsAwaitingSpawn = IsRunning;
+        if (IsRunning) pendingJoins.Add(participant);
+    }
+
+    public void Unregister(ArenaParticipant participant)
+    {
+        pendingJoins.Remove(participant);
+        participant.IsAwaitingSpawn = true;
+        if (roster.Remove(participant)) participants = roster.ToArray();
+    }
+
+    public void RefreshParticipants()
+    {
+        roster.Clear(); pendingJoins.Clear();
+        foreach (var root in gameObject.scene.GetRootGameObjects())
+            foreach (var participant in root.GetComponentsInChildren<ArenaParticipant>())
+                if (participant.isActiveAndEnabled && participant.match == this) roster.Add(participant);
+        participants = roster.ToArray();
+    }
+
+    // The reusable AI prefab can discover its owner in a scene with one match.
+    public static ArenaMatch FindSceneMatch(UnityEngine.SceneManagement.Scene scene)
+    {
+        ArenaMatch selected = null;
+        foreach (var root in scene.GetRootGameObjects())
+            foreach (var match in root.GetComponentsInChildren<ArenaMatch>())
+            {
+                if (!match.isActiveAndEnabled) continue;
+                if (selected) throw new System.InvalidOperationException("Assign the participant's Match when a scene contains multiple ArenaMatches.");
+                selected = match;
+            }
+        if (!selected) throw new System.InvalidOperationException("ArenaParticipant needs an ArenaMatch in its scene.");
+        return selected;
+    }
+
     public void BeginMatch()
     {
+        RefreshParticipants();
         RedScore = BlueScore = 0;
         spawnHistory.Clear();
         TimeRemaining = settings.matchDuration;
         Result = "";
         IsRunning = false;
+        RedOpeningPoint = BlueOpeningPoint = null;
         foreach (var participant in participants)
         {
             participant.CancelRespawn();
@@ -46,7 +99,8 @@ public class ArenaMatch : MonoBehaviour
         IsRunning = true;
         foreach (var placement in placements)
             placement.participant.Respawn(placement.position, placement.rotation);
-        spawnHistory[red] = spawnHistory[blue] = Time.time;
+        if (red) spawnHistory[red] = Time.time;
+        if (blue) spawnHistory[blue] = Time.time;
         Physics.SyncTransforms();
     }
 
@@ -54,6 +108,8 @@ public class ArenaMatch : MonoBehaviour
     public void Tick(float deltaTime)
     {
         if (!IsRunning) return;
+        for (int i = pendingJoins.Count - 1; i >= 0; i--)
+            if (Spawn(pendingJoins[i])) pendingJoins.RemoveAt(i);
         TimeRemaining = Mathf.Max(0f, TimeRemaining - Mathf.Max(0f, deltaTime));
         if (TimeRemaining == 0f)
         {
@@ -65,10 +121,11 @@ public class ArenaMatch : MonoBehaviour
 
     public bool CanDamage(ArenaParticipant victim, GameObject source)
     {
-        if (!IsRunning) return false;
+        if (!IsRunning || victim.IsAwaitingSpawn) return false;
         // Environmental damage has no attacker; self damage is allowed, without awarding a point.
         var attacker = source ? source.GetComponentInParent<ArenaParticipant>() : null;
         if (!attacker || attacker == victim) return true;
+        if (attacker.IsAwaitingSpawn) return false;
         if (attacker.match != this) return false;
         return settings.friendlyFire || attacker.team != victim.team;
     }
@@ -83,20 +140,22 @@ public class ArenaMatch : MonoBehaviour
         if (RedScore >= settings.scoreLimit || BlueScore >= settings.scoreLimit) EndMatch();
     }
 
-    public void Spawn(ArenaParticipant participant)
+    public bool Spawn(ArenaParticipant participant)
     {
-        if (!IsRunning) return;
-        if (!ArenaSpawnSelection.TryChoose(this, participant, spawnHistory, out var spawn)) return;
+        if (!IsRunning) return false;
+        if (!ArenaSpawnSelection.TryChoose(this, participant, spawnHistory, out var spawn)) return false;
         participant.Respawn(spawn);
         spawnHistory[spawn] = Time.time;
         // Successive spawns in the same frame must see the previous actor's new collider position.
         Physics.SyncTransforms();
+        return true;
     }
 
     public void EndMatch()
     {
         if (!IsRunning) return;
         IsRunning = false;
+        pendingJoins.Clear();
         Result = RedScore == BlueScore ? "Draw" : RedScore > BlueScore ? "Red wins" : "Blue wins";
         foreach (ArenaParticipant participant in participants)
         {
@@ -112,10 +171,10 @@ public class ArenaMatch : MonoBehaviour
     {
         DrawPoints(spawnPoints, Color.cyan);
         DrawPoints(patrolPoints, Color.yellow);
-        if (Application.isPlaying && RedOpeningPoint && BlueOpeningPoint)
+        if (Application.isPlaying)
         {
-            Gizmos.color = Color.red; Gizmos.DrawWireSphere(RedOpeningPoint.position, settings.openingTeamRadius);
-            Gizmos.color = Color.blue; Gizmos.DrawWireSphere(BlueOpeningPoint.position, settings.openingTeamRadius);
+            if (RedOpeningPoint) { Gizmos.color = Color.red; Gizmos.DrawWireSphere(RedOpeningPoint.position, settings.openingTeamRadius); }
+            if (BlueOpeningPoint) { Gizmos.color = Color.blue; Gizmos.DrawWireSphere(BlueOpeningPoint.position, settings.openingTeamRadius); }
         }
     }
 

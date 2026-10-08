@@ -26,7 +26,7 @@ public static class ArenaSpawnSelection
             int exposed = 0;
             foreach (var other in match.participants)
             {
-                if (other == incoming || other.health.IsDead || other.team == incoming.team) continue;
+                if (other == incoming || other.health.IsDead || other.IsAwaitingSpawn || other.team == incoming.team) continue;
                 enemyDistance = Mathf.Min(enemyDistance, Vector3.Distance(point.position, other.transform.position));
                 if (VisibleToEnemy(other, point.position + Vector3.up * 1.25f)) exposed++;
             }
@@ -74,8 +74,28 @@ public static class ArenaSpawnSelection
         placements = new List<Placement>(); redAnchor = blueAnchor = null;
         var red = System.Array.FindAll(match.participants, p => p.team == ArenaParticipant.Team.Red);
         var blue = System.Array.FindAll(match.participants, p => p.team == ArenaParticipant.Team.Blue);
-        if (red.Length == 0 || blue.Length == 0 || match.spawnPoints.Length < 2) return false;
+        if (match.participants.Length == 0 || match.spawnPoints.Length == 0) return false;
         int start = Random.Range(0, match.spawnPoints.Length);
+        // A one-team setup is useful for navigation/sprint tests without combat.
+        if (red.Length == 0 || blue.Length == 0)
+        {
+            var team = red.Length > 0 ? red : blue;
+            for (int i = 0; i < match.spawnPoints.Length; i++)
+            {
+                var anchor = match.spawnPoints[(start + i) % match.spawnPoints.Length];
+                var plan = new List<Placement>();
+                if (!TryFormation(match, anchor.position, team, plan)) continue;
+                for (int j = 0; j < plan.Count; j++)
+                {
+                    var placement = plan[j]; placement.rotation = anchor.rotation; plan[j] = placement;
+                }
+                placements = plan;
+                if (red.Length > 0) redAnchor = anchor; else blueAnchor = anchor;
+                return true;
+            }
+            return false;
+        }
+        if (match.spawnPoints.Length < 2) return false;
         for (int i = 0; i < match.spawnPoints.Length; i++)
         {
             var first = match.spawnPoints[(start + i) % match.spawnPoints.Length];

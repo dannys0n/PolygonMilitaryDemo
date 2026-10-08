@@ -84,7 +84,9 @@ Do not build classes, dynamic pickups, conquest, battle royale, persistence, pro
 - [x] Add reachable standing cover with peek/return behavior, combat strafing, sprint traversal, primary/sidearm selection, and smooth imperfect aim with bursts. Keep all actions on the shared input/controller path.
 - [x] Check tactical decisions in a temporary arena: cover/peek geometry and transitions, strafing, sprint requests, weapon selection, bursts, reload requests, and death/respawn resets.
 - [ ] User polish pass: cover movement and timing, aim accuracy, sprinting, and weapon switching on the prototype map.
-- [x] Add AI_6v6 observation scene: six bots per team, 64 connected shared spawn locations across all map floors, twelve independent patrol points, and spectator camera/team/state labels.
+- [x] Add AI_6v6 observation scene: six bots per team by default, 64 connected shared spawn locations across all map floors, twelve independent patrol points, and spectator camera/team/state labels.
+- [x] Discover active participants automatically; support unequal teams and adding/disabling bots without editing a roster. Check 1v1, 2v3, 8v5, one-team openings, and runtime joins.
+- [x] Stabilize sprint traversal with separate start/stop distances and turn thresholds; use the shared movement controller for actual speed and animation.
 - [x] Score respawn candidates for occupancy, enemy proximity/visibility, and recent use; retry occupied spawns instead of overlapping characters.
 - [x] Start each match with two separated team anchors and complete non-overlapping nearby formations; all later respawns use the shared safety-scored pool. Check restarts and both teams using the same marker.
 - [ ] Watch a full 6v6 match and tune spawn placement, patrol routes, cover behavior, and team balance.

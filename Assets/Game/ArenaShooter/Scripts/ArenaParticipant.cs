@@ -7,16 +7,24 @@ public class ArenaParticipant : MonoBehaviour
     public SoldierHealth health;
     [Tooltip("Optional: stationary test targets have health but no player lifecycle.")]
     public SoldierLife player;
+    [Tooltip("Optional in a scene with one ArenaMatch; assigned automatically for newly added actors.")]
     public ArenaMatch match;
     private float respawnAt = -1f;
     private float nextSpawnAttempt;
     public bool IsRespawning => respawnAt >= 0f && health.IsDead;
+    public bool IsAwaitingSpawn { get; internal set; }
     public float RespawnRemaining => IsRespawning ? Mathf.Max(0f, respawnAt - Time.time) : 0f;
+
+    void Awake()
+    {
+        if (!match) match = ArenaMatch.FindSceneMatch(gameObject.scene);
+    }
 
     void OnEnable()
     {
         health.Died += OnDied;
         health.DamageFilter = CanReceiveDamage;
+        match.Register(this);
     }
 
     void OnDisable()
@@ -24,6 +32,7 @@ public class ArenaParticipant : MonoBehaviour
         health.Died -= OnDied;
         health.DamageFilter = null;
         CancelRespawn();
+        match.Unregister(this);
     }
 
     bool CanReceiveDamage(GameObject source) => match.CanDamage(this, source);
@@ -49,6 +58,7 @@ public class ArenaParticipant : MonoBehaviour
     public void Respawn(Vector3 position, Quaternion rotation)
     {
         CancelRespawn();
+        IsAwaitingSpawn = false;
         if (player)
         {
             int[] slots = team == Team.Red ? match.settings.redLoadout : match.settings.blueLoadout;
