@@ -60,6 +60,8 @@ public class ArenaScoreboard : MonoBehaviour
         matchInfo.text = $"TEAM DEATHMATCH  /  {match.RedScore} : {match.BlueScore}  /  {seconds/60:00}:{seconds%60:00}";
         UpdateTeam(ArenaParticipant.Team.Red,redContent,redRows,redHeader);
         UpdateTeam(ArenaParticipant.Team.Blue,blueContent,blueRows,blueHeader);
+        var presence = GetComponent<ArenaUiPresence>();
+        if (presence) presence.RefreshGraphics();
     }
     void UpdateTeam(ArenaParticipant.Team team,RectTransform content,List<RectTransform> rows,TMP_Text header)
     {

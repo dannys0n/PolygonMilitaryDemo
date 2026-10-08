@@ -30,7 +30,8 @@ public class ArenaAISpectator : MonoBehaviour
     Renderer[] hiddenBody;
     UnityEngine.Rendering.ShadowCastingMode[] previousShadows;
     float yaw, pitch;
-    bool showLabels = true;
+    public bool ShowControls { get; private set; } = true;
+    public bool IsSpectating => !localPlayer || localDeathView;
     public bool ControlsBlocked { get; set; }
 
     void OnEnable()
@@ -54,7 +55,7 @@ public class ArenaAISpectator : MonoBehaviour
         if (!localPlayer && Input.GetKeyDown(KeyCode.Backspace)) { CancelDeathWatch(); match.BeginMatch(); }
         if (deathWatch && Time.time >= deathWatchUntil) CompleteDeathWatch();
         if (ControlsBlocked) return;
-        if (Input.GetKeyDown(KeyCode.L)) showLabels = !showLabels;
+        if (Input.GetKeyDown(KeyCode.L)) ShowControls = !ShowControls;
         if (Input.GetKeyDown(KeyCode.F))
         {
             if (FollowedCharacter) StopFollowing();
@@ -285,29 +286,4 @@ public class ArenaAISpectator : MonoBehaviour
         StopFollowing(); Cursor.lockState = CursorLockMode.None; Cursor.visible = true;
     }
 
-    void OnGUI()
-    {
-        if (localPlayer && !localDeathView) return;
-        GUI.Box(new Rect(12, 12, 650, 110), "AI arena (" + match.TeamSize(ArenaParticipant.Team.Red) + " v "
-            + match.TeamSize(ArenaParticipant.Team.Blue) + "): Red " + match.RedScore + " : " + match.BlueScore + " Blue");
-        GUI.Label(new Rect(24, 38, 510, 25), "Hold RMB + WASD to fly | Q/E down/up | Shift faster | L labels");
-        GUI.Label(new Rect(24, 63, 510, 25), (match.IsRunning ? Mathf.CeilToInt(match.TimeRemaining) + "s" : match.Result)
-            + " | Backspace restarts");
-        GUI.Label(new Rect(24, 88, 630, 25), "F follow/free | Z/X bot | C FPS/orbit | RMB orbit | Scroll zoom | "
-            + (FollowedCharacter ? "Following: " + FollowedCharacter.name : "Free camera"));
-        if (!showLabels) return;
-        foreach (var participant in match.participants)
-        {
-            if (FirstPersonSpectating && participant == FollowedCharacter) continue;
-            var camera = FirstPersonSpectating ? observedView.playerCamera : spectatorCamera;
-            Vector3 screen = camera.WorldToScreenPoint(participant.transform.position + Vector3.up * 2.1f);
-            if (screen.z <= 0f || screen.x < 0 || screen.x > Screen.width || screen.y < 0 || screen.y > Screen.height) continue;
-            var bot = participant.GetComponent<ArenaAIInput>();
-            GUI.color = participant.team == ArenaParticipant.Team.Red ? new Color(1f, .4f, .4f) : new Color(.4f, .7f, 1f);
-            string state = participant.health.IsDead ? "Respawn " + participant.RespawnRemaining.ToString("F1")
-                : bot.State + (bot.soldier.movement.IsRunning ? " / Sprint" : "") + " | " + participant.health.CurrentHealth.ToString("F0") + " HP";
-            GUI.Label(new Rect(screen.x - 80f, Screen.height - screen.y, 220f, 40f), participant.name + "\n" + state);
-        }
-        GUI.color = Color.white;
-    }
 }
