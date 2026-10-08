@@ -4,11 +4,11 @@ public class SoldierLook : MonoBehaviour
 {
     public Transform playerCamera;
     public Animator animator;
-    public float sensitivity = 2f;
     public Transform aimTarget;
     public Camera aimCamera;
 
     private float pitch;
+    public float Pitch => pitch;
 
     // Angular mouse/input deltas in degrees; the caller chooses input sensitivity.
     public void ApplyLookDelta(Vector2 delta)

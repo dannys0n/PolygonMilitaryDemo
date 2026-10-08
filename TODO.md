@@ -19,15 +19,15 @@ Work through these stages in order. Check off items when complete; keep unfinish
 - [x] Keep authored game assets in Assets/Game and source imports in their existing folders; shared imported dependencies remain intentional.
 - [x] Use one main player, weapon definitions, and equipment slots; label FPS/TPS grip settings and keep test variants separate.
 
-Current organization: main player at `Assets/Game/Players/Prefabs/Player_Polygon.prefab`; weapon-test scenes and player variants at `Assets/Game/Tests`; weapon configuration and loadout scripts at `Assets/Game/Runtime/Weapons`. Original animation clips remain available for rollback.
+Current organization: main player at `Assets/Game/Players/Prefabs/Player_Polygon.prefab`; weapon-test scenes and player variants at `Assets/Game/Tests`; weapon configuration and loadout scripts at `Assets/Game/Scripts/Weapons`. Original animation clips remain available for rollback.
 
 ## 3. Implement the local arena shooter prototype
 
-Build a small Call of Duty-style team deathmatch prototype: two teams, fixed starting loadouts, hitscan weapons, magazine/reserve ammunition, health, death, a short respawn delay, and a score limit or match timer. Start with stationary targets; validate match rules locally without requiring bots or networking. Full multiplayer validation belongs to the NGO stage.
+Build a small Call of Duty-style team deathmatch prototype: two teams, fixed starting loadouts, hitscan weapons, magazine/reserve ammunition, health, death, a short respawn delay, and a score limit or match timer. Use the imported prototype map and local AI opponents as the feature testbed. Keep arena rules and feedback simple; validate the complete local loop before networking. Full multiplayer validation belongs to the NGO stage.
 
 ### Boundaries and scope
 
-Shared systems belong under `Assets/Game/Runtime`, with reusable assets in the existing player, character, and weapon folders. Put arena-specific code, prefabs, and scenes under `Assets/Game/ArenaShooter/Runtime`, `Prefabs`, and `Scenes` as needed. Shared code must not depend on arena code.
+Shared systems belong under `Assets/Game/Scripts`, with reusable assets in the existing player, character, and weapon folders. Put arena-specific code, prefabs, and scenes under `Assets/Game/ArenaShooter/Scripts`, `Prefabs`, and `Scenes` as needed. Shared code must not depend on arena code.
 
 Support multiple Polygon character appearances through player prefab variants that share gameplay scripts, weapon definitions, and animation controllers. Prefer reusing the existing skeleton/rig and replacing compatible meshes and materials; a different skeleton needs its own valid Humanoid Avatar and reassigned bone/constraint references. Character choice must not change weapon or arena rules.
 
@@ -39,7 +39,8 @@ Do not build classes, dynamic pickups, conquest, battle royale, persistence, pro
 
 ### 3.1 Prepare the shared player for gameplay
 
-- [x] Separate local input polling from movement/look/action/equipment requests, preserving current controls and animation behavior.
+- [x] Give the shared player a source-neutral SoldierController and command frame. Keep keyboard/mouse polling in SoldierLocalInput on a local-player prefab variant; AI supplies the same commands.
+- [ ] User runtime check of the input-source refactor: local controls, source removal/disable, and death/respawn. The attempted brief check was interrupted by leaving Play Mode.
 - [x] Give gameplay ownership of firing, reload progress/completion/cancellation, and equipment switching; stop using Animator state as gameplay authority.
 - [x] Keep animations synchronized with accepted actions and gameplay timings; retain animation curves/events for visual timing rather than ammo/damage authority.
 - [x] Keep shared weapon settings in definitions and current action state on the player/loadout; add per-owned-weapon ammo in 3.2, never in shared ScriptableObjects.
@@ -73,9 +74,18 @@ Do not build classes, dynamic pickups, conquest, battle royale, persistence, pro
 - [x] Add basic hit/kill feedback while preserving existing recoil, camera shake, and weapon animation presentation.
 - [ ] User Play Mode walkthrough of the complete local loop: spawn, move, aim, fire, reload, switch, die, respawn, score, and end/restart. Focused rule checks passed; visual/input walkthrough is deferred.
 
+### 3.5 Build the local AI arena demo
+
+- [x] Integrate the player and team spawn points into ArenaShooter/Scenes/LocalOnly on the prototype map.
+- [x] Bake navigation for the map and add an AI input source; shared movement continues to move the character.
+- [x] Add simple enemy selection, sight checks, path following, turning/aiming, firing, and reloading through SoldierInputFrame.
+- [x] Create an AI character variant with local camera/audio disabled and third-person visuals visible.
+- [x] Reset AI targets/path intent on death and respawn; keep team/match rules outside the AI provider.
+- [ ] User end-to-end walkthrough: human versus bots, movement, combat, cover, reloads, deaths, respawns, scoring, and restart.
+
 ## 4. Add a map
 
-- [ ] Import a map suitable for the prototype.
+- [x] Import AngeloMaN87 Prototype Map and convert its two materials to URP/Lit.
 - [ ] Set up collision, spawn points, and the basic match layout.
 - [ ] Test the local gameplay loop on the map.
 

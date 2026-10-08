@@ -11,6 +11,7 @@ public class SoldierLife : MonoBehaviour
     public SoldierWeaponLoadout loadout;
     public SoldierFirstPersonView view;
     public CharacterController controller;
+    public event System.Action Respawned;
 
     void OnEnable()
     {
@@ -57,5 +58,6 @@ public class SoldierLife : MonoBehaviour
         health.ResetHealth();
         controller.enabled = true;
         SetGameplayAllowed(true);
+        Respawned?.Invoke();
     }
 }

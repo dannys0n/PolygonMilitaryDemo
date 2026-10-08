@@ -66,11 +66,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 200064873301141975, guid: 2f2651d4bad0ce246a3126ffed3a5296, type: 3}
       propertyPath: weapon
-      value: 
+      value:
       objectReference: {fileID: 8826786930540185091}
     - target: {fileID: 200064873301141975, guid: 2f2651d4bad0ce246a3126ffed3a5296, type: 3}
       propertyPath: partsAnimator
-      value: 
+      value:
       objectReference: {fileID: 6505245199808813146}
     - target: {fileID: 240843778374648059, guid: 2f2651d4bad0ce246a3126ffed3a5296, type: 3}
       propertyPath: m_LocalRotation.w
@@ -246,7 +246,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 1122391470142808133, guid: 2f2651d4bad0ce246a3126ffed3a5296, type: 3}
       propertyPath: m_Controller
-      value: 
+      value:
       objectReference: {fileID: 22100000, guid: c80a783fb10cb254b8be3e671aa5d42d, type: 2}
     - target: {fileID: 1123112341851853438, guid: 2f2651d4bad0ce246a3126ffed3a5296, type: 3}
       propertyPath: m_LocalRotation.w
@@ -406,7 +406,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 1956171790106494693, guid: 2f2651d4bad0ce246a3126ffed3a5296, type: 3}
       propertyPath: m_Controller
-      value: 
+      value:
       objectReference: {fileID: 22100000, guid: 9907a520095cc3745b96bf69b1e48eb2, type: 2}
     - target: {fileID: 2011890291623820126, guid: 2f2651d4bad0ce246a3126ffed3a5296, type: 3}
       propertyPath: m_IsActive
@@ -802,7 +802,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 3857842616418219034, guid: 2f2651d4bad0ce246a3126ffed3a5296, type: 3}
       propertyPath: weaponAnimator
-      value: 
+      value:
       objectReference: {fileID: 3300994069622207193}
     - target: {fileID: 3923416769591465661, guid: 2f2651d4bad0ce246a3126ffed3a5296, type: 3}
       propertyPath: m_LocalRotation.w
@@ -1512,6 +1512,10 @@ PrefabInstance:
       propertyPath: m_LocalRotation.z
       value: -0.57534885
       objectReference: {fileID: 0}
+    - target: {fileID: 7588517055723200184, guid: 2f2651d4bad0ce246a3126ffed3a5296, type: 3}
+      propertyPath: inputSource
+      value:
+      objectReference: {fileID: 4401855358504717590}
     - target: {fileID: 7810245713700360669, guid: 2f2651d4bad0ce246a3126ffed3a5296, type: 3}
       propertyPath: m_IsActive
       value: 1
@@ -1707,7 +1711,10 @@ PrefabInstance:
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 8863008050220851912, guid: 2f2651d4bad0ce246a3126ffed3a5296, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 4401855358504717590}
   m_SourcePrefab: {fileID: 100100000, guid: 2f2651d4bad0ce246a3126ffed3a5296, type: 3}
 --- !u!95 &3300994069622207193 stripped
 Animator:
@@ -1719,6 +1726,24 @@ Animator:
   m_CorrespondingSourceObject: {fileID: 6158878155167218935, guid: 2f2651d4bad0ce246a3126ffed3a5296, type: 3}
   m_PrefabInstance: {fileID: 1098875044681802925}
   m_PrefabAsset: {fileID: 0}
+--- !u!1 &8484860703757010533 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 8863008050220851912, guid: 2f2651d4bad0ce246a3126ffed3a5296, type: 3}
+  m_PrefabInstance: {fileID: 1098875044681802925}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &4401855358504717590
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8484860703757010533}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ef346b760e016dc4bac9d279461a3da5, type: 3}
+  m_Name:
+  m_EditorClassIdentifier: Assembly-CSharp::SoldierLocalInput
+  sensitivity: 2
 --- !u!114 &8826786930540185091 stripped
 MonoBehaviour:
   m_CorrespondingSourceObject: {fileID: 8449024435694101166, guid: 2f2651d4bad0ce246a3126ffed3a5296, type: 3}
@@ -1728,5 +1753,5 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: ec3ca3df3a531bc4b8c934e57ace27a7, type: 3}
-  m_Name: 
+  m_Name:
   m_EditorClassIdentifier: Assembly-CSharp::SoldierWeapon

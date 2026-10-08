@@ -562,7 +562,10 @@ PrefabInstance:
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 8863008050220851912, guid: 2f2651d4bad0ce246a3126ffed3a5296, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1117585251}
   m_SourcePrefab: {fileID: 100100000, guid: 2f2651d4bad0ce246a3126ffed3a5296, type: 3}
 --- !u!95 &1117585247 stripped
 Animator:
@@ -583,8 +586,26 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: ec3ca3df3a531bc4b8c934e57ace27a7, type: 3}
-  m_Name: 
+  m_Name:
   m_EditorClassIdentifier: Assembly-CSharp::SoldierWeapon
+--- !u!1 &1117585250 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 8863008050220851912, guid: 2f2651d4bad0ce246a3126ffed3a5296, type: 3}
+  m_PrefabInstance: {fileID: 1117585246}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &1117585251
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1117585250}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ef346b760e016dc4bac9d279461a3da5, type: 3}
+  m_Name:
+  m_EditorClassIdentifier: Assembly-CSharp::SoldierLocalInput
+  sensitivity: 2
 --- !u!1 &1557033702
 GameObject:
   m_ObjectHideFlags: 0
@@ -693,7 +714,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 474bcb49853aa07438625e644c072ee6, type: 3}
-  m_Name: 
+  m_Name:
   m_EditorClassIdentifier: Unity.RenderPipelines.Universal.Runtime::UnityEngine.Rendering.Universal.UniversalAdditionalLightData
   m_UsePipelineSettings: 1
   m_AdditionalLightsShadowResolutionTier: 2

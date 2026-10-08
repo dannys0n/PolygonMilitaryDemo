@@ -1,55 +1,36 @@
 using UnityEngine;
 
-// Local controls only. Other drivers can call the same player action methods.
-[DefaultExecutionOrder(-20)]
-public class SoldierLocalInput : MonoBehaviour
+// Keyboard/mouse adapter. It never moves the character or starts gameplay actions directly.
+public class SoldierLocalInput : SoldierInputSource
 {
-    public SoldierMovement movement;
-    public SoldierLook look;
-    public SoldierActions actions;
-    public SoldierWeaponLoadout loadout;
-    public SoldierFirstPersonView view;
+    public float sensitivity = 2f;
 
     void Start() => SetCursorLocked(true);
 
-    void Update()
+    public override SoldierInputFrame ReadInput()
     {
         if (Input.GetKeyDown(KeyCode.Escape)) SetCursorLocked(false);
         if (Input.GetMouseButtonDown(0)) SetCursorLocked(true);
-        if (!actions.enabled)
-        {
-            view.SetAimRequested(false);
-            return;
-        }
-        bool active = Cursor.lockState == CursorLockMode.Locked;
-        view.SetAimRequested(active && Input.GetMouseButton(1));
-        look.ApplyLookDelta(active
-            ? new Vector2(Input.GetAxis("Mouse X"), Input.GetAxis("Mouse Y")) * look.sensitivity
-            : Vector2.zero);
-        if (active && Input.GetKeyDown(KeyCode.Space)) movement.RequestJump();
-        Vector2 move = active
-            ? new Vector2(Input.GetAxisRaw("Horizontal"), Input.GetAxisRaw("Vertical"))
-            : Vector2.zero;
-        movement.SimulateMovement(move, Time.deltaTime, active && Input.GetKey(KeyCode.LeftShift));
-        if (!active) return;
+        if (Cursor.lockState != CursorLockMode.Locked) return default;
 
-        if (Input.GetKeyDown(KeyCode.V)) view.SetFirstPerson(!view.firstPerson);
-        // Prototype hit-reaction preview; damage will call this through gameplay.
-        if (Input.GetKeyDown(KeyCode.H)) actions.PlayHitReaction();
-        bool reload = Input.GetKeyDown(KeyCode.R);
-        if (reload) actions.TryReload();
-        else if (actions.fireMode == SoldierActions.FireMode.Automatic
-            ? Input.GetMouseButton(0) : Input.GetMouseButtonDown(0)) actions.TryFire();
-
-        int[] available = loadout.AvailableSlots;
-        for (int i = 0; i < Mathf.Min(available.Length, 9); i++)
-            if (Input.GetKeyDown((KeyCode)((int)KeyCode.Alpha1 + i))) loadout.TrySelectWeapon(available[i]);
         float wheel = Input.GetAxis("Mouse ScrollWheel");
-        if (wheel != 0f)
+        var input = new SoldierInputFrame
         {
-            int current = System.Array.IndexOf(available, loadout.selectedSlot);
-            loadout.TrySelectWeapon(available[(current + (wheel > 0f ? 1 : available.Length - 1)) % available.Length]);
-        }
+            move = new Vector2(Input.GetAxisRaw("Horizontal"), Input.GetAxisRaw("Vertical")),
+            lookDelta = new Vector2(Input.GetAxis("Mouse X"), Input.GetAxis("Mouse Y")) * sensitivity,
+            aim = Input.GetMouseButton(1),
+            sprint = Input.GetKey(KeyCode.LeftShift),
+            jump = Input.GetKeyDown(KeyCode.Space),
+            reload = Input.GetKeyDown(KeyCode.R),
+            fireHeld = Input.GetMouseButton(0),
+            firePressed = Input.GetMouseButtonDown(0),
+            toggleView = Input.GetKeyDown(KeyCode.V),
+            previewHitReaction = Input.GetKeyDown(KeyCode.H),
+            weaponCycle = wheel > 0f ? 1 : wheel < 0f ? -1 : 0
+        };
+        for (int i = 1; i <= 9; i++)
+            if (Input.GetKeyDown((KeyCode)((int)KeyCode.Alpha1 + i - 1))) input.weaponSelection = i;
+        return input;
     }
 
     static void SetCursorLocked(bool locked)
@@ -58,5 +39,5 @@ public class SoldierLocalInput : MonoBehaviour
         Cursor.visible = !locked;
     }
 
-    void OnDisable() => view.SetAimRequested(false);
+    void OnDisable() => SetCursorLocked(false);
 }

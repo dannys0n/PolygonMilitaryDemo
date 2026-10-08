@@ -48,6 +48,10 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 7588517055723200184, guid: 2f2651d4bad0ce246a3126ffed3a5296, type: 3}
+      propertyPath: inputSource
+      value:
+      objectReference: {fileID: 6422665604719988661}
     - target: {fileID: 8863008050220851912, guid: 2f2651d4bad0ce246a3126ffed3a5296, type: 3}
       propertyPath: m_Name
       value: Player_Polygon_WeaponSwap
@@ -55,5 +59,26 @@ PrefabInstance:
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 8863008050220851912, guid: 2f2651d4bad0ce246a3126ffed3a5296, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 6422665604719988661}
   m_SourcePrefab: {fileID: 100100000, guid: 2f2651d4bad0ce246a3126ffed3a5296, type: 3}
+--- !u!1 &6175963022551658100 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 8863008050220851912, guid: 2f2651d4bad0ce246a3126ffed3a5296, type: 3}
+  m_PrefabInstance: {fileID: 3407772981474413756}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &6422665604719988661
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6175963022551658100}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ef346b760e016dc4bac9d279461a3da5, type: 3}
+  m_Name:
+  m_EditorClassIdentifier: Assembly-CSharp::SoldierLocalInput
+  sensitivity: 2
