@@ -9,7 +9,10 @@ public class ArenaHud : MonoBehaviour
 {
     public ArenaMatch match;
     public ArenaParticipant player;
-    public TMP_Text redScore, blueScore, timer, mode, weaponName, ammunition, fireMode, slots, health, teammates, feed, medal, deathStatus;
+    public TMP_Text redScore, blueScore, timer, mode, weaponName, ammunition, fireMode, slots, health, teammates, medal, deathStatus;
+    public Sprite rifleSprite, pistolSprite;
+    public TMP_Text[] killerNames, victimNames, equipmentKeys;
+    public UnityEngine.UI.Image[] killWeapons, equipmentIcons, equipmentBackgrounds;
     public UnityEngine.UI.Image redProgress, blueProgress, healthProgress;
     public RectTransform[] crosshairLines;
     public CanvasGroup crosshair, hitMarker, medalGroup, radar;
@@ -18,7 +21,7 @@ public class ArenaHud : MonoBehaviour
     public RectTransform radarDotTemplate;
     public Color accent = new Color(1f, .686f, 0f);
     public float radarRange = 45f;
-    readonly List<(string text, float expires)> kills = new List<(string,float)>();
+    readonly List<(string attacker, string victim, bool pistol, float expires)> kills = new List<(string,string,bool,float)>();
     readonly List<RectTransform> radarDots = new List<RectTransform>();
     float shotKick, hitUntil, medalUntil, nextRefresh, lastKill = -100f;
     int streak, multiKill;
@@ -40,7 +43,7 @@ public class ArenaHud : MonoBehaviour
         player.player.Respawned -= OnRespawn;
     }
     void OnRespawn() { streak = multiKill = 0; shotKick = 0f; }
-    void ResetFeedback() { kills.Clear(); feed.text = ""; medalUntil = hitUntil = 0f; lastKill = -100f; OnRespawn(); }
+    void ResetFeedback() { kills.Clear(); medalUntil = hitUntil = 0f; lastKill = -100f; OnRespawn(); }
     void OnFire() => shotKick = Mathf.Min(20f, shotKick + 7f);
     void OnShot(SoldierHitscan.ShotResult shot)
     {
@@ -50,16 +53,16 @@ public class ArenaHud : MonoBehaviour
     }
     void OnKill(ArenaParticipant attacker, ArenaParticipant victim)
     {
-        string weapon = attacker.player ? attacker.player.loadout.slots[attacker.player.loadout.selectedSlot].name : "--";
+        bool sidearm = attacker.player && System.Array.IndexOf(attacker.player.loadout.AvailableSlots, attacker.player.loadout.selectedSlot) > 0;
         string a = Escape(attacker.name), v = Escape(victim.name);
-        kills.Insert(0, ($"{a}  <color=#{accentHex}>[{weapon}]</color>  {v}", Time.time + 7f));
+        kills.Insert(0, (a, v, sidearm, Time.time + 7f));
         if (kills.Count > 5) kills.RemoveAt(kills.Count - 1);
         nextRefresh = 0f;
         if (attacker != player) return;
         streak++;
         multiKill = Time.time - lastKill < 3f ? multiKill + 1 : 1; lastKill = Time.time;
-        string title = multiKill >= 3 ? "MULTI KILL" : multiKill == 2 ? "DOUBLE KILL" : "ENEMY ELIMINATED";
-        medal.text = $"<color=#{accentHex}>{title}</color>\n{v}  /  {streak} KILL STREAK";
+        string title = multiKill >= 3 ? "MULTI KILL" : multiKill == 2 ? "DOUBLE KILL" : "KILL";
+        medal.text = $"{title}  <size=30>+100</size>\n<color=#{accentHex}>{v}</color>  <size=16>KILL x{streak}</size>";
         medalUntil = Time.time + 2.5f;
     }
     static string Escape(string value) => value.Replace("<", "").Replace(">", "");
@@ -105,13 +108,30 @@ public class ArenaHud : MonoBehaviour
             slotText.Append(i == ordinal ? $"<color=#{accentHex}>{label}</color>" : label);
         }
         slots.text = slotText.ToString();
+        for (int i = 0; i < equipmentIcons.Length; i++)
+        {
+            bool owned = i < loadout.AvailableSlots.Length;
+            equipmentIcons[i].transform.parent.gameObject.SetActive(owned);
+            if (!owned) continue;
+            equipmentIcons[i].sprite = i == 0 ? rifleSprite : pistolSprite;
+            equipmentIcons[i].color = i == ordinal ? Color.white : new Color(1,1,1,.6f);
+            equipmentKeys[i].color = i == ordinal ? accent : Color.white;
+            equipmentBackgrounds[i].color = i == ordinal ? new Color(accent.r,accent.g,accent.b,.12f) : new Color(1,1,1,.035f);
+        }
         health.text = $"+ {Mathf.CeilToInt(player.health.CurrentHealth):000}";
         healthProgress.fillAmount = player.health.CurrentHealth / player.health.maxHealth;
         var squad = match.participants.Where(p => p.team == player.team && p != player)
             .OrderBy(p => (p.transform.position-player.transform.position).sqrMagnitude).Take(3);
         teammates.text = string.Join("\n", squad.Select((p,i) => $"{i+1:00}  {Escape(p.name)}  <color=#{accentHex}>{(p.health.IsDead ? "DOWN" : Mathf.CeilToInt(p.health.CurrentHealth).ToString())}</color>"));
         kills.RemoveAll(k => k.expires < Time.time);
-        feed.text = string.Join("\n", kills.Select(k => k.text));
+        for (int i = 0; i < killWeapons.Length; i++)
+        {
+            bool visible = i < kills.Count;
+            killWeapons[i].transform.parent.gameObject.SetActive(visible);
+            if (!visible) continue;
+            killerNames[i].text = kills[i].attacker; victimNames[i].text = kills[i].victim;
+            killWeapons[i].sprite = kills[i].pistol ? pistolSprite : rifleSprite;
+        }
         deathStatus.text = !match.IsRunning ? $"{match.Result.ToUpperInvariant()}\nBACKSPACE TO RESTART"
             : player.IsRespawning ? $"RESPAWN IN {player.RespawnRemaining:F1}s" : "";
     }

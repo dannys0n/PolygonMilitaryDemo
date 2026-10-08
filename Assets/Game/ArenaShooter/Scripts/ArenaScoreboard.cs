@@ -71,7 +71,7 @@ public class ArenaScoreboard : MonoBehaviour
             rows[i].gameObject.SetActive(i<actors.Length); if(i>=actors.Length)continue;
             var actor=actors[i];var row=rows[i];
             bool highlighted=actor==localPlayer || !localPlayer && spectator && actor==spectator.FollowedCharacter;
-            row.GetComponent<UnityEngine.UI.Image>().color=highlighted?new Color(accent.r,accent.g,accent.b,.22f):new Color(1,1,1,i%2==0?.065f:.025f);
+            row.GetComponent<UnityEngine.UI.Image>().color=highlighted?new Color(accent.r*.17f,accent.g*.17f,accent.b*.17f,.82f):new Color(.025f,.035f,.045f,i%2==0?.68f:.54f);
             row.Find("Rank").GetComponent<TMP_Text>().text=(i+1).ToString("00");
             var name=row.Find("Player").GetComponent<TMP_Text>();name.text=actor.name.Replace("<","").Replace(">","");name.color=highlighted?accent:Color.white;
             row.Find("Score").GetComponent<TMP_Text>().text=actor.Score.ToString("N0");
