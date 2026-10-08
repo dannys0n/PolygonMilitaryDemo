@@ -116,6 +116,7 @@ public class SoldierFirstPersonView : MonoBehaviour
 
     private void UpdateMotion()
     {
+        armsAnimator.SetFloat("TacticalSprint", definition.firstPersonSprintStyle == SoldierWeaponDefinition.SprintStyle.Tactical ? 1f : 0f);
         // Use actual movement so walking bob stops against walls and in the air.
         Vector3 velocity = controller.velocity;
         velocity.y = 0f;
@@ -123,6 +124,7 @@ public class SoldierFirstPersonView : MonoBehaviour
         if (IsReloading) movementAmount *= reloadWalkWeight;
         armsAnimator.SetFloat("Movement", movementAmount, motionSmoothingTime, Time.deltaTime);
         float weight = IsReloading ? locomotionWeight * reloadSwayWeight : locomotionWeight;
+        weight *= 1f - armsAnimator.GetFloat("RunBlend");
         armsAnimator.SetLayerWeight(locomotionLayer, Mathf.MoveTowards(
             armsAnimator.GetLayerWeight(locomotionLayer), weight, Time.deltaTime / motionSmoothingTime));
         armsAnimator.SetLayerWeight(aimTransitionLayer,
@@ -132,6 +134,7 @@ public class SoldierFirstPersonView : MonoBehaviour
     public void ApplyWeaponDefinition(SoldierWeaponDefinition selectedDefinition)
     {
         definition = selectedDefinition;
+        armsAnimator.SetFloat("TacticalSprint", definition.firstPersonSprintStyle == SoldierWeaponDefinition.SprintStyle.Tactical ? 1f : 0f);
 
         aimBlend = 0f;
         locomotionLayer = armsAnimator.GetLayerIndex("Locomotion");

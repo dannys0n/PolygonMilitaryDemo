@@ -4,6 +4,7 @@ using UnityEngine.Serialization;
 [CreateAssetMenu(menuName = "Soldier/Weapon definition")]
 public class SoldierWeaponDefinition : ScriptableObject
 {
+    public enum SprintStyle { Regular, Tactical }
     [Header("Animation controllers")]
     public RuntimeAnimatorController firstPerson;
     public RuntimeAnimatorController firstPersonParts;
@@ -38,6 +39,7 @@ public class SoldierWeaponDefinition : ScriptableObject
     [Min(.01f)] public float aimBlendSpeed = 8f;
 
     [Header("Animation motion")]
+    public SprintStyle firstPersonSprintStyle = SprintStyle.Regular;
     [Range(0f, 1f)] public float reloadSwayWeight = .65f;
     [Range(0f, 1f)] public float reloadWalkWeight = .35f;
     [Range(0f, 1f)] public float locomotionWeight = 1f;
