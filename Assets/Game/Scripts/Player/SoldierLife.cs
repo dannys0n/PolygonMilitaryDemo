@@ -12,6 +12,7 @@ public class SoldierLife : MonoBehaviour
     public SoldierFirstPersonView view;
     public CharacterController controller;
     public event System.Action Respawned;
+    public event System.Action Respawning;
 
     void OnEnable()
     {
@@ -48,6 +49,7 @@ public class SoldierLife : MonoBehaviour
 
     public void Respawn(Vector3 position, Quaternion rotation)
     {
+        Respawning?.Invoke();
         SetGameplayAllowed(false);
         controller.enabled = false;
         transform.SetPositionAndRotation(position, rotation);
