@@ -34,8 +34,12 @@ public class SoldierWeapon : MonoBehaviour
         }
     }
 
+    [Header("Shared weapon configuration")]
     public SoldierWeaponDefinition definition;
+    [Header("First-person grip targets and elbow hints")]
     public HandPlacement firstPersonHands;
+    [Header("Third-person grip targets and elbow hints")]
     public HandPlacement thirdPersonHands;
+    [Header("Third-person sprint hand socket")]
     public GripPose sprintSocket;
 }

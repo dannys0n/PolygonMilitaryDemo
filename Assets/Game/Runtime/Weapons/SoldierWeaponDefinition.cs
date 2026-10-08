@@ -9,6 +9,10 @@ public class SoldierWeaponDefinition : ScriptableObject
     public RuntimeAnimatorController firstPersonParts;
     public RuntimeAnimatorController thirdPerson;
 
+    [Header("Gameplay action timing")]
+    [Tooltip("Gameplay reload duration in seconds. Keep presentation clips aligned with this timing.")]
+    [Min(.01f)] public float reloadDuration = 3f;
+
     [Header("Weapon switching")]
     [Min(.01f)] public float equipDuration = .5f;
     [Min(.01f)] public float unequipDuration = .5f;

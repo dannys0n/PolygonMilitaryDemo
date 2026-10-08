@@ -17,11 +17,16 @@ public class SoldierWeaponLoadout : MonoBehaviour
 
     public SoldierMotionGrip firstPersonGripRig;
     public Transform sprintSocket;
+    [Header("Equipment slots on the shared player")]
+    [Tooltip("Each slot pairs one weapon configuration with its FPS/TPS objects and moving-parts animators.")]
     public Slot[] slots;
     public SoldierWeaponPresentation presentation;
     public SoldierActions actions;
     public int selectedSlot;
     public bool IsSwitching { get; private set; }
+    public SoldierWeapon EquippedWeapon => slots[selectedSlot].weapon;
+    private Coroutine switchRoutine;
+    private bool initialized;
 
     void Start()
     {
@@ -29,16 +34,7 @@ public class SoldierWeaponLoadout : MonoBehaviour
         Bind(slots[selectedSlot]);
         presentation.view.RefreshVisuals();
         presentation.view.SetFirstPerson(presentation.view.firstPerson);
-    }
-
-    void Update()
-    {
-        if (Cursor.lockState != CursorLockMode.Locked) return;
-        for (int i = 0; i < Mathf.Min(slots.Length, 9); i++)
-            if (Input.GetKeyDown((KeyCode)((int)KeyCode.Alpha1 + i))) TrySelectWeapon(i);
-        float wheel = Input.GetAxis("Mouse ScrollWheel");
-        if (wheel != 0f)
-            TrySelectWeapon((selectedSlot + (wheel > 0f ? 1 : slots.Length - 1)) % slots.Length);
+        initialized = true;
     }
 
     // Input and future network commands use the same action admission.
@@ -46,14 +42,14 @@ public class SoldierWeaponLoadout : MonoBehaviour
     {
         if (index < 0 || index >= slots.Length || index == selectedSlot ||
             IsSwitching || actions.IsReloading) return false;
-        StartCoroutine(SwitchWeapon(index));
+        switchRoutine = StartCoroutine(SwitchWeapon(index));
         return true;
     }
 
     IEnumerator SwitchWeapon(int index)
     {
         IsSwitching = true;
-        presentation.view.IsEquipping = true;
+
         presentation.view.CancelAim();
         Play("Unequip");
         yield return new WaitForSeconds(presentation.weapon.definition.unequipDuration);
@@ -63,8 +59,33 @@ public class SoldierWeaponLoadout : MonoBehaviour
         Play("Equip");
         yield return new WaitForSeconds(presentation.weapon.definition.equipDuration);
         IsSwitching = false;
-        presentation.view.IsEquipping = false;
+        switchRoutine = null;
     }
+
+    public bool SetStartingSlot(int index)
+    {
+        if (index < 0 || index >= slots.Length || IsSwitching || actions.IsReloading) return false;
+        if (initialized) SetVisible(slots[selectedSlot], false);
+        selectedSlot = index;
+        if (initialized)
+        {
+            Bind(slots[index]);
+            presentation.view.CancelAim();
+        }
+        return true;
+    }
+
+    public void CancelSwitch()
+    {
+        if (!IsSwitching) return;
+        StopCoroutine(switchRoutine);
+        switchRoutine = null;
+        IsSwitching = false;
+        Bind(slots[selectedSlot]);
+        Play("Empty");
+    }
+
+    void OnDisable() => CancelSwitch();
 
     void Play(string state)
     {

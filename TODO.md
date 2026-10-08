@@ -12,22 +12,63 @@ Work through these stages in order. Check off items when complete; keep unfinish
 
 ## 2. Clean up and organize the project
 
-- [ ] Remove unused assets, test prefabs, clips, and obsolete code after checking references.
-- [ ] Refactor where it makes responsibilities clearer, without unnecessary script fragmentation.
+- [x] Audit asset references; remove unused SWAT/tutorial assets and obsolete code. Retain weapon tests and original clips for verification/rollback.
+- [x] Clarify view/presentation update responsibilities within existing scripts; keep action admission and equipment switching separate.
 - [x] Group current player, weapon, animation, and test files; keep imported assets isolated.
-- [ ] Keep the FPS_Animator source import isolated; put actively used game assets in Assets/Game.
-- [ ] Simplify the prefab/configuration workflow for adding and tuning weapons.
+- [x] Keep authored game assets in Assets/Game and source imports in their existing folders; shared imported dependencies remain intentional.
+- [x] Use one main player, weapon definitions, and equipment slots; label FPS/TPS grip settings and keep test variants separate.
 
 Current organization: main player at `Assets/Game/Players/Prefabs/Player_Polygon.prefab`; weapon-test scenes and player variants at `Assets/Game/Tests`; weapon configuration and loadout scripts at `Assets/Game/Runtime/Weapons`. Original animation clips remain available for rollback.
 
-## 3. Implement basic gameplay
+## 3. Implement the local arena shooter prototype
 
-- [ ] Define the minimum playable gameplay loop.
-- [ ] Add shooting and hit detection.
-- [ ] Add ammunition, reload rules, and weapon inventory/equipment logic.
-- [ ] Add health, damage, death, and respawning.
-- [ ] Add basic gameplay feedback and HUD.
-- [ ] Verify that movement, actions, weapons, and animations work together in a local match.
+Build a small Call of Duty-style team deathmatch prototype: two teams, fixed starting loadouts, hitscan weapons, magazine/reserve ammunition, health, death, a short respawn delay, and a score limit or match timer. Start with stationary targets; validate match rules locally without requiring bots or networking. Full multiplayer validation belongs to the NGO stage.
+
+### Boundaries and scope
+
+Shared systems belong under `Assets/Game/Runtime`, with reusable assets in the existing player, character, and weapon folders. Put arena-specific code, prefabs, and scenes under `Assets/Game/ArenaShooter/Runtime`, `Prefabs`, and `Scenes` as needed. Shared code must not depend on arena code.
+
+Keep movement, look, equipment, weapon state, shooting, health/damage, and animation presentation reusable. Arena code owns team assignment, starting loadouts, spawn selection, respawn policy, scoring, and match lifecycle. Keep the seven-weapon setup as an animation/equipment test fixture.
+
+Use the old Input Manager. Input requests actions; gameplay validates and owns action state; presentation responds to accepted actions. Keep the implementation local and straightforward. Preserve entry points that a future network driver can call, without adding networking abstractions yet. Later the server will validate actions and own ammo, damage, and scores.
+
+Do not build classes, dynamic pickups, conquest, battle royale, persistence, progression, attachments, or killstreaks now. Clear boundaries should support later tests; they do not require a universal game framework or a separate script for every small responsibility.
+
+### 3.1 Prepare the shared player for gameplay
+
+- [x] Separate local input polling from movement/look/action/equipment requests, preserving current controls and animation behavior.
+- [x] Give gameplay ownership of firing, reload progress/completion/cancellation, and equipment switching; stop using Animator state as gameplay authority.
+- [x] Keep animations synchronized with accepted actions and gameplay timings; retain animation curves/events for visual timing rather than ammo/damage authority.
+- [x] Keep shared weapon settings in definitions and current action state on the player/loadout; add per-owned-weapon ammo in 3.2, never in shared ScriptableObjects.
+- [x] Let arena setup select starting equipment using the current slots; defer dynamic pickup/inventory construction.
+- [x] Verify existing FPS/TPS aim, firing, reload, sprint, and equipment action paths after these changes (runtime checks; visual polish remains in stage 1).
+
+### 3.2 Make one weapon and one target playable
+
+- [ ] Add shared weapon settings for damage, range, magazine capacity, reserve ammo, and reload duration alongside the existing fire mode/rate.
+- [ ] Store magazine and reserve counts per owned weapon; keep counts when switching equipment.
+- [ ] Admit semi-auto and automatic shots using the existing fire cadence; consume one round only for an accepted shot and reject firing when empty.
+- [ ] Resolve hitscan aim from the camera center in both FPS and TPS; check muzzle obstruction so shots cannot pass through nearby cover. Exclude the shooter's own colliders.
+- [ ] Add shared damageable health and body/head hit regions with a configurable headshot multiplier.
+- [ ] Add a stationary damageable target in an arena gameplay test scene; verify hits, misses, range, cover obstruction, and headshots.
+- [ ] Add reload rules: reject full-magazine/no-reserve reloads, transfer only available ammunition, block conflicting actions, and define cancellation on death.
+- [ ] Verify shooting, damage, empty-magazine behavior, and reload completion with one weapon before applying settings to all seven weapons.
+
+### 3.3 Add character death and arena respawning
+
+- [ ] Apply health/damage to the shared player; emit death once, stop movement/combat, and cancel pending actions.
+- [ ] Add arena-owned team assignment and friendly-fire policy.
+- [ ] Add team spawn points and a configurable respawn delay; reset player health and equipment state according to arena rules.
+- [ ] Verify that death during reload/switching cannot complete stale actions after respawn, and controls/presentation recover correctly.
+
+### 3.4 Add the team deathmatch loop and feedback
+
+- [ ] Supply fixed starting loadouts from arena configuration, using the existing weapon catalog.
+- [ ] Award one team point per valid enemy kill; prevent duplicate points and define suicide/friendly-fire handling.
+- [ ] Add a configurable score limit and match timer, a match-end result, and a local restart.
+- [ ] Add a minimal arena HUD: crosshair, magazine/reserve ammo, health, team scores, timer, and respawn countdown.
+- [ ] Add basic hit/kill feedback while preserving existing recoil, camera shake, and weapon animation presentation.
+- [ ] Test the complete local loop with controlled damage/death scenarios: spawn, move, aim, fire, reload, switch, die, respawn, score, and end/restart the match.
 
 ## 4. Add a map
 

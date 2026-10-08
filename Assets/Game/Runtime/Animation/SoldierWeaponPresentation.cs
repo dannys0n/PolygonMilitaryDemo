@@ -25,14 +25,7 @@ public class SoldierWeaponPresentation : MonoBehaviour
         ApplyWeapon(weapon);
         actions.FireStarted += PlayFire;
         actions.ReloadStarted += PlayReload;
-    }
-
-    // Apply equipment settings to the persistent body and arms rigs.
-    public bool TryApplyWeapon(SoldierWeapon selectedWeapon)
-    {
-        if (actions.IsReloading || view.IsEquipping) return false;
-        ApplyWeapon(selectedWeapon);
-        return true;
+        actions.ReloadCanceled += CancelReload;
     }
 
     public void ApplyWeapon(SoldierWeapon selectedWeapon)
@@ -60,11 +53,20 @@ public class SoldierWeaponPresentation : MonoBehaviour
     {
         actions.FireStarted -= PlayFire;
         actions.ReloadStarted -= PlayReload;
+        actions.ReloadCanceled -= CancelReload;
     }
 
     void Update()
     {
-        float weight = characterAnimator.GetFloat("WeaponReloadWeight");
+        float reloadWeight = characterAnimator.GetFloat("WeaponReloadWeight");
+        UpdateRigWeights(reloadWeight);
+        UpdateMovementMotion();
+        UpdateWeaponLayers(reloadWeight);
+        UpdateWeaponPlacement(reloadWeight);
+    }
+
+    void UpdateRigWeights(float weight)
+    {
         float sprint = Mathf.Clamp01(characterAnimator.GetFloat("RunBlend"));
         // Animator damping approaches the target asymptotically. Finish the blend
         // exactly so a tiny remaining run value cannot keep IK disabled.
@@ -76,17 +78,29 @@ public class SoldierWeaponPresentation : MonoBehaviour
         chestAim.weight = firingHand.weight = (1f - weight) * (1f - sprint);
         supportHand.weight = 1f - weight;
         runWeaponFollow.weight = sprint;
+    }
+
+    void UpdateMovementMotion()
+    {
         Vector3 velocity = controller.velocity;
         velocity.y = 0f;
         float speed = controller.isGrounded ? Mathf.Clamp01(velocity.magnitude / view.walkingSpeed) : 0f;
         characterAnimator.SetFloat("MotionSpeed", speed, .12f, Time.deltaTime);
 
+    }
+
+    void UpdateWeaponLayers(float weight)
+    {
         // The same curve returns the weapon to its hold pose and the hands
         // to their grips. Animator blends the clips before the rig solves IK.
         characterAnimator.SetLayerWeight(characterSwayLayer, 1f - weight);
         characterAnimator.SetLayerWeight(weaponPoseLayer, weight);
         characterAnimator.SetLayerWeight(weaponSwayLayer, 1f - weight);
         characterAnimator.SetLayerWeight(weaponFireLayer, 1f - weight);
+    }
+
+    void UpdateWeaponPlacement(float weight)
+    {
         SoldierWeaponDefinition set = weapon.definition;
         // Share the first-person placement blend and its exact duration.
         float aimBlend = view.PlacementAimBlend;
@@ -104,6 +118,14 @@ public class SoldierWeaponPresentation : MonoBehaviour
         characterAnimator.CrossFadeInFixedTime("Fire", weapon.definition.fireBlendTime, weaponFireLayer, 0f);
         partsAnimator.ResetTrigger("Fire");
         partsAnimator.Play("Fire", 0, 0f);
+    }
+
+    void CancelReload()
+    {
+        characterAnimator.ResetTrigger("WeaponReload");
+        characterAnimator.Play("Idle", weaponPoseLayer, 0f);
+        partsAnimator.ResetTrigger("Reload");
+        partsAnimator.Play("Idle", 0, 0f);
     }
 
     void PlayReload()

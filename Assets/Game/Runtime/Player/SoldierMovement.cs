@@ -23,16 +23,6 @@ public class SoldierMovement : MonoBehaviour
         jumpRequested = true;
     }
 
-    void Update()
-    {
-        Vector2 input = new Vector2(
-            Input.GetAxisRaw("Horizontal"),
-            Input.GetAxisRaw("Vertical")
-        );
-
-        SimulateMovement(input, Time.deltaTime, Input.GetKey(KeyCode.LeftShift));
-    }
-
     public void SimulateMovement(Vector2 input, float deltaTime, bool runRequested = false)
     {
         input = Vector2.ClampMagnitude(input, 1f);

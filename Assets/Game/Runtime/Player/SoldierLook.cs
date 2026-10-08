@@ -10,35 +10,6 @@ public class SoldierLook : MonoBehaviour
 
     private float pitch;
 
-    void Start()
-    {
-        Cursor.lockState = CursorLockMode.Locked;
-        Cursor.visible = false;
-    }
-
-    void Update()
-    {
-        if (Input.GetKeyDown(KeyCode.Escape))
-        {
-            Cursor.lockState = CursorLockMode.None;
-            Cursor.visible = true;
-        }
-
-        if (Input.GetMouseButtonDown(0))
-        {
-            Cursor.lockState = CursorLockMode.Locked;
-            Cursor.visible = false;
-        }
-
-        if (Cursor.lockState != CursorLockMode.Locked)
-        {
-            animator.SetFloat("Turn", 0f, 0.1f, Time.deltaTime);
-            return;
-        }
-
-        ApplyLookDelta(new Vector2(Input.GetAxis("Mouse X"), Input.GetAxis("Mouse Y")) * sensitivity);
-    }
-
     // Angular mouse/input deltas in degrees; the caller chooses input sensitivity.
     public void ApplyLookDelta(Vector2 delta)
     {

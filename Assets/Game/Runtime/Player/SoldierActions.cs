@@ -1,82 +1,72 @@
 using UnityEngine;
 
+[DefaultExecutionOrder(-30)]
 public class SoldierActions : MonoBehaviour
 {
-    public enum FireMode
-    {
-        SemiAutomatic,
-        Automatic
-    }
-
+    public enum FireMode { SemiAutomatic, Automatic }
     public Animator animator;
     public SoldierFirstPersonView firstPersonView;
     public SoldierMovement movement;
-    private SoldierWeaponPresentation presentation;
-    public FireMode fireMode => presentation.weapon.definition.fireMode;
-    public float roundsPerMinute => presentation.weapon.definition.roundsPerMinute;
+    private SoldierWeaponLoadout loadout;
+    public FireMode fireMode => loadout.EquippedWeapon.definition.fireMode;
+    public float roundsPerMinute => loadout.EquippedWeapon.definition.roundsPerMinute;
     public event System.Action FireStarted;
     public event System.Action ReloadStarted;
-
+    public event System.Action ReloadCompleted;
+    public event System.Action ReloadCanceled;
     private float nextFireTime;
-    private int reloadLayer;
+    private float reloadEndTime;
+    public bool IsReloading { get; private set; }
+    public float ReloadProgress => IsReloading
+        ? Mathf.Clamp01(1f - (reloadEndTime - Time.time) / loadout.EquippedWeapon.definition.reloadDuration)
+        : 0f;
 
-    public bool IsReloading =>
-        animator.GetCurrentAnimatorStateInfo(reloadLayer).IsName("Reload") ||
-        animator.IsInTransition(reloadLayer) || firstPersonView.IsReloading;
-
-    void Awake()
-    {
-        presentation = GetComponent<SoldierWeaponPresentation>();
-        reloadLayer = animator.GetLayerIndex("Reload");
-        animator.ResetTrigger("Fire");
-    }
+    void Awake() => loadout = GetComponent<SoldierWeaponLoadout>();
 
     void Update()
     {
-        bool reloadPressed = Cursor.lockState == CursorLockMode.Locked
-                          && Input.GetKeyDown(KeyCode.R);
-
-        if (Cursor.lockState != CursorLockMode.Locked)
-            return;
-
-        // Temporary test input until damage calls PlayHitReaction().
-        if (Input.GetKeyDown(KeyCode.H))
-            PlayHitReaction();
-
-        if (Input.GetKeyDown(KeyCode.Space))
-            movement.RequestJump();
-
-        if (reloadPressed)
-        {
-            TryReload();
-            animator.ResetTrigger("Fire");
-            return;
-        }
-
-        if (IsReloading || firstPersonView.IsEquipping)
-            return;
-
-        bool wantsToFire = fireMode == FireMode.Automatic
-            ? Input.GetMouseButton(0)
-            : Input.GetMouseButtonDown(0);
-
-        if (wantsToFire) TryFire();
+        if (!IsReloading || Time.time < reloadEndTime) return;
+        IsReloading = false;
+        ReloadCompleted?.Invoke();
     }
 
-    // These admission methods can also be called by an input or network command driver.
     public bool TryFire()
     {
-        if (IsReloading || firstPersonView.IsEquipping || movement.IsRunning || Time.time < nextFireTime) return false;
+        if (IsReloading || loadout.IsSwitching || movement.IsRunning || Time.time < nextFireTime) return false;
         nextFireTime = Time.time + 60f / Mathf.Max(roundsPerMinute, 1f);
-        PlayFire();
+        PresentFire();
         return true;
     }
 
     public bool TryReload()
     {
-        if (IsReloading || firstPersonView.IsEquipping) return false;
-        PlayReload();
+        if (IsReloading || loadout.IsSwitching) return false;
+        IsReloading = true;
+        reloadEndTime = Time.time + loadout.EquippedWeapon.definition.reloadDuration;
+        animator.SetTrigger("Reload");
+        animator.ResetTrigger("Fire");
+        firstPersonView.PlayReload();
+        ReloadStarted?.Invoke();
         return true;
+    }
+
+    public void CancelReload()
+    {
+        if (!IsReloading) return;
+        IsReloading = false;
+        animator.ResetTrigger("Reload");
+        animator.Play("Empty", animator.GetLayerIndex("Reload"), 0f);
+        firstPersonView.CancelReload();
+        ReloadCanceled?.Invoke();
+    }
+
+    // Reset pending actions before death, despawn, or a later respawn reset.
+    public void CancelActions()
+    {
+        CancelReload();
+        loadout.CancelSwitch();
+        nextFireTime = Time.time;
+        firstPersonView.CancelAim();
     }
 
     public void PlayHitReaction()
@@ -85,7 +75,9 @@ public class SoldierActions : MonoBehaviour
         animator.SetTrigger("HitReaction");
     }
 
-    public void PlayFire()
+    public void PlayFire() => TryFire();
+
+    private void PresentFire()
     {
         animator.ResetTrigger("Fire");
         animator.SetTrigger("Fire");
@@ -93,11 +85,6 @@ public class SoldierActions : MonoBehaviour
         FireStarted?.Invoke();
     }
 
-    public void PlayReload()
-    {
-        animator.SetTrigger("Reload");
-        animator.ResetTrigger("Fire");
-        firstPersonView.PlayReload();
-        ReloadStarted?.Invoke();
-    }
+    public void PlayReload() => TryReload();
+    void OnDisable() => CancelActions();
 }

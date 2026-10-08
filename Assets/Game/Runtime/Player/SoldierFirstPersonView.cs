@@ -35,10 +35,10 @@ public class SoldierFirstPersonView : MonoBehaviour
     private float aimBlend;
     public float AimBlend => aimBlend;
     public float PlacementAimBlend => 1f - (1f - aimBlend) * (1f - aimBlend);
-    public bool IsEquipping { get; set; }
+    public bool IsEquipping => loadout.IsSwitching;
     public bool WantsToAim { get; private set; }
     private SoldierMovement movement;
-    private bool reloadRequested;
+
     private int locomotionLayer;
     private int aimTransitionLayer;
     private Renderer[] firstPersonRenderers;
@@ -46,14 +46,17 @@ public class SoldierFirstPersonView : MonoBehaviour
     public Vector3 CameraRestPosition => firstPerson ? Vector3.zero : thirdPersonCameraPosition;
     public Quaternion CameraRestRotation => firstPerson ? Quaternion.identity : thirdPersonCameraRotation;
 
-    public bool IsReloading =>
-        (reloadRequested || armsAnimator.GetCurrentAnimatorStateInfo(0).IsName("Reload") ||
-         (armsAnimator.IsInTransition(0) && armsAnimator.GetNextAnimatorStateInfo(0).IsName("Reload")));
+    private SoldierActions actions;
+    private SoldierWeaponLoadout loadout;
+    private bool aimRequested;
+    public bool IsReloading => actions.IsReloading;
 
     private void Awake()
     {
         definition = GetComponent<SoldierWeaponPresentation>().weapon.definition;
         movement = GetComponent<SoldierMovement>();
+        actions = GetComponent<SoldierActions>();
+        loadout = GetComponent<SoldierWeaponLoadout>();
         thirdPersonCameraPosition = playerCamera.transform.localPosition;
         thirdPersonCameraRotation = playerCamera.transform.localRotation;
         originalCullingMask = playerCamera.cullingMask;
@@ -90,12 +93,17 @@ public class SoldierFirstPersonView : MonoBehaviour
         playerCamera.fieldOfView = originalFieldOfView;
     }
 
-    private void Update()
+    private void Update() => UpdateAim();
+
+    public void SetAimRequested(bool requested)
     {
-        if (Cursor.lockState == CursorLockMode.Locked && Input.GetKeyDown(KeyCode.V))
-            SetFirstPerson(!firstPerson);
-        WantsToAim = Cursor.lockState == CursorLockMode.Locked
-            && Input.GetMouseButton(1) && !IsReloading && !IsEquipping;
+        aimRequested = requested;
+        WantsToAim = requested && !IsReloading && !IsEquipping;
+    }
+
+    private void UpdateAim()
+    {
+        WantsToAim = aimRequested && !IsReloading && !IsEquipping;
         bool aiming = WantsToAim && !movement.IsRunning;
         aimBlend = Mathf.MoveTowards(aimBlend, aiming ? 1f : 0f, aimBlendSpeed * Time.deltaTime);
         armsAnimator.SetBool("Aim", aiming);
@@ -104,19 +112,16 @@ public class SoldierFirstPersonView : MonoBehaviour
         firstPersonRoot.localPosition = Vector3.Lerp(viewOffset + hipFireOffset, viewOffset + aimOffset, PlacementAimBlend);
     }
 
-    private void LateUpdate()
-    {
-        // Keep action admission closed until Animator consumes the reload trigger.
-        if (armsAnimator.GetCurrentAnimatorStateInfo(0).IsName("Reload") ||
-            (armsAnimator.IsInTransition(0) && armsAnimator.GetNextAnimatorStateInfo(0).IsName("Reload")))
-            reloadRequested = false;
+    private void LateUpdate() => UpdateMotion();
 
+    private void UpdateMotion()
+    {
         // Use actual movement so walking bob stops against walls and in the air.
         Vector3 velocity = controller.velocity;
         velocity.y = 0f;
-        float movement = controller.isGrounded ? Mathf.Clamp01(velocity.magnitude / walkingSpeed) : 0f;
-        if (IsReloading) movement *= reloadWalkWeight;
-        armsAnimator.SetFloat("Movement", movement, motionSmoothingTime, Time.deltaTime);
+        float movementAmount = controller.isGrounded ? Mathf.Clamp01(velocity.magnitude / walkingSpeed) : 0f;
+        if (IsReloading) movementAmount *= reloadWalkWeight;
+        armsAnimator.SetFloat("Movement", movementAmount, motionSmoothingTime, Time.deltaTime);
         float weight = IsReloading ? locomotionWeight * reloadSwayWeight : locomotionWeight;
         armsAnimator.SetLayerWeight(locomotionLayer, Mathf.MoveTowards(
             armsAnimator.GetLayerWeight(locomotionLayer), weight, Time.deltaTime / motionSmoothingTime));
@@ -127,7 +132,7 @@ public class SoldierFirstPersonView : MonoBehaviour
     public void ApplyWeaponDefinition(SoldierWeaponDefinition selectedDefinition)
     {
         definition = selectedDefinition;
-        reloadRequested = false;
+
         aimBlend = 0f;
         locomotionLayer = armsAnimator.GetLayerIndex("Locomotion");
         aimTransitionLayer = armsAnimator.GetLayerIndex("Aim Transitions");
@@ -159,9 +164,17 @@ public class SoldierFirstPersonView : MonoBehaviour
         weaponAnimator.Play("Fire", 0, 0f);
     }
 
+    public void CancelReload()
+    {
+        armsAnimator.ResetTrigger("Reload");
+        weaponAnimator.ResetTrigger("Reload");
+        armsAnimator.Play("Idle", 0, 0f);
+        weaponAnimator.Play("Idle", 0, 0f);
+    }
+
     public void PlayReload()
     {
-        reloadRequested = true;
+
         armsAnimator.ResetTrigger("Fire");
         weaponAnimator.ResetTrigger("Fire");
         armsAnimator.SetBool("Aim", false);
