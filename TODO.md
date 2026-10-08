@@ -81,6 +81,9 @@ Do not build classes, dynamic pickups, conquest, battle royale, persistence, pro
 - [x] Add simple enemy selection, sight checks, path following, turning/aiming, firing, and reloading through SoldierInputFrame.
 - [x] Create an AI character variant with local camera/audio disabled and third-person visuals visible.
 - [x] Reset AI targets/path intent on death and respawn; keep team/match rules outside the AI provider.
+- [x] Add reachable standing cover with peek/return behavior, combat strafing, sprint traversal, primary/sidearm selection, and smooth imperfect aim with bursts. Keep all actions on the shared input/controller path.
+- [x] Check tactical decisions in a temporary arena: cover/peek geometry and transitions, strafing, sprint requests, weapon selection, bursts, reload requests, and death/respawn resets.
+- [ ] User polish pass: cover movement and timing, aim accuracy, sprinting, and weapon switching on the prototype map.
 - [ ] User end-to-end walkthrough: human versus bots, movement, combat, cover, reloads, deaths, respawns, scoring, and restart.
 
 ## 4. Add a map

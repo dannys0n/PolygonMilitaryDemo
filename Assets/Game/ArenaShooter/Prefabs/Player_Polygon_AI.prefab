@@ -156,7 +156,7 @@ NavMeshAgent:
   m_Acceleration: 16
   avoidancePriority: 50
   m_AngularSpeed: 120
-  m_StoppingDistance: 1
+  m_StoppingDistance: 0.2
   m_AutoTraverseOffMeshLink: 1
   m_AutoBraking: 1
   m_AutoRepath: 1
@@ -187,6 +187,27 @@ MonoBehaviour:
   reactionTime: 0.35
   memoryDuration: 4
   repathInterval: 0.3
+  sprintDistance: 8
+  strafeDistance: 2
+  repositionInterval: {x: 1.5, y: 3}
+  coverSearchRadius: 12
+  coverDecisionInterval: 5
+  coverChance: 0.65
+  retreatHealth: 0.4
+  hideDuration: {x: 0.6, y: 1.2}
+  peekDuration: {x: 1, y: 2}
+  initialAimError: 3
+  settledAimError: 1
+  aimSettleTime: 1.5
+  aimTrackingTime: 0.18
+  aimNoiseInterval: 0.4
+  burstDuration: {x: 0.5, y: 1}
+  burstPause: {x: 0.35, y: 0.8}
+  semiAutoInterval: 0.25
+  primaryWeapon: 1
+  sidearmWeapon: 2
+  sidearmRange: 7
+  weaponDecisionInterval: 2
 --- !u!114 &8365131236909310801 stripped
 MonoBehaviour:
   m_CorrespondingSourceObject: {fileID: 6569938417668010096, guid: 2f2651d4bad0ce246a3126ffed3a5296, type: 3}
