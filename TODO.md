@@ -118,7 +118,7 @@ Most of this stage can use stub implementations before real networking is added.
 - [x] Weapon name and equipped slots.
 - [x] Live magazine/reserve ammo counter and reload/fire mode status.
 - [x] Health counter and bar.
-- [x] Cosmetic crosshair expansion from accepted shots and movement; hide during ADS/sprint/death.
+- [x] HellSlayerEtrAssaultCross2048 crosshair with centered, smoothed visibility plus accepted-shot gap expansion, capped burst buildup, and smooth recovery. Stroke size stays fixed; hide during ADS/sprint/death/switching.
 - [x] Timed kill feed.
 - [x] Hold-Tab two-team leaderboard with live score/kills/deaths, local-row highlight, variable rosters, and scrollable tables. Personal stats persist across respawn and reset on match restart.
 - [x] Kill medal, rapid multi-kill feedback, and life kill streak.

@@ -14,7 +14,15 @@ public class ArenaHud : MonoBehaviour
     public TMP_Text[] killerNames, victimNames, equipmentKeys;
     public UnityEngine.UI.Image[] killWeapons, equipmentIcons, equipmentBackgrounds;
     public UnityEngine.UI.Image redProgress, blueProgress, healthProgress;
-    public RectTransform[] crosshairLines;
+    public RectTransform crosshairRoot;
+    public UnityEngine.UI.RawImage[] crosshairSegments;
+    public float crosshairSmoothing = 8f;
+    public float minimumCrosshairScale = .15f;
+    [Header("Crosshair shot bloom")]
+    public float shotExpansion = 5f;
+    public float maximumShotExpansion = 20f;
+    public float shotRecoveryDelay = .055f;
+    public float shotRecoveryTime = .16f;
     public CanvasGroup crosshair, hitMarker, medalGroup, radar;
     public GameObject rifleIcon, pistolIcon;
     public RectTransform radarRoot;
@@ -23,11 +31,17 @@ public class ArenaHud : MonoBehaviour
     public float radarRange = 45f;
     readonly List<(string attacker, string victim, bool pistol, float expires)> kills = new List<(string,string,bool,float)>();
     readonly List<RectTransform> radarDots = new List<RectTransform>();
-    float shotKick, hitUntil, medalUntil, nextRefresh, lastKill = -100f;
+    float crosshairScale = 1f, hitUntil, medalUntil, nextRefresh, lastKill = -100f;
+    float shotSpread, recoverSpreadAt;
+    Vector2[] crosshairRestPositions;
     int streak, multiKill;
     string accentHex;
 
-    void Awake() => accentHex = ColorUtility.ToHtmlStringRGB(accent);
+    void Awake()
+    {
+        accentHex = ColorUtility.ToHtmlStringRGB(accent);
+        crosshairRestPositions = crosshairSegments.Select(s => s.rectTransform.anchoredPosition).ToArray();
+    }
     void OnEnable()
     {
         match.KillRecorded += OnKill; match.MatchStarted += ResetFeedback;
@@ -42,9 +56,21 @@ public class ArenaHud : MonoBehaviour
         player.player.actions.FireStarted -= OnFire;
         player.player.Respawned -= OnRespawn;
     }
-    void OnRespawn() { streak = multiKill = 0; shotKick = 0f; }
+    void OnRespawn() { streak = multiKill = 0; shotSpread = 0f; }
+    void OnFire()
+    {
+        if (player.player.view.WantsToAim) return;
+        shotSpread = Mathf.Min(maximumShotExpansion, shotSpread + shotExpansion);
+        recoverSpreadAt = Time.time + shotRecoveryDelay;
+        PositionCrosshair();
+    }
+    void PositionCrosshair()
+    {
+        for (int i = 0; i < crosshairSegments.Length; i++)
+            crosshairSegments[i].rectTransform.anchoredPosition = crosshairRestPositions[i]
+                + crosshairRestPositions[i].normalized * shotSpread;
+    }
     void ResetFeedback() { kills.Clear(); medalUntil = hitUntil = 0f; lastKill = -100f; OnRespawn(); }
-    void OnFire() => shotKick = Mathf.Min(20f, shotKick + 7f);
     void OnShot(SoldierHitscan.ShotResult shot)
     {
         if (!shot.damaged) return;
@@ -70,15 +96,18 @@ public class ArenaHud : MonoBehaviour
     {
         if (Input.GetKeyDown(KeyCode.Backspace)) match.BeginMatch();
         if (Input.GetKeyDown(KeyCode.K)) player.health.ApplyDamage(player.health.maxHealth, player.gameObject);
-        shotKick = Mathf.MoveTowards(shotKick, 0f, Time.deltaTime * 25f);
         var life = player.player;
-        float movement = new Vector2(life.controller.velocity.x, life.controller.velocity.z).magnitude;
-        float spread = 7f + Mathf.Clamp(movement * 2f, 0f, 10f) + shotKick;
-        crosshairLines[0].anchoredPosition = new Vector2(-spread, 0);
-        crosshairLines[1].anchoredPosition = new Vector2(spread, 0);
-        crosshairLines[2].anchoredPosition = new Vector2(0, spread);
-        crosshairLines[3].anchoredPosition = new Vector2(0, -spread);
-        crosshair.alpha = player.health.IsDead || life.movement.IsRunning ? 0f : 1f - life.view.AimBlend;
+        // Keep AtlasNet's centered, smoothed visibility; shot bloom moves the arms independently.
+        bool visible = !player.health.IsDead && !life.view.WantsToAim
+            && !life.movement.IsRunning && !life.loadout.IsSwitching;
+        crosshairScale = Mathf.Lerp(crosshairScale, visible ? 1f : 0f, Time.deltaTime * crosshairSmoothing);
+        crosshairRoot.localScale = Vector3.one * crosshairScale;
+        if (life.view.WantsToAim) shotSpread = 0f;
+        else if (Time.time >= recoverSpreadAt)
+            shotSpread = Mathf.Lerp(shotSpread, 0f, 1f - Mathf.Exp(-Time.deltaTime / Mathf.Max(.01f, shotRecoveryTime)));
+        PositionCrosshair();
+        foreach (var segment in crosshairSegments) segment.enabled = crosshairScale > minimumCrosshairScale;
+        crosshair.alpha = 1f;
         hitMarker.alpha = Time.time < hitUntil ? 1f : 0f;
         medalGroup.alpha = Mathf.Clamp01((medalUntil - Time.time) * 2f);
         radar.alpha = player.health.IsDead ? .3f : 1f;
