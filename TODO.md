@@ -109,6 +109,18 @@ Most of this stage can use stub implementations before real networking is added.
 - [ ] Connect menu, lobby, matchmaking/server browser, and gameplay scenes.
 - [ ] Add basic connection, loading, failure, and return-to-menu UI states.
 
+## 5.1 Build gameplay UI
+
+- [ ] Hit marker
+- [ ] Team point count
+- [ ] Weapon Name
+- [ ] Ammo Counter
+- [ ] Health Counter
+- [ ] Recoil based working crosshair 
+- [ ] kill feed
+- [ ] Kill medal
+- [ ] Minimap?
+
 ## 6. Create the working NGO baseline
 
 - [ ] Clone the prototype into a separate NGO project.
