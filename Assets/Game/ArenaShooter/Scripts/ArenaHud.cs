@@ -16,7 +16,7 @@ public class ArenaHud : MonoBehaviour
     public UnityEngine.UI.Image[] killWeapons, equipmentIcons, equipmentBackgrounds;
     public UnityEngine.UI.Image redProgress, blueProgress, healthProgress;
     public RectTransform crosshairRoot;
-    public UnityEngine.UI.RawImage[] crosshairSegments;
+    public UnityEngine.UI.Graphic[] crosshairSegments;
     public float crosshairSmoothing = 8f;
     public float minimumCrosshairScale = .15f;
     [Header("Crosshair shot bloom")]
@@ -24,6 +24,10 @@ public class ArenaHud : MonoBehaviour
     public float maximumShotExpansion = 20f;
     public float shotRecoveryDelay = .055f;
     public float shotRecoveryTime = .16f;
+    [Header("Hit and kill feedback")]
+    public float hitMarkerDuration = .24f;
+    public float killSkullDuration = 5f;
+    public CanvasGroup[] killSkulls;
     public CanvasGroup crosshair, hitMarker, medalGroup, radar;
     public GameObject rifleIcon, pistolIcon;
     public RectTransform radarRoot;
@@ -31,6 +35,7 @@ public class ArenaHud : MonoBehaviour
     public Color accent = new Color(1f, .686f, 0f);
     public float radarRange = 45f;
     readonly List<(string attacker, string victim, bool pistol, float expires)> kills = new List<(string,string,bool,float)>();
+    readonly List<float> skullExpires = new List<float>();
     readonly List<RectTransform> radarDots = new List<RectTransform>();
     float crosshairScale = 1f, hitUntil, medalUntil, nextRefresh, lastKill = -100f;
     float shotSpread, recoverSpreadAt;
@@ -74,7 +79,7 @@ public class ArenaHud : MonoBehaviour
         OnRespawn(); hitUntil = medalUntil = 0f; lastKill = -100f; nextRefresh = 0f;
         if (listening) SubscribePlayer();
     }
-    void OnRespawn() { streak = multiKill = 0; shotSpread = 0f; }
+    void OnRespawn() { streak = multiKill = 0; shotSpread = 0f; skullExpires.Clear(); medalUntil = 0f; }
     void OnFire()
     {
         if (player.player.view.WantsToAim) return;
@@ -92,7 +97,7 @@ public class ArenaHud : MonoBehaviour
     void OnShot(SoldierHitscan.ShotResult shot)
     {
         if (!shot.damaged) return;
-        hitUntil = Time.time + .16f;
+        hitUntil = Time.time + hitMarkerDuration;
         foreach (var image in hitMarker.GetComponentsInChildren<UnityEngine.UI.Image>()) image.color = shot.killed ? accent : Color.white;
     }
     void OnKill(ArenaParticipant attacker, ArenaParticipant victim)
@@ -103,6 +108,9 @@ public class ArenaHud : MonoBehaviour
         if (kills.Count > 5) kills.RemoveAt(kills.Count - 1);
         nextRefresh = 0f;
         if (attacker != player) return;
+        skullExpires.RemoveAll(expiry => expiry <= Time.time);
+        if (skullExpires.Count == killSkulls.Length) skullExpires.RemoveAt(0);
+        skullExpires.Add(Time.time + killSkullDuration);
         streak++;
         multiKill = Time.time - lastKill < 3f ? multiKill + 1 : 1; lastKill = Time.time;
         string title = multiKill >= 3 ? "MULTI KILL" : multiKill == 2 ? "DOUBLE KILL" : "KILL";
@@ -116,10 +124,10 @@ public class ArenaHud : MonoBehaviour
         if (allowLocalShortcuts && player.GetComponent<SoldierLocalInput>() && Input.GetKeyDown(KeyCode.K))
             player.health.ApplyDamage(player.health.maxHealth, player.gameObject);
         var life = player.player;
-        // Keep AtlasNet's centered, smoothed visibility; shot bloom moves the arms independently.
+        // Preserve the original ADS shrink; the renderer snaps strokes to screen pixels.
         bool visible = !player.health.IsDead && !life.view.WantsToAim
             && !life.movement.IsRunning && !life.loadout.IsSwitching;
-        crosshairScale = Mathf.Lerp(crosshairScale, visible ? 1f : 0f, Time.deltaTime * crosshairSmoothing);
+        crosshairScale = Mathf.Lerp(crosshairScale, visible ? 1f : 0f, 1f - Mathf.Exp(-Time.deltaTime * crosshairSmoothing));
         crosshairRoot.localScale = Vector3.one * crosshairScale;
         if (life.view.WantsToAim) shotSpread = 0f;
         else if (Time.time >= recoverSpreadAt)
@@ -128,7 +136,19 @@ public class ArenaHud : MonoBehaviour
         foreach (var segment in crosshairSegments) segment.enabled = crosshairScale > minimumCrosshairScale;
         crosshair.alpha = 1f;
         hitMarker.alpha = Time.time < hitUntil ? 1f : 0f;
-        medalGroup.alpha = Mathf.Clamp01((medalUntil - Time.time) * 2f);
+        medalGroup.alpha = 1f;
+        medal.alpha = Mathf.Clamp01((medalUntil - Time.time) * 2f);
+        skullExpires.RemoveAll(expiry => expiry <= Time.time);
+        for (int i = 0; i < killSkulls.Length; i++)
+        {
+            killSkulls[i].alpha = i < skullExpires.Count
+                ? Mathf.Clamp01((skullExpires[i] - Time.time) * 2f) : 0f;
+            // Center each populated row, including a single kill or a partial last row.
+            int row = i / 4;
+            int columns = Mathf.Clamp(skullExpires.Count - row * 4, 1, 4);
+            killSkulls[i].GetComponent<RectTransform>().anchoredPosition =
+                new Vector2((i % 4 - (columns - 1) * .5f) * 34f, -50f - row * 34f);
+        }
         radar.alpha = player.health.IsDead ? .3f : 1f;
         if (Time.time < nextRefresh) return;
         nextRefresh = Time.time + .1f;

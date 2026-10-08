@@ -14,6 +14,7 @@ public class SoldierWeaponPresentation : MonoBehaviour
     public Animator partsAnimator;
     public Transform aimTarget;
     public MultiAimConstraint chestAim;
+    public MultiAimConstraint weaponAim;
     public TwoBoneIKConstraint supportHand;
     public TwoBoneIKConstraint firingHand;
     public MultiParentConstraint runWeaponFollow;
@@ -77,6 +78,7 @@ public class SoldierWeaponPresentation : MonoBehaviour
         characterAnimator.SetLayerWeight(sprintArmsLayer, sprint);
         chestAim.weight = firingHand.weight = (1f - weight) * (1f - sprint);
         supportHand.weight = 1f - weight;
+        weaponAim.weight = 1f - weight;
         runWeaponFollow.weight = sprint;
     }
 
@@ -108,9 +110,9 @@ public class SoldierWeaponPresentation : MonoBehaviour
             set.thirdPersonAimPosition, aimBlend);
         // Fade to the authored reload pivot independently of the hold pose.
         aimPivot.localPosition = Vector3.Lerp(holdPosition, set.thirdPersonReloadPosition, weight);
-        Quaternion aiming = Quaternion.Inverse(aimPivot.parent.rotation) *
-            Quaternion.LookRotation(aimTarget.position - aimPivot.position, transform.up);
-        aimPivot.localRotation = Quaternion.Slerp(aiming, Quaternion.identity, weight);
+        // The rig aims this pivot after the current spine pose is evaluated,
+        // before weapon following and hand IK. Reload uses its authored frame.
+        aimPivot.localRotation = Quaternion.identity;
     }
     void PlayFire()
     {
