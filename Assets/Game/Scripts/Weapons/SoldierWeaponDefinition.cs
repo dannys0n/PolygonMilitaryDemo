@@ -4,6 +4,8 @@ using UnityEngine.Serialization;
 [CreateAssetMenu(menuName = "Soldier/Weapon definition")]
 public class SoldierWeaponDefinition : ScriptableObject
 {
+    [Header("UI")]
+    public Sprite icon;
     public enum SprintStyle { Regular, Tactical }
     [Header("Animation controllers")]
     public RuntimeAnimatorController firstPerson;
@@ -57,3 +59,4 @@ public class SoldierWeaponDefinition : ScriptableObject
     public SoldierActions.FireMode fireMode;
     [Min(1f)] public float roundsPerMinute = 600f;
 }
+

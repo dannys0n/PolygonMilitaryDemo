@@ -60,7 +60,7 @@ public class ArenaClassMenu : MonoBehaviour
         preview = choice;
         primaryName.text = choice.primary.name;
         secondaryName.text = choice.secondary.name;
-        primaryIcon.sprite = rifleSprite; secondaryIcon.sprite = pistolSprite;
+        primaryIcon.sprite = choice.primary.icon; secondaryIcon.sprite = choice.secondary.icon;
         status.text = participant.NeedsClassSelection ? "SELECT A CLASS TO SPAWN" : "CHANGES APPLY ON YOUR NEXT RESPAWN";
         confirm.GetComponentInChildren<TMP_Text>().text = participant.NeedsClassSelection ? "DEPLOY" : "SELECT CLASS";
         for (int i = 0; i < rows.Count; i++)
@@ -85,3 +85,4 @@ public class ArenaClassMenu : MonoBehaviour
     void OnMatchEnded() { if (IsVisible) { Close(); pause.Resume(); } }
     void OnDestroy() { if (participant) participant.match.MatchEnded -= OnMatchEnded; }
 }
+

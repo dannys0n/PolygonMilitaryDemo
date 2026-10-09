@@ -34,7 +34,7 @@ public class ArenaHud : MonoBehaviour
     public RectTransform radarDotTemplate;
     public Color accent = new Color(1f, .686f, 0f);
     public float radarRange = 45f;
-    readonly List<(string attacker, string victim, bool pistol, float expires)> kills = new List<(string,string,bool,float)>();
+    readonly List<(string attacker, string victim, Sprite weapon, float expires)> kills = new List<(string,string,Sprite,float)>();
     readonly List<float> skullExpires = new List<float>();
     readonly List<RectTransform> radarDots = new List<RectTransform>();
     float crosshairScale = 1f, hitUntil, medalUntil, nextRefresh, lastKill = -100f;
@@ -102,9 +102,9 @@ public class ArenaHud : MonoBehaviour
     }
     void OnKill(ArenaParticipant attacker, ArenaParticipant victim)
     {
-        bool sidearm = attacker.player && System.Array.IndexOf(attacker.player.loadout.AvailableSlots, attacker.player.loadout.selectedSlot) > 0;
+        Sprite weapon = attacker.player ? attacker.player.loadout.EquippedWeapon.definition.icon : rifleSprite;
         string a = Escape(attacker.name), v = Escape(victim.name);
-        kills.Insert(0, (a, v, sidearm, Time.time + 7f));
+        kills.Insert(0, (a, v, weapon, Time.time + 7f));
         if (kills.Count > 5) kills.RemoveAt(kills.Count - 1);
         nextRefresh = 0f;
         if (attacker != player) return;
@@ -168,6 +168,9 @@ public class ArenaHud : MonoBehaviour
         fireMode.text = player.player.actions.IsReloading ? "RELOADING" : player.player.actions.fireMode == SoldierActions.FireMode.Automatic ? "AUTO" : "SEMI";
         int ordinal = System.Array.IndexOf(loadout.AvailableSlots, loadout.selectedSlot);
         rifleIcon.SetActive(ordinal == 0); pistolIcon.SetActive(ordinal > 0);
+        var equippedIcon = (ordinal == 0 ? rifleIcon : pistolIcon).GetComponent<UnityEngine.UI.Image>();
+        equippedIcon.sprite = loadout.EquippedWeapon.definition.icon;
+        equippedIcon.preserveAspect = true;
         var slotText = new StringBuilder();
         for (int i = 0; i < loadout.AvailableSlots.Length; i++)
         {
@@ -181,7 +184,7 @@ public class ArenaHud : MonoBehaviour
             bool owned = i < loadout.AvailableSlots.Length;
             equipmentIcons[i].transform.parent.gameObject.SetActive(owned);
             if (!owned) continue;
-            equipmentIcons[i].sprite = i == 0 ? rifleSprite : pistolSprite;
+            equipmentIcons[i].sprite = loadout.slots[loadout.AvailableSlots[i]].weapon.definition.icon;
             equipmentIcons[i].color = i == ordinal ? Color.white : new Color(1,1,1,.6f);
             equipmentKeys[i].color = i == ordinal ? accent : Color.white;
             equipmentBackgrounds[i].color = i == ordinal ? new Color(accent.r,accent.g,accent.b,.12f) : new Color(1,1,1,.035f);
@@ -198,7 +201,7 @@ public class ArenaHud : MonoBehaviour
             killWeapons[i].transform.parent.gameObject.SetActive(visible);
             if (!visible) continue;
             killerNames[i].text = kills[i].attacker; victimNames[i].text = kills[i].victim;
-            killWeapons[i].sprite = kills[i].pistol ? pistolSprite : rifleSprite;
+            killWeapons[i].sprite = kills[i].weapon;
         }
         deathStatus.text = !match.IsRunning ? $"{match.Result.ToUpperInvariant()}\nBACKSPACE TO RESTART"
             : player.IsRespawning ? $"RESPAWN IN {player.RespawnRemaining:F1}s" : "";
@@ -226,3 +229,5 @@ public class ArenaHud : MonoBehaviour
         }
     }
 }
+
+
