@@ -54,7 +54,7 @@ public class WeaponViewPlacementWindow : EditorWindow
         player = selected != null ? selected.GetComponentInParent<SoldierFirstPersonView>() : null;
         if (player != null && !EditorUtility.IsPersistent(player)) return;
         player = null;
-        foreach (var candidate in Object.FindObjectsByType<SoldierFirstPersonView>(FindObjectsSortMode.None))
+        foreach (var candidate in Object.FindObjectsByType<SoldierFirstPersonView>())
             if (candidate.GetComponent<SoldierLocalInput>() != null) { player = candidate; break; }
     }
 
@@ -103,10 +103,10 @@ public class WeaponViewPlacementWindow : EditorWindow
             Cursor.visible = previousCursorVisible;
         }
         editing = false;
-        SaveChanges();
+        SavePlacement();
     }
 
-    void SaveChanges()
+    void SavePlacement()
     {
         foreach (var definition in changed)
             if (definition != null) AssetDatabase.SaveAssetIfDirty(definition);
@@ -131,7 +131,7 @@ public class WeaponViewPlacementWindow : EditorWindow
         EditorGUILayout.BeginHorizontal();
         if (GUILayout.Button(editing ? "Finish editing" : "Start editing")) { if (editing) StopEditing(); else StartEditing(); }
         if (GUILayout.Button("Frame gun in Scene view")) FrameWeapon();
-        if (GUILayout.Button("Save")) SaveChanges();
+        if (GUILayout.Button("Save")) SavePlacement();
         EditorGUILayout.EndHorizontal();
         EditorGUILayout.LabelField("Position", (ads ? definition.aimOffset : definition.hipFireOffset).ToString("F4"));
         EditorGUILayout.LabelField("Rotation", (ads ? definition.aimRotationOffset : definition.hipFireRotationOffset).ToString("F2"));
@@ -245,7 +245,7 @@ public class WeaponViewPlacementWindow : EditorWindow
             changed.Add(definition);
             Repaint();
         }
-        if (Event.current.rawType == EventType.MouseUp) SaveChanges();
+        if (Event.current.rawType == EventType.MouseUp) SavePlacement();
     }
 
     public static void SetPose(SoldierFirstPersonView view, bool aim, Vector3 worldPivot, Quaternion worldRotation)

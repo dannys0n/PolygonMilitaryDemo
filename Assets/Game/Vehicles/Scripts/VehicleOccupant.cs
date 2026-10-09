@@ -23,11 +23,12 @@ public class VehicleOccupant : MonoBehaviour
     readonly Dictionary<Collider, bool> colliders = new Dictionary<Collider, bool>();
     Transform originalParent;
     Camera vehicleCamera;
+    public Camera ActiveVehicleCamera => vehicleCamera;
     AudioListener vehicleListener;
     AudioListener[] listeners;
     bool[] listenerEnabled;
     bool previousCameraEnabled;
-    float lastVehicleYaw, yaw, pitch = 14, flightYaw, flightPitch, exitHeld, hornUntil;
+    float lastVehicleYaw, yaw, pitch = 14, flightYaw, flightPitch, exitHeld, hornUntil, freelookYaw, freelookPitch;
     Vector3 departureVelocity;
     public bool CockpitView { get; private set; }
     public bool Freelook { get; private set; }
@@ -113,13 +114,21 @@ public class VehicleOccupant : MonoBehaviour
         {
             Freelook = !Freelook;
             if (Freelook && MountedVehicle.seats[SeatIndex].role != Vehicle.SeatRole.Driver) { flightYaw = yaw; flightPitch = pitch; }
-            if (!Freelook) { yaw = flightYaw; pitch = flightPitch; }
+            if (Freelook) { freelookYaw = yaw; freelookPitch = pitch; }
+            else { yaw = freelookYaw; pitch = freelookPitch; }
         }
         var vehicle = MountedVehicle;
         var role = vehicle.seats[SeatIndex].role;
         bool aircraft = vehicle.motor is HelicopterMotor;
-        Vector2 mouse = new Vector2(Input.GetAxis("Mouse X"), Input.GetAxis("Mouse Y"));
-        if (aircraft && role == Vehicle.SeatRole.Driver) mouse = Vector2.ClampMagnitude(mouse,1f) * 1.5f;
+        if (aircraft && role == Vehicle.SeatRole.Driver && Input.GetKeyDown(KeyCode.T))
+        {
+            var helicopter = (HelicopterMotor)vehicle.motor; helicopter.assistEnabled = !helicopter.assistEnabled;
+            yaw = flightYaw = vehicleCamera.transform.eulerAngles.y;
+            pitch = flightPitch = Mathf.DeltaAngle(0, vehicleCamera.transform.eulerAngles.x);
+        }
+        Vector2 mouse = new Vector2(Input.GetAxisRaw("Mouse X"), Input.GetAxisRaw("Mouse Y"));
+        if (aircraft && role == Vehicle.SeatRole.Driver && !((HelicopterMotor)vehicle.motor).assistEnabled)
+            mouse = Vector2.ClampMagnitude(mouse,1f);
         mouse *= local.sensitivity;
         if (!aircraft && role == Vehicle.SeatRole.Driver) yaw += Mathf.DeltaAngle(lastVehicleYaw, vehicle.transform.eulerAngles.y);
         lastVehicleYaw = vehicle.transform.eulerAngles.y;
@@ -129,11 +138,25 @@ public class VehicleOccupant : MonoBehaviour
         if (role == Vehicle.SeatRole.Driver)
         {
             if (!aircraft) { flightYaw = vehicle.transform.eulerAngles.y; flightPitch = CockpitView ? 0 : 14; }
-            else if (!Freelook) { flightYaw = yaw; flightPitch = Mathf.Clamp(pitch, -40, 40); }
+            else if (!Freelook)
+            {
+                flightYaw = yaw; flightPitch = pitch;
+                var helicopter = (HelicopterMotor)vehicle.motor;
+                if (helicopter.assistEnabled)
+                {
+                    Quaternion view = Quaternion.Euler(pitch,yaw,0);
+                    Vector3 origin = CameraPosition(vehicle,view,false,true,true);
+                    Vector3 direction = vehicle.GetComponent<VehicleLauncher>().DirectionToAimPoint(new Ray(origin,view*Vector3.forward),180);
+                    flightYaw = Mathf.Atan2(direction.x,direction.z)*Mathf.Rad2Deg;
+                    flightPitch = -Mathf.Asin(Mathf.Clamp(direction.y,-1,1))*Mathf.Rad2Deg;
+                }
+                flightPitch = Mathf.Clamp(flightPitch,-helicopter.maxAimPitch,helicopter.maxAimPitch);
+            }
             vehicle.DriverInput = new VehicleInput {
-                move = Vector2.ClampMagnitude(new Vector2(aircraft ? Input.GetAxis("Horizontal") : Input.GetAxisRaw("Horizontal"), aircraft ? Input.GetAxis("Vertical") : Input.GetAxisRaw("Vertical")),1),
+                move = Vector2.ClampMagnitude(new Vector2(Input.GetAxisRaw("Horizontal"), Input.GetAxisRaw("Vertical")),1),
                 lift = (Input.GetKey(KeyCode.Space)?1:0) - (Input.GetKey(KeyCode.LeftControl)?1:0),
                 heading = flightYaw, viewPitch = flightPitch, directionalFlight = aircraft,
+                pitchRate = Freelook ? 0 : Mathf.Clamp(-mouse.y * .35f,-1,1), yaw = Freelook ? 0 : Mathf.Clamp(mouse.x * .35f,-1,1),
                 handbrake = !aircraft && Input.GetKey(KeyCode.Z), boost = !aircraft && Input.GetKey(KeyCode.LeftShift)
             };
             if (!aircraft && Input.GetKeyDown(KeyCode.H)) hornUntil = Time.time + .35f;
@@ -319,17 +342,29 @@ public class VehicleOccupant : MonoBehaviour
         bool gunner = v.seats[SeatIndex].role == Vehicle.SeatRole.Gunner;
         bool aircraft=v.motor is HelicopterMotor;
         bool pilot = aircraft && v.seats[SeatIndex].role == Vehicle.SeatRole.Driver;
-        if (pilot && !Freelook)
-            rotation = CockpitView ? v.Body.rotation : Quaternion.LookRotation(v.transform.forward, Vector3.up);
+        if (pilot && !Freelook && !((HelicopterMotor)v.motor).assistEnabled)
+            rotation = CockpitView ? v.Body.rotation : Quaternion.LookRotation(v.transform.forward,
+                !((HelicopterMotor)v.motor).assistEnabled || Mathf.Abs(Vector3.Dot(v.transform.forward,Vector3.up))>.98f ? v.transform.up : Vector3.up);
+        Vector3 desired = CameraPosition(v,rotation,gunner,aircraft,pilot);
+        vehicleCamera.transform.SetPositionAndRotation(desired, rotation);
+    }
+    Vector3 CameraPosition(Vehicle v, Quaternion rotation, bool gunner, bool aircraft, bool pilot)
+    {
         Vector3 target = gunner ? v.turret.cameraPoint.position : v.cameraTarget.position;
+        if (pilot && ((HelicopterMotor)v.motor).assistEnabled && !CockpitView)
+            target = v.transform.position + Vector3.up * v.cameraTarget.localPosition.y;
         Vector3 desired;
         if (CockpitView) desired = gunner ? target : v.seats[SeatIndex].anchor.position + v.transform.up * (aircraft ? 1.15f : 1f);
         else desired = target + rotation * (aircraft ? new Vector3(4,1.5f,-20) : new Vector3(0,1,-7));
         if (!CockpitView)
-        foreach (var hit in Physics.SphereCastAll(target, .3f, (desired - target).normalized, Vector3.Distance(target, desired), Physics.DefaultRaycastLayers, QueryTriggerInteraction.Ignore))
-            if (!hit.transform.IsChildOf(v.transform))
-                desired = target + (desired - target).normalized * Mathf.Max(.3f, hit.distance - .2f);
-        vehicleCamera.transform.SetPositionAndRotation(desired, rotation);
+        {
+            Vector3 offset = desired - target;
+            float distance = offset.magnitude;
+            foreach (var hit in Physics.SphereCastAll(target, .3f, offset.normalized, distance, Physics.DefaultRaycastLayers, QueryTriggerInteraction.Ignore))
+                if (!hit.transform.IsChildOf(v.transform)) distance = Mathf.Min(distance, Mathf.Max(.3f, hit.distance - .2f));
+            desired = target + offset.normalized * distance;
+        }
+        return desired;
     }
     void OnDestroy()
     {

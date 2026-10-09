@@ -1,22 +1,63 @@
 using UnityEngine;
 using UnityEngine.UI;
+using TMPro;
 
-// Small vector line drawings stay crisp at any HUD scale; no vehicle render textures.
+[RequireComponent(typeof(CanvasRenderer))]
 public class VehicleDiagramGraphic : MaskableGraphic
 {
-    public enum Drawing { Horizon = 2, Tape = 3 }
+    public enum Drawing { Horizon = 2, Tape = 3, Heading = 4 }
     public Drawing drawing;
+    public TMP_Text[] tickLabels;
+    float reading;
+    public void SetReading(float value)
+    {
+        reading = value;
+        SetVerticesDirty();
+        float step = drawing == Drawing.Heading ? 30 : 20;
+        float scale = drawing == Drawing.Heading ? 4 : 2;
+        int center = Mathf.RoundToInt(value / step);
+        for (int i=0;i<tickLabels.Length;i++)
+        {
+            float tick = (center+i-tickLabels.Length/2)*step;
+            float offset = (tick-value)*scale;
+            bool heading = drawing == Drawing.Heading;
+            tickLabels[i].text = (heading ? Mathf.Repeat(tick,360) : tick).ToString("0");
+            tickLabels[i].rectTransform.anchoredPosition = heading ? new Vector2(offset,-18) : new Vector2(28,offset);
+            tickLabels[i].gameObject.SetActive(heading ? Mathf.Abs(offset)<rectTransform.rect.width*.5f-16 : tick>=0 && Mathf.Abs(offset)<75);
+        }
+    }
     protected override void OnPopulateMesh(VertexHelper mesh)
     {
         mesh.Clear();
-        if(drawing == Drawing.Horizon)
+        if (drawing == Drawing.Horizon)
         {
             for(int y=-80;y<=80;y+=40){Line(mesh,new Vector2(-130,y),new Vector2(-35,y));Line(mesh,new Vector2(35,y),new Vector2(130,y));}
             Line(mesh,new Vector2(-12,0),new Vector2(-3,0));Line(mesh,new Vector2(3,0),new Vector2(12,0));
         }
+        else if (drawing == Drawing.Heading)
+        {
+            float half = rectTransform.rect.width*.5f;
+            Line(mesh,new Vector2(-half,0),new Vector2(half,0));
+            int center=Mathf.FloorToInt(reading/10);
+            for(int i=center-10;i<=center+10;i++)
+            {
+                float x=(i*10-reading)*4;
+                if(Mathf.Abs(x)>half)continue;
+                Line(mesh,new Vector2(x,0),new Vector2(x,i%3==0?-9:-5));
+            }
+            Line(mesh,new Vector2(-5,9),Vector2.zero);Line(mesh,Vector2.zero,new Vector2(5,9));
+        }
         else
         {
-            Line(mesh,new Vector2(0,-75),new Vector2(0,75));for(int y=-75;y<=75;y+=15)Line(mesh,new Vector2(0,y),new Vector2(y%30==0?16:8,y));
+            Line(mesh,new Vector2(0,-75),new Vector2(0,75));
+            int center=Mathf.FloorToInt(reading/5);
+            for(int i=center-8;i<=center+8;i++)
+            {
+                float y=(i*5-reading)*2;
+                if(i<0||Mathf.Abs(y)>75)continue;
+                Line(mesh,new Vector2(0,y),new Vector2(i%4==0?16:8,y));
+            }
+            Line(mesh,new Vector2(-10,-4),new Vector2(-4,0));Line(mesh,new Vector2(-4,0),new Vector2(-10,4));
         }
     }
     void Line(VertexHelper mesh,Vector2 a,Vector2 b)

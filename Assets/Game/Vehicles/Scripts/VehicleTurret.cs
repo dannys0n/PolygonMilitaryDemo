@@ -14,6 +14,7 @@ public class VehicleTurret : MonoBehaviour
     public Vector2 pitchLimits = new Vector2(-20, 45);
     Vector3 aimDirection = Vector3.forward;
     float nextShot;
+    public Vector3 RequestedAimDirection => aimDirection;
     public event System.Action<VehicleOccupant, Vector3> ShotFired;
     void Start() => aimDirection = vehicle.transform.forward;
     public void Aim(Vector3 direction)

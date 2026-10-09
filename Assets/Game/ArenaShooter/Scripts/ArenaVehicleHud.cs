@@ -2,6 +2,7 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
+[DefaultExecutionOrder(300)]
 public class ArenaVehicleHud : MonoBehaviour
 {
     public VehicleOccupant player;
@@ -10,18 +11,20 @@ public class ArenaVehicleHud : MonoBehaviour
     public GameObject infantryEquipment, infantryCrosshair;
     public Image diagram;
     public Sprite humveeDiagram, helicopterDiagram;
-    public RectTransform horizon;
+    public RectTransform horizon, desiredAim, actualAim;
+    public VehicleDiagramGraphic headingTape, altitudeTape;
     public GameObject vehicleEquipment;
     public Image equippedIcon, slotIcon;
     public TMP_Text equippedName, ammunition, fireMode, slotKey, equipmentLabel;
     public Image[] seatMarkers, hullSegments;
     public TextMeshProUGUI[] seatNumbers;
+    float groundAltitude;
     readonly Color accent=new Color(1,.68f,0);
     void Update()
     {
         bool mounted=player.IsMounted;prompt.text=mounted?"":player.Prompt;
         mountedPanel.SetActive(mounted);flightPanel.SetActive(false);
-        infantryEquipment.SetActive(!mounted);infantryCrosshair.SetActive(!mounted||player.MountedVehicle.seats[player.SeatIndex].role==Vehicle.SeatRole.Gunner);
+        infantryEquipment.SetActive(!mounted);infantryCrosshair.SetActive(!mounted);
         vehicleEquipment.SetActive(false);
         if(!mounted)return;
         var v=player.MountedVehicle;bool air=v.motor is HelicopterMotor;var role=v.seats[player.SeatIndex].role;
@@ -40,6 +43,7 @@ public class ArenaVehicleHud : MonoBehaviour
         status.text=v.displayName.ToUpperInvariant()+" / "+v.seats[player.SeatIndex].name.ToUpperInvariant()+"    "+Mathf.RoundToInt(v.Body.linearVelocity.magnitude*3.6f)+" KPH";
         if (player.HornFeedback>0) status.text+="  HORN";
         controls.text=role==Vehicle.SeatRole.Driver?(air?"CLIMB  [SPACE]\nDESCEND  [CTRL]\nMOVE  [WASD]":"BRAKE / REV  [S]\nACCELERATE  [W]\nBOOST  [SHIFT]\nHANDBRAKE  [Z]\nHORN  [H]"):"FIRE  [LMB]\nZOOM  [RMB]\nAMMO  INF";
+        if (air && role == Vehicle.SeatRole.Driver) controls.text += "\n[T] ASSIST " + (((HelicopterMotor)v.motor).assistEnabled ? "ON" : "OFF");
         rightControls.text="[C]  CAMERA\n[V]  FREELOOK"+(player.Freelook?" ON":"")+"\nHOLD [E]  EXIT\n[F1-F"+v.seats.Length+"]  SEATS";
         crew.text="";
         for(int i=0;i<seatMarkers.Length;i++)
@@ -55,14 +59,68 @@ public class ArenaVehicleHud : MonoBehaviour
         float health=v.Health/v.maxHealth;for(int i=0;i<hullSegments.Length;i++)hullSegments[i].color=i<hullSegments.Length*health?Color.white:new Color(1,1,1,.15f);
         if(!air)return;
         flightPanel.SetActive(role==Vehicle.SeatRole.Driver);
-        float heading=Mathf.Repeat(player.Freelook ? player.ViewYaw : v.transform.eulerAngles.y,360);compass.text="HDG  "+Mathf.RoundToInt(heading).ToString("000")+"    "+Cardinal(heading);
         float altitude=0, nearest=float.PositiveInfinity;
         foreach(var hit in Physics.RaycastAll(v.transform.position,Vector3.down,1000,Physics.DefaultRaycastLayers,QueryTriggerInteraction.Ignore))
             if(!hit.transform.IsChildOf(v.transform)&&!hit.collider.GetComponentInParent<SoldierLife>()&&hit.distance<nearest){nearest=hit.distance;altitude=hit.distance;}
         telemetry.text=Mathf.RoundToInt(v.Body.linearVelocity.magnitude*3.6f)+" KPH    ALT "+altitude.ToString("F0")+" M    V/S "+v.Body.linearVelocity.y.ToString("+0.0;-0.0;0.0");
-        var motor=(HelicopterMotor)v.motor;Transform frame=motor.airframe;
-        horizon.localEulerAngles=new Vector3(0,0,-Mathf.DeltaAngle(0,frame.eulerAngles.z));horizon.anchoredPosition=new Vector2(0,-Mathf.Clamp(Mathf.DeltaAngle(0,frame.eulerAngles.x),-40,40)*2);
+        groundAltitude = altitude;
         weapon.text="RKT  [LMB]     "+(v.GetComponent<VehicleLauncher>().ReadyIn<=0?"RDY":v.GetComponent<VehicleLauncher>().ReadyIn.ToString("F1")+" S");
+    }
+    void LateUpdate()
+    {
+        bool armed = player.IsMounted && vehicleEquipment.activeSelf;
+        desiredAim.gameObject.SetActive(armed); actualAim.gameObject.SetActive(armed);
+        if (!armed) return;
+        var vehicle = player.MountedVehicle; Camera camera = player.ActiveVehicleCamera;
+        bool gunner = vehicle.seats[player.SeatIndex].role == Vehicle.SeatRole.Gunner;
+        if (!gunner && vehicle.motor is HelicopterMotor) UpdateFlightInstruments(vehicle, groundAltitude);
+        Vector3 requested; Ray actual; float range;
+        if (gunner)
+        {
+            requested = vehicle.turret.RequestedAimDirection;
+            actual = new Ray(vehicle.turret.muzzle.position,vehicle.turret.muzzle.forward); range = vehicle.turret.range;
+        }
+        else
+        {
+            var launcher = vehicle.GetComponent<VehicleLauncher>();
+            requested = ((HelicopterMotor)vehicle.motor).RequestedAttitude * Vector3.forward;
+            actual = launcher.AimRay; range = 180;
+        }
+        if (!player.Freelook) requested = camera.transform.forward;
+        PlaceMarker(desiredAim,camera,ResolvePoint(new Ray(camera.transform.position,requested),range,vehicle));
+        PlaceMarker(actualAim,camera,ResolvePoint(actual,range,vehicle));
+    }
+    void UpdateFlightInstruments(Vehicle vehicle, float altitude)
+    {
+        // Project the world horizon into the actual view, including independent pilot freelook.
+        Transform view = player.ActiveVehicleCamera.transform;
+        float heading = Mathf.Repeat(view.eulerAngles.y,360);
+        compass.text = "HDG " + Mathf.RoundToInt(heading).ToString("000") + "  " + Cardinal(heading);
+        float elevation = Mathf.Asin(Mathf.Clamp(view.forward.y,-1,1)) * Mathf.Rad2Deg;
+        Vector3 up = view.InverseTransformDirection(Vector3.up);
+        float bank = Mathf.Atan2(up.x,up.y) * Mathf.Rad2Deg;
+        horizon.localEulerAngles = new Vector3(0,0,-bank);
+        horizon.anchoredPosition = new Vector2(0,-elevation*2f);
+        headingTape.SetReading(heading);
+        altitudeTape.SetReading(altitude);
+    }
+    static Vector3 ResolvePoint(Ray ray,float range,Vehicle owner)
+    {
+        float nearest=range;
+        foreach(var hit in Physics.RaycastAll(ray,range,Physics.DefaultRaycastLayers,QueryTriggerInteraction.Collide))
+        {
+            if(hit.transform.IsChildOf(owner.transform)||hit.collider is CharacterController)continue;
+            if(hit.collider.isTrigger&&!hit.collider.GetComponent<SoldierHitRegion>())continue;
+            nearest=Mathf.Min(nearest,hit.distance);
+        }
+        return ray.GetPoint(nearest);
+    }
+    static void PlaceMarker(RectTransform marker,Camera camera,Vector3 point)
+    {
+        Vector3 screen=camera.WorldToScreenPoint(point);bool visible=screen.z>0;
+        marker.gameObject.SetActive(visible);if(!visible)return;
+        RectTransformUtility.ScreenPointToLocalPointInRectangle((RectTransform)marker.parent,screen,null,out var local);
+        marker.anchoredPosition=local;
     }
     static string Cardinal(float a){string[] directions={"N","NE","E","SE","S","SW","W","NW"};return directions[Mathf.RoundToInt(a/45)%8];}
 }

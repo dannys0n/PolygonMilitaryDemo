@@ -175,7 +175,7 @@ public class Vehicle : MonoBehaviour
 public struct VehicleInput
 {
     public Vector2 move;
-    public float yaw, lift, heading, viewPitch;
+    public float yaw, lift, heading, viewPitch, pitchRate;
     public bool brake, handbrake, boost, directionalFlight;
 }
 

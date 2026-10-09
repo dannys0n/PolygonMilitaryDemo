@@ -52,8 +52,8 @@ public class ArenaMatchResults : MonoBehaviour
         if (spectator) { previousSpectatorBlocked = spectator.ControlsBlocked; spectator.ControlsBlocked = true; }
         if (pauseMenu) { previousPauseEnabled = pauseMenu.enabled; pauseMenu.enabled = false; }
         hiddenHud.Clear();
-        foreach (var hud in FindObjectsByType<ArenaHud>(FindObjectsSortMode.None)) HideHud(hud.GetComponent<Canvas>());
-        foreach (var hud in FindObjectsByType<ArenaSpectatorHud>(FindObjectsSortMode.None)) HideHud(hud.GetComponent<Canvas>());
+        foreach (var hud in FindObjectsByType<ArenaHud>()) HideHud(hud.GetComponent<Canvas>());
+        foreach (var hud in FindObjectsByType<ArenaSpectatorHud>()) HideHud(hud.GetComponent<Canvas>());
         var match = scoreboard.match;
         bool draw = match.RedScore == match.BlueScore;
         bool redWon = match.RedScore > match.BlueScore;
