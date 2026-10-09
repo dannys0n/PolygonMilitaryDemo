@@ -5,7 +5,7 @@ using TMPro;
 [RequireComponent(typeof(CanvasRenderer))]
 public class VehicleDiagramGraphic : MaskableGraphic
 {
-    public enum Drawing { Horizon = 2, Tape = 3, Heading = 4 }
+    public enum Drawing { Horizon = 2, Tape = 3, Heading = 4, AircraftReference = 5 }
     public Drawing drawing;
     public TMP_Text[] tickLabels;
     float reading;
@@ -31,8 +31,16 @@ public class VehicleDiagramGraphic : MaskableGraphic
         mesh.Clear();
         if (drawing == Drawing.Horizon)
         {
-            for(int y=-80;y<=80;y+=40){Line(mesh,new Vector2(-130,y),new Vector2(-35,y));Line(mesh,new Vector2(35,y),new Vector2(130,y));}
-            Line(mesh,new Vector2(-12,0),new Vector2(-3,0));Line(mesh,new Vector2(3,0),new Vector2(12,0));
+            for(int y=-160;y<=160;y+=20)
+            {
+                float span=y==0?130:70;
+                Line(mesh,new Vector2(-span,y),new Vector2(-35,y));Line(mesh,new Vector2(35,y),new Vector2(span,y));
+            }
+        }
+        else if (drawing == Drawing.AircraftReference)
+        {
+            Line(mesh,new Vector2(-28,0),new Vector2(-8,0));Line(mesh,new Vector2(8,0),new Vector2(28,0));
+            Line(mesh,new Vector2(-8,0),new Vector2(0,-6));Line(mesh,new Vector2(0,-6),new Vector2(8,0));
         }
         else if (drawing == Drawing.Heading)
         {

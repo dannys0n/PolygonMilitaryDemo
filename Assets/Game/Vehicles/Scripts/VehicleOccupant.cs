@@ -4,7 +4,7 @@ using UnityEngine.AI;
 using UnityEngine.Animations.Rigging;
 
 // Composition on the vehicle-ready player variants. Ordinary soldier prefabs remain on foot.
-[DefaultExecutionOrder(-40)]
+[DefaultExecutionOrder(200)]
 public class VehicleOccupant : MonoBehaviour
 {
     public SoldierLife life;
@@ -155,7 +155,7 @@ public class VehicleOccupant : MonoBehaviour
             vehicle.DriverInput = new VehicleInput {
                 move = Vector2.ClampMagnitude(new Vector2(Input.GetAxisRaw("Horizontal"), Input.GetAxisRaw("Vertical")),1),
                 lift = (Input.GetKey(KeyCode.Space)?1:0) - (Input.GetKey(KeyCode.LeftControl)?1:0),
-                heading = flightYaw, viewPitch = flightPitch, directionalFlight = aircraft,
+                heading = flightYaw, movementHeading = Freelook ? freelookYaw : yaw, viewPitch = flightPitch, directionalFlight = aircraft,
                 pitchRate = Freelook ? 0 : Mathf.Clamp(-mouse.y * .35f,-1,1), yaw = Freelook ? 0 : Mathf.Clamp(mouse.x * .35f,-1,1),
                 handbrake = !aircraft && Input.GetKey(KeyCode.Z), boost = !aircraft && Input.GetKey(KeyCode.LeftShift)
             };
@@ -163,7 +163,14 @@ public class VehicleOccupant : MonoBehaviour
             if (aircraft && Input.GetMouseButton(0) && vehicle.TryGetComponent<VehicleLauncher>(out var launcher)) launcher.TryFire(this);
         }
         if (role == Vehicle.SeatRole.Gunner)
-        { if (!Freelook) vehicle.turret.Aim(Quaternion.Euler(pitch,yaw,0)*Vector3.forward); if(Input.GetMouseButton(0)) vehicle.turret.TryFire(this); }
+                {
+            if (!Freelook)
+            {
+                Quaternion view = Quaternion.Euler(pitch,yaw,0);
+                vehicle.turret.AimAt(new Ray(CameraPosition(vehicle,view,true,aircraft,false),view*Vector3.forward));
+            }
+            if(Input.GetMouseButton(0)) vehicle.turret.TryFire(this);
+        }
         if (vehicleCamera) vehicleCamera.fieldOfView = Input.GetMouseButton(1) && (aircraft || role==Vehicle.SeatRole.Gunner) ? 50 : 70;
     }
 

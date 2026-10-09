@@ -10,7 +10,7 @@ public class HelicopterMotor : VehicleMotor
     public float rotorRpm = 420f, spoolTime = 2.5f;
     public float maxTilt = 24f, maxAimPitch = 60f, yawRate = 65f, climbSpeed = 5f, maxSpeed = 32f;
     [Header("Stability assistance")]
-    public float attitudeSpring = 12f, attitudeDamping = 6f, maxAngularAcceleration = 4f;
+    public float attitudeSpring = 48f, attitudeDamping = 11f, maxAngularAcceleration = 12f;
     public float verticalResponse = 2.8f, maxThrustMultiplier = 2.2f;
     public bool assistEnabled = true;
     public float positionHoldSpring = .8f, positionHoldDamping = 2.5f, maxHoldAcceleration = 18f;
@@ -23,7 +23,8 @@ public class HelicopterMotor : VehicleMotor
     public float RotorPower { get; private set; }
     public bool Grounded { get; private set; }
     public override bool CanDisembark => Grounded;
-    float heading, mainAngle, tailAngle, rotorDiscPitch;
+    float heading, mainAngle, tailAngle, movementBlend;
+    public float movementPriorityTime = .25f;
     Quaternion mainRest, tailRest;
 
     void Start()
@@ -42,7 +43,7 @@ public class HelicopterMotor : VehicleMotor
         float dt = Time.fixedDeltaTime;
         RotorPower = Mathf.MoveTowards(RotorPower, powered ? 1f : 0f, dt / spoolTime);
         Grounded = IsOnGround();
-        rotorDiscPitch = 0;
+
         Rigidbody body = vehicle.Body;
         Vector3 localVelocity = transform.InverseTransformDirection(body.linearVelocity);
         body.AddForce(-transform.forward * localVelocity.z * (forwardDrag + Mathf.Abs(localVelocity.z) * quadraticDrag)
@@ -74,26 +75,33 @@ public class HelicopterMotor : VehicleMotor
             LimitSpeed(body);
             return;
         }
-        rotorDiscPitch = input.directionalFlight ? input.move.y * maxTilt : 0;
-        float pitch = input.directionalFlight ? 0 : input.move.y * maxTilt;
+        float pitch = input.move.y * maxTilt;
         float roll = -input.move.x * maxTilt;
         if (input.directionalFlight)
         {
-            heading = Mathf.MoveTowardsAngle(heading, input.heading, yawRate * dt);
-            pitch = Mathf.Clamp(pitch + input.viewPitch, -maxAimPitch, maxAimPitch);
+            // Movement pitches/banks the whole airframe. Aim resumes smoothly when movement releases.
+            movementBlend = Mathf.MoveTowards(movementBlend,input.move.magnitude,dt / Mathf.Max(.01f,movementPriorityTime));
+            float requestedHeading = Mathf.LerpAngle(input.heading,input.movementHeading,movementBlend);
+            heading = Mathf.MoveTowardsAngle(heading,requestedHeading,yawRate*dt);
+            Quaternion aim = Quaternion.Euler(Mathf.Clamp(input.viewPitch,-maxAimPitch,maxAimPitch),heading,0);
+            Quaternion travel = Quaternion.Euler(pitch,heading,roll);
+            RequestedAttitude = Quaternion.Slerp(aim,travel,movementBlend);
         }
-        else heading += input.yaw * yawRate * dt;
-
-        RequestedAttitude = Quaternion.Euler(pitch, input.directionalFlight ? input.heading : heading, roll);
+        else
+        {
+            movementBlend = 0;
+            heading += input.yaw*yawRate*dt;
+            RequestedAttitude = Quaternion.Euler(pitch,heading,roll);
+        }
         // Do not force the aircraft to bank against its landing gear before takeoff.
         if (Grounded)
         {
-            pitch = roll = rotorDiscPitch = 0;
+            pitch = roll = 0;
             holdingPosition = false;
             heading = transform.eulerAngles.y;
         RequestedAttitude = vehicle.Body.rotation;
         }
-        Quaternion desired = Quaternion.Euler(pitch, heading, roll);
+        Quaternion desired = RequestedAttitude;
         Quaternion error = desired * Quaternion.Inverse(body.rotation);
         error.ToAngleAxis(out float angle, out Vector3 axis);
         if (angle > 180f) angle -= 360f;
@@ -106,7 +114,7 @@ public class HelicopterMotor : VehicleMotor
             ? Mathf.Clamp((holdPosition.y - body.position.y) * positionHoldSpring, -climbSpeed, climbSpeed)
             : input.lift * climbSpeed;
         float verticalLift = Physics.gravity.magnitude + (desiredClimb - body.linearVelocity.y) * verticalResponse;
-        Vector3 thrustAxis = Quaternion.AngleAxis(rotorDiscPitch, transform.right) * transform.up;
+        Vector3 thrustAxis = transform.up;
         float upFraction = Mathf.Max(.5f, Vector3.Dot(thrustAxis, Vector3.up));
         float thrust = Mathf.Clamp(verticalLift / upFraction, 0, Physics.gravity.magnitude * maxThrustMultiplier);
         Vector3 rotorAcceleration = thrustAxis * thrust * RotorPower;
@@ -151,7 +159,7 @@ public class HelicopterMotor : VehicleMotor
     {
         mainAngle = (mainAngle + rotorRpm * 6 * RotorPower * Time.deltaTime) % 360;
         tailAngle = (tailAngle + rotorRpm * 18 * RotorPower * Time.deltaTime) % 360;
-        mainRotor.localRotation = mainRest * Quaternion.AngleAxis(rotorDiscPitch, Vector3.right) * Quaternion.AngleAxis(mainAngle, Vector3.up);
+        mainRotor.localRotation = mainRest * Quaternion.AngleAxis(mainAngle, Vector3.up);
         tailRotor.localRotation = tailRest * Quaternion.AngleAxis(tailAngle, Vector3.right);
     }
 }

@@ -87,20 +87,23 @@ public class ArenaVehicleHud : MonoBehaviour
             actual = launcher.AimRay; range = 180;
         }
         if (!player.Freelook) requested = camera.transform.forward;
-        PlaceMarker(desiredAim,camera,ResolvePoint(new Ray(camera.transform.position,requested),range,vehicle));
-        PlaceMarker(actualAim,camera,ResolvePoint(actual,range,vehicle));
+        Vector3 desiredPoint=ResolvePoint(new Ray(camera.transform.position,requested),range,vehicle);
+        PlaceMarker(desiredAim,camera,desiredPoint);
+        // Compare trajectories at the same target depth; chase-camera displacement changes distance from the muzzle.
+        float actualRange=Mathf.Min(range,Vector3.Distance(actual.origin,desiredPoint));
+        PlaceMarker(actualAim,camera,ResolvePoint(actual,actualRange,vehicle));
     }
     void UpdateFlightInstruments(Vehicle vehicle, float altitude)
     {
-        // Project the world horizon into the actual view, including independent pilot freelook.
-        Transform view = player.ActiveVehicleCamera.transform;
+        // Flight instruments describe aircraft attitude, independent of the pilot camera.
+        Transform view = vehicle.transform;
         float heading = Mathf.Repeat(view.eulerAngles.y,360);
         compass.text = "HDG " + Mathf.RoundToInt(heading).ToString("000") + "  " + Cardinal(heading);
         float elevation = Mathf.Asin(Mathf.Clamp(view.forward.y,-1,1)) * Mathf.Rad2Deg;
         Vector3 up = view.InverseTransformDirection(Vector3.up);
         float bank = Mathf.Atan2(up.x,up.y) * Mathf.Rad2Deg;
         horizon.localEulerAngles = new Vector3(0,0,-bank);
-        horizon.anchoredPosition = new Vector2(0,-elevation*2f);
+        horizon.anchoredPosition = (Quaternion.Euler(0,0,-bank)*new Vector3(0,-elevation*2f,0));
         headingTape.SetReading(heading);
         altitudeTape.SetReading(altitude);
     }

@@ -14,17 +14,34 @@ public class VehicleTurret : MonoBehaviour
     public Vector2 pitchLimits = new Vector2(-20, 45);
     Vector3 aimDirection = Vector3.forward;
     float nextShot;
+    Vector3 aimPoint;
+    bool aimAtPoint;
     public Vector3 RequestedAimDirection => aimDirection;
     public event System.Action<VehicleOccupant, Vector3> ShotFired;
     void Start() => aimDirection = vehicle.transform.forward;
+    public void AimAt(Ray view)
+    {
+        float distance = range;
+        foreach(var hit in Physics.RaycastAll(view,range,Physics.DefaultRaycastLayers,QueryTriggerInteraction.Collide))
+        {
+            if(hit.transform.IsChildOf(vehicle.transform)||hit.collider is CharacterController)continue;
+            if(hit.collider.isTrigger&&!hit.collider.GetComponent<SoldierHitRegion>())continue;
+            distance=Mathf.Min(distance,hit.distance);
+        }
+        aimPoint=view.GetPoint(distance);
+        aimDirection=view.direction;
+        aimAtPoint=true;
+    }
     public void Aim(Vector3 direction)
     {
+        aimAtPoint=false;
         if (direction.sqrMagnitude > .001f)
             aimDirection = direction.normalized;
     }
     void LateUpdate()
     {
-        Vector3 local = yawPivot.parent.InverseTransformDirection(aimDirection);
+        Vector3 direction = aimAtPoint ? (aimPoint-muzzle.position).normalized : aimDirection;
+        Vector3 local = yawPivot.parent.InverseTransformDirection(direction);
         float yaw = Mathf.Atan2(local.x, local.z) * Mathf.Rad2Deg;
         float up = Mathf.Clamp(Mathf.Atan2(local.y, new Vector2(local.x, local.z).magnitude) * Mathf.Rad2Deg, pitchLimits.x, pitchLimits.y);
         yawPivot.localRotation = Quaternion.RotateTowards(yawPivot.localRotation, Quaternion.Euler(0, yaw, 0), turnRate * Time.deltaTime);
