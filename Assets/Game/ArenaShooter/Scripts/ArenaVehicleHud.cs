@@ -36,7 +36,7 @@ public class ArenaVehicleHud : MonoBehaviour
             bool gunner = role == Vehicle.SeatRole.Gunner;
             var launcher = air && !gunner ? v.GetComponent<VehicleLauncher>() : null;
             equippedIcon.sprite = slotIcon.sprite = gunner ? v.turret.weaponIcon : launcher.weaponIcon;
-            equippedName.text = gunner ? "MINIGUN" : "ROCKETS"; ammunition.text = "INF";
+            equippedName.text = gunner ? "MINIGUN" : "ROCKETS"; ammunition.text = gunner ? "INF" : launcher.Missiles + " / " + launcher.capacity;
             fireMode.text = gunner ? "AUTO" : launcher.ReadyIn <= 0 ? "READY" : launcher.ReadyIn.ToString("F1") + " S";
             slotKey.text = "LMB"; equipmentLabel.text = "VEHICLE WEAPON";
         }
@@ -64,7 +64,8 @@ public class ArenaVehicleHud : MonoBehaviour
             if(!hit.transform.IsChildOf(v.transform)&&!hit.collider.GetComponentInParent<SoldierLife>()&&hit.distance<nearest){nearest=hit.distance;altitude=hit.distance;}
         telemetry.text=Mathf.RoundToInt(v.Body.linearVelocity.magnitude*3.6f)+" KPH    ALT "+altitude.ToString("F0")+" M    V/S "+v.Body.linearVelocity.y.ToString("+0.0;-0.0;0.0");
         groundAltitude = altitude;
-        weapon.text="RKT  [LMB]     "+(v.GetComponent<VehicleLauncher>().ReadyIn<=0?"RDY":v.GetComponent<VehicleLauncher>().ReadyIn.ToString("F1")+" S");
+        var rockets=v.GetComponent<VehicleLauncher>();
+        weapon.text="RKT  [LMB]  "+rockets.Missiles+" / "+rockets.capacity+(rockets.Missiles<rockets.capacity ? "   +1 IN "+rockets.RechargeRemaining.ToString("F1")+" S" : "");
     }
     void LateUpdate()
     {

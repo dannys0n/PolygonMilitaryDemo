@@ -6,7 +6,23 @@ public class VehicleLauncher : MonoBehaviour
     public VehicleRocket projectile;
     public Sprite weaponIcon;
     public Transform[] muzzles;
-    public float interval = 2.5f;
+    public float interval = .2f;
+    public int capacity = 8;
+    public float rechargeInterval = .75f;
+    int missiles;
+    float nextRecharge;
+    public int Missiles => missiles;
+    public float RechargeRemaining => missiles < capacity ? Mathf.Max(0,nextRecharge-Time.time) : 0;
+    void Awake() { missiles=capacity; nextRecharge=float.PositiveInfinity; }
+    void Update() { if(!vehicle.IsDestroyed) Recharge(Time.time); }
+    void Recharge(float now)
+    {
+        while(missiles<capacity && now>=nextRecharge)
+        {
+            missiles++; nextRecharge += rechargeInterval;
+        }
+        if(missiles==capacity) nextRecharge=float.PositiveInfinity;
+    }
     float nextShot;
     int barrel;
     public Transform NextMuzzle => muzzles[barrel % muzzles.Length];
@@ -32,12 +48,15 @@ public class VehicleLauncher : MonoBehaviour
         float forwardSpeed = Mathf.Sqrt(Mathf.Max(1,projectile.speed*projectile.speed-lateralVelocity.sqrMagnitude));
         return (direction*forwardSpeed-lateralVelocity).normalized;
     }
-    public float ReadyIn => Mathf.Max(0,nextShot-Time.time);
+    public float ReadyIn => Mathf.Max(Mathf.Max(0,nextShot-Time.time),missiles==0 ? RechargeRemaining : 0);
     public bool TryFire(VehicleOccupant pilot)
     {
-        if (vehicle.IsDestroyed || pilot.MountedVehicle != vehicle || vehicle.seats[pilot.SeatIndex].role != Vehicle.SeatRole.Driver || Time.time < nextShot)
+        Recharge(Time.time);
+        if (missiles==0 || vehicle.IsDestroyed || pilot.MountedVehicle != vehicle || vehicle.seats[pilot.SeatIndex].role != Vehicle.SeatRole.Driver || Time.time < nextShot)
             return false;
         nextShot = Time.time + interval;
+        if(missiles==capacity) nextRecharge=Time.time+rechargeInterval;
+        missiles--;
         var muzzle = muzzles[barrel++ % muzzles.Length];
         var rocket = Instantiate(projectile, muzzle.position + muzzle.forward * projectile.launchClearance, muzzle.rotation);
         rocket.Launch(vehicle, pilot.gameObject);
