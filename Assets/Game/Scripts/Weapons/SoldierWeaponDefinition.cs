@@ -65,8 +65,6 @@ public class SoldierWeaponDefinition : ScriptableObject
     public Light muzzleFlashLight;
     [Min(0f)] public float flashLightDuration = .035f;
     public SoldierShellCasing shellCasing;
-    [Tooltip("Ejection port relative to the muzzle: X right, Y up, Z toward the barrel.")]
-    public Vector3 casingEjectionOffset;
     public Vector3 flashLightOffset = new Vector3(0f, 0f, -.05f);
 
     [Header("Firing")]

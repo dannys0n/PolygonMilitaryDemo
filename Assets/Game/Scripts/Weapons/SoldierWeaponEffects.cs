@@ -1,6 +1,8 @@
+using System.Collections.Generic;
 using UnityEngine;
 
 // Local presentation of accepted shots. These effects do not affect weapon gameplay.
+[DefaultExecutionOrder(200)]
 public class SoldierWeaponEffects : MonoBehaviour
 {
     class MuzzleEffect
@@ -15,6 +17,7 @@ public class SoldierWeaponEffects : MonoBehaviour
     SoldierFirstPersonView view;
     SoldierController controller;
     MuzzleEffect[] firstPerson, thirdPerson;
+    readonly Queue<int> pendingShots = new Queue<int>();
 
     void Awake()
     {
@@ -29,27 +32,37 @@ public class SoldierWeaponEffects : MonoBehaviour
     void OnDisable()
     {
         actions.FireStarted -= OnShot;
+        pendingShots.Clear();
         ClearEffects();
     }
 
     bool IsLocalOwner => controller.inputSource is SoldierLocalInput local && local.isActiveAndEnabled;
     bool CanIlluminate => view.firstPerson && view.playerCamera.enabled && IsLocalOwner;
 
-    void OnShot()
+    void OnShot() => pendingShots.Enqueue(loadout.selectedSlot);
+
+    void LateUpdate()
     {
-        int index = loadout.selectedSlot;
+        // Sample the final animated gun pose, after the view and grip rigs update.
+        while (pendingShots.Count > 0) PresentShot(pendingShots.Dequeue());
+    }
+
+    void PresentShot(int index)
+    {
         var slot = loadout.slots[index];
         var definition = slot.weapon.definition;
         // Casings are an owner-only cosmetic effect, including when the owner uses TPS.
         if (IsLocalOwner)
         {
-            Transform muzzle = view.firstPerson && view.playerCamera.enabled ? slot.firstPersonMuzzle : slot.thirdPersonMuzzle;
-            Instantiate(definition.shellCasing, muzzle.position + muzzle.rotation * definition.casingEjectionOffset, muzzle.rotation);
+            Transform port = (view.firstPerson && view.playerCamera.enabled
+                ? slot.firstPersonSockets : slot.thirdPersonSockets).shellEjection;
+            var casing = Instantiate(definition.shellCasing, port.position, port.rotation);
+            casing.Launch(port.rotation, controller.movement.controller.velocity);
         }
         // World flash remains visible to TPS viewers. FPS flash uses the owner's view layer.
-        Emit(ref thirdPerson[index], slot.thirdPersonMuzzle, definition, view.thirdPersonLayer, false);
+        Emit(ref thirdPerson[index], slot.thirdPersonSockets.muzzleFlash, definition, view.thirdPersonLayer, false);
         if (view.firstPerson && view.playerCamera.enabled)
-            Emit(ref firstPerson[index], slot.firstPersonMuzzle, definition, view.firstPersonLayer, CanIlluminate);
+            Emit(ref firstPerson[index], slot.firstPersonSockets.muzzleFlash, definition, view.firstPersonLayer, CanIlluminate);
     }
 
     void Emit(ref MuzzleEffect effect, Transform muzzle, SoldierWeaponDefinition definition, int layer, bool illuminate)

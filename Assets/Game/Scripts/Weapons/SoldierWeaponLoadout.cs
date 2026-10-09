@@ -13,8 +13,8 @@ public class SoldierWeaponLoadout : MonoBehaviour
         public Transform thirdPersonWeapon;
         public Animator weaponAnimator;
         public Animator partsAnimator;
-        public Transform firstPersonMuzzle;
-        public Transform thirdPersonMuzzle;
+        public SoldierWeaponSockets firstPersonSockets;
+        public SoldierWeaponSockets thirdPersonSockets;
         [System.NonSerialized] public WeaponState state;
     }
 
@@ -62,7 +62,7 @@ public class SoldierWeaponLoadout : MonoBehaviour
     public SoldierWeapon EquippedWeapon => slots[selectedSlot].weapon;
     public WeaponState EquippedState => slots[selectedSlot].state;
     public Transform EquippedMuzzle => presentation.view.firstPerson
-        ? slots[selectedSlot].firstPersonMuzzle : slots[selectedSlot].thirdPersonMuzzle;
+        ? slots[selectedSlot].firstPersonSockets.muzzleFlash : slots[selectedSlot].thirdPersonSockets.muzzleFlash;
     private Coroutine switchRoutine;
     private bool initialized;
     public int[] AvailableSlots { get; private set; }
