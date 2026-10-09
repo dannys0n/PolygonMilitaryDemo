@@ -11,7 +11,7 @@ public class ArenaMenuNavigation : MonoBehaviour
     public Animator cameraAnimator;
     public Transform[] cameraPoses;
     public GameObject[] pages;
-    public TMP_Text matchmakingStatus, serverStatus;
+    public TMP_Text serverStatus;
     public float transitionDuration = .75f;
     public Page CurrentPage { get; private set; }
     Coroutine transition;
@@ -59,7 +59,5 @@ public class ArenaMenuNavigation : MonoBehaviour
         for (int i = 0; i < pages.Length; i++) pages[i].SetActive(i == index);
         transition = null;
     }
-    public void FindMatch() => matchmakingStatus.text = "Matchmaking service is not connected yet.\nNo search has been started.";
-    public void CancelSearch() => matchmakingStatus.text = "READY TO PLAY\nChoose Find Match when online matchmaking is available.";
-    public void RefreshServers() => serverStatus.text = "0 SERVERS\nThe server browser service is not connected yet.";
+    public void RefreshServers() => serverStatus.text = "16 PLACEHOLDER SERVERS  /  VISUAL PREVIEW ONLY";
 }
