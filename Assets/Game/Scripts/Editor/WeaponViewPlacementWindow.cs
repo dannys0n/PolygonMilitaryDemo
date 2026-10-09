@@ -14,6 +14,8 @@ public class WeaponViewPlacementWindow : EditorWindow
     bool previousCursorVisible;
     int handleMode;
     RenderTexture preview;
+    [SerializeField] float previewZoom = 1f;
+    [SerializeField] Vector2 previewCenter = new Vector2(.5f, .5f);
     double nextRepaint;
     readonly HashSet<SoldierWeaponDefinition> changed = new HashSet<SoldierWeaponDefinition>();
 
@@ -22,7 +24,7 @@ public class WeaponViewPlacementWindow : EditorWindow
 
     void OnEnable()
     {
-        minSize = new Vector2(480, 420);
+        minSize = new Vector2(480, 520);
         SceneView.duringSceneGui += DrawHandles;
         EditorApplication.update += Tick;
         EditorApplication.playModeStateChanged += PlayModeChanged;
@@ -151,12 +153,44 @@ public class WeaponViewPlacementWindow : EditorWindow
 
     void DrawPreview()
     {
+        EditorGUILayout.BeginHorizontal();
+        previewZoom = EditorGUILayout.Slider("Preview zoom", previewZoom, 1f, 8f);
+        if (GUILayout.Button("Reset", GUILayout.Width(55)))
+        {
+            previewZoom = 1f;
+            previewCenter = new Vector2(.5f, .5f);
+        }
+        EditorGUILayout.EndHorizontal();
+        EditorGUILayout.LabelField("Scroll over the preview to zoom; middle-drag to pan.", EditorStyles.miniLabel);
         var camera = player.playerCamera;
         float aspect = Mathf.Max(.1f, camera.aspect);
         var rect = GUILayoutUtility.GetRect(100, 10000, 180, 10000, GUILayout.ExpandHeight(true));
         float width = Mathf.Min(rect.width, rect.height * aspect);
         rect = new Rect(rect.center.x - width / 2f, rect.center.y - width / aspect / 2f, width, width / aspect);
-        int pixelsWide = Mathf.Clamp(Mathf.RoundToInt(width), 128, 1024);
+        var input = Event.current;
+        if (rect.Contains(input.mousePosition))
+        {
+            if (input.type == EventType.ScrollWheel)
+            {
+                Vector2 cursor = new Vector2((input.mousePosition.x - rect.x) / rect.width,
+                    1f - (input.mousePosition.y - rect.y) / rect.height);
+                Vector2 focus = previewCenter + (cursor - Vector2.one * .5f) / previewZoom;
+                previewZoom = Mathf.Clamp(previewZoom * Mathf.Exp(-input.delta.y * .08f), 1f, 8f);
+                previewCenter = focus - (cursor - Vector2.one * .5f) / previewZoom;
+                input.Use();
+                Repaint();
+            }
+            else if (input.type == EventType.MouseDrag && input.button == 2)
+            {
+                previewCenter -= new Vector2(input.delta.x / rect.width, -input.delta.y / rect.height) / previewZoom;
+                input.Use();
+                Repaint();
+            }
+        }
+        float half = .5f / previewZoom;
+        previewCenter = new Vector2(Mathf.Clamp(previewCenter.x, half, 1f - half),
+            Mathf.Clamp(previewCenter.y, half, 1f - half));
+        int pixelsWide = Mathf.Clamp(Mathf.RoundToInt(width * previewZoom), 128, 2048);
         int pixelsHigh = Mathf.Max(1, Mathf.RoundToInt(pixelsWide / aspect));
         if (preview == null || preview.width != pixelsWide || preview.height != pixelsHigh)
         {
@@ -169,9 +203,16 @@ public class WeaponViewPlacementWindow : EditorWindow
             var request = new UniversalRenderPipeline.SingleCameraRequest { destination = preview };
             if (RenderPipeline.SupportsRenderRequest(camera, request)) RenderPipeline.SubmitRenderRequest(camera, request);
         }
-        GUI.DrawTexture(rect, preview, ScaleMode.ScaleToFit, false);
-        EditorGUI.DrawRect(new Rect(rect.center.x - 8, rect.center.y, 16, 1), Color.white);
-        EditorGUI.DrawRect(new Rect(rect.center.x, rect.center.y - 8, 1, 16), Color.white);
+        var uv = new Rect(previewCenter.x - half, previewCenter.y - half, half * 2f, half * 2f);
+        GUI.DrawTextureWithTexCoords(rect, preview, uv, false);
+        // Keep the aiming cross at the real screen center when inspecting off-center details.
+        var cross = new Vector2(rect.x + (.5f - uv.x) / uv.width * rect.width,
+            rect.y + (1f - (.5f - uv.y) / uv.height) * rect.height);
+        if (rect.Contains(cross))
+        {
+            EditorGUI.DrawRect(new Rect(cross.x - 8, cross.y, 16, 1), Color.white);
+            EditorGUI.DrawRect(new Rect(cross.x, cross.y - 8, 1, 16), Color.white);
+        }
     }
 
     void ReleasePreview()
