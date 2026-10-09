@@ -59,6 +59,13 @@ public class SoldierWeaponDefinition : ScriptableObject
     [Range(0f, 1f)] public float cameraPositionWeight = 1f;
     [Range(0f, 1f)] public float cameraRotationWeight = 1f;
 
+    [Header("Firing effects")]
+    public ParticleSystem muzzleFlash;
+    [Min(1)] public int flashParticlesCount = 5;
+    public Light muzzleFlashLight;
+    [Min(0f)] public float flashLightDuration = .035f;
+    public Vector3 flashLightOffset = new Vector3(0f, 0f, -.05f);
+
     [Header("Firing")]
     [Tooltip("Blend into the recoil pose. Use zero for an immediate shot with synchronized moving weapon parts.")]
     [Min(0f)] public float fireBlendTime = .03f;
