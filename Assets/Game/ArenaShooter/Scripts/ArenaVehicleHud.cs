@@ -55,7 +55,7 @@ public class ArenaVehicleHud : MonoBehaviour
         float health=v.Health/v.maxHealth;for(int i=0;i<hullSegments.Length;i++)hullSegments[i].color=i<hullSegments.Length*health?Color.white:new Color(1,1,1,.15f);
         if(!air)return;
         flightPanel.SetActive(role==Vehicle.SeatRole.Driver);
-        float heading=Mathf.Repeat(player.ViewYaw,360);compass.text="HDG  "+Mathf.RoundToInt(heading).ToString("000")+"    "+Cardinal(heading);
+        float heading=Mathf.Repeat(player.Freelook ? player.ViewYaw : v.transform.eulerAngles.y,360);compass.text="HDG  "+Mathf.RoundToInt(heading).ToString("000")+"    "+Cardinal(heading);
         float altitude=0, nearest=float.PositiveInfinity;
         foreach(var hit in Physics.RaycastAll(v.transform.position,Vector3.down,1000,Physics.DefaultRaycastLayers,QueryTriggerInteraction.Ignore))
             if(!hit.transform.IsChildOf(v.transform)&&!hit.collider.GetComponentInParent<SoldierLife>()&&hit.distance<nearest){nearest=hit.distance;altitude=hit.distance;}

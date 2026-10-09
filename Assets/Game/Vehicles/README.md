@@ -58,3 +58,16 @@ Seat assignment follows the serialized seat array order: driver/pilot first, the
 Turret shots have infinite ammunition and retain their fire cadence. Muzzle flashes are emitted after the final turret pose, and locally controlled gunners eject the existing rifle casings from the model's ShellEjection transform. The socket's blue Z axis is the ejection direction. Casings inherit vehicle velocity at the port, including angular motion while turning. AI emits the flash but no casing, and all effects remain silent.
 
 Vehicle presentation pass: turret flash renderers use the world layer rather than the hidden FPS-arms layer. Receiver casing ports are attached to the gun model and casings use size-aware launch clearance. The vehicle equipment panel duplicates infantry HUD borders, typography and tile styling, with white silhouette icons rendered from the actual minigun and rocket assets. Car driver controls have separate anchored columns to prevent the displaced control text from overlapping crew/equipment.
+
+## Assisted physical helicopter flight (current)
+
+The template's direct velocity steering and cosmetic-only banking have been replaced. The helicopter's Rigidbody, collision geometry, visible fuselage and weapon sockets now share the same orientation. Actual rotor-axis thrust produces travel when tilted; forward/lateral fuselage drag preserves momentum while resisting excessive speed. A bounded proportional/damping attitude controller stabilizes roll and tracks pilot pitch/yaw requests. Neutral collective assists zero climb rate and compensates the vertical component lost when banking. Ground contact is checked at the three landing-gear spheres.
+
+Mouse pitch/yaw requests and WASD cyclic input set a bounded desired attitude; Space/Ctrl still requests climb/descent. The pilot camera points with the real nose, while V preserves independent freelook. Releasing lateral input levels roll; pitch can remain angled for aiming. This is an assisted game model rather than a full simulator: blade-element aerodynamics, vortex-ring state, wind and detailed rotor torque coupling are not modeled.
+
+Tune HelicopterMotor on the helicopter prefab: Max Tilt (keyboard bank/pitch), Max Aim Pitch, Yaw Rate, Attitude Spring/Damping, Max Angular Acceleration, Vertical Response and Fuselage Drag. Flight feel and aiming precision still need the user's Play Mode walkthrough.
+
+Primary implementation references:
+- Microsoft Flight Simulator 2024 SDK, flight_model.cfg, HELICOPTER and FUSELAGE_AERODYNAMICS: https://docs.flightsimulator.com/msfs2024/retail/content-configuration/cfg-files/flight_model.cfg/ — documented helicopter stability assistance and axis-specific damping/drag.
+- Bohemia Interactive, Take On Patches – Cougar: https://www.bohemia.net/en/blog/take-on-patches-cougar — developer account of the game's RotorLib flight-model work on aerodynamics, power and torque.
+- FAA Helicopter Flying Handbook, flight controls: https://www.faa.gov/sites/faa.gov/files/regulations_policies/handbooks_manuals/aviation/helicopter_flying_handbook/hfh_ch03.pdf — cyclic tilt, collective and yaw-control fundamentals.

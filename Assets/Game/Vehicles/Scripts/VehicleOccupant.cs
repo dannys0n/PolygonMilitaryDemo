@@ -129,7 +129,7 @@ public class VehicleOccupant : MonoBehaviour
         if (role == Vehicle.SeatRole.Driver)
         {
             if (!aircraft) { flightYaw = vehicle.transform.eulerAngles.y; flightPitch = CockpitView ? 0 : 14; }
-            else if (!Freelook) { flightYaw = yaw; flightPitch = pitch; }
+            else if (!Freelook) { flightYaw = yaw; flightPitch = Mathf.Clamp(pitch, -40, 40); }
             vehicle.DriverInput = new VehicleInput {
                 move = Vector2.ClampMagnitude(new Vector2(aircraft ? Input.GetAxis("Horizontal") : Input.GetAxisRaw("Horizontal"), aircraft ? Input.GetAxis("Vertical") : Input.GetAxisRaw("Vertical")),1),
                 lift = (Input.GetKey(KeyCode.Space)?1:0) - (Input.GetKey(KeyCode.LeftControl)?1:0),
@@ -200,7 +200,7 @@ public class VehicleOccupant : MonoBehaviour
         vehicleCamera.nearClipPlane = .1f;
         vehicleCamera.enabled = vehicleListener.enabled = true;
         lastVehicleYaw = yaw = flightYaw = vehicle.transform.eulerAngles.y;
-        pitch = flightPitch = 14; CockpitView = Freelook = false; exitHeld = 0; departureVelocity = Vector3.zero;
+        pitch = flightPitch = vehicle.motor is HelicopterMotor ? 0 : 14; CockpitView = Freelook = false; exitHeld = 0; departureVelocity = Vector3.zero;
     }
     void SaveDisable(Behaviour b)
     {
@@ -318,6 +318,9 @@ public class VehicleOccupant : MonoBehaviour
         Quaternion rotation = Quaternion.Euler(pitch, yaw, 0);
         bool gunner = v.seats[SeatIndex].role == Vehicle.SeatRole.Gunner;
         bool aircraft=v.motor is HelicopterMotor;
+        bool pilot = aircraft && v.seats[SeatIndex].role == Vehicle.SeatRole.Driver;
+        if (pilot && !Freelook)
+            rotation = CockpitView ? v.Body.rotation : Quaternion.LookRotation(v.transform.forward, Vector3.up);
         Vector3 target = gunner ? v.turret.cameraPoint.position : v.cameraTarget.position;
         Vector3 desired;
         if (CockpitView) desired = gunner ? target : v.seats[SeatIndex].anchor.position + v.transform.up * (aircraft ? 1.15f : 1f);

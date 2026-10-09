@@ -222,17 +222,25 @@ MonoBehaviour:
   mainRotor: {fileID: 1463055442525012627}
   tailRotor: {fileID: 7168087016018647117}
   airframe: {fileID: 1929436023625085710}
-  travelSpeed: 18
-  travelResponse: 2
+  landingGear:
+  - {fileID: 6304925841936907469}
+  - {fileID: 7334234873260304344}
+  - {fileID: 2905883398182548532}
   rotorRpm: 420
   spoolTime: 2.5
-  maxTilt: 16
-  yawRate: 55
+  maxTilt: 24
+  maxAimPitch: 40
+  yawRate: 65
   climbSpeed: 5
-  maxSpeed: 24
-  attitudeSpring: 10
-  attitudeDamping: 5
-  verticalResponse: 3
+  maxSpeed: 32
+  attitudeSpring: 12
+  attitudeDamping: 6
+  maxAngularAcceleration: 4
+  verticalResponse: 2.8
+  maxThrustMultiplier: 2.2
+  forwardDrag: 0.07
+  sidewaysDrag: 0.18
+  quadraticDrag: 0.0035
 --- !u!114 &2684248542658391728
 MonoBehaviour:
   m_ObjectHideFlags: 0
