@@ -29,11 +29,17 @@ public class SoldierFirstPersonView : MonoBehaviour
 
     private Vector3 thirdPersonCameraPosition;
     private Quaternion thirdPersonCameraRotation;
+    private Quaternion firstPersonRestRotation;
     private int originalCullingMask;
     private float originalNearClip;
     private float originalFieldOfView;
     private float aimBlend;
     public float AimBlend => aimBlend;
+#if UNITY_EDITOR
+    // The placement tool can hold a pose without adding runtime equipment objects.
+    public bool? EditorPlacementAim { get; set; }
+    public Quaternion EditorPlacementRestRotation => firstPersonRestRotation;
+#endif
     public float PlacementAimBlend => 1f - (1f - aimBlend) * (1f - aimBlend);
     public bool IsEquipping => loadout.IsSwitching;
     public bool WantsToAim { get; private set; }
@@ -57,6 +63,7 @@ public class SoldierFirstPersonView : MonoBehaviour
         movement = GetComponent<SoldierMovement>();
         actions = GetComponent<SoldierActions>();
         loadout = GetComponent<SoldierWeaponLoadout>();
+        firstPersonRestRotation = firstPersonRoot.localRotation;
         thirdPersonCameraPosition = playerCamera.transform.localPosition;
         thirdPersonCameraRotation = playerCamera.transform.localRotation;
         originalCullingMask = playerCamera.cullingMask;
@@ -105,11 +112,26 @@ public class SoldierFirstPersonView : MonoBehaviour
     {
         WantsToAim = aimRequested && !IsReloading && !IsEquipping;
         bool aiming = WantsToAim && !movement.IsRunning;
+#if UNITY_EDITOR
+        if (EditorPlacementAim.HasValue) aiming = EditorPlacementAim.Value;
+#endif
         aimBlend = Mathf.MoveTowards(aimBlend, aiming ? 1f : 0f, aimBlendSpeed * Time.deltaTime);
         armsAnimator.SetBool("Aim", aiming);
         armsAnimator.SetFloat("AimBlend", aimBlend);
         if (firstPerson) playerCamera.fieldOfView = Mathf.Lerp(originalFieldOfView, aimFieldOfView, aimBlend);
-        firstPersonRoot.localPosition = Vector3.Lerp(viewOffset + hipFireOffset, viewOffset + aimOffset, PlacementAimBlend);
+        ApplyPlacement(PlacementAimBlend);
+    }
+
+    private void ApplyPlacement(float blend)
+    {
+        Quaternion rotation = firstPersonRestRotation * Quaternion.Euler(definition.viewRotationOffset)
+            * Quaternion.Slerp(Quaternion.Euler(definition.hipFireRotationOffset),
+                Quaternion.Euler(definition.aimRotationOffset), blend);
+        // Keep the authored pivot in place while rotating the complete arms/weapon group.
+        Vector3 pivot = Vector3.Scale(definition.viewRotationPivot, firstPersonRoot.localScale);
+        firstPersonRoot.localPosition = Vector3.Lerp(viewOffset + hipFireOffset, viewOffset + aimOffset, blend)
+            + firstPersonRestRotation * pivot - rotation * pivot;
+        firstPersonRoot.localRotation = rotation;
     }
 
     private void LateUpdate() => UpdateMotion();
@@ -141,7 +163,7 @@ public class SoldierFirstPersonView : MonoBehaviour
         aimTransitionLayer = armsAnimator.GetLayerIndex("Aim Transitions");
         armsAnimator.SetBool("Aim", false);
         armsAnimator.SetFloat("AimBlend", 0f);
-        firstPersonRoot.localPosition = viewOffset + hipFireOffset;
+        ApplyPlacement(0f);
         playerCamera.fieldOfView = originalFieldOfView;
     }
 

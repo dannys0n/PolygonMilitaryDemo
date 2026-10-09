@@ -37,6 +37,12 @@ public class SoldierWeaponDefinition : ScriptableObject
     public Vector3 viewOffset;
     public Vector3 hipFireOffset;
     public Vector3 aimOffset;
+    [Tooltip("Euler angles in degrees, applied to the complete first-person arms and weapon view.")]
+    public Vector3 viewRotationOffset;
+    [Tooltip("Fixed rotation pivot in FirstPersonView local coordinates. Place it near the weapon grip to avoid swinging the gun around the view origin.")]
+    public Vector3 viewRotationPivot;
+    public Vector3 hipFireRotationOffset;
+    public Vector3 aimRotationOffset;
     [Range(20f, 90f)] public float aimFieldOfView = 50f;
     [Min(.01f)] public float aimBlendSpeed = 8f;
 
@@ -59,4 +65,3 @@ public class SoldierWeaponDefinition : ScriptableObject
     public SoldierActions.FireMode fireMode;
     [Min(1f)] public float roundsPerMinute = 600f;
 }
-
