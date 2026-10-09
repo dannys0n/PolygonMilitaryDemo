@@ -98,6 +98,13 @@ Do not build classes, dynamic pickups, conquest, battle royale, persistence, pro
 - [ ] Set up collision, spawn points, and the basic match layout.
 - [ ] Test the local gameplay loop on the map.
 
+## 4.5. Vehicles
+- [ ] turret mounted Humvee
+- [ ] 5 players can enter and exit
+- [ ] turret and missile mounted helicopter
+- [ ] 2 players can enter and exit
+- [ ] vehicles can take damage and respawn 
+
 ## 5. Build the application flow
 
 Most of this stage can use stub implementations before real networking is added.
