@@ -3,6 +3,7 @@ using UnityEngine;
 [DefaultExecutionOrder(300)]
 public class ArenaPauseMenu : MonoBehaviour
 {
+    public ArenaClassMenu classMenu;
     public GameObject panel;
     public ArenaSceneTransition transition;
     public bool IsPaused { get; private set; }
@@ -17,7 +18,7 @@ public class ArenaPauseMenu : MonoBehaviour
     void Update()
     {
         if (transition.IsLoading) return;
-        if (Input.GetKeyDown(KeyCode.Escape)) { if (IsPaused) Resume(); else Pause(); }
+        if (Input.GetKeyDown(KeyCode.Escape)) { if (classMenu && classMenu.IsVisible) classMenu.Back(); else if (IsPaused) Resume(); else Pause(); }
         if (IsPaused) { Cursor.lockState = CursorLockMode.None; Cursor.visible = true; }
     }
     public void Pause()

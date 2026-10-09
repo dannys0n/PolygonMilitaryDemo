@@ -9,6 +9,24 @@ public class ArenaParticipant : MonoBehaviour
     public SoldierLife player;
     [Tooltip("Optional in a scene with one ArenaMatch; assigned automatically for newly added actors.")]
     public ArenaMatch match;
+    public ArenaClassDefinition SelectedClass { get; private set; }
+    public ArenaClassDefinition ActiveClass { get; private set; }
+    Vector3 openingPosition;
+    Quaternion openingRotation;
+    bool waitingForClass;
+    public bool NeedsClassSelection => player && GetComponent<SoldierLocalInput>() && !SelectedClass;
+    public void SelectClass(ArenaClassDefinition choice)
+    {
+        if (System.Array.IndexOf(match.settings.classes, choice) < 0)
+            throw new System.ArgumentException("Class is not allowed by this match.");
+        choice.ResolveSlots(player.loadout);
+        SelectedClass = choice;
+        if (waitingForClass && match.IsRunning)
+        {
+            waitingForClass = false;
+            Respawn(openingPosition, openingRotation);
+        }
+    }
     public int Kills { get; internal set; }
     public int Deaths { get; internal set; }
     public int Score => Kills * 100;
@@ -65,12 +83,24 @@ public class ArenaParticipant : MonoBehaviour
 
     public void Respawn(Vector3 position, Quaternion rotation)
     {
+        if (player && !SelectedClass)
+        {
+            if (NeedsClassSelection)
+            {
+                openingPosition = position; openingRotation = rotation;
+                waitingForClass = true; IsAwaitingSpawn = true;
+                player.SetGameplayAllowed(false);
+                return;
+            }
+            SelectClass(match.settings.classes[Random.Range(0, match.settings.classes.Length)]);
+        }
         CancelRespawn();
         LastShotTime = float.NegativeInfinity;
         IsAwaitingSpawn = false;
         if (player)
         {
-            int[] slots = team == Team.Red ? match.settings.redLoadout : match.settings.blueLoadout;
+            int[] slots = SelectedClass.ResolveSlots(player.loadout);
+            ActiveClass = SelectedClass;
             player.SetGameplayAllowed(false);
             player.loadout.ConfigureAvailableSlots(slots);
             player.Respawn(position, rotation);
