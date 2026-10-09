@@ -40,6 +40,9 @@ public class SoldierWeaponEffects : MonoBehaviour
         int index = loadout.selectedSlot;
         var slot = loadout.slots[index];
         var definition = slot.weapon.definition;
+        // One casing per shot, using the currently visible weapon's ejection port.
+        Transform muzzle = view.firstPerson && view.playerCamera.enabled ? slot.firstPersonMuzzle : slot.thirdPersonMuzzle;
+        Instantiate(definition.shellCasing, muzzle.TransformPoint(definition.casingEjectionOffset), muzzle.rotation);
         // World flash remains visible to TPS viewers. FPS flash uses the owner's view layer.
         Emit(ref thirdPerson[index], slot.thirdPersonMuzzle, definition, view.thirdPersonLayer, false);
         if (view.firstPerson && view.playerCamera.enabled)
