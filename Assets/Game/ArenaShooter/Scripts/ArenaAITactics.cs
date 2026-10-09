@@ -27,7 +27,7 @@ public static class ArenaAITactics
                     {
                         Vector3 candidate = position + side * sign * step * .8f;
                         if (!Reachable(bot, candidate, path, out var p, out _)) continue;
-                        if (NavMesh.Raycast(position, p, out _, bot.agent.areaMask)) continue;
+                        if (NavMesh.Raycast(position, p, out _, new NavMeshQueryFilter { agentTypeID = bot.agent.agentTypeID, areaMask = bot.agent.areaMask })) continue;
                         if (WorldBlocked(bot, threat, p + Vector3.up * 1.25f) || !RoomForTeam(bot, p)) continue;
                         peek = p; hasPeek = true;
                     }
@@ -51,7 +51,7 @@ public static class ArenaAITactics
             Vector3 proposed = bot.transform.position + side * sign * bot.strafeDistance
                 + toward * ((i / 2 - 1) * bot.strafeDistance * .5f);
             if (!Reachable(bot, proposed, path, out var point, out float travel) || !RoomForTeam(bot, point)) continue;
-            if (NavMesh.Raycast(bot.transform.position, point, out _, bot.agent.areaMask)) continue;
+            if (NavMesh.Raycast(bot.transform.position, point, out _, new NavMeshQueryFilter { agentTypeID = bot.agent.agentTypeID, areaMask = bot.agent.areaMask })) continue;
             if (Vector3.Distance(bot.transform.position, point) < .8f) continue;
             float exposure = WorldBlocked(bot, point + Vector3.up * 1.25f, threat) ? -10f : 0f;
             float score = exposure - travel * .2f + (sign == preferred ? .5f : 0f);
@@ -63,7 +63,7 @@ public static class ArenaAITactics
     public static bool Reachable(ArenaAIInput bot, Vector3 proposed, NavMeshPath path, out Vector3 point, out float length)
     {
         point = default; length = 0f;
-        if (!NavMesh.SamplePosition(proposed, out var hit, 1f, bot.agent.areaMask)) return false;
+        if (!NavMesh.SamplePosition(proposed, out var hit, 1f, new NavMeshQueryFilter { agentTypeID = bot.agent.agentTypeID, areaMask = bot.agent.areaMask })) return false;
         point = hit.position;
         // A complete navigation path decides connectivity, including ramps between floors.
         var controller = bot.life.controller; float radius = controller.radius;
@@ -72,7 +72,7 @@ public static class ArenaAITactics
         foreach (var collider in Physics.OverlapCapsule(center - Vector3.up * halfSegment, center + Vector3.up * halfSegment,
                      radius, Physics.DefaultRaycastLayers, QueryTriggerInteraction.Ignore))
             if (!collider.transform.IsChildOf(bot.transform) && !(collider is CharacterController)) return false;
-        if (!NavMesh.CalculatePath(bot.transform.position, point, bot.agent.areaMask, path) || path.status != NavMeshPathStatus.PathComplete) return false;
+        if (!NavMesh.CalculatePath(bot.transform.position, point, new NavMeshQueryFilter { agentTypeID = bot.agent.agentTypeID, areaMask = bot.agent.areaMask }, path) || path.status != NavMeshPathStatus.PathComplete) return false;
         var corners = path.corners;
         for (int i = 1; i < corners.Length; i++) length += Vector3.Distance(corners[i - 1], corners[i]);
         return true;
@@ -108,6 +108,8 @@ public static class ArenaAITactics
             if (hit.collider.isTrigger && !hit.collider.GetComponent<SoldierHitRegion>()) continue;
             if (hit.distance <= closest) { closest = hit.distance; blocker = hit.collider; }
         }
-        return !blocker || blocker.GetComponentInParent<ArenaParticipant>() == target;
+        if (!blocker || blocker.GetComponentInParent<ArenaParticipant>() == target) return true;
+        return target.TryGetComponent<VehicleOccupant>(out var occupant) && occupant.IsMounted
+            && blocker.GetComponentInParent<Vehicle>() == occupant.MountedVehicle;
     }
 }

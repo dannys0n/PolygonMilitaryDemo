@@ -5,7 +5,7 @@ using UnityEngine.AI;
 // Explicit combat/search states: Sergio Ocio, Game AI Pro 3, chapter 7.
 public class ArenaAIInput : SoldierInputSource
 {
-    public enum Behavior { Inactive, Idle, Patrol, Search, Approach, Strafe, MoveToCover, Hide, Peek }
+    public enum Behavior { Inactive, Idle, Patrol, Search, Approach, Strafe, MoveToCover, Hide, Peek, BoardVehicle }
     public SoldierController soldier;
     public SoldierLife life;
     public ArenaParticipant participant;
@@ -49,6 +49,8 @@ public class ArenaAIInput : SoldierInputSource
     [Min(1)] public int sidearmWeapon = 2;
     public float sidearmRange = 7f;
     public float weaponDecisionInterval = 2f;
+    // Optional transport intent supplied by the arena vehicle policy.
+    public Transform BoardingTarget { get; set; }
     public Behavior State { get; private set; }
     public Vector3 Destination { get; private set; }
     public ArenaParticipant Target => target;
@@ -115,7 +117,7 @@ public class ArenaAIInput : SoldierInputSource
         progressPosition = Destination = transform.position; progressAt = Time.time;
         if (!agent.isActiveAndEnabled) return;
         if (agent.isOnNavMesh) agent.ResetPath();
-        if (NavMesh.SamplePosition(transform.position, out var hit, 2f, agent.areaMask)) agent.Warp(hit.position);
+        if (NavMesh.SamplePosition(transform.position, out var hit, 2f, new NavMeshQueryFilter { agentTypeID = agent.agentTypeID, areaMask = agent.areaMask })) agent.Warp(hit.position);
     }
 
     public override SoldierInputFrame ReadInput()
@@ -127,7 +129,9 @@ public class ArenaAIInput : SoldierInputSource
         float distance = target ? Vector3.Distance(transform.position, lastSeen) : float.PositiveInfinity;
         int selection = ChooseWeapon(distance);
         bool reload = soldier.loadout.EquippedState.MagazineAmmo == 0 && soldier.loadout.EquippedState.ReserveAmmo > 0;
-        if (Time.time >= recoveryUntil) ChooseMovement(visible, distance, reload);
+        if (BoardingTarget && !target && !IsCombatAlert)
+        { State = Behavior.BoardVehicle; SetDestination(BoardingTarget.position); }
+        else if (Time.time >= recoveryUntil) ChooseMovement(visible, distance, reload);
         RecoverStuckPath();
         bool wantsAim = visible && distance <= attackRange && State != Behavior.MoveToCover && State != Behavior.Hide;
         bool busy = soldier.actions.IsReloading || soldier.loadout.IsSwitching || selection != 0;

@@ -65,6 +65,11 @@ public class SoldierHitscan : MonoBehaviour
             result.damaged = region.ApplyHit(weapon, gameObject);
             result.killed = result.damaged && region.health.IsDead;
         }
+        else if (result.collider && result.collider.GetComponentInParent<Vehicle>() is Vehicle vehicle)
+        {
+            result.damaged = vehicle.ApplyDamage(weapon.damage, gameObject);
+            result.killed = result.damaged && vehicle.IsDestroyed;
+        }
         if (drawDebug) Debug.DrawLine(result.origin, result.point, Color.yellow, 1f);
         ShotResolved?.Invoke(result);
         return result;

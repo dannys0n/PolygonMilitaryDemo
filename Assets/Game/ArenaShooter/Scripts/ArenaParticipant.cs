@@ -61,7 +61,8 @@ public class ArenaParticipant : MonoBehaviour
     }
 
     bool CanReceiveDamage(GameObject source) => match.CanDamage(this, source);
-    void RecordShot() { LastShotTime = Time.time; LastShotPosition = transform.position; }
+    void RecordShot() => RecordShotAt(transform.position);
+    public void RecordShotAt(Vector3 origin) { LastShotTime = Time.time; LastShotPosition = origin; }
 
     void OnDied(GameObject source)
     {

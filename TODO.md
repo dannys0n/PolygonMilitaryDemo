@@ -99,11 +99,24 @@ Do not build classes, dynamic pickups, conquest, battle royale, persistence, pro
 - [ ] Test the local gameplay loop on the map.
 
 ## 4.5. Vehicles
-- [ ] turret mounted Humvee
-- [ ] 5 players can enter and exit
-- [ ] turret and missile mounted helicopter
-- [ ] 2 players can enter and exit
-- [ ] vehicles can take damage and respawn 
+
+- [x] Add the ithappy Hummer as a Rigidbody/WheelCollider vehicle with a working roof machine gun.
+- [x] Support five Hummer occupants: driver, roof gunner, and three passengers; entry, seat changes, safe exits, death/respawn cleanup.
+- [x] Add an assisted Rigidbody helicopter with pilot/gunner seats, a turret, and simple unguided rockets.
+- [x] Animate all four wheel poses/spin/steering and both helicopter rotors, with rotor spool-up/down.
+- [x] Add vehicle health, silent URP impact effects, wreck cleanup, abandoned-vehicle recovery, and respawn pads.
+- [x] Create Vehicle_Test: one local player and eleven bots in a 6v6 proving ground, two Hummers, two helicopters, and separate infantry/Hummer navigation.
+- [x] Add AI ride selection, exclusive seat reservations, walking to seats, ground driving, flight/landing, safe arrival dismounts and stuck-route recovery.
+- [x] Verify independent driving/braking, roof gun damage, helicopter takeoff/landing, AI safe-exit checks (local players can bail out), seat reservation, control restoration, damage and replacement in Play Mode.
+- [x] Observe bots boarding, completing vehicle trips and returning to infantry behavior.
+- [x] Use Battlefield interaction keys (E hold exit, C camera, V freelook, F1-F5 seats), numbered crew diagrams and minimal aircraft flight instruments.
+- [x] Adapt Project 3 helicopter control behaviour and simple car pedal/steering controls without importing its game/framework systems.
+- [ ] Human walkthrough of vehicle controls, all seats, rockets, deaths, respawns, and return to on-foot combat.
+- [ ] Tune vehicle navigation and handling on the actual arena map; the open proving ground is the first testbed.
+- [ ] Add seated character poses, hands on controls/turret, entry/exit animations, rotor blur and further destruction polish.
+- [ ] Expand combat-aware helicopter attack maneuvers and vehicle spectator/cockpit presentation.
+
+Setup, controls, parameters, limitations and research references: `Assets/Game/Vehicles/README.md`.
 
 ## 5. Build the application flow
 
