@@ -251,6 +251,10 @@ MonoBehaviour:
   muzzle: {fileID: 7573793074270234062}
   cameraPoint: {fileID: 351725149298160244}
   muzzleFlash: {fileID: 3815059057597783591}
+  shellEjection: {fileID: 2746715310317594754}
+  shellCasing: {fileID: 114121961160874846, guid: c638dfae3f3edf843b2614dae230a771, type: 3}
+  weaponIcon: {fileID: 21300000, guid: af5ddbfdd53f9c64cb4e5830fee82296, type: 3}
+  casingScale: 1.7
   damage: 34
   range: 120
   roundsPerMinute: 650
@@ -270,6 +274,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::VehicleLauncher
   vehicle: {fileID: 5334550186223418224}
   projectile: {fileID: 6926061580476085574, guid: 94b468e700b83f04e81bb67298554930, type: 3}
+  weaponIcon: {fileID: 21300000, guid: bc998521b992689479af4ee353227a5b, type: 3}
   muzzles:
   - {fileID: 5873519301056009290}
   - {fileID: 7104141681438708698}
@@ -352,6 +357,37 @@ Transform:
   m_Children:
   - {fileID: 3278873591562332355}
   m_Father: {fileID: 8259677192974401340}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &4459946028376891966
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 2746715310317594754}
+  m_Layer: 0
+  m_Name: ShellEjection
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &2746715310317594754
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4459946028376891966}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0.7472474, y: 0.10822042, z: -0.6435201, w: -0.12566419}
+  m_LocalPosition: {x: 0.21, y: 0.65, z: -0.13}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 2526214594343283656}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &4501484859454522450
 GameObject:
@@ -747,7 +783,7 @@ GameObject:
   - component: {fileID: 3278873591562332355}
   - component: {fileID: 3815059057597783591}
   - component: {fileID: 6907280487492206921}
-  m_Layer: 8
+  m_Layer: 0
   m_Name: P_LPSP_WEP_Flash(Clone)
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -764,7 +800,7 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1.0000001, z: 1.0000001}
+  m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 7573793074270234062}
@@ -806,9 +842,9 @@ ParticleSystem:
       m_PreInfinity: 2
       m_PostInfinity: 2
       m_RotationOrder: 4
-  moveWithTransform: 1
+  moveWithTransform: 0
   moveWithCustomTransform: {fileID: 0}
-  scalingMode: 2
+  scalingMode: 0
   randomSeed: 0
   InitialModule:
     serializedVersion: 3
@@ -3576,7 +3612,10 @@ PrefabInstance:
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
-    m_AddedGameObjects: []
+    m_AddedGameObjects:
+    - targetCorrespondingSourceObject: {fileID: 892148889074074542, guid: 01884fb765ff88e4b91949fdddc82b2d, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 2746715310317594754}
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 01884fb765ff88e4b91949fdddc82b2d, type: 3}
 --- !u!4 &2526214594343283656 stripped

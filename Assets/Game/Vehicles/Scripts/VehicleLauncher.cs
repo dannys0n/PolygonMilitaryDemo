@@ -4,6 +4,7 @@ public class VehicleLauncher : MonoBehaviour
 {
     public Vehicle vehicle;
     public VehicleRocket projectile;
+    public Sprite weaponIcon;
     public Transform[] muzzles;
     public float interval = 2.5f;
     float nextShot;

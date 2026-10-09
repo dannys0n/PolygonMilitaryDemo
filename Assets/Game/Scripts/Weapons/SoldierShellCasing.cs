@@ -24,8 +24,10 @@ public class SoldierShellCasing : MonoBehaviour
             + Vector3.Scale(meshBounds.extents, scale).magnitude;
     }
 
-    public void Launch(Quaternion ejectionRotation, Vector3 ownerVelocity)
+    public void Launch(Quaternion ejectionRotation, Vector3 ownerVelocity, float visualScale = 1f)
     {
+        transform.localScale *= visualScale;
+        casingRadius *= Mathf.Abs(visualScale);
         Vector3 velocity = new Vector3(Random.Range(minimumVelocity.x, maximumVelocity.x),
             Random.Range(minimumVelocity.y, maximumVelocity.y), Random.Range(minimumVelocity.z, maximumVelocity.z));
         // Avoid rendering a newborn shell behind the moving receiver.
