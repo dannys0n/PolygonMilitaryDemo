@@ -32,17 +32,20 @@ public class SoldierWeaponEffects : MonoBehaviour
         ClearEffects();
     }
 
-    bool CanIlluminate => view.firstPerson && view.playerCamera.enabled &&
-        controller.inputSource is SoldierLocalInput local && local.isActiveAndEnabled;
+    bool IsLocalOwner => controller.inputSource is SoldierLocalInput local && local.isActiveAndEnabled;
+    bool CanIlluminate => view.firstPerson && view.playerCamera.enabled && IsLocalOwner;
 
     void OnShot()
     {
         int index = loadout.selectedSlot;
         var slot = loadout.slots[index];
         var definition = slot.weapon.definition;
-        // One casing per shot, using the currently visible weapon's ejection port.
-        Transform muzzle = view.firstPerson && view.playerCamera.enabled ? slot.firstPersonMuzzle : slot.thirdPersonMuzzle;
-        Instantiate(definition.shellCasing, muzzle.TransformPoint(definition.casingEjectionOffset), muzzle.rotation);
+        // Casings are an owner-only cosmetic effect, including when the owner uses TPS.
+        if (IsLocalOwner)
+        {
+            Transform muzzle = view.firstPerson && view.playerCamera.enabled ? slot.firstPersonMuzzle : slot.thirdPersonMuzzle;
+            Instantiate(definition.shellCasing, muzzle.position + muzzle.rotation * definition.casingEjectionOffset, muzzle.rotation);
+        }
         // World flash remains visible to TPS viewers. FPS flash uses the owner's view layer.
         Emit(ref thirdPerson[index], slot.thirdPersonMuzzle, definition, view.thirdPersonLayer, false);
         if (view.firstPerson && view.playerCamera.enabled)
@@ -55,8 +58,16 @@ public class SoldierWeaponEffects : MonoBehaviour
         {
             effect = new MuzzleEffect();
             effect.particles = Instantiate(definition.muzzleFlash, muzzle);
-            effect.particles.transform.SetLocalPositionAndRotation(Vector3.zero, Quaternion.Euler(-90f, 0f, 0f));
+            // Mesh particles already face +Z after the source renderer's mesh alignment.
+            // Imported weapon bones may inherit a scale of 100; effects use metre units.
+            effect.particles.transform.SetLocalPositionAndRotation(Vector3.zero, Quaternion.identity);
+            Vector3 scale = muzzle.lossyScale;
+            Vector3 authoredScale = definition.muzzleFlash.transform.localScale;
+            effect.particles.transform.localScale = new Vector3(authoredScale.x / scale.x,
+                authoredScale.y / scale.y, authoredScale.z / scale.z);
             foreach (Transform child in effect.particles.GetComponentsInChildren<Transform>(true)) child.gameObject.layer = layer;
+            var main = effect.particles.main;
+            main.scalingMode = ParticleSystemScalingMode.Hierarchy;
             effect.particles.Stop(true, ParticleSystemStopBehavior.StopEmittingAndClear);
         }
         effect.particles.Emit(definition.flashParticlesCount);
@@ -64,7 +75,7 @@ public class SoldierWeaponEffects : MonoBehaviour
         if (effect.light == null)
         {
             effect.light = Instantiate(definition.muzzleFlashLight, muzzle);
-            effect.light.transform.SetLocalPositionAndRotation(definition.flashLightOffset, Quaternion.identity);
+            effect.light.transform.SetPositionAndRotation(muzzle.position + muzzle.rotation * definition.flashLightOffset, muzzle.rotation);
             effect.light.cullingMask = 1 << view.firstPersonLayer;
             effect.light.shadows = LightShadows.None;
         }
