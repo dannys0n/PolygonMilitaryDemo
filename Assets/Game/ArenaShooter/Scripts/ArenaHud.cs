@@ -38,7 +38,7 @@ public class ArenaHud : MonoBehaviour
     readonly List<float> skullExpires = new List<float>();
     readonly List<RectTransform> radarDots = new List<RectTransform>();
     float crosshairScale = 1f, hitUntil, medalUntil, nextRefresh, lastKill = -100f;
-    float shotSpread, recoverSpreadAt;
+    float shotSpread, recoverSpreadAt, killHitUntil;
     Vector2[] crosshairRestPositions;
     int streak, multiKill;
     string accentHex;
@@ -51,22 +51,22 @@ public class ArenaHud : MonoBehaviour
     void OnEnable()
     {
         match.KillRecorded += OnKill; match.MatchStarted += ResetFeedback;
+        CombatEvents.DamageConfirmed += OnConfirmedDamage;
         SubscribePlayer();
     }
     void SubscribePlayer()
     {
-        player.player.actions.shooting.ShotResolved += OnShot;
         player.player.actions.FireStarted += OnFire;
         player.player.Respawned += OnRespawn;
     }
     void OnDisable()
     {
         match.KillRecorded -= OnKill; match.MatchStarted -= ResetFeedback;
+        CombatEvents.DamageConfirmed -= OnConfirmedDamage;
         UnsubscribePlayer();
     }
     void UnsubscribePlayer()
     {
-        player.player.actions.shooting.ShotResolved -= OnShot;
         player.player.actions.FireStarted -= OnFire;
         player.player.Respawned -= OnRespawn;
     }
@@ -76,7 +76,7 @@ public class ArenaHud : MonoBehaviour
         bool listening = isActiveAndEnabled;
         if (listening) UnsubscribePlayer();
         player = character;
-        OnRespawn(); hitUntil = medalUntil = 0f; lastKill = -100f; nextRefresh = 0f;
+        OnRespawn(); hitUntil = medalUntil = killHitUntil = 0f; lastKill = -100f; nextRefresh = 0f;
         if (listening) SubscribePlayer();
     }
     void OnRespawn() { streak = multiKill = 0; shotSpread = 0f; skullExpires.Clear(); medalUntil = 0f; }
@@ -93,12 +93,13 @@ public class ArenaHud : MonoBehaviour
             crosshairSegments[i].rectTransform.anchoredPosition = crosshairRestPositions[i]
                 + crosshairRestPositions[i].normalized * shotSpread;
     }
-    void ResetFeedback() { kills.Clear(); medalUntil = hitUntil = 0f; lastKill = -100f; OnRespawn(); }
-    void OnShot(SoldierHitscan.ShotResult shot)
+    void ResetFeedback() { kills.Clear(); medalUntil = hitUntil = killHitUntil = 0f; lastKill = -100f; OnRespawn(); }
+    void OnConfirmedDamage(CombatEvents.ConfirmedDamage hit)
     {
-        if (!shot.damaged) return;
+        if(hit.attacker!=player.gameObject || hit.target==player.gameObject)return;
         hitUntil = Time.time + hitMarkerDuration;
-        foreach (var image in hitMarker.GetComponentsInChildren<UnityEngine.UI.Image>()) image.color = shot.killed ? accent : Color.white;
+        if(hit.killed)killHitUntil=hitUntil;
+        foreach (var image in hitMarker.GetComponentsInChildren<UnityEngine.UI.Image>()) image.color = Time.time<killHitUntil ? accent : Color.white;
     }
     void OnKill(ArenaParticipant attacker, ArenaParticipant victim)
     {

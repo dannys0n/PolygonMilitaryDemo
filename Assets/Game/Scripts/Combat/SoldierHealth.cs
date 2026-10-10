@@ -18,8 +18,10 @@ public class SoldierHealth : MonoBehaviour
     {
         if (IsDead || amount <= 0f) return false;
         if (DamageFilter != null && !DamageFilter(source)) return false;
+        float previous=CurrentHealth;
         CurrentHealth = Mathf.Max(0f, CurrentHealth - amount);
         bool died = IsDead;
+        CombatEvents.ConfirmDamage(source,gameObject,previous-CurrentHealth,died);
         Damaged?.Invoke(amount, source);
         if (died) Died?.Invoke(source);
         return true;

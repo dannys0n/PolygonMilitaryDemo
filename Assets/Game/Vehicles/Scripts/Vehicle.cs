@@ -129,7 +129,9 @@ public class Vehicle : MonoBehaviour
     {
         if (IsDestroyed || amount <= 0 || (DamageFilter != null && !DamageFilter(source)))
             return false;
+        float previous=Health;
         Health = Mathf.Max(0, Health - amount);
+        CombatEvents.ConfirmDamage(source,gameObject,previous-Health,IsDestroyed);
         if (!IsDestroyed)
             return true;
         DriverInput = default;
