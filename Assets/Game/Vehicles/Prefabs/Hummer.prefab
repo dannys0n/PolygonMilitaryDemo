@@ -3604,6 +3604,7 @@ GameObject:
   - component: {fileID: 7749662443089936875}
   - component: {fileID: 1627803472940609030}
   - component: {fileID: 5865844867554388362}
+  - component: {fileID: 8851345084744749807}
   m_Layer: 0
   m_Name: Hummer
   m_TagString: Untagged
@@ -3687,7 +3688,7 @@ MonoBehaviour:
   displayName: Hummer
   motor: {fileID: 7749662443089936875}
   turret: {fileID: 1627803472940609030}
-  destructionEffect: {fileID: 2970324974243714372, guid: 999aaf5476c3ac040b646da6127e65aa, type: 3}
+  destructionEffect: {fileID: 695410771644243590, guid: c07b2e8d0c65dad44bf5eaca660002fc, type: 3}
   cameraTarget: {fileID: 63068711675286005}
   seats:
   - name: Driver
@@ -3804,6 +3805,27 @@ NavMeshObstacle:
   m_CarveOnlyStationary: 1
   m_Center: {x: 0, y: 1, z: 0}
   m_TimeToStationary: 0.5
+--- !u!114 &8851345084744749807
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8334796173799810011}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3ef518424e140f94fae8a987cef7cb87, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::VehicleDestructionEffects
+  blackSmoke: {fileID: 6001782565966554119, guid: 43683e0b5831c7d4ead5064f2a129ac0, type: 3}
+  secondaryExplosion: {fileID: 7772868914547752988, guid: 47f535017c67d4c4194b60441dabb8e4, type: 3}
+  localOrigin: {x: 0, y: 1, z: 1}
+  firstExplosionTime: 0.25
+  secondExplosionTime: 1
+  finalExplosionTime: 2.25
+  secondaryScale: 0.45
+  finalScale: 1.5
+  smokeScale: 1
 --- !u!1 &8344174666489544199
 GameObject:
   m_ObjectHideFlags: 0

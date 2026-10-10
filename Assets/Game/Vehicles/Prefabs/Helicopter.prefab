@@ -121,6 +121,7 @@ GameObject:
   - component: {fileID: 2684248542658391728}
   - component: {fileID: 4863208407509378138}
   - component: {fileID: 1856424801410012131}
+  - component: {fileID: 7553515400483541027}
   m_Layer: 0
   m_Name: Helicopter
   m_TagString: Untagged
@@ -194,7 +195,7 @@ MonoBehaviour:
   displayName: Helicopter
   motor: {fileID: 3531695694254071810}
   turret: {fileID: 2684248542658391728}
-  destructionEffect: {fileID: 2970324974243714372, guid: 999aaf5476c3ac040b646da6127e65aa, type: 3}
+  destructionEffect: {fileID: 695410771644243590, guid: c07b2e8d0c65dad44bf5eaca660002fc, type: 3}
   cameraTarget: {fileID: 9190760816090246636}
   seats:
   - name: Pilot
@@ -323,6 +324,27 @@ NavMeshObstacle:
   m_CarveOnlyStationary: 1
   m_Center: {x: 0, y: 1.6, z: 1}
   m_TimeToStationary: 0.5
+--- !u!114 &7553515400483541027
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3258655521436788631}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3ef518424e140f94fae8a987cef7cb87, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::VehicleDestructionEffects
+  blackSmoke: {fileID: 6001782565966554119, guid: 43683e0b5831c7d4ead5064f2a129ac0, type: 3}
+  secondaryExplosion: {fileID: 7772868914547752988, guid: 47f535017c67d4c4194b60441dabb8e4, type: 3}
+  localOrigin: {x: 0, y: 2, z: -0.7}
+  firstExplosionTime: 0.25
+  secondExplosionTime: 1
+  finalExplosionTime: 2.25
+  secondaryScale: 0.45
+  finalScale: 1.5
+  smokeScale: 1.3
 --- !u!1 &3352701589218954575
 GameObject:
   m_ObjectHideFlags: 0

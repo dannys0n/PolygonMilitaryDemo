@@ -149,11 +149,7 @@ public class Vehicle : MonoBehaviour
             block.SetColor("_BaseColor", new Color(.16f, .17f, .18f));
             r.SetPropertyBlock(block);
         }
-        var effect = Instantiate(destructionEffect, transform.position + Vector3.up, Quaternion.identity);
-        effect.transform.localScale = Vector3.one * 2f;
-        effect.Play(true);
-        Destroy(effect.gameObject, 2f);
-        Destroyed?.Invoke(this);
+Destroyed?.Invoke(this);
         return true;
     }
     void OnCollisionEnter(Collision collision)
