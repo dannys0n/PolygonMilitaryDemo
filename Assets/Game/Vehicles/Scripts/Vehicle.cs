@@ -176,7 +176,7 @@ public struct VehicleInput
 {
     public Vector2 move;
     public float yaw, lift, heading, movementHeading, viewPitch, pitchRate;
-    public bool brake, handbrake, boost, directionalFlight;
+    public bool brake, handbrake, boost, directionalFlight, aim;
 }
 
 public abstract class VehicleMotor : MonoBehaviour

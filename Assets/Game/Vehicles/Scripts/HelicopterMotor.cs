@@ -73,7 +73,7 @@ public class HelicopterMotor : VehicleMotor
         }
         bool localAssist = assisted && vehicle.Driver && vehicle.Driver.IsLocal;
         bool noMovement = input.move.sqrMagnitude < .001f && Mathf.Abs(input.lift) < .01f;
-        bool hold = localAssist && noMovement && !Grounded;
+        bool hold = localAssist && noMovement && !input.aim && !Grounded;
         if (hold && !holdingPosition)
         {
             holdPosition = body.position;
@@ -113,21 +113,31 @@ public class HelicopterMotor : VehicleMotor
             float pitch, roll;
             if (input.directionalFlight)
             {
-                float requestedHeading = input.move.sqrMagnitude > .001f ? input.movementHeading : input.heading;
+                float requestedHeading = !input.aim && input.move.sqrMagnitude > .001f ? input.movementHeading : input.heading;
                 heading = Mathf.MoveTowardsAngle(heading,requestedHeading,yawRate * dt);
-                Quaternion movementFrame = Quaternion.Euler(0,input.movementHeading,0);
-                Vector3 velocity = Vector3.ProjectOnPlane(body.linearVelocity,Vector3.up);
-                Vector3 desiredVelocity = movementFrame * new Vector3(input.move.x,0,input.move.y) * maxSpeed;
-                Vector3 acceleration = holdingPosition
-                    ? Vector3.ProjectOnPlane(holdPosition-body.position,Vector3.up) * positionHoldSpring - velocity * positionHoldDamping
-                    : (desiredVelocity-velocity) * movementVelocityResponse;
-                // Brake by banking the airframe, never by cancelling thrust with a sideways force.
-                float tiltAcceleration = gravity * Mathf.Tan(maxTilt * Mathf.Deg2Rad);
-                acceleration = Vector3.ClampMagnitude(acceleration,Mathf.Min(maxHoldAcceleration,tiltAcceleration));
-                cyclicAcceleration = Vector3.MoveTowards(cyclicAcceleration,acceleration,tiltAcceleration * dt / Mathf.Max(.01f,cyclicResponseTime));
-                Vector3 local = Quaternion.Inverse(Quaternion.Euler(0,heading,0)) * cyclicAcceleration;
-                pitch = Mathf.Atan2(local.z,gravity) * Mathf.Rad2Deg;
-                roll = -Mathf.Atan2(local.x,Mathf.Sqrt(gravity*gravity + local.z*local.z)) * Mathf.Rad2Deg;
+                if (input.aim)
+                {
+                    // Aim requests attitude through the same physical torque controller; no launch correction.
+                    pitch = Mathf.Clamp(input.viewPitch,-maxAimPitch,maxAimPitch);
+                    roll = 0;
+                    cyclicAcceleration = Vector3.zero;
+                }
+                else
+                {
+                    Quaternion movementFrame = Quaternion.Euler(0,input.movementHeading,0);
+                    Vector3 velocity = Vector3.ProjectOnPlane(body.linearVelocity,Vector3.up);
+                    Vector3 desiredVelocity = movementFrame * new Vector3(input.move.x,0,input.move.y) * maxSpeed;
+                    Vector3 acceleration = holdingPosition
+                        ? Vector3.ProjectOnPlane(holdPosition-body.position,Vector3.up) * positionHoldSpring - velocity * positionHoldDamping
+                        : (desiredVelocity-velocity) * movementVelocityResponse;
+                    // Brake by banking the airframe, never by cancelling thrust with a sideways force.
+                    float tiltAcceleration = gravity * Mathf.Tan(maxTilt * Mathf.Deg2Rad);
+                    acceleration = Vector3.ClampMagnitude(acceleration,Mathf.Min(maxHoldAcceleration,tiltAcceleration));
+                    cyclicAcceleration = Vector3.MoveTowards(cyclicAcceleration,acceleration,tiltAcceleration * dt / Mathf.Max(.01f,cyclicResponseTime));
+                    Vector3 local = Quaternion.Inverse(Quaternion.Euler(0,heading,0)) * cyclicAcceleration;
+                    pitch = Mathf.Atan2(local.z,gravity) * Mathf.Rad2Deg;
+                    roll = -Mathf.Atan2(local.x,Mathf.Sqrt(gravity*gravity + local.z*local.z)) * Mathf.Rad2Deg;
+                }
             }
             else
             {

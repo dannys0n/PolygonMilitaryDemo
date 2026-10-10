@@ -156,6 +156,7 @@ public class VehicleOccupant : MonoBehaviour
                 move = Vector2.ClampMagnitude(new Vector2(Input.GetAxisRaw("Horizontal"), Input.GetAxisRaw("Vertical")),1),
                 lift = (Input.GetKey(KeyCode.Space)?1:0) - (Input.GetKey(KeyCode.LeftControl)?1:0),
                 heading = flightYaw, movementHeading = Freelook ? freelookYaw : yaw, viewPitch = flightPitch, directionalFlight = aircraft,
+                aim = aircraft && !Freelook && Input.GetMouseButton(1),
                 pitchRate = Freelook ? 0 : Mathf.Clamp(-mouse.y * .35f,-1,1), yaw = Freelook ? 0 : Mathf.Clamp(mouse.x * .35f,-1,1),
                 handbrake = !aircraft && Input.GetKey(KeyCode.Z), boost = !aircraft && Input.GetKey(KeyCode.LeftShift)
             };
