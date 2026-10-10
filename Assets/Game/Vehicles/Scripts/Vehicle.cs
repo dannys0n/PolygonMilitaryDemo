@@ -156,7 +156,16 @@ public class Vehicle : MonoBehaviour
     }
     void OnCollisionEnter(Collision collision)
     {
-        float speed = collision.relativeVelocity.magnitude;
+        float speed = 0;
+        for(int i=0;i<collision.contactCount;i++)
+        {
+            Vector3 normal=collision.GetContact(i).normal;
+            float impact=Mathf.Abs(Vector3.Dot(collision.relativeVelocity,normal));
+            // Driveable ramp/ground contacts only damage the car for a hard downward landing.
+            if(motor is HummerMotor && normal.y>=.6f)
+                impact=Mathf.Max(0,-collision.relativeVelocity.y);
+            speed=Mathf.Max(speed,impact);
+        }
         if (speed > 12f)
             ApplyDamage((speed - 12f) * 25f, null);
     }
