@@ -4,7 +4,7 @@ using UnityEngine;
 [RequireComponent(typeof(Rigidbody))]
 public class VehicleRocket : MonoBehaviour
 {
-    public ParticleSystem impactEffect;
+    public ParticleSystem impactEffect, exhaust;
     public float launchClearance = .4f;
     public float speed = 65, radius = 4, infantryDamage = 140, vehicleDamage = 350, lifetime = 5;
     Rigidbody body;
@@ -22,25 +22,47 @@ public class VehicleRocket : MonoBehaviour
         var collider = GetComponent<Collider>();
         foreach (var c in vehicle.GetComponentsInChildren<Collider>())
             Physics.IgnoreCollision(collider, c);
-        Destroy(gameObject, lifetime);
+        exhaust.Play(true);
+        Invoke(nameof(Expire),lifetime);
+    }
+    void StopExhaust()
+    {
+        exhaust.transform.SetParent(null,true);
+        exhaust.Stop(true,ParticleSystemStopBehavior.StopEmitting);
+        Destroy(exhaust.gameObject,exhaust.main.startLifetime.constantMax+1f);
+    }
+    void Expire()
+    {
+        StopExhaust();
+        Destroy(gameObject);
     }
     void FixedUpdate()
     {
         Vector3 delta = body.position - previous;
-        foreach (var hit in Physics.RaycastAll(previous, delta.normalized, delta.magnitude, Physics.DefaultRaycastLayers, QueryTriggerInteraction.Ignore))
-            if (!hit.transform.IsChildOf(owner.transform) && !hit.transform.IsChildOf(transform))
+        RaycastHit nearest = default;
+        float distance = delta.magnitude;
+        bool found = false;
+        foreach (var hit in Physics.RaycastAll(previous,delta.normalized,delta.magnitude,Physics.DefaultRaycastLayers,QueryTriggerInteraction.Ignore))
+            if (!hit.transform.IsChildOf(owner.transform) && !hit.transform.IsChildOf(transform) && hit.distance <= distance)
             {
-                Explode(hit.point);
-                return;
+                nearest = hit; distance = hit.distance; found = true;
             }
+        if (found)
+        {
+            Explode(nearest.point,nearest.normal);
+            return;
+        }
         previous = body.position;
     }
     void OnCollisionEnter(Collision collision)
     {
         if (owner && !collision.transform.IsChildOf(owner.transform))
-            Explode(collision.GetContact(0).point);
+        {
+            var contact=collision.GetContact(0);
+            Explode(contact.point,contact.normal);
+        }
     }
-    void Explode(Vector3 point)
+    void Explode(Vector3 point,Vector3 normal)
     {
         if (exploded)
             return;
@@ -54,7 +76,7 @@ public class VehicleRocket : MonoBehaviour
             // Cover blocks blast damage; the small origin offset avoids hitting the impact face itself.
             Vector3 target = c.bounds.center;
             bool blocked = false;
-            foreach (var hit in Physics.RaycastAll(point + Vector3.up * .15f, (target - point).normalized, Vector3.Distance(point, target) - .1f, Physics.DefaultRaycastLayers, QueryTriggerInteraction.Ignore))
+            foreach (var hit in Physics.RaycastAll(point + normal * .15f, (target - point).normalized, Vector3.Distance(point, target) - .1f, Physics.DefaultRaycastLayers, QueryTriggerInteraction.Ignore))
                 if (hit.collider != c && !hit.transform.IsChildOf(transform) && !hit.collider.GetComponentInParent<SoldierLife>() && !hit.collider.GetComponentInParent<Vehicle>())
                 {
                     blocked = true;
@@ -68,9 +90,16 @@ public class VehicleRocket : MonoBehaviour
             if (v && vehicles.Add(v))
                 v.ApplyDamage(vehicleDamage * falloff, source);
         }
-        var effect = Instantiate(impactEffect, point, Quaternion.identity);
+        var effect = Instantiate(impactEffect,point+normal*.03f,Quaternion.FromToRotation(Vector3.forward,normal));
         effect.Play(true);
-        Destroy(effect.gameObject, 2f);
+        float effectDuration=0;
+        foreach(var particles in effect.GetComponentsInChildren<ParticleSystem>(true))
+        {
+            var settings=particles.main;
+            effectDuration=Mathf.Max(effectDuration,settings.startDelay.constantMax+settings.duration+settings.startLifetime.constantMax);
+        }
+        Destroy(effect.gameObject,effectDuration+1f);
+        StopExhaust();
         Destroy(gameObject);
     }
 }
