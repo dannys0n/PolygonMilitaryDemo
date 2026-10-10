@@ -9,6 +9,10 @@ public class VehicleTurret : MonoBehaviour
     public SoldierShellCasing shellCasing;
     public Sprite weaponIcon;
     public AnimationClip cameraShake;
+    public Transform barrelAssembly;
+    public float barrelSpinUp = 1200f, barrelSpinDown = 400f;
+    float barrelAngle, barrelSpeed, lastBarrelShot=float.NegativeInfinity;
+    Quaternion barrelRest;
     public float casingScale = 1.7f;
     int pendingFlashes, pendingOwnerCasings;
     public float damage = 34, range = 120, roundsPerMinute = 650, turnRate = 100;
@@ -19,7 +23,11 @@ public class VehicleTurret : MonoBehaviour
     bool aimAtPoint;
     public Vector3 RequestedAimDirection => aimDirection;
     public event System.Action<VehicleOccupant, Vector3> ShotFired;
-    void Start() => aimDirection = vehicle.transform.forward;
+    void Start()
+    {
+        aimDirection=vehicle.transform.forward;
+        barrelRest=barrelAssembly.localRotation;
+    }
     public void AimAt(Ray view)
     {
         float distance = range;
@@ -47,6 +55,10 @@ public class VehicleTurret : MonoBehaviour
         float up = Mathf.Clamp(Mathf.Atan2(local.y, new Vector2(local.x, local.z).magnitude) * Mathf.Rad2Deg, pitchLimits.x, pitchLimits.y);
         yawPivot.localRotation = Quaternion.RotateTowards(yawPivot.localRotation, Quaternion.Euler(0, yaw, 0), turnRate * Time.deltaTime);
         pitchPivot.localRotation = Quaternion.RotateTowards(pitchPivot.localRotation, Quaternion.Euler(-up, 0, 0), turnRate * Time.deltaTime);
+        bool firing=Time.time-lastBarrelShot < 60f/roundsPerMinute+.02f;
+        barrelSpeed=Mathf.MoveTowards(barrelSpeed,firing ? roundsPerMinute/6f : 0,(firing?barrelSpinUp:barrelSpinDown)*Time.deltaTime);
+        barrelAngle=(barrelAngle+barrelSpeed*6f*Time.deltaTime)%360;
+        barrelAssembly.localRotation=barrelRest*Quaternion.AngleAxis(barrelAngle,Vector3.forward);
         // Sample the final turret pose so effects follow the receiver during turns.
         if (pendingFlashes > 0) muzzleFlash.Emit(4 * pendingFlashes);
         pendingFlashes = 0;
@@ -60,6 +72,8 @@ public class VehicleTurret : MonoBehaviour
     void OnDisable()
     {
         pendingFlashes = pendingOwnerCasings = 0;
+        barrelSpeed=0;
+        lastBarrelShot=float.NegativeInfinity;
         muzzleFlash.Stop(true, ParticleSystemStopBehavior.StopEmittingAndClear);
     }
     public bool TryFire(VehicleOccupant gunner)
@@ -95,6 +109,7 @@ public class VehicleTurret : MonoBehaviour
             }
         }
         // Infinite ammunition: fire cadence is the only ammunition-related gate.
+        lastBarrelShot=Time.time;
         pendingFlashes++;
         if (gunner.IsLocal && gunner.soldier.inputSource.isActiveAndEnabled) pendingOwnerCasings++;
         if(gunner.IsLocal)gunner.PlayVehicleCameraShake();
