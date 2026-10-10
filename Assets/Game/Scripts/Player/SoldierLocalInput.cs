@@ -4,6 +4,8 @@ using UnityEngine;
 public class SoldierLocalInput : SoldierInputSource
 {
     public float sensitivity = 2f;
+    SoldierFirstPersonView view;
+    void Awake() => view=GetComponent<SoldierFirstPersonView>();
     public bool InputBlocked { get; set; }
 
     void Start() => SetCursorLocked(true);
@@ -19,8 +21,9 @@ public class SoldierLocalInput : SoldierInputSource
         var input = new SoldierInputFrame
         {
             move = new Vector2(Input.GetAxisRaw("Horizontal"), Input.GetAxisRaw("Vertical")),
-            lookDelta = new Vector2(Input.GetAxis("Mouse X"), Input.GetAxis("Mouse Y")) * sensitivity,
+            lookDelta = new Vector2(Input.GetAxis("Mouse X"), Input.GetAxis("Mouse Y")) * sensitivity * view.AimSensitivity,
             aim = Input.GetMouseButton(1),
+            cycleSight = Input.GetKeyDown(KeyCode.T),
             sprint = Input.GetKey(KeyCode.LeftShift),
             jump = Input.GetKeyDown(KeyCode.Space),
             reload = Input.GetKeyDown(KeyCode.R),

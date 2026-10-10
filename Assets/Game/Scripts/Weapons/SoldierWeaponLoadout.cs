@@ -9,6 +9,7 @@ public class SoldierWeaponLoadout : MonoBehaviour
     {
         public string name;
         public SoldierWeapon weapon;
+        public SoldierWeaponSights sights;
         public Transform firstPersonWeapon;
         public Transform thirdPersonWeapon;
         public Animator weaponAnimator;
@@ -60,6 +61,7 @@ public class SoldierWeaponLoadout : MonoBehaviour
     public int selectedSlot;
     public bool IsSwitching { get; private set; }
     public SoldierWeapon EquippedWeapon => slots[selectedSlot].weapon;
+    public SoldierWeaponSights EquippedSights => slots[selectedSlot].sights;
     public WeaponState EquippedState => slots[selectedSlot].state;
     public Transform EquippedMuzzle => presentation.view.firstPerson
         ? slots[selectedSlot].firstPersonSockets.muzzleFlash : slots[selectedSlot].thirdPersonSockets.muzzleFlash;
@@ -129,6 +131,24 @@ public class SoldierWeaponLoadout : MonoBehaviour
         switchRoutine = null;
     }
 
+    public bool TryCycleSight()
+    {
+        if (!enabled || !actions.enabled || IsSwitching || actions.IsReloading || actions.IsThrowing || !EquippedSights) return false;
+        EquippedSights.Cycle();
+        return true;
+    }
+
+    public void SetClassSights(WeaponSightDefinition primary, WeaponSightDefinition secondary)
+    {
+        for (int i = 0; i < AvailableSlots.Length; i++)
+        {
+            var sight = slots[AvailableSlots[i]].sights;
+            if (!sight) continue;
+            sight.Initialize(presentation.view);
+            sight.SetSight(i == 0 ? primary : secondary);
+        }
+    }
+
     public void SetEquippedVisible(bool visible) => SetVisible(slots[selectedSlot], visible);
 
     // Return the same weapon after an upper-body action without rebinding its controllers.
@@ -190,6 +210,7 @@ public class SoldierWeaponLoadout : MonoBehaviour
     void Bind(Slot slot)
     {
         SetVisible(slot, true);
+        if (slot.sights) slot.sights.Initialize(presentation.view);
         presentation.view.weaponAnimator = slot.weaponAnimator;
         presentation.partsAnimator = slot.partsAnimator;
         presentation.ApplyWeapon(slot.weapon);

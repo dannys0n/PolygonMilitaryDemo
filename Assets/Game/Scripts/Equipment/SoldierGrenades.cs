@@ -44,13 +44,11 @@ public class SoldierGrenades : MonoBehaviour
     }
     GameObject Held(Transform hand,int layer)
     {
-        var go=Instantiate(throwing.projectile.gameObject,hand);
-        var body=go.GetComponent<Rigidbody>();body.isKinematic=true;body.interpolation=RigidbodyInterpolation.None;
-        go.GetComponent<Collider>().enabled=false;
-        // The held object is only a visual prop. Physics starts on the released projectile.
-        Destroy(body);
-        Destroy(go.GetComponent<Collider>());
-        Destroy(go.GetComponent<GrenadeProjectile>());
+        // Held grenades contain only art; the released prefab owns physics and the fuse.
+        var go=new GameObject("Held "+throwing.displayName);
+        go.transform.SetParent(hand,false);
+        foreach(Transform visual in throwing.projectile.transform)
+            Instantiate(visual.gameObject,go.transform,false);
         go.transform.SetLocalPositionAndRotation(handPosition,Quaternion.Euler(handRotation));
         foreach(var t in go.GetComponentsInChildren<Transform>(true))t.gameObject.layer=layer;
         return go;

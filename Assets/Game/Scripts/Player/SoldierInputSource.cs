@@ -11,6 +11,7 @@ public struct SoldierInputFrame
     // One-based position in AvailableSlots; zero means no selection request.
     public int weaponSelection;
     public int weaponCycle;
+    public bool cycleSight;
     public bool toggleView, previewHitReaction;
 }
 

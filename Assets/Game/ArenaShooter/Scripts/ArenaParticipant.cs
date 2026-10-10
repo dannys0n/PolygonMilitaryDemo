@@ -104,6 +104,7 @@ public class ArenaParticipant : MonoBehaviour
             ActiveClass = SelectedClass;
             player.SetGameplayAllowed(false);
             player.loadout.ConfigureAvailableSlots(slots);
+            player.loadout.SetClassSights(SelectedClass.primarySight, SelectedClass.secondarySight);
             player.Respawn(position, rotation);
         }
         else

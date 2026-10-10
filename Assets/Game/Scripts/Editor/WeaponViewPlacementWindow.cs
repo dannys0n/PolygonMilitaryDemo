@@ -18,6 +18,8 @@ public class WeaponViewPlacementWindow : EditorWindow
     [SerializeField] Vector2 previewCenter = new Vector2(.5f, .5f);
     double nextRepaint;
     readonly HashSet<SoldierWeaponDefinition> changed = new HashSet<SoldierWeaponDefinition>();
+    readonly HashSet<WeaponSightDefinition> changedSights = new HashSet<WeaponSightDefinition>();
+    readonly Dictionary<WeaponSightDefinition, Pose> sightPoints = new Dictionary<WeaponSightDefinition, Pose>();
 
     [MenuItem("Tools/Game/Weapon View Placement")]
     public static void Open() => GetWindow<WeaponViewPlacementWindow>("Weapon View Placement");
@@ -111,11 +113,26 @@ public class WeaponViewPlacementWindow : EditorWindow
         foreach (var definition in changed)
             if (definition != null) AssetDatabase.SaveAssetIfDirty(definition);
         changed.Clear();
+        foreach (var entry in sightPoints)
+        {
+            string path=AssetDatabase.GetAssetPath(entry.Key.prefab);
+            var root=PrefabUtility.LoadPrefabContents(path);
+            try
+            {
+                var point=root.GetComponent<WeaponSightAttachment>().aimPoint;
+                point.SetLocalPositionAndRotation(entry.Value.position,entry.Value.rotation);
+                PrefabUtility.SaveAsPrefabAsset(root,path);
+            }
+            finally { PrefabUtility.UnloadPrefabContents(root); }
+        }
+        sightPoints.Clear();
+        foreach (var sight in changedSights) if (sight) AssetDatabase.SaveAssetIfDirty(sight);
+        changedSights.Clear();
     }
 
     void OnGUI()
     {
-        EditorGUILayout.HelpBox("Play Mode: choose Hip or ADS, then drag the handles in Scene view. The preview shows the actual player camera. Changes save to the weapon definition, including when Play Mode ends.", MessageType.Info);
+        EditorGUILayout.HelpBox("Play Mode: choose Hip or ADS, then drag the handles in Scene view. The preview shows the actual player camera. Hip changes save to the weapon definition; sight-based ADS changes save to the active sight, including when Play Mode ends.", MessageType.Info);
         EditorGUI.BeginChangeCheck();
         var chosen = (SoldierFirstPersonView)EditorGUILayout.ObjectField("Live player", player, typeof(SoldierFirstPersonView), true);
         if (EditorGUI.EndChangeCheck()) { StopEditing(); player = chosen; }
@@ -127,17 +144,42 @@ public class WeaponViewPlacementWindow : EditorWindow
         var definition = player.GetComponent<SoldierWeaponPresentation>().weapon.definition;
         EditorGUILayout.ObjectField("Editing definition", definition, typeof(SoldierWeaponDefinition), false);
         ads = GUILayout.Toolbar(ads ? 1 : 0, new[] { "Hip", "ADS" }) == 1;
-        handleMode = GUILayout.Toolbar(handleMode, new[] { "Move weapon view", "Rotate weapon view", "Move pivot" });
+        var sights=player.GetComponent<SoldierWeaponLoadout>().EquippedSights;
+        bool sightAds=ads && sights && sights.SelectedSight;
+        if (!sightAds) handleMode = GUILayout.Toolbar(handleMode, new[] { "Move weapon view", "Rotate weapon view", "Move pivot" });
         EditorGUILayout.BeginHorizontal();
         if (GUILayout.Button(editing ? "Finish editing" : "Start editing")) { if (editing) StopEditing(); else StartEditing(); }
         if (GUILayout.Button("Frame gun in Scene view")) FrameWeapon();
         if (GUILayout.Button("Save")) SavePlacement();
         EditorGUILayout.EndHorizontal();
-        EditorGUILayout.LabelField("Position", (ads ? definition.aimOffset : definition.hipFireOffset).ToString("F4"));
-        EditorGUILayout.LabelField("Rotation", (ads ? definition.aimRotationOffset : definition.hipFireRotationOffset).ToString("F2"));
-        EditorGUILayout.LabelField("Pivot", definition.viewRotationPivot.ToString("F4"));
-        if (editing) EditorGUILayout.LabelField("Moving the pivot preserves both Hip and ADS placement.", EditorStyles.wordWrappedLabel);
+        if (sightAds) DrawSightCalibration(sights);
+        else EditorGUILayout.LabelField("Position", (ads ? definition.aimOffset : definition.hipFireOffset).ToString("F4"));
+        if (!sightAds) EditorGUILayout.LabelField("Rotation", (ads ? definition.aimRotationOffset : definition.hipFireRotationOffset).ToString("F2"));
+        if (!sightAds) EditorGUILayout.LabelField("Pivot", definition.viewRotationPivot.ToString("F4"));
+        if (editing && !sightAds) EditorGUILayout.LabelField("Moving the pivot preserves both Hip and ADS placement.", EditorStyles.wordWrappedLabel);
         DrawPreview();
+    }
+
+    void DrawSightCalibration(SoldierWeaponSights sights)
+    {
+        var sight=sights.SelectedSight;
+        var point=sights.ActiveAimPoint;
+        EditorGUILayout.ObjectField("Active sight",sight,typeof(WeaponSightDefinition),false);
+        EditorGUILayout.HelpBox("The sight plane sets the aim line. Eye distance brings the weapon closer or farther. These controls update the camera preview and save to this sight's assets.",MessageType.Info);
+        EditorGUI.BeginChangeCheck();
+        float distance=EditorGUILayout.FloatField("Eye distance",sight.eyeDistance);
+        float fov=EditorGUILayout.Slider("ADS field of view",sight.fieldOfView,20f,90f);
+        Vector3 position=EditorGUILayout.Vector3Field("Sight point",point.localPosition);
+        Vector3 rotation=EditorGUILayout.Vector3Field("Sight direction",point.localEulerAngles);
+        if (EditorGUI.EndChangeCheck())
+        {
+            Undo.RecordObject(sight,"Calibrate weapon sight");
+            Undo.RecordObject(point,"Calibrate sight point");
+            sight.eyeDistance=Mathf.Max(.03f,distance);sight.fieldOfView=fov;
+            point.SetLocalPositionAndRotation(position,Quaternion.Euler(rotation));
+            EditorUtility.SetDirty(sight);changedSights.Add(sight);
+            if (sight.prefab) sightPoints[sight]=new Pose(position,Quaternion.Euler(rotation));
+        }
     }
 
     void FrameWeapon()
@@ -228,6 +270,15 @@ public class WeaponViewPlacementWindow : EditorWindow
         if (!editing || player == null || !EditorApplication.isPlaying) return;
         float desiredBlend = ads ? 1f : 0f;
         if (Mathf.Abs(player.AimBlend - desiredBlend) > .001f) return;
+        var sights=player.GetComponent<SoldierWeaponLoadout>().EquippedSights;
+        if (ads && sights && sights.SelectedSight)
+        {
+            var point=sights.ActiveAimPoint;
+            Handles.color=Color.cyan;
+            Handles.ArrowHandleCap(0,point.position,point.rotation,HandleUtility.GetHandleSize(point.position)*.12f,EventType.Repaint);
+            Handles.Label(point.position,"Sight plane: edit in the placement window");
+            return;
+        }
         var definition = player.GetComponent<SoldierWeaponPresentation>().weapon.definition;
         var root = player.firstPersonRoot;
         Vector3 pivot = root.TransformPoint(definition.viewRotationPivot);

@@ -23,7 +23,10 @@ public class SoldierFirstPersonView : MonoBehaviour
     public float walkingSpeed => definition.walkingSpeed;
     public Vector3 viewOffset => definition.viewOffset;
     public Vector3 hipFireOffset => definition.hipFireOffset;
-    public float aimFieldOfView => definition.aimFieldOfView;
+    public float aimFieldOfView => loadout.EquippedSights && loadout.EquippedSights.SelectedSight
+        ? loadout.EquippedSights.SelectedSight.fieldOfView : definition.aimFieldOfView;
+    public float AimSensitivity => firstPerson && loadout.EquippedSights && loadout.EquippedSights.SelectedSight
+        ? Mathf.Lerp(1f, loadout.EquippedSights.SelectedSight.sensitivityMultiplier, aimBlend) : 1f;
     public float aimBlendSpeed => definition.aimBlendSpeed;
     public Vector3 aimOffset => definition.aimOffset;
 
@@ -34,6 +37,11 @@ public class SoldierFirstPersonView : MonoBehaviour
     private float originalNearClip;
     private float originalFieldOfView;
     private float aimBlend;
+    private SoldierWeaponSights lastSights;
+    private int sightRevision;
+    private Vector3 adsPosition, previousAdsPosition;
+    private Quaternion adsRotation=Quaternion.identity, previousAdsRotation=Quaternion.identity;
+    private float sightChangeTime;
     public float AimBlend => aimBlend;
 #if UNITY_EDITOR
     // The placement tool can hold a pose without adding runtime equipment objects.
@@ -132,6 +140,30 @@ public class SoldierFirstPersonView : MonoBehaviour
         firstPersonRoot.localPosition = Vector3.Lerp(viewOffset + hipFireOffset, viewOffset + aimOffset, blend)
             + firstPersonRestRotation * pivot - rotation * pivot;
         firstPersonRoot.localRotation = rotation;
+        var sights=loadout.EquippedSights;
+        if (!sights || !sights.SelectedSight) { lastSights=null; return; }
+        sights.GetAdsPlacement(firstPersonRoot.localScale, out var targetPosition, out var targetRotation);
+        if (lastSights != sights)
+        {
+            lastSights=sights; sightRevision=sights.Revision;
+            previousAdsPosition=targetPosition; previousAdsRotation=targetRotation;
+            sightChangeTime=Time.time-.15f;
+        }
+        else if (sightRevision != sights.Revision)
+        {
+            sightRevision=sights.Revision;
+            previousAdsPosition=adsPosition; previousAdsRotation=adsRotation;
+            sightChangeTime=Time.time;
+        }
+        float sightBlend=Mathf.SmoothStep(0f,1f,Mathf.Clamp01((Time.time-sightChangeTime)/.15f));
+        adsPosition=Vector3.Lerp(previousAdsPosition,targetPosition,sightBlend);
+        adsRotation=Quaternion.Slerp(previousAdsRotation,targetRotation,sightBlend);
+        // Keep the existing hip placement and authored ADS transition motion.
+        Quaternion hipRotation=firstPersonRestRotation*Quaternion.Euler(definition.viewRotationOffset)
+            *Quaternion.Euler(definition.hipFireRotationOffset);
+        Vector3 hipPosition=viewOffset+hipFireOffset+firstPersonRestRotation*pivot-hipRotation*pivot;
+        firstPersonRoot.SetLocalPositionAndRotation(Vector3.Lerp(hipPosition,adsPosition,blend),
+            Quaternion.Slerp(hipRotation,adsRotation,blend));
     }
 
     private void LateUpdate() => UpdateMotion();

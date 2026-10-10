@@ -26,6 +26,7 @@ public class SoldierController : MonoBehaviour
             return;
         }
 
+        if (input.cycleSight) loadout.TryCycleSight();
         if(input.grenadeCycle)grenades.Cycle();
         if(input.grenadeThrow)grenades.TryThrow();
         view.SetAimRequested(input.aim && !grenades.IsThrowing);
