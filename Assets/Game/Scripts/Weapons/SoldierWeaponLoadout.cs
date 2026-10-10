@@ -108,7 +108,7 @@ public class SoldierWeaponLoadout : MonoBehaviour
     {
         if (!enabled || index < 0 || index >= slots.Length || index == selectedSlot ||
             System.Array.IndexOf(AvailableSlots, index) < 0 ||
-            IsSwitching || actions.IsReloading) return false;
+            IsSwitching || actions.IsReloading || actions.IsThrowing) return false;
         switchRoutine = StartCoroutine(SwitchWeapon(index));
         return true;
     }
@@ -129,9 +129,28 @@ public class SoldierWeaponLoadout : MonoBehaviour
         switchRoutine = null;
     }
 
+    public void SetEquippedVisible(bool visible) => SetVisible(slots[selectedSlot], visible);
+
+    // Return the same weapon after an upper-body action without rebinding its controllers.
+    public void EquipCurrentWeapon()
+    {
+        switchRoutine = StartCoroutine(EquipCurrent());
+    }
+
+    IEnumerator EquipCurrent()
+    {
+        IsSwitching = true;
+        presentation.view.CancelAim();
+        SetEquippedVisible(true);
+        Play("Equip");
+        yield return new WaitForSeconds(EquippedWeapon.definition.equipDuration);
+        IsSwitching = false;
+        switchRoutine = null;
+    }
+
     public bool SetStartingSlot(int index)
     {
-        if (index < 0 || index >= slots.Length || IsSwitching || actions.IsReloading) return false;
+        if (index < 0 || index >= slots.Length || IsSwitching || actions.IsReloading || actions.IsThrowing) return false;
         if (initialized) SetVisible(slots[selectedSlot], false);
         selectedSlot = index;
         if (initialized)

@@ -12,6 +12,9 @@ public class ArenaHud : MonoBehaviour
     public bool allowLocalShortcuts = true;
     public TMP_Text redScore, blueScore, timer, mode, weaponName, ammunition, fireMode, slots, health, teammates, medal, deathStatus;
     public Sprite rifleSprite, pistolSprite;
+    public UnityEngine.UI.Image[] grenadeIcons, grenadeBackgrounds;
+    public TMP_Text[] grenadeCounts;
+    public UnityEngine.UI.Image flashOverlay;
     public TMP_Text[] killerNames, victimNames, equipmentKeys;
     public UnityEngine.UI.Image[] killWeapons, equipmentIcons, equipmentBackgrounds;
     public UnityEngine.UI.Image redProgress, blueProgress, healthProgress;
@@ -125,6 +128,8 @@ public class ArenaHud : MonoBehaviour
         if (allowLocalShortcuts && player.GetComponent<SoldierLocalInput>() && Input.GetKeyDown(KeyCode.K))
             player.health.ApplyDamage(player.health.maxHealth, player.gameObject);
         var life = player.player;
+        var grenades=life.GetComponent<SoldierGrenades>();
+        var flashColor=flashOverlay.color;flashColor.a=grenades.FlashAlpha;flashOverlay.color=flashColor;
         // Preserve the original ADS shrink; the renderer snaps strokes to screen pixels.
         bool visible = !player.health.IsDead && !life.view.WantsToAim
             && !life.movement.IsRunning && !life.loadout.IsSwitching;
@@ -189,6 +194,14 @@ public class ArenaHud : MonoBehaviour
             equipmentIcons[i].color = i == ordinal ? Color.white : new Color(1,1,1,.6f);
             equipmentKeys[i].color = i == ordinal ? accent : Color.white;
             equipmentBackgrounds[i].color = i == ordinal ? new Color(accent.r,accent.g,accent.b,.12f) : new Color(1,1,1,.035f);
+        }
+        var grenades=player.player.GetComponent<SoldierGrenades>();
+        for(int i=0;i<grenadeIcons.Length;i++)
+        {
+            grenadeIcons[i].sprite=grenades.types[i].icon;
+            grenadeIcons[i].color=new Color(1,1,1,grenades.Count(i)>0?1:.25f);
+            grenadeCounts[i].text=grenades.Count(i)+"  "+(grenades.Selected==i?"[G]":"");
+            grenadeBackgrounds[i].color=grenades.Selected==i?new Color(accent.r,accent.g,accent.b,.12f):new Color(1,1,1,.035f);
         }
         health.text = $"+ {Mathf.CeilToInt(player.health.CurrentHealth):000}";
         healthProgress.fillAmount = player.health.CurrentHealth / player.health.maxHealth;

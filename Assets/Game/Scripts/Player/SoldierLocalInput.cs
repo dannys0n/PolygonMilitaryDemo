@@ -24,6 +24,7 @@ public class SoldierLocalInput : SoldierInputSource
             sprint = Input.GetKey(KeyCode.LeftShift),
             jump = Input.GetKeyDown(KeyCode.Space),
             reload = Input.GetKeyDown(KeyCode.R),
+            grenadeThrow = Input.GetKeyDown(KeyCode.G), grenadeCycle = Input.GetKeyDown(KeyCode.B),
             fireHeld = Input.GetMouseButton(0),
             firePressed = Input.GetMouseButtonDown(0),
             toggleView = Input.GetKeyDown(KeyCode.V),

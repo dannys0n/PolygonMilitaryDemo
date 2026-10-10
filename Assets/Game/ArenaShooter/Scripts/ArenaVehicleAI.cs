@@ -369,6 +369,7 @@ public class ArenaVehicleAI : MonoBehaviour
     }
     bool HasLineOfFire(Vehicle v,ArenaParticipant enemy,Vector3 from,Vector3 to)
     {
+        if(GrenadeSmoke.BlocksLine(from,to))return false;
         Vector3 delta=to-from;
         var rider=enemy.GetComponent<VehicleOccupant>();
         foreach(var hit in Physics.RaycastAll(from,delta.normalized,delta.magnitude,Physics.DefaultRaycastLayers,QueryTriggerInteraction.Ignore))

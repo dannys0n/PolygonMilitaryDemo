@@ -110,7 +110,7 @@ public class SoldierFirstPersonView : MonoBehaviour
 
     private void UpdateAim()
     {
-        WantsToAim = aimRequested && !IsReloading && !IsEquipping;
+        WantsToAim = aimRequested && !IsReloading && !IsEquipping && !actions.IsThrowing;
         bool aiming = WantsToAim && !movement.IsRunning;
 #if UNITY_EDITOR
         if (EditorPlacementAim.HasValue) aiming = EditorPlacementAim.Value;
@@ -147,10 +147,11 @@ public class SoldierFirstPersonView : MonoBehaviour
         armsAnimator.SetFloat("Movement", movementAmount, motionSmoothingTime, Time.deltaTime);
         float weight = IsReloading ? locomotionWeight * reloadSwayWeight : locomotionWeight;
         weight *= 1f - armsAnimator.GetFloat("RunBlend");
+        if(actions.IsThrowing)weight=0;
         armsAnimator.SetLayerWeight(locomotionLayer, Mathf.MoveTowards(
             armsAnimator.GetLayerWeight(locomotionLayer), weight, Time.deltaTime / motionSmoothingTime));
         armsAnimator.SetLayerWeight(aimTransitionLayer,
-            IsReloading || IsEquipping ? 0f : aimTransitionWeight);
+            IsReloading || IsEquipping || actions.IsThrowing ? 0f : aimTransitionWeight);
     }
 
     public void ApplyWeaponDefinition(SoldierWeaponDefinition selectedDefinition)

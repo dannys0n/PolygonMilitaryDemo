@@ -21,8 +21,16 @@ public class SoldierWeaponPresentation : MonoBehaviour
 
     int characterSwayLayer, weaponPoseLayer, weaponSwayLayer, weaponFireLayer, sprintBodyLayer, sprintArmsLayer;
 
+    SoldierGrenades grenades;
+    Rig aimRig;
+    RigBuilder rigBuilder;
+    RigLayer aimLayer;
     void Awake()
     {
+        grenades=GetComponent<SoldierGrenades>();
+        aimRig=chestAim.GetComponentInParent<Rig>(true);
+        rigBuilder=characterAnimator.GetComponent<RigBuilder>();
+        aimLayer=rigBuilder.layers.Find(layer=>layer.rig==aimRig);
         ApplyWeapon(weapon);
         actions.FireStarted += PlayFire;
         actions.ReloadStarted += PlayReload;
@@ -68,18 +76,24 @@ public class SoldierWeaponPresentation : MonoBehaviour
 
     void UpdateRigWeights(float weight)
     {
+        float throwing=grenades && grenades.IsThrowing?1f:0f;
+        aimRig.weight=1f-throwing;
+        bool rigActive=throwing==0f;
+        bool rigStateChanged=aimLayer.active!=rigActive;
+        aimLayer.active=rigActive;
         float sprint = Mathf.Clamp01(characterAnimator.GetFloat("RunBlend"));
         // Animator damping approaches the target asymptotically. Finish the blend
         // exactly so a tiny remaining run value cannot keep IK disabled.
         if (sprint < .001f) sprint = 0f;
         else if (sprint > .999f) sprint = 1f;
-        sprint *= 1f - weight;
+        sprint *= (1f - weight) * (1f - throwing);
         characterAnimator.SetLayerWeight(sprintBodyLayer, sprint);
         characterAnimator.SetLayerWeight(sprintArmsLayer, sprint);
-        chestAim.weight = firingHand.weight = (1f - weight) * (1f - sprint);
-        supportHand.weight = 1f - weight;
-        weaponAim.weight = 1f - weight;
+        chestAim.weight = firingHand.weight = (1f - weight) * (1f - sprint) * (1f - throwing);
+        supportHand.weight = (1f - weight) * (1f - throwing);
+        weaponAim.weight = (1f - weight) * (1f - throwing);
         runWeaponFollow.weight = sprint;
+        if(rigStateChanged)rigBuilder.SyncLayers();
     }
 
     void UpdateMovementMotion()

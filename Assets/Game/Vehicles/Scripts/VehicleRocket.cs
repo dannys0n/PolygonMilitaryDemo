@@ -67,29 +67,7 @@ public class VehicleRocket : MonoBehaviour
         if (exploded)
             return;
         exploded = true;
-        var healths = new HashSet<SoldierHealth>();
-        var vehicles = new HashSet<Vehicle>();
-        foreach (var c in Physics.OverlapSphere(point, radius, Physics.DefaultRaycastLayers, QueryTriggerInteraction.Collide))
-        {
-            var h = c.GetComponentInParent<SoldierHealth>();
-            var v = c.GetComponentInParent<Vehicle>();
-            // Cover blocks blast damage; the small origin offset avoids hitting the impact face itself.
-            Vector3 target = c.bounds.center;
-            bool blocked = false;
-            foreach (var hit in Physics.RaycastAll(point + normal * .15f, (target - point).normalized, Vector3.Distance(point, target) - .1f, Physics.DefaultRaycastLayers, QueryTriggerInteraction.Ignore))
-                if (hit.collider != c && !hit.transform.IsChildOf(transform) && !hit.collider.GetComponentInParent<SoldierLife>() && !hit.collider.GetComponentInParent<Vehicle>())
-                {
-                    blocked = true;
-                    break;
-                }
-            if (blocked)
-                continue;
-            float falloff = 1 - Mathf.Clamp01(Vector3.Distance(point, c.ClosestPoint(point)) / radius);
-            if (h && healths.Add(h))
-                h.ApplyDamage(infantryDamage * falloff, source);
-            if (v && vehicles.Add(v))
-                v.ApplyDamage(vehicleDamage * falloff, source);
-        }
+        ExplosionDamage.Apply(point,normal,radius,infantryDamage,vehicleDamage,source,transform);
         var effect = Instantiate(impactEffect,point+normal*.03f,Quaternion.FromToRotation(Vector3.forward,normal));
         effect.Play(true);
         float effectDuration=0;

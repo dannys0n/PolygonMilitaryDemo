@@ -9,6 +9,8 @@ public class SoldierActions : MonoBehaviour
     public SoldierMovement movement;
     public SoldierHitscan shooting;
     private SoldierWeaponLoadout loadout;
+    private SoldierGrenades grenades;
+    public bool IsThrowing => grenades && grenades.IsThrowing;
     public FireMode fireMode => loadout.EquippedWeapon.definition.fireMode;
     public float roundsPerMinute => loadout.EquippedWeapon.definition.roundsPerMinute;
     public event System.Action FireStarted;
@@ -23,7 +25,7 @@ public class SoldierActions : MonoBehaviour
         ? Mathf.Clamp01(1f - (reloadEndTime - Time.time) / reloadDefinition.reloadDuration)
         : 0f;
 
-    void Awake() => loadout = GetComponent<SoldierWeaponLoadout>();
+    void Awake() { loadout=GetComponent<SoldierWeaponLoadout>(); grenades=GetComponent<SoldierGrenades>(); }
 
     void Update()
     {
@@ -35,7 +37,7 @@ public class SoldierActions : MonoBehaviour
 
     public bool TryFire()
     {
-        if (!enabled || IsReloading || loadout.IsSwitching || movement.IsRunning) return false;
+        if (!enabled || IsThrowing || IsReloading || loadout.IsSwitching || movement.IsRunning) return false;
         if (!loadout.EquippedState.TryConsumeRound(Time.time, loadout.EquippedWeapon.definition)) return false;
         shooting.Fire(loadout.EquippedWeapon.definition, loadout.EquippedMuzzle);
         PresentFire();
@@ -44,7 +46,7 @@ public class SoldierActions : MonoBehaviour
 
     public bool TryReload()
     {
-        if (!enabled || IsReloading || loadout.IsSwitching) return false;
+        if (!enabled || IsThrowing || IsReloading || loadout.IsSwitching) return false;
         if (!loadout.EquippedState.CanReload(loadout.EquippedWeapon.definition)) return false;
         IsReloading = true;
         reloadingWeapon = loadout.EquippedState;
@@ -70,6 +72,7 @@ public class SoldierActions : MonoBehaviour
     // Reset pending actions before death, despawn, or a later respawn reset.
     public void CancelActions()
     {
+        if(grenades)grenades.CancelThrow();
         CancelReload();
         loadout.CancelSwitch();
         firstPersonView.CancelAim();

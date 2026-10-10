@@ -92,6 +92,7 @@ public static class ArenaAITactics
 
     public static bool WorldBlocked(ArenaAIInput bot, Vector3 from, Vector3 to)
     {
+        if(GrenadeSmoke.BlocksLine(from,to))return true;
         Vector3 delta = to - from;
         foreach (var hit in Physics.RaycastAll(from, delta.normalized, delta.magnitude, Physics.DefaultRaycastLayers, QueryTriggerInteraction.Ignore))
             if (!hit.collider.transform.IsChildOf(bot.transform) && !(hit.collider is CharacterController)
@@ -101,6 +102,7 @@ public static class ArenaAITactics
 
     public static bool ClearShot(ArenaAIInput bot, Vector3 from, Vector3 to, ArenaParticipant target)
     {
+        if(GrenadeSmoke.BlocksLine(from,to))return false;
         Vector3 delta = to - from; float closest = delta.magnitude; Collider blocker = null;
         foreach (var hit in Physics.RaycastAll(from, delta.normalized, closest, Physics.DefaultRaycastLayers, QueryTriggerInteraction.Collide))
         {

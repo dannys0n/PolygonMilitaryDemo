@@ -6,7 +6,7 @@ public struct SoldierInputFrame
     public Vector2 move;
     // Degrees this frame: X yaw, Y upward look. Mouse sensitivity belongs to the source.
     public Vector2 lookDelta;
-    public bool aim, sprint, jump, reload;
+    public bool aim, sprint, jump, reload, grenadeThrow, grenadeCycle;
     public bool fireHeld, firePressed;
     // One-based position in AvailableSlots; zero means no selection request.
     public int weaponSelection;

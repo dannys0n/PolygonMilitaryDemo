@@ -124,6 +124,7 @@ public class ArenaAIInput : SoldierInputSource
     {
         if (!soldier.actions.enabled || participant.IsAwaitingSpawn || !participant.match.IsRunning || !agent.isOnNavMesh)
         { State = Behavior.Inactive; WantsToSprint = false; return default; }
+        if(soldier.grenades.FlashAlpha>.1f){WantsToSprint=false;return default;}
         agent.nextPosition = transform.position;
         bool visible = UpdatePerception();
         float distance = target ? Vector3.Distance(transform.position, lastSeen) : float.PositiveInfinity;

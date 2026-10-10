@@ -8,6 +8,7 @@ public class SoldierController : MonoBehaviour
     public SoldierMovement movement;
     public SoldierLook look;
     public SoldierActions actions;
+    public SoldierGrenades grenades;
     public SoldierWeaponLoadout loadout;
     public SoldierFirstPersonView view;
 
@@ -25,10 +26,12 @@ public class SoldierController : MonoBehaviour
             return;
         }
 
-        view.SetAimRequested(input.aim);
+        if(input.grenadeCycle)grenades.Cycle();
+        if(input.grenadeThrow)grenades.TryThrow();
+        view.SetAimRequested(input.aim && !grenades.IsThrowing);
         look.ApplyLookDelta(input.lookDelta);
         if (input.jump) movement.RequestJump();
-        movement.SimulateMovement(input.move, deltaTime, input.sprint);
+        movement.SimulateMovement(input.move, deltaTime, input.sprint && !grenades.IsThrowing);
 
         if (input.toggleView) view.SetFirstPerson(!view.firstPerson);
         if (input.previewHitReaction) actions.PlayHitReaction();
