@@ -23,6 +23,7 @@ public class VehicleOccupant : MonoBehaviour
     readonly Dictionary<Collider, bool> colliders = new Dictionary<Collider, bool>();
     Transform originalParent;
     Camera vehicleCamera;
+    Animation vehicleCameraShake;
     public Camera ActiveVehicleCamera => vehicleCamera;
     AudioListener vehicleListener;
     AudioListener[] listeners;
@@ -224,7 +225,13 @@ public class VehicleOccupant : MonoBehaviour
             var go = new GameObject("Vehicle owner camera", typeof(Camera), typeof(AudioListener));
             vehicleCamera = go.GetComponent<Camera>();
             vehicleListener = go.GetComponent<AudioListener>();
+            var shake = new GameObject("Weapon camera shake",typeof(Animation));
+            shake.transform.SetParent(go.transform,false);
+            vehicleCameraShake=shake.GetComponent<Animation>();
+            vehicleCameraShake.playAutomatically=false;
         }
+        ResetVehicleCameraShake();
+        vehicleCameraShake.AddClip(vehicle.turret.cameraShake,"FireShake");
         vehicleCamera.CopyFrom(life.view.playerCamera);
         vehicleCamera.cullingMask = (life.view.playerCamera.cullingMask | (1 << life.view.thirdPersonLayer)) & ~(1 << life.view.firstPersonLayer);
         vehicleCamera.fieldOfView = 70;
@@ -280,6 +287,7 @@ public class VehicleOccupant : MonoBehaviour
             agent.Warp(hit.position);
         if (IsLocal)
         {
+            ResetVehicleCameraShake();
             vehicleCamera.enabled = vehicleListener.enabled = false;
             life.view.playerCamera.enabled = previousCameraEnabled;
             for (int i = 0; i < listeners.Length; i++)
@@ -338,6 +346,7 @@ public class VehicleOccupant : MonoBehaviour
         if (vehicle.seats[SeatIndex].role==Vehicle.SeatRole.Driver) vehicle.DriverInput=default;
         vehicle.seats[SeatIndex].occupant=null;seat.occupant=this;SeatIndex=index;
         transform.SetParent(seat.anchor,false);transform.SetLocalPositionAndRotation(Vector3.zero,Quaternion.identity);
+        if(IsLocal)ResetVehicleCameraShake();
         flightYaw=yaw=vehicle.transform.eulerAngles.y;flightPitch=pitch=0;Freelook=false;
         return true;
     }
@@ -354,7 +363,8 @@ public class VehicleOccupant : MonoBehaviour
             rotation = CockpitView ? v.Body.rotation : Quaternion.LookRotation(v.transform.forward,
                 !((HelicopterMotor)v.motor).assistEnabled || Mathf.Abs(Vector3.Dot(v.transform.forward,Vector3.up))>.98f ? v.transform.up : Vector3.up);
         Vector3 desired = CameraPosition(v,rotation,gunner,aircraft,pilot);
-        vehicleCamera.transform.SetPositionAndRotation(desired, rotation);
+        var shake=vehicleCameraShake.transform;
+        vehicleCamera.transform.SetPositionAndRotation(desired+rotation*shake.localPosition,rotation*shake.localRotation);
     }
     Vector3 CameraPosition(Vehicle v, Quaternion rotation, bool gunner, bool aircraft, bool pilot)
     {
@@ -373,6 +383,16 @@ public class VehicleOccupant : MonoBehaviour
             desired = target + offset.normalized * distance;
         }
         return desired;
+    }
+    public void PlayVehicleCameraShake()
+    {
+        vehicleCameraShake["FireShake"].time=0;
+        vehicleCameraShake.Play("FireShake",PlayMode.StopAll);
+    }
+    void ResetVehicleCameraShake()
+    {
+        vehicleCameraShake.Stop();
+        vehicleCameraShake.transform.SetLocalPositionAndRotation(Vector3.zero,Quaternion.identity);
     }
     void OnDestroy()
     {

@@ -8,6 +8,7 @@ public class VehicleTurret : MonoBehaviour
     public Transform shellEjection;
     public SoldierShellCasing shellCasing;
     public Sprite weaponIcon;
+    public AnimationClip cameraShake;
     public float casingScale = 1.7f;
     int pendingFlashes, pendingOwnerCasings;
     public float damage = 34, range = 120, roundsPerMinute = 650, turnRate = 100;
@@ -96,6 +97,7 @@ public class VehicleTurret : MonoBehaviour
         // Infinite ammunition: fire cadence is the only ammunition-related gate.
         pendingFlashes++;
         if (gunner.IsLocal && gunner.soldier.inputSource.isActiveAndEnabled) pendingOwnerCasings++;
+        if(gunner.IsLocal)gunner.PlayVehicleCameraShake();
         ShotFired?.Invoke(gunner, muzzle.position);
         return true;
     }
