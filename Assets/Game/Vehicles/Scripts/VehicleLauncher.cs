@@ -38,11 +38,33 @@ public class VehicleLauncher : MonoBehaviour
                 direction * projectile.speed + vehicle.Body.linearVelocity);
         }
     }
+    public Ray NextShotRay
+    {
+        get
+        {
+            var muzzle=NextMuzzle;
+            return new Ray(muzzle.position+muzzle.forward*projectile.launchClearance,
+                muzzle.forward*projectile.speed+vehicle.Body.linearVelocity);
+        }
+    }
+    public float NextShotRange => (NextMuzzle.forward*projectile.speed+vehicle.Body.linearVelocity).magnitude*projectile.lifetime;
+    public Vector3 PredictedImpactPoint
+    {
+        get
+        {
+            Ray ray=NextShotRay;
+            float nearest=NextShotRange;
+            foreach(var hit in Physics.RaycastAll(ray,nearest,Physics.DefaultRaycastLayers,QueryTriggerInteraction.Ignore))
+                if(!hit.transform.IsChildOf(vehicle.transform)&&!hit.collider.GetComponentInParent<VehicleRocket>())
+                    nearest=Mathf.Min(nearest,hit.distance);
+            return ray.GetPoint(nearest);
+        }
+    }
     public Vector3 DirectionToAimPoint(Ray view, float range)
     {
         float distance = range;
         foreach (var hit in Physics.RaycastAll(view, range, Physics.DefaultRaycastLayers, QueryTriggerInteraction.Ignore))
-            if (!hit.transform.IsChildOf(vehicle.transform) && !(hit.collider is CharacterController)) distance = Mathf.Min(distance,hit.distance);
+            if (!hit.transform.IsChildOf(vehicle.transform) && !(hit.collider is CharacterController) && !hit.collider.GetComponentInParent<VehicleRocket>()) distance = Mathf.Min(distance,hit.distance);
         Vector3 direction = (view.GetPoint(distance)-AimRay.origin).normalized;
         Vector3 lateralVelocity = Vector3.ProjectOnPlane(vehicle.Body.linearVelocity,direction);
         float forwardSpeed = Mathf.Sqrt(Mathf.Max(1,projectile.speed*projectile.speed-lateralVelocity.sqrMagnitude));

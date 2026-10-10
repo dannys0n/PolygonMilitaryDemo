@@ -74,6 +74,7 @@ public class ArenaVehicleHud : MonoBehaviour
         if (!armed) return;
         var vehicle = player.MountedVehicle; Camera camera = player.ActiveVehicleCamera;
         bool gunner = vehicle.seats[player.SeatIndex].role == Vehicle.SeatRole.Gunner;
+        actualAim.GetComponent<Graphic>().canvasRenderer.SetAlpha(gunner || vehicle.GetComponent<VehicleLauncher>().Missiles > 0 ? 1f : .2f);
         if (!gunner && vehicle.motor is HelicopterMotor) UpdateFlightInstruments(vehicle, groundAltitude);
         Vector3 requested; Ray actual; float range;
         if (gunner)
@@ -85,14 +86,16 @@ public class ArenaVehicleHud : MonoBehaviour
         {
             var launcher = vehicle.GetComponent<VehicleLauncher>();
             requested = ((HelicopterMotor)vehicle.motor).RequestedAttitude * Vector3.forward;
-            actual = launcher.AimRay; range = 180;
+            actual = launcher.NextShotRay; range = 180;
         }
         if (!player.Freelook) requested = camera.transform.forward;
         Vector3 desiredPoint=ResolvePoint(new Ray(camera.transform.position,requested),range,vehicle);
         PlaceMarker(desiredAim,camera,desiredPoint);
-        // Compare trajectories at the same target depth; chase-camera displacement changes distance from the muzzle.
-        float actualRange=Mathf.Min(range,Vector3.Distance(actual.origin,desiredPoint));
-        PlaceMarker(actualAim,camera,ResolvePoint(actual,actualRange,vehicle));
+        // Rockets predict their own impact over their lifetime, independently of the camera target distance.
+        Vector3 impact=gunner
+            ? ResolvePoint(actual,Mathf.Min(range,Vector3.Distance(actual.origin,desiredPoint)),vehicle)
+            : vehicle.GetComponent<VehicleLauncher>().PredictedImpactPoint;
+        PlaceMarker(actualAim,camera,impact);
     }
     void UpdateFlightInstruments(Vehicle vehicle, float altitude)
     {
@@ -113,7 +116,7 @@ public class ArenaVehicleHud : MonoBehaviour
         float nearest=range;
         foreach(var hit in Physics.RaycastAll(ray,range,Physics.DefaultRaycastLayers,QueryTriggerInteraction.Collide))
         {
-            if(hit.transform.IsChildOf(owner.transform)||hit.collider is CharacterController)continue;
+            if(hit.transform.IsChildOf(owner.transform)||hit.collider is CharacterController||hit.collider.GetComponentInParent<VehicleRocket>())continue;
             if(hit.collider.isTrigger&&!hit.collider.GetComponent<SoldierHitRegion>())continue;
             nearest=Mathf.Min(nearest,hit.distance);
         }
