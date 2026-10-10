@@ -19,7 +19,33 @@ public class SoldierHitscan : MonoBehaviour
 
     public ShotResult Fire(SoldierWeaponDefinition weapon, Transform muzzle)
     {
+        Ray aim=aimCamera.ViewportPointToRay(new Vector3(.5f,.5f,0));
+        if(weapon.rocketProjectile)
+        {
+            Vector3 target=ClosestHit(aim,weapon.range,out var hit)?hit.point:aim.GetPoint(weapon.range);
+            var rocket=Instantiate(weapon.rocketProjectile,muzzle.position,Quaternion.LookRotation((target-muzzle.position).normalized));
+            rocket.Launch(gameObject,transform,GetComponent<CharacterController>().velocity);
+            var shot=new ShotResult{origin=muzzle.position,point=target};ShotResolved?.Invoke(shot);return shot;
+        }
+        if(weapon.thrownExplosive)
+        {
+            var definition=weapon.thrownExplosive;
+            var grenade=Instantiate(definition.projectile,muzzle.position,aimCamera.transform.rotation);
+            grenade.Launch(definition,gameObject,aim.direction*definition.throwSpeed+Vector3.up*definition.upwardSpeed);
+            var shot=new ShotResult{origin=muzzle.position,point=aim.GetPoint(weapon.range)};ShotResolved?.Invoke(shot);return shot;
+        }
+        ShotResult result=default;
+        for(int i=0;i<weapon.pellets;i++)result=FireBullet(weapon,muzzle);
+        return result;
+    }
+    ShotResult FireBullet(SoldierWeaponDefinition weapon, Transform muzzle)
+    {
         Ray cameraRay = aimCamera.ViewportPointToRay(new Vector3(.5f, .5f, 0f));
+        if(weapon.spreadDegrees>0)
+        {
+            Vector2 spread=Random.insideUnitCircle*Mathf.Tan(weapon.spreadDegrees*Mathf.Deg2Rad);
+            cameraRay.direction=(cameraRay.direction+aimCamera.transform.right*spread.x+aimCamera.transform.up*spread.y).normalized;
+        }
         Vector3 point = cameraRay.GetPoint(weapon.range);
         if (ClosestHit(cameraRay, weapon.range, out RaycastHit aimHit)) point = aimHit.point;
 

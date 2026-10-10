@@ -4,6 +4,15 @@ using UnityEngine.Serialization;
 [CreateAssetMenu(menuName = "Soldier/Weapon definition")]
 public class SoldierWeaponDefinition : ScriptableObject
 {
+    public enum WeaponCategory { Rifle, SMG, LMG, Shotgun, Sniper, Pistol, Launcher, Melee, Explosive }
+    [Header("Catalog")]
+    public string catalogId,displayName;
+    public WeaponCategory category;
+    public bool infiniteAmmunition;
+    public VehicleRocket rocketProjectile;
+    public GrenadeDefinition thrownExplosive;
+    [Min(1)] public int pellets=1;
+    [Range(0,20)] public float spreadDegrees;
     [Header("UI")]
     public Sprite icon;
     public enum SprintStyle { Regular, Tactical }

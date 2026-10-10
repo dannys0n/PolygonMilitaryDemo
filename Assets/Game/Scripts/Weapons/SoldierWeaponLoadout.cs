@@ -10,6 +10,7 @@ public class SoldierWeaponLoadout : MonoBehaviour
         public string name;
         public SoldierWeapon weapon;
         public SoldierWeaponSights sights;
+        public SoldierWeaponAttachments attachments;
         public Transform firstPersonWeapon;
         public Transform thirdPersonWeapon;
         public Animator weaponAnimator;
@@ -34,8 +35,8 @@ public class SoldierWeaponLoadout : MonoBehaviour
 
         public bool TryConsumeRound(float now, SoldierWeaponDefinition definition)
         {
-            if (MagazineAmmo <= 0 || now < nextFireTime) return false;
-            MagazineAmmo--;
+            if ((!definition.infiniteAmmunition && MagazineAmmo <= 0) || now < nextFireTime) return false;
+            if(!definition.infiniteAmmunition)MagazineAmmo--;
             nextFireTime = now + 60f / Mathf.Max(definition.roundsPerMinute, 1f);
             return true;
         }

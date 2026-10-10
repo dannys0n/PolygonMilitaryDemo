@@ -52,7 +52,7 @@ public class SoldierWeaponEffects : MonoBehaviour
         var slot = loadout.slots[index];
         var definition = slot.weapon.definition;
         // Casings are an owner-only cosmetic effect, including when the owner uses TPS.
-        if (IsLocalOwner)
+        if (IsLocalOwner && definition.shellCasing)
         {
             Transform port = (view.firstPerson && view.playerCamera.enabled
                 ? slot.firstPersonSockets : slot.thirdPersonSockets).shellEjection;
@@ -67,6 +67,7 @@ public class SoldierWeaponEffects : MonoBehaviour
 
     void Emit(ref MuzzleEffect effect, Transform muzzle, SoldierWeaponDefinition definition, int layer, bool illuminate)
     {
+        if(!definition.muzzleFlash)return;
         if (effect == null)
         {
             effect = new MuzzleEffect();
@@ -84,7 +85,7 @@ public class SoldierWeaponEffects : MonoBehaviour
             effect.particles.Stop(true, ParticleSystemStopBehavior.StopEmittingAndClear);
         }
         effect.particles.Emit(definition.flashParticlesCount);
-        if (!illuminate) return;
+        if (!illuminate || !definition.muzzleFlashLight) return;
         if (effect.light == null)
         {
             effect.light = Instantiate(definition.muzzleFlashLight, muzzle);
