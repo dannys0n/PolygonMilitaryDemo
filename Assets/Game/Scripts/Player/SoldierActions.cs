@@ -10,6 +10,7 @@ public class SoldierActions : MonoBehaviour
     public SoldierHitscan shooting;
     private SoldierWeaponLoadout loadout;
     private SoldierGrenades grenades;
+    private SoldierLaunchers launchers;
     public bool IsThrowing => grenades && grenades.IsThrowing;
     public FireMode fireMode => loadout.EquippedWeapon.definition.fireMode;
     public float roundsPerMinute => loadout.EquippedWeapon.definition.roundsPerMinute;
@@ -25,7 +26,7 @@ public class SoldierActions : MonoBehaviour
         ? Mathf.Clamp01(1f - (reloadEndTime - Time.time) / reloadDefinition.reloadDuration)
         : 0f;
 
-    void Awake() { loadout=GetComponent<SoldierWeaponLoadout>(); grenades=GetComponent<SoldierGrenades>(); }
+    void Awake() { loadout=GetComponent<SoldierWeaponLoadout>(); grenades=GetComponent<SoldierGrenades>(); launchers=GetComponent<SoldierLaunchers>(); }
 
     void Update()
     {
@@ -37,7 +38,7 @@ public class SoldierActions : MonoBehaviour
 
     public bool TryFire()
     {
-        if (!enabled || IsThrowing || IsReloading || loadout.IsSwitching || movement.IsRunning) return false;
+        if (!enabled || (launchers && launchers.IsEquipped) || IsThrowing || IsReloading || loadout.IsSwitching || movement.IsRunning) return false;
         if (!loadout.EquippedState.TryConsumeRound(Time.time, loadout.EquippedWeapon.definition)) return false;
         shooting.Fire(loadout.EquippedWeapon.definition, loadout.EquippedMuzzle);
         PresentFire();
@@ -46,7 +47,7 @@ public class SoldierActions : MonoBehaviour
 
     public bool TryReload()
     {
-        if (!enabled || IsThrowing || IsReloading || loadout.IsSwitching) return false;
+        if (!enabled || (launchers && launchers.IsEquipped) || IsThrowing || IsReloading || loadout.IsSwitching) return false;
         if (!loadout.EquippedState.CanReload(loadout.EquippedWeapon.definition)) return false;
         IsReloading = true;
         reloadingWeapon = loadout.EquippedState;
@@ -72,6 +73,7 @@ public class SoldierActions : MonoBehaviour
     // Reset pending actions before death, despawn, or a later respawn reset.
     public void CancelActions()
     {
+        if(launchers)launchers.Unequip();
         if(grenades)grenades.CancelThrow();
         CancelReload();
         loadout.CancelSwitch();

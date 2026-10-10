@@ -8,19 +8,23 @@ public class VehicleRocket : MonoBehaviour
     public float launchClearance = .4f;
     public float speed = 65, radius = 4, infantryDamage = 140, vehicleDamage = 350, lifetime = 5;
     Rigidbody body;
-    Vehicle owner;
+    Transform owner;
     GameObject source;
     Vector3 previous;
     bool exploded;
     public void Launch(Vehicle vehicle, GameObject shooter)
     {
-        owner = vehicle;
+        Launch(shooter, vehicle.transform, vehicle.Body.linearVelocity);
+    }
+    public void Launch(GameObject shooter, Transform ignoredOwner, Vector3 inheritedVelocity)
+    {
+        owner = ignoredOwner;
         source = shooter;
         body = GetComponent<Rigidbody>();
         previous = transform.position;
-        body.linearVelocity = transform.forward * speed + vehicle.Body.linearVelocity;
+        body.linearVelocity = transform.forward * speed + inheritedVelocity;
         var collider = GetComponent<Collider>();
-        foreach (var c in vehicle.GetComponentsInChildren<Collider>())
+        foreach (var c in owner.GetComponentsInChildren<Collider>())
             Physics.IgnoreCollision(collider, c);
         exhaust.Play(true);
         Invoke(nameof(Expire),lifetime);
@@ -38,12 +42,13 @@ public class VehicleRocket : MonoBehaviour
     }
     void FixedUpdate()
     {
+        if (!body || exploded) return;
         Vector3 delta = body.position - previous;
         RaycastHit nearest = default;
         float distance = delta.magnitude;
         bool found = false;
         foreach (var hit in Physics.RaycastAll(previous,delta.normalized,delta.magnitude,Physics.DefaultRaycastLayers,QueryTriggerInteraction.Ignore))
-            if (!hit.transform.IsChildOf(owner.transform) && !hit.transform.IsChildOf(transform) && hit.distance <= distance)
+            if (!hit.transform.IsChildOf(owner) && !hit.transform.IsChildOf(transform) && hit.distance <= distance)
             {
                 nearest = hit; distance = hit.distance; found = true;
             }
@@ -56,7 +61,7 @@ public class VehicleRocket : MonoBehaviour
     }
     void OnCollisionEnter(Collision collision)
     {
-        if (owner && !collision.transform.IsChildOf(owner.transform))
+        if (owner && !collision.transform.IsChildOf(owner))
         {
             var contact=collision.GetContact(0);
             Explode(contact.point,contact.normal);

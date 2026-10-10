@@ -24,6 +24,7 @@ public class SoldierLocalInput : SoldierInputSource
             lookDelta = new Vector2(Input.GetAxis("Mouse X"), Input.GetAxis("Mouse Y")) * sensitivity * view.AimSensitivity,
             aim = Input.GetMouseButton(1),
             cycleSight = Input.GetKeyDown(KeyCode.T),
+            utilitySelection=Input.GetKeyDown(KeyCode.Q)?1:Input.GetKeyDown(KeyCode.X)?2:0,
             sprint = Input.GetKey(KeyCode.LeftShift),
             jump = Input.GetKeyDown(KeyCode.Space),
             reload = Input.GetKeyDown(KeyCode.R),

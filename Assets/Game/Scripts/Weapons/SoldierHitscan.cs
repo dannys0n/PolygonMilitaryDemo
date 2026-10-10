@@ -67,7 +67,7 @@ public class SoldierHitscan : MonoBehaviour
         }
         else if (result.collider && result.collider.GetComponentInParent<Vehicle>() is Vehicle vehicle)
         {
-            result.damaged = vehicle.ApplyDamage(weapon.damage, gameObject);
+            result.damaged = vehicle.ApplyBulletDamage(weapon.damage, gameObject);
             result.killed = result.damaged && vehicle.IsDestroyed;
         }
         if (drawDebug) Debug.DrawLine(result.origin, result.point, Color.yellow, 1f);

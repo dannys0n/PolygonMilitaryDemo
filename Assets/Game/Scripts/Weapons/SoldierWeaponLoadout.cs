@@ -108,6 +108,7 @@ public class SoldierWeaponLoadout : MonoBehaviour
     // Input and future network commands use the same action admission.
     public bool TrySelectWeapon(int index)
     {
+        var utility=GetComponent<SoldierLaunchers>(); if(utility && utility.IsEquipped)utility.Unequip();
         if (!enabled || index < 0 || index >= slots.Length || index == selectedSlot ||
             System.Array.IndexOf(AvailableSlots, index) < 0 ||
             IsSwitching || actions.IsReloading || actions.IsThrowing) return false;

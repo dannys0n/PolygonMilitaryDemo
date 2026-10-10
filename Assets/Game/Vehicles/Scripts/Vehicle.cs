@@ -29,6 +29,7 @@ public class Vehicle : MonoBehaviour
     public Transform cameraTarget;
     public Seat[] seats;
     public float maxHealth = 900f;
+    [Range(0f,1f)] public float bulletDamageMultiplier=1f;
     public float Health { get; private set; }
     public bool IsDestroyed => Health <= 0;
     public Rigidbody Body { get; private set; }
@@ -125,6 +126,8 @@ public class Vehicle : MonoBehaviour
         actor.Mount(this, index);
         return true;
     }
+    // Explosions and collisions use ApplyDamage directly, bypassing bullet armor.
+    public bool ApplyBulletDamage(float amount, GameObject source) => ApplyDamage(amount*bulletDamageMultiplier,source);
     public bool ApplyDamage(float amount, GameObject source)
     {
         if (IsDestroyed || amount <= 0 || (DamageFilter != null && !DamageFilter(source)))
@@ -154,6 +157,8 @@ Destroyed?.Invoke(this);
     }
     void OnCollisionEnter(Collision collision)
     {
+        // Rocket impacts are accounted for by their explosion, not crash damage.
+        if(collision.collider.GetComponentInParent<VehicleRocket>())return;
         float speed = 0;
         for(int i=0;i<collision.contactCount;i++)
         {

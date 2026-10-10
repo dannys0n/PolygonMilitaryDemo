@@ -9,6 +9,7 @@ public class SoldierController : MonoBehaviour
     public SoldierLook look;
     public SoldierActions actions;
     public SoldierGrenades grenades;
+    public SoldierLaunchers launchers;
     public SoldierWeaponLoadout loadout;
     public SoldierFirstPersonView view;
 
@@ -26,17 +27,21 @@ public class SoldierController : MonoBehaviour
             return;
         }
 
-        if (input.cycleSight) loadout.TryCycleSight();
+        if (launchers && input.utilitySelection>0) launchers.TryEquip(input.utilitySelection-1);
+        if (launchers && (input.grenadeThrow || input.weaponSelection>0 || input.weaponCycle!=0)) launchers.Unequip();
+        bool utility=launchers && launchers.IsEquipped;
+        if (input.cycleSight && !utility) loadout.TryCycleSight();
         if(input.grenadeCycle)grenades.Cycle();
         if(input.grenadeThrow)grenades.TryThrow();
-        view.SetAimRequested(input.aim && !grenades.IsThrowing);
+        view.SetAimRequested(input.aim && !grenades.IsThrowing && !utility);
         look.ApplyLookDelta(input.lookDelta);
         if (input.jump) movement.RequestJump();
         movement.SimulateMovement(input.move, deltaTime, input.sprint && !grenades.IsThrowing);
 
         if (input.toggleView) view.SetFirstPerson(!view.firstPerson);
         if (input.previewHitReaction) actions.PlayHitReaction();
-        if (input.reload) actions.TryReload();
+        if (utility) { if(input.firePressed)launchers.TryFire(); }
+        else if (input.reload) actions.TryReload();
         else if (actions.fireMode == SoldierActions.FireMode.Automatic ? input.fireHeld : input.firePressed)
             actions.TryFire();
 

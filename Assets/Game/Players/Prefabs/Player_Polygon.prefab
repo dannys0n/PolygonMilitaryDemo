@@ -9982,6 +9982,7 @@ GameObject:
   - component: {fileID: 1299848024724313010}
   - component: {fileID: 888810001}
   - component: {fileID: 1418986881382755377}
+  - component: {fileID: 611866372245098089}
   m_Layer: 0
   m_Name: Player_Polygon
   m_TagString: Untagged
@@ -10312,6 +10313,7 @@ MonoBehaviour:
   look: {fileID: 6869284405060730759}
   actions: {fileID: 8705140395176685010}
   grenades: {fileID: 1418986881382755377}
+  launchers: {fileID: 611866372245098089}
   loadout: {fileID: 8866584782723430131}
   view: {fileID: 3857842616418219034}
 --- !u!114 &1299848024724313010
@@ -10398,6 +10400,22 @@ MonoBehaviour:
   handRotation: {x: 90, y: 0, z: 0}
   throwDuration: 3.2000003
   releaseTime: 1.8166667
+--- !u!114 &611866372245098089
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8863008050220851912}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c67ed220e543cc14b9cf75666f1f8ae1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::SoldierLaunchers
+  types:
+  - {fileID: 11400000, guid: 23e3fba93ec3bc249a7d34b075a15697, type: 2}
+  - {fileID: 11400000, guid: df533ea451bb7714c8766b922a6a3960, type: 2}
+  life: {fileID: 5927823626716615906}
 --- !u!1 &8895858295673716991
 GameObject:
   m_ObjectHideFlags: 0

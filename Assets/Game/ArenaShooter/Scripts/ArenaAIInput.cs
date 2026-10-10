@@ -5,7 +5,7 @@ using UnityEngine.AI;
 // Explicit combat/search states: Sergio Ocio, Game AI Pro 3, chapter 7.
 public class ArenaAIInput : SoldierInputSource
 {
-    public enum Behavior { Inactive, Idle, Patrol, Search, Approach, Strafe, MoveToCover, Hide, Peek, BoardVehicle }
+    public enum Behavior { AttackVehicle, Inactive, Idle, Patrol, Search, Approach, Strafe, MoveToCover, Hide, Peek, BoardVehicle }
     public SoldierController soldier;
     public SoldierLife life;
     public ArenaParticipant participant;
@@ -77,6 +77,63 @@ public class ArenaAIInput : SoldierInputSource
     float combatAlertUntil, heardAt = float.NegativeInfinity, investigationUntil, nextLook;
     Vector3 investigationPoint, openLook;
     bool investigating;
+    Vehicle launcherTarget;
+    float nextVehicleScan;
+    [Header("Anti-vehicle utility")]
+    public float launcherRange=80f;
+    public float launcherSafeDistance=12f;
+    public float launcherScanInterval=.4f;
+
+    bool TryVehicleAttack(out SoldierInputFrame input)
+    {
+        input=default;
+        var utility=soldier.launchers;
+        if(!utility)return false;
+        if(Time.time>=nextVehicleScan)
+        {
+            nextVehicleScan=Time.time+launcherScanInterval;launcherTarget=null;
+            float closest=launcherRange;
+            foreach(var vehicle in Vehicle.Active)
+            {
+                if(vehicle.IsDestroyed||!vehicle.IsOccupied)continue;
+                bool enemy=false,ally=false;
+                foreach(var seat in vehicle.seats)if(seat.occupant){var actor=seat.occupant.GetComponent<ArenaParticipant>();if(actor){if(actor.team==participant.team)ally=true;else enemy=true;}}
+                if(!enemy||ally)continue;
+                float distance=Vector3.Distance(transform.position,vehicle.transform.position);
+                if(distance<launcherSafeDistance||distance>closest)continue;
+                if(!VehicleShotClear(vehicle,out _))continue;
+                launcherTarget=vehicle;closest=distance;
+            }
+        }
+        int available=-1;
+        for(int i=0;i<utility.types.Length;i++)if(utility.Count(i)>0){available=i;break;}
+        if(available<0||!launcherTarget||launcherTarget.IsDestroyed||!launcherTarget.IsOccupied||!VehicleShotClear(launcherTarget,out var point))
+        {
+            if(utility.IsEquipped){input.weaponSelection=1;return true;}
+            return false;
+        }
+        // Hold position for the shot; rifle combat and navigation resume afterward.
+        State=Behavior.AttackVehicle;WantsToSprint=false;combatAlertUntil=Time.time+combatReadyDuration;
+        Vector3 direction=point-life.look.aimCamera.transform.position;
+        float yaw=Mathf.Atan2(direction.x,direction.z)*Mathf.Rad2Deg;
+        float pitch=Mathf.Atan2(direction.y,new Vector2(direction.x,direction.z).magnitude)*Mathf.Rad2Deg;
+        float yawError=Mathf.DeltaAngle(transform.eulerAngles.y,yaw),pitchError=pitch+life.look.Pitch,step=turnSpeed*Time.deltaTime;
+        input.lookDelta=new Vector2(Mathf.Clamp(yawError,-step,step),Mathf.Clamp(pitchError,-step,step));
+        input.utilitySelection=!utility.IsEquipped||utility.Selected!=available?available+1:0;
+        input.firePressed=utility.IsEquipped&&utility.Selected==available&&utility.Ready&&Mathf.Abs(yawError)<3&&Mathf.Abs(pitchError)<3;
+        return true;
+    }
+    bool VehicleShotClear(Vehicle vehicle,out Vector3 point)
+    {
+        point=vehicle.Body.worldCenterOfMass;
+        Vector3 from=life.look.aimCamera.transform.position,delta=point-from;
+        foreach(var hit in Physics.RaycastAll(from,delta.normalized,delta.magnitude,Physics.DefaultRaycastLayers,QueryTriggerInteraction.Ignore))
+            if(!hit.transform.IsChildOf(transform)&&!hit.transform.IsChildOf(vehicle.transform))return false;
+        // Avoid deliberately firing into allies clustered around the impact.
+        foreach(var actor in participant.match.participants)
+            if(actor!=participant&&actor.team==participant.team&&!actor.health.IsDead&&Vector3.Distance(actor.transform.position,point)<5)return false;
+        return true;
+    }
 
     void Awake()
     {
@@ -126,6 +183,7 @@ public class ArenaAIInput : SoldierInputSource
         { State = Behavior.Inactive; WantsToSprint = false; return default; }
         if(soldier.grenades.FlashAlpha>.1f){WantsToSprint=false;return default;}
         agent.nextPosition = transform.position;
+        if(TryVehicleAttack(out var vehicleInput))return vehicleInput;
         bool visible = UpdatePerception();
         float distance = target ? Vector3.Distance(transform.position, lastSeen) : float.PositiveInfinity;
         int selection = ChooseWeapon(distance);

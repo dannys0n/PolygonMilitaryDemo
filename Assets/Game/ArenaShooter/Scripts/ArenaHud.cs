@@ -14,6 +14,8 @@ public class ArenaHud : MonoBehaviour
     public Sprite rifleSprite, pistolSprite;
     public UnityEngine.UI.Image[] grenadeIcons, grenadeBackgrounds;
     public TMP_Text[] grenadeCounts;
+    public UnityEngine.UI.Image[] launcherIcons=System.Array.Empty<UnityEngine.UI.Image>(), launcherBackgrounds=System.Array.Empty<UnityEngine.UI.Image>();
+    public TMP_Text[] launcherCounts=System.Array.Empty<TMP_Text>();
     public UnityEngine.UI.Image flashOverlay;
     public TMP_Text[] killerNames, victimNames, equipmentKeys;
     public UnityEngine.UI.Image[] killWeapons, equipmentIcons, equipmentBackgrounds;
@@ -60,6 +62,7 @@ public class ArenaHud : MonoBehaviour
     void SubscribePlayer()
     {
         player.player.actions.FireStarted += OnFire;
+        var utility=player.player.GetComponent<SoldierLaunchers>(); if(utility)utility.Fired+=OnFire;
         player.player.Respawned += OnRespawn;
     }
     void OnDisable()
@@ -71,6 +74,7 @@ public class ArenaHud : MonoBehaviour
     void UnsubscribePlayer()
     {
         player.player.actions.FireStarted -= OnFire;
+        var utility=player.player.GetComponent<SoldierLaunchers>(); if(utility)utility.Fired-=OnFire;
         player.player.Respawned -= OnRespawn;
     }
     public void SetPlayer(ArenaParticipant character)
@@ -107,6 +111,9 @@ public class ArenaHud : MonoBehaviour
     void OnKill(ArenaParticipant attacker, ArenaParticipant victim)
     {
         Sprite weapon = attacker.player ? attacker.player.loadout.EquippedWeapon.definition.icon : rifleSprite;
+        var utility=attacker.GetComponent<SoldierLaunchers>();
+        // Projectiles can land after the shooter has returned to the rifle.
+        if(utility && utility.LastShotTime>=attacker.LastShotTime-.01f && Time.time-utility.LastShotTime<8f)weapon=utility.LastShotIcon;
         string a = Escape(attacker.name), v = Escape(victim.name);
         kills.Insert(0, (a, v, weapon, Time.time + 7f));
         if (kills.Count > 5) kills.RemoveAt(kills.Count - 1);
@@ -177,6 +184,26 @@ public class ArenaHud : MonoBehaviour
         var equippedIcon = (ordinal == 0 ? rifleIcon : pistolIcon).GetComponent<UnityEngine.UI.Image>();
         equippedIcon.sprite = loadout.EquippedWeapon.definition.icon;
         equippedIcon.preserveAspect = true;
+        var launchers=player.player.GetComponent<SoldierLaunchers>();
+        if(launchers && launchers.IsEquipped)
+        {
+            weaponName.text=launchers.Equipped.displayName.ToUpperInvariant();
+            int count=launchers.Count(launchers.Selected);
+            ammunition.text=$"{(launchers.Ready&&count>0?1:0):00}<size=24><color=#B9C0C5> / {Mathf.Max(0,count-(launchers.Ready?1:0)):000}</color></size>";
+            fireMode.text=count==0?"EMPTY":launchers.Ready?"SINGLE":"REARMING";
+            equippedIcon.sprite=launchers.Equipped.icon; ordinal=-1;
+        }
+        for(int i=0;i<launcherIcons.Length;i++)
+        {
+            bool owned=launchers && i<launchers.types.Length;
+            launcherIcons[i].transform.parent.gameObject.SetActive(owned);
+            if(!owned)continue;
+            bool selected=launchers.IsEquipped&&launchers.Selected==i;
+            launcherIcons[i].sprite=launchers.types[i].icon;
+            launcherIcons[i].color=new Color(1,1,1,launchers.Count(i)>0?1:.25f);
+            launcherCounts[i].text=launchers.Count(i)+"  "+(i==0?"[Q]":"[X]");
+            launcherBackgrounds[i].color=selected?new Color(accent.r,accent.g,accent.b,.12f):new Color(1,1,1,.035f);
+        }
         var slotText = new StringBuilder();
         for (int i = 0; i < loadout.AvailableSlots.Length; i++)
         {

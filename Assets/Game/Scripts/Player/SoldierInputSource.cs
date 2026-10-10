@@ -12,6 +12,7 @@ public struct SoldierInputFrame
     public int weaponSelection;
     public int weaponCycle;
     public bool cycleSight;
+    public int utilitySelection; // One-based utility slot; zero means no request.
     public bool toggleView, previewHitReaction;
 }
 
