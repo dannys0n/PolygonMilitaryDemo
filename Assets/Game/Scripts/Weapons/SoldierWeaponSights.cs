@@ -17,6 +17,7 @@ public class SoldierWeaponSights : MonoBehaviour
     public WeaponSightDefinition SelectedSight { get; private set; }
     public Transform ActiveAimPoint => firstAttachment ? firstAttachment.aimPoint : ironSight;
     public int Revision { get; private set; }
+    public WeaponSightAttachment FirstPersonAttachment => firstAttachment;
     SoldierFirstPersonView owner;
     WeaponSightAttachment firstAttachment, thirdAttachment;
 
