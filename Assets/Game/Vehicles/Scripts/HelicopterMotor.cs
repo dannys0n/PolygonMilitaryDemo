@@ -15,6 +15,9 @@ public class HelicopterMotor : VehicleMotor
     public float verticalResponse = 2.8f, maxThrustMultiplier = 2.2f;
     public bool assistEnabled = true;
     public float positionHoldSpring = .6f, positionHoldDamping = 1.5f, maxHoldAcceleration = 18f;
+    [Header("Assisted direction reversals")]
+    public float reversalTilt = 38f, reversalTorqueMultiplier = 1.35f;
+    public Vector2 reversalSpeedRange = new Vector2(4,20);
     Vector3 holdPosition;
     bool holdingPosition, previouslyAssisted, horizontalHoldCaptured, altitudeHoldCaptured;
     [Header("Manual controls")]
@@ -111,6 +114,7 @@ public class HelicopterMotor : VehicleMotor
         else
         {
             float pitch, roll;
+            float torqueLimit=maxAngularAcceleration;
             if (input.directionalFlight)
             {
                 float requestedHeading = !input.aim && input.move.sqrMagnitude > .001f ? input.movementHeading : input.heading;
@@ -121,7 +125,11 @@ public class HelicopterMotor : VehicleMotor
                 Vector3 acceleration = holdingPosition
                     ? Vector3.ProjectOnPlane(holdPosition-body.position,Vector3.up) * positionHoldSpring - velocity * positionHoldDamping
                     : (desiredVelocity-velocity) * movementVelocityResponse;
-                float tiltAcceleration = gravity * Mathf.Tan(maxTilt * Mathf.Deg2Rad);
+                float opposingSpeed=Mathf.Max(0,-Vector3.Dot(velocity,desiredVelocity.normalized));
+                float reversal=Mathf.SmoothStep(0,1,Mathf.InverseLerp(reversalSpeedRange.x,reversalSpeedRange.y,opposingSpeed));
+                float maneuverTilt=Mathf.Lerp(maxTilt,Mathf.Max(maxTilt,reversalTilt),reversal);
+                torqueLimit*=Mathf.Lerp(1,reversalTorqueMultiplier,reversal);
+                float tiltAcceleration = gravity * Mathf.Tan(maneuverTilt * Mathf.Deg2Rad);
                 acceleration = Vector3.ClampMagnitude(acceleration,Mathf.Min(maxHoldAcceleration,tiltAcceleration));
                 cyclicAcceleration = Vector3.MoveTowards(cyclicAcceleration,acceleration,tiltAcceleration * dt / Mathf.Max(.01f,cyclicResponseTime));
                 Vector3 local = Quaternion.Inverse(Quaternion.Euler(0,heading,0)) * cyclicAcceleration;
@@ -157,7 +165,7 @@ public class HelicopterMotor : VehicleMotor
             desiredRates.x = Mathf.Clamp(desiredRates.x,-manualPitchRate*Mathf.Deg2Rad,manualPitchRate*Mathf.Deg2Rad);
             desiredRates.y = Mathf.Clamp(desiredRates.y,-yawRate*Mathf.Deg2Rad,yawRate*Mathf.Deg2Rad);
             desiredRates.z = Mathf.Clamp(desiredRates.z,-manualRollRate*Mathf.Deg2Rad,manualRollRate*Mathf.Deg2Rad);
-            angularAcceleration = Vector3.ClampMagnitude((body.rotation * desiredRates-body.angularVelocity) * attitudeDamping,maxAngularAcceleration);
+            angularAcceleration = Vector3.ClampMagnitude((body.rotation * desiredRates-body.angularVelocity) * attitudeDamping,torqueLimit);
             float desiredClimb = holdingPosition
                 ? Mathf.Clamp((holdPosition.y-body.position.y) * positionHoldSpring,-climbSpeed,climbSpeed)
                 : input.lift * climbSpeed;
