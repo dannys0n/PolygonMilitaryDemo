@@ -161,8 +161,8 @@ Rigidbody:
   m_GameObject: {fileID: 3258655521436788631}
   serializedVersion: 5
   m_Mass: 4800
-  m_LinearDamping: 0.05
-  m_AngularDamping: 0.25
+  m_LinearDamping: 0.015
+  m_AngularDamping: 0.08
   m_CenterOfMass: {x: 0, y: 0, z: 0}
   m_InertiaTensor: {x: 1, y: 1, z: 1}
   m_InertiaRotation: {x: 0, y: 0, z: 0, w: 1}
@@ -233,22 +233,25 @@ MonoBehaviour:
   yawRate: 65
   climbSpeed: 5
   maxSpeed: 32
-  attitudeSpring: 48
-  attitudeDamping: 11
-  maxAngularAcceleration: 12
+  flightForceMultiplier: 1.75
+  attitudeSpring: 60
+  attitudeDamping: 16
+  maxAngularAcceleration: 16
   verticalResponse: 2.8
   maxThrustMultiplier: 2.2
   assistEnabled: 1
-  positionHoldSpring: 0.8
-  positionHoldDamping: 2.5
+  positionHoldSpring: 0.6
+  positionHoldDamping: 1.5
   maxHoldAcceleration: 18
   manualPitchRate: 70
   manualRollRate: 70
-  manualResponse: 4
-  forwardDrag: 0.07
-  sidewaysDrag: 0.18
-  quadraticDrag: 0.0035
-  movementPriorityTime: 0.25
+  manualResponse: 16
+  manualMaxAngularAcceleration: 16
+  forwardDrag: 0.025
+  sidewaysDrag: 0.05
+  quadraticDrag: 0.0015
+  movementVelocityResponse: 0.8
+  cyclicResponseTime: 0.1
 --- !u!114 &2684248542658391728
 MonoBehaviour:
   m_ObjectHideFlags: 0

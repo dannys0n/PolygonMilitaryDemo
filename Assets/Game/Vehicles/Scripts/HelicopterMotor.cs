@@ -9,22 +9,27 @@ public class HelicopterMotor : VehicleMotor
     [Header("Rotor and flight limits")]
     public float rotorRpm = 420f, spoolTime = 2.5f;
     public float maxTilt = 24f, maxAimPitch = 60f, yawRate = 65f, climbSpeed = 5f, maxSpeed = 32f;
+    [Min(1f)] public float flightForceMultiplier = 1.75f;
     [Header("Stability assistance")]
-    public float attitudeSpring = 48f, attitudeDamping = 11f, maxAngularAcceleration = 12f;
+    public float attitudeSpring = 60f, attitudeDamping = 16f, maxAngularAcceleration = 16f;
     public float verticalResponse = 2.8f, maxThrustMultiplier = 2.2f;
     public bool assistEnabled = true;
-    public float positionHoldSpring = .8f, positionHoldDamping = 2.5f, maxHoldAcceleration = 18f;
+    public float positionHoldSpring = .6f, positionHoldDamping = 1.5f, maxHoldAcceleration = 18f;
     Vector3 holdPosition;
-    bool holdingPosition;
-    public float manualPitchRate = 70f, manualRollRate = 70f, manualResponse = 4f;
+    bool holdingPosition, previouslyAssisted, horizontalHoldCaptured, altitudeHoldCaptured;
+    [Header("Manual controls")]
+    public float manualPitchRate = 70f, manualRollRate = 70f, manualResponse = 16f;
+    public float manualMaxAngularAcceleration = 16f;
     public Quaternion RequestedAttitude { get; private set; }
     [Header("Fuselage drag")]
-    public float forwardDrag = .07f, sidewaysDrag = .18f, quadraticDrag = .0035f;
+    public float forwardDrag = .025f, sidewaysDrag = .05f, quadraticDrag = .0015f;
     public float RotorPower { get; private set; }
     public bool Grounded { get; private set; }
     public override bool CanDisembark => Grounded;
-    float heading, mainAngle, tailAngle, movementBlend;
-    public float movementPriorityTime = .25f;
+    float heading, mainAngle, tailAngle;
+    public float movementVelocityResponse = .8f;
+    public float cyclicResponseTime = .10f;
+    Vector3 cyclicAcceleration;
     Quaternion mainRest, tailRest;
 
     void Start()
@@ -45,9 +50,11 @@ public class HelicopterMotor : VehicleMotor
         Grounded = IsOnGround();
 
         Rigidbody body = vehicle.Body;
-        Vector3 localVelocity = transform.InverseTransformDirection(body.linearVelocity);
-        body.AddForce(-transform.forward * localVelocity.z * (forwardDrag + Mathf.Abs(localVelocity.z) * quadraticDrag)
-            - transform.right * localVelocity.x * (sidewaysDrag + Mathf.Abs(localVelocity.x) * quadraticDrag), ForceMode.Acceleration);
+        // Extra effective weight balances boosted rotor lift; both modes share this arcade force scale.
+        if (body.useGravity) body.AddForce(Physics.gravity * (flightForceMultiplier - 1f),ForceMode.Acceleration);
+        Vector3 localVelocity = Quaternion.Inverse(body.rotation) * body.linearVelocity;
+        body.AddForce(-(body.rotation * Vector3.forward) * localVelocity.z * (forwardDrag + Mathf.Abs(localVelocity.z) * quadraticDrag)
+            - (body.rotation * Vector3.right) * localVelocity.x * (sidewaysDrag + Mathf.Abs(localVelocity.x) * quadraticDrag), ForceMode.Acceleration);
         if (!powered)
         {
             holdingPosition = false;
@@ -56,79 +63,104 @@ public class HelicopterMotor : VehicleMotor
             return;
         }
 
-        bool localAssist = assistEnabled && vehicle.Driver && vehicle.Driver.IsLocal;
+        bool assisted = assistEnabled || (vehicle.Driver && !vehicle.Driver.IsLocal);
+        if (assisted != previouslyAssisted)
+        {
+            holdingPosition = false;
+            heading = body.rotation.eulerAngles.y;
+            cyclicAcceleration = Vector3.zero;
+            previouslyAssisted = assisted;
+        }
+        bool localAssist = assisted && vehicle.Driver && vehicle.Driver.IsLocal;
         bool noMovement = input.move.sqrMagnitude < .001f && Mathf.Abs(input.lift) < .01f;
         bool hold = localAssist && noMovement && !Grounded;
-        if (hold && !holdingPosition) holdPosition = body.position;
+        if (hold && !holdingPosition)
+        {
+            holdPosition = body.position;
+            horizontalHoldCaptured = altitudeHoldCaptured = false;
+        }
+        if (hold)
+        {
+            // First arrest travel, then hold the resulting stop point instead of pulling back to the release point.
+            if (!horizontalHoldCaptured)
+            {
+                holdPosition.x = body.position.x; holdPosition.z = body.position.z;
+                horizontalHoldCaptured = Vector3.ProjectOnPlane(body.linearVelocity,Vector3.up).magnitude < .3f;
+            }
+            if (!altitudeHoldCaptured)
+            {
+                holdPosition.y = body.position.y;
+                altitudeHoldCaptured = Mathf.Abs(body.linearVelocity.y) < .15f;
+            }
+        }
         holdingPosition = hold;
-        bool assisted = assistEnabled || (vehicle.Driver && !vehicle.Driver.IsLocal);
+        float gravity = Physics.gravity.magnitude * flightForceMultiplier;
+        Vector3 angularAcceleration;
+        float thrust;
+        Vector3 rotorUp = body.rotation * Vector3.up;
         if (!assisted)
         {
             Vector3 localRates = new Vector3(Mathf.Clamp(input.move.y + input.pitchRate, -1f, 1f) * manualPitchRate,
                 input.yaw * yawRate, -input.move.x * manualRollRate) * Mathf.Deg2Rad;
             RequestedAttitude = body.rotation * Quaternion.Euler(localRates * Mathf.Rad2Deg * .25f);
             if (Grounded) localRates = Vector3.zero;
-            Vector3 torque = (transform.TransformDirection(localRates) - body.angularVelocity) * manualResponse;
-            body.AddTorque(Vector3.ClampMagnitude(torque, maxAngularAcceleration) * RotorPower, ForceMode.Acceleration);
-            float collective = Mathf.Clamp(1f + input.lift * .65f, 0, maxThrustMultiplier);
-            body.AddForce(transform.up * Physics.gravity.magnitude * collective * RotorPower, ForceMode.Acceleration);
-            LimitSpeed(body);
-            return;
-        }
-        float pitch = input.move.y * maxTilt;
-        float roll = -input.move.x * maxTilt;
-        if (input.directionalFlight)
-        {
-            // Movement pitches/banks the whole airframe. Aim resumes smoothly when movement releases.
-            movementBlend = Mathf.MoveTowards(movementBlend,input.move.magnitude,dt / Mathf.Max(.01f,movementPriorityTime));
-            float requestedHeading = Mathf.LerpAngle(input.heading,input.movementHeading,movementBlend);
-            heading = Mathf.MoveTowardsAngle(heading,requestedHeading,yawRate*dt);
-            Quaternion aim = Quaternion.Euler(Mathf.Clamp(input.viewPitch,-maxAimPitch,maxAimPitch),heading,0);
-            Quaternion travel = Quaternion.Euler(pitch,heading,roll);
-            RequestedAttitude = Quaternion.Slerp(aim,travel,movementBlend);
+            angularAcceleration = Vector3.ClampMagnitude((body.rotation * localRates - body.angularVelocity) * manualResponse,
+                manualMaxAngularAcceleration);
+            thrust = gravity * Mathf.Clamp(1f + input.lift * .65f, 0, maxThrustMultiplier);
         }
         else
         {
-            movementBlend = 0;
-            heading += input.yaw*yawRate*dt;
+            float pitch, roll;
+            if (input.directionalFlight)
+            {
+                float requestedHeading = input.move.sqrMagnitude > .001f ? input.movementHeading : input.heading;
+                heading = Mathf.MoveTowardsAngle(heading,requestedHeading,yawRate * dt);
+                Quaternion movementFrame = Quaternion.Euler(0,input.movementHeading,0);
+                Vector3 velocity = Vector3.ProjectOnPlane(body.linearVelocity,Vector3.up);
+                Vector3 desiredVelocity = movementFrame * new Vector3(input.move.x,0,input.move.y) * maxSpeed;
+                Vector3 acceleration = holdingPosition
+                    ? Vector3.ProjectOnPlane(holdPosition-body.position,Vector3.up) * positionHoldSpring - velocity * positionHoldDamping
+                    : (desiredVelocity-velocity) * movementVelocityResponse;
+                // Brake by banking the airframe, never by cancelling thrust with a sideways force.
+                float tiltAcceleration = gravity * Mathf.Tan(maxTilt * Mathf.Deg2Rad);
+                acceleration = Vector3.ClampMagnitude(acceleration,Mathf.Min(maxHoldAcceleration,tiltAcceleration));
+                cyclicAcceleration = Vector3.MoveTowards(cyclicAcceleration,acceleration,tiltAcceleration * dt / Mathf.Max(.01f,cyclicResponseTime));
+                Vector3 local = Quaternion.Inverse(Quaternion.Euler(0,heading,0)) * cyclicAcceleration;
+                pitch = Mathf.Atan2(local.z,gravity) * Mathf.Rad2Deg;
+                roll = -Mathf.Atan2(local.x,Mathf.Sqrt(gravity*gravity + local.z*local.z)) * Mathf.Rad2Deg;
+            }
+            else
+            {
+                heading += input.yaw * yawRate * dt;
+                pitch = input.move.y * maxTilt;
+                roll = -input.move.x * maxTilt;
+            }
             RequestedAttitude = Quaternion.Euler(pitch,heading,roll);
+            if (Grounded)
+            {
+                holdingPosition = false;
+                heading = body.rotation.eulerAngles.y;
+                RequestedAttitude = body.rotation;
+            }
+            Quaternion error = RequestedAttitude * Quaternion.Inverse(body.rotation);
+            error.ToAngleAxis(out float angle,out Vector3 axis);
+            if (angle > 180f) angle -= 360f;
+            // Rate damping follows bounded cyclic/pedal demands instead of chasing attitude with an unlimited rate.
+            Vector3 localError = Quaternion.Inverse(body.rotation) * (axis.normalized * angle * Mathf.Deg2Rad);
+            Vector3 desiredRates = localError * (attitudeSpring / attitudeDamping);
+            desiredRates.x = Mathf.Clamp(desiredRates.x,-manualPitchRate*Mathf.Deg2Rad,manualPitchRate*Mathf.Deg2Rad);
+            desiredRates.y = Mathf.Clamp(desiredRates.y,-yawRate*Mathf.Deg2Rad,yawRate*Mathf.Deg2Rad);
+            desiredRates.z = Mathf.Clamp(desiredRates.z,-manualRollRate*Mathf.Deg2Rad,manualRollRate*Mathf.Deg2Rad);
+            angularAcceleration = Vector3.ClampMagnitude((body.rotation * desiredRates-body.angularVelocity) * attitudeDamping,maxAngularAcceleration);
+            float desiredClimb = holdingPosition
+                ? Mathf.Clamp((holdPosition.y-body.position.y) * positionHoldSpring,-climbSpeed,climbSpeed)
+                : input.lift * climbSpeed;
+            float verticalLift = gravity + (desiredClimb-body.linearVelocity.y) * verticalResponse;
+            thrust = Mathf.Clamp(verticalLift / Mathf.Max(.5f,Vector3.Dot(rotorUp,Vector3.up)),0,gravity * maxThrustMultiplier);
         }
-        // Do not force the aircraft to bank against its landing gear before takeoff.
-        if (Grounded)
-        {
-            pitch = roll = 0;
-            holdingPosition = false;
-            heading = transform.eulerAngles.y;
-        RequestedAttitude = vehicle.Body.rotation;
-        }
-        Quaternion desired = RequestedAttitude;
-        Quaternion error = desired * Quaternion.Inverse(body.rotation);
-        error.ToAngleAxis(out float angle, out Vector3 axis);
-        if (angle > 180f) angle -= 360f;
-        Vector3 acceleration = axis.normalized * angle * Mathf.Deg2Rad * attitudeSpring
-            - body.angularVelocity * attitudeDamping;
-        body.AddTorque(Vector3.ClampMagnitude(acceleration, maxAngularAcceleration) * RotorPower, ForceMode.Acceleration);
-
-        // Neutral collective damps climb/descent; tilt still creates genuine horizontal acceleration.
-        float desiredClimb = holdingPosition
-            ? Mathf.Clamp((holdPosition.y - body.position.y) * positionHoldSpring, -climbSpeed, climbSpeed)
-            : input.lift * climbSpeed;
-        float verticalLift = Physics.gravity.magnitude + (desiredClimb - body.linearVelocity.y) * verticalResponse;
-        Vector3 thrustAxis = transform.up;
-        float upFraction = Mathf.Max(.5f, Vector3.Dot(thrustAxis, Vector3.up));
-        float thrust = Mathf.Clamp(verticalLift / upFraction, 0, Physics.gravity.magnitude * maxThrustMultiplier);
-        Vector3 rotorAcceleration = thrustAxis * thrust * RotorPower;
-        body.AddForce(rotorAcceleration, ForceMode.Acceleration);
-        if (holdingPosition)
-        {
-            Vector3 errorPosition = Vector3.ProjectOnPlane(holdPosition - body.position, Vector3.up);
-            Vector3 horizontalVelocity = Vector3.ProjectOnPlane(body.linearVelocity, Vector3.up);
-            Vector3 braking = Vector3.ClampMagnitude(errorPosition * positionHoldSpring
-                - horizontalVelocity * positionHoldDamping, maxHoldAcceleration);
-            // Counter tilt-driven travel while holding aim; keep the camera/body orientation independent.
-            body.AddForce(braking - Vector3.ProjectOnPlane(rotorAcceleration, Vector3.up), ForceMode.Acceleration);
-        }
-
+        // Both control modes feed the same Rigidbody torque and rotor-axis thrust.
+        body.AddTorque(angularAcceleration * RotorPower,ForceMode.Acceleration);
+        body.AddForce(rotorUp * thrust * RotorPower,ForceMode.Acceleration);
         LimitSpeed(body);
     }
 
