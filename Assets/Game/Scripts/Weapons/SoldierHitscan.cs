@@ -7,6 +7,8 @@ public class SoldierHitscan : MonoBehaviour
     [Min(.001f)] public float muzzleClearance = .01f;
     public bool drawDebug;
     public event System.Action<ShotResult> ShotResolved;
+    // Optional local world interactions may consume a shot before damage/projectiles.
+    public event System.Func<Ray, bool> ShotInteraction;
 
     public struct ShotResult
     {
@@ -20,6 +22,14 @@ public class SoldierHitscan : MonoBehaviour
     public ShotResult Fire(SoldierWeaponDefinition weapon, Transform muzzle)
     {
         Ray aim=aimCamera.ViewportPointToRay(new Vector3(.5f,.5f,0));
+        if (ShotInteraction != null)
+            foreach (System.Func<Ray, bool> handler in ShotInteraction.GetInvocationList())
+                if (handler(aim))
+                {
+                    var interaction = new ShotResult { origin = muzzle.position, point = aim.GetPoint(weapon.range) };
+                    ShotResolved?.Invoke(interaction);
+                    return interaction;
+                }
         if(weapon.rocketProjectile)
         {
             Vector3 target=ClosestHit(aim,weapon.range,out var hit)?hit.point:aim.GetPoint(weapon.range);

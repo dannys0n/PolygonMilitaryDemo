@@ -20,15 +20,24 @@ public class SoldierScopeView : MonoBehaviour
         var sights=loadout.EquippedSights;
         var sight=sights?sights.SelectedSight:null;
         var attachment=sights?sights.FirstPersonAttachment:null;
-        bool active=view.firstPerson && view.playerCamera.enabled && sight && sight.pictureInPicture
-            && attachment && attachment.scopeLens && view.AimBlend>.08f;
+        bool equippedInViewer=view.isActiveAndEnabled && view.firstPerson && view.playerCamera.isActiveAndEnabled
+            && loadout.slots[loadout.selectedSlot].firstPersonWeapon.gameObject.activeInHierarchy
+            && sight && sight.pictureInPicture && attachment && attachment.scopeLens
+            && attachment.scopeLens.enabled && attachment.scopeLens.gameObject.activeInHierarchy
+            && !attachment.scopeLens.forceRenderingOff
+            && (view.playerCamera.cullingMask & (1 << attachment.scopeLens.gameObject.layer)) != 0;
+        if(!equippedInViewer)
+        {
+            ReleaseLens();if(scopeCamera)scopeCamera.enabled=false;ReleaseTexture();return;
+        }
+        bool active=view.AimBlend>.08f;
         if(!active){ReleaseLens();if(scopeCamera)scopeCamera.enabled=false;return;}
         if(lens!=attachment.scopeLens || renderedSight!=sight)
         {
             ReleaseLens();EnsureCamera();
             if(!texture || texture.width!=sight.scopeTextureSize)
             {
-                if(texture){texture.Release();Destroy(texture);}
+                ReleaseTexture();
                 texture=new RenderTexture(sight.scopeTextureSize,sight.scopeTextureSize,24,RenderTextureFormat.ARGB32);
                 texture.name="Owned Scope Lens";texture.antiAliasing=1;texture.Create();
             }
@@ -62,6 +71,12 @@ public class SoldierScopeView : MonoBehaviour
         if(lensMaterial)Destroy(lensMaterial);
         lens=null;lensMaterial=null;renderedSight=null;
     }
-    void OnDisable(){ReleaseLens();if(scopeCamera)scopeCamera.enabled=false;}
-    void OnDestroy(){ReleaseLens();if(scopeCamera)Destroy(scopeCamera.gameObject);if(texture){texture.Release();Destroy(texture);}}
+    void ReleaseTexture()
+    {
+        if(!texture)return;
+        if(scopeCamera)scopeCamera.targetTexture=null;
+        texture.Release();Destroy(texture);texture=null;
+    }
+    void OnDisable(){ReleaseLens();if(scopeCamera)scopeCamera.enabled=false;ReleaseTexture();}
+    void OnDestroy(){ReleaseLens();ReleaseTexture();if(scopeCamera)Destroy(scopeCamera.gameObject);}
 }

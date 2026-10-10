@@ -10,13 +10,18 @@ public class SoldierFirstPersonCamera : MonoBehaviour
     public Transform animatedCamera;
     public Transform bodyAimTarget;
     private SoldierWeaponPresentation presentation;
+    private SoldierWeaponLoadout loadout;
     public float positionWeight => presentation.weapon.definition.cameraPositionWeight;
     public float rotationWeight => presentation.weapon.definition.cameraRotationWeight;
 
     private Vector3 referencePosition;
     private Quaternion referenceRotation;
 
-    void Awake() => presentation = view.GetComponent<SoldierWeaponPresentation>();
+    void Awake()
+    {
+        presentation = view.GetComponent<SoldierWeaponPresentation>();
+        loadout = GetComponent<SoldierWeaponLoadout>();
+    }
     void Start() => RefreshReferencePose();
 
     void RefreshReferencePose()
@@ -32,17 +37,21 @@ public class SoldierFirstPersonCamera : MonoBehaviour
 
     void LateUpdate()
     {
+        var profile = loadout.EquippedSights;
+        // Use the selected weapon's authored camera baseline after a swap.
+        Vector3 idlePosition = profile && profile.cameraReferenceConfigured ? profile.neutralCameraPosition : referencePosition;
+        Quaternion idleRotation = profile && profile.cameraReferenceConfigured ? profile.neutralCameraRotation : referenceRotation;
         Vector3 position = view.firstPersonRoot.InverseTransformPoint(animatedCamera.position);
         Quaternion rotation = Quaternion.Inverse(view.firstPersonRoot.rotation) * animatedCamera.rotation;
         Transform cameraTransform = view.playerCamera.transform;
         cameraTransform.localPosition = view.CameraRestPosition +
-            view.CameraRestRotation * ((position - referencePosition) * positionWeight);
+            view.CameraRestRotation * ((position - idlePosition) * positionWeight);
         cameraTransform.localRotation = view.CameraRestRotation * Quaternion.Slerp(Quaternion.identity,
-            rotation * Quaternion.Inverse(referenceRotation), rotationWeight);
+            rotation * Quaternion.Inverse(idleRotation), rotationWeight);
 
         // Body aim follows the player look and recoil source, independently of camera placement.
-        Vector3 recoilPosition = (position - referencePosition) * positionWeight;
-        Quaternion recoilRotation = Quaternion.Slerp(Quaternion.identity, rotation * Quaternion.Inverse(referenceRotation), rotationWeight);
+        Vector3 recoilPosition = (position - idlePosition) * positionWeight;
+        Quaternion recoilRotation = Quaternion.Slerp(Quaternion.identity, rotation * Quaternion.Inverse(idleRotation), rotationWeight);
         Transform cameraMount = cameraTransform.parent;
         bodyAimTarget.position = cameraMount.TransformPoint(recoilPosition) +
             cameraMount.rotation * recoilRotation * Vector3.forward * 10f;

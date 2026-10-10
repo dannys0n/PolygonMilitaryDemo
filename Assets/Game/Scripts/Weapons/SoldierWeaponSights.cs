@@ -5,6 +5,11 @@ using UnityEngine.Rendering;
 public class SoldierWeaponSights : MonoBehaviour
 {
     public Transform firstPersonMount, thirdPersonMount, ironSight;
+    public Transform frontIronSight;
+    public bool cameraReferenceConfigured;
+    public Vector3 neutralCameraPosition;
+    public Quaternion neutralCameraRotation = Quaternion.identity;
+    Transform replacementRear, replacementFront;
     public WeaponSightDefinition defaultSight;
     public WeaponSightDefinition[] compatibleSights;
     [Header("Neutral ADS reference, relative to FirstPersonView")]
@@ -15,11 +20,12 @@ public class SoldierWeaponSights : MonoBehaviour
     public Quaternion referenceCameraRotation = Quaternion.identity;
 
     public WeaponSightDefinition SelectedSight { get; private set; }
-    public Transform ActiveAimPoint => firstAttachment ? firstAttachment.aimPoint : ironSight;
+    public Transform ActiveAimPoint => firstAttachment ? firstAttachment.aimPoint : replacementRear ? replacementRear : ironSight;
     public int Revision { get; private set; }
     public WeaponSightAttachment FirstPersonAttachment => firstAttachment;
     SoldierFirstPersonView owner;
     WeaponSightAttachment firstAttachment, thirdAttachment;
+    float sightLift;
 
     public bool Supports(WeaponSightDefinition sight) => !sight || System.Array.IndexOf(compatibleSights, sight) >= 0;
 
@@ -42,6 +48,7 @@ public class SoldierWeaponSights : MonoBehaviour
             thirdAttachment = Create(sight.prefab, thirdPersonMount, owner.thirdPersonLayer, true, false);
         }
         else firstAttachment = thirdAttachment = null;
+        ApplySightLift();
         Revision++;
         // Removed attachments are detached before Destroy, so no stale renderer references remain.
         owner.RefreshVisuals();
@@ -74,13 +81,36 @@ public class SoldierWeaponSights : MonoBehaviour
         return attachment;
     }
 
+    public void SetIronReplacements(Transform rear, Transform front)
+    {
+        replacementRear = rear; replacementFront = front; Revision++;
+    }
+
+    public void SetRiser(float height)
+    {
+        if (Mathf.Approximately(sightLift, height)) return;
+        sightLift = height;
+        ApplySightLift();
+        Revision++;
+    }
+
+    void ApplySightLift()
+    {
+        if (firstAttachment) firstAttachment.transform.localPosition = Vector3.up * sightLift;
+        if (thirdAttachment) thirdAttachment.transform.localPosition = Vector3.up * sightLift;
+    }
+
     public void GetAdsPlacement(Vector3 rootScale, out Vector3 position, out Quaternion rotation)
     {
         // Read only the sight relative to its mounting socket. Animated weapon motion
         // never enters this calculation, so recoil and sway are not canceled.
         var point = ActiveAimPoint;
         Vector3 localPoint = firstPersonMount.InverseTransformPoint(point.position);
-        Quaternion localRotation = Quaternion.Inverse(firstPersonMount.rotation) * point.rotation;
+        Quaternion pointRotation = point.rotation;
+        var front = replacementFront ? replacementFront : frontIronSight;
+        if (!firstAttachment && front && (front.position - point.position).sqrMagnitude > .000001f)
+            pointRotation = Quaternion.LookRotation(front.position - point.position, firstPersonMount.up);
+        Quaternion localRotation = Quaternion.Inverse(firstPersonMount.rotation) * pointRotation;
         Vector3 referencePoint = referenceMountPosition + referenceMountRotation * Vector3.Scale(referenceMountScale, localPoint);
         Quaternion referenceRotation = referenceMountRotation * localRotation;
         rotation = referenceCameraRotation * Quaternion.Inverse(referenceRotation);
