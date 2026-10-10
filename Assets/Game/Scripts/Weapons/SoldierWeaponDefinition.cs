@@ -20,6 +20,8 @@ public class SoldierWeaponDefinition : ScriptableObject
     public RuntimeAnimatorController firstPerson;
     public RuntimeAnimatorController firstPersonParts;
     public RuntimeAnimatorController thirdPerson;
+    [Tooltip("Render FPS arms and apply their grip IK. Weapon animation stays active when disabled.")]
+    public bool showFirstPersonHands = true;
 
     [Header("Gameplay action timing")]
     [Tooltip("Gameplay reload duration in seconds. Keep presentation clips aligned with this timing.")]

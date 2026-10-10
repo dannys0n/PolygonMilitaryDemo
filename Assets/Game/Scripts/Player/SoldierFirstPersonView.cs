@@ -56,6 +56,7 @@ public class SoldierFirstPersonView : MonoBehaviour
     private int locomotionLayer;
     private int aimTransitionLayer;
     private Renderer[] firstPersonRenderers;
+    private SkinnedMeshRenderer[] armsRenderers;
 
     public Vector3 CameraRestPosition => firstPerson ? Vector3.zero : thirdPersonCameraPosition;
     public Quaternion CameraRestRotation => firstPerson ? Quaternion.identity : thirdPersonCameraRotation;
@@ -93,11 +94,21 @@ public class SoldierFirstPersonView : MonoBehaviour
         foreach (Transform child in firstPersonRoot.GetComponentsInChildren<Transform>(true))
             child.gameObject.layer = firstPersonLayer;
         firstPersonRenderers = firstPersonRoot.GetComponentsInChildren<Renderer>(true);
+        var leftHand = loadout.firstPersonGripRig.leftHand.data.tip;
+        var rightHand = loadout.firstPersonGripRig.rightHand.data.tip;
+        armsRenderers = System.Array.FindAll(firstPersonRoot.GetComponentsInChildren<SkinnedMeshRenderer>(true),
+            mesh => System.Array.IndexOf(mesh.bones, leftHand) >= 0 || System.Array.IndexOf(mesh.bones, rightHand) >= 0);
         armsAnimator.cullingMode = AnimatorCullingMode.AlwaysAnimate;
         weaponAnimator.cullingMode = AnimatorCullingMode.AlwaysAnimate;
         foreach (Renderer mesh in firstPersonRenderers)
             mesh.shadowCastingMode = ShadowCastingMode.Off;
+        ApplyHandVisibility();
+    }
 
+    void ApplyHandVisibility()
+    {
+        foreach (var mesh in armsRenderers) mesh.forceRenderingOff = !definition.showFirstPersonHands;
+        loadout.firstPersonGripRig.gripEnabled = definition.showFirstPersonHands;
     }
 
     public void CancelAim()
@@ -189,6 +200,7 @@ public class SoldierFirstPersonView : MonoBehaviour
     public void ApplyWeaponDefinition(SoldierWeaponDefinition selectedDefinition)
     {
         definition = selectedDefinition;
+        ApplyHandVisibility();
         armsAnimator.SetFloat("TacticalSprint", definition.firstPersonSprintStyle == SoldierWeaponDefinition.SprintStyle.Tactical ? 1f : 0f);
 
         aimBlend = 0f;

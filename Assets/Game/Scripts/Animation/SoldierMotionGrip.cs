@@ -7,6 +7,7 @@ public class SoldierMotionGrip : MonoBehaviour
     public Animator animator;
     public TwoBoneIKConstraint leftHand;
     public TwoBoneIKConstraint rightHand;
+    public bool gripEnabled = true;
     SoldierGrenades grenades;
     Rig aimRig;
     RigBuilder rigBuilder;
@@ -15,10 +16,11 @@ public class SoldierMotionGrip : MonoBehaviour
     void Update()
     {
         bool throwing=grenades && grenades.IsThrowing;
-        aimRig.weight=throwing?0f:1f;
-        bool rigStateChanged=aimLayer.active==throwing;
-        aimLayer.active=!throwing;
-        float weight = throwing?0f:1f - animator.GetFloat("WeaponReloadWeight");
+        bool active = gripEnabled && !throwing;
+        aimRig.weight=active?1f:0f;
+        bool rigStateChanged=aimLayer.active!=active;
+        aimLayer.active=active;
+        float weight = active?1f - animator.GetFloat("WeaponReloadWeight"):0f;
         leftHand.weight = weight;
         rightHand.weight = weight;
         // This driver runs after RigBuilder.Update; sync the new weights before evaluation.
