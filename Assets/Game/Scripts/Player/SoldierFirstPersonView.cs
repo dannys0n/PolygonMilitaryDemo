@@ -88,6 +88,9 @@ public class SoldierFirstPersonView : MonoBehaviour
 
     public void RefreshVisuals()
     {
+        // Editor previews can refresh before the runtime Awake sequence.
+        if (!loadout) loadout = GetComponent<SoldierWeaponLoadout>();
+        if (!definition) definition = GetComponent<SoldierWeaponPresentation>().weapon.definition;
         // These are visibility groups, not gameplay or networking ownership.
         foreach (Transform child in thirdPersonRoot.GetComponentsInChildren<Transform>(true))
             child.gameObject.layer = thirdPersonLayer;

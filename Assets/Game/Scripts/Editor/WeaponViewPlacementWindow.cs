@@ -4,7 +4,7 @@ using UnityEngine;
 using UnityEngine.Rendering;
 using UnityEngine.Rendering.Universal;
 
-// Scene handles edit the definition, never a temporary transform or weapon hierarchy.
+// Hip placement edits definitions; ADS edits the reusable weapon/sight reference transforms.
 public class WeaponViewPlacementWindow : EditorWindow
 {
     SoldierFirstPersonView player;
@@ -13,13 +13,14 @@ public class WeaponViewPlacementWindow : EditorWindow
     CursorLockMode previousCursorLock;
     bool previousCursorVisible;
     int handleMode;
+    int sightPointIndex;
     RenderTexture preview;
     [SerializeField] float previewZoom = 1f;
     [SerializeField] Vector2 previewCenter = new Vector2(.5f, .5f);
     double nextRepaint;
     readonly HashSet<SoldierWeaponDefinition> changed = new HashSet<SoldierWeaponDefinition>();
     readonly HashSet<WeaponSightDefinition> changedSights = new HashSet<WeaponSightDefinition>();
-    readonly Dictionary<WeaponSightDefinition, Pose> sightPoints = new Dictionary<WeaponSightDefinition, Pose>();
+    readonly Dictionary<string, Dictionary<string, Pose>> sightPoints = new Dictionary<string, Dictionary<string, Pose>>();
 
     [MenuItem("Tools/Game/Weapon View Placement")]
     public static void Open() => GetWindow<WeaponViewPlacementWindow>("Weapon View Placement");
@@ -115,12 +116,15 @@ public class WeaponViewPlacementWindow : EditorWindow
         changed.Clear();
         foreach (var entry in sightPoints)
         {
-            string path=AssetDatabase.GetAssetPath(entry.Key.prefab);
+            string path=entry.Key;
             var root=PrefabUtility.LoadPrefabContents(path);
             try
             {
-                var point=root.GetComponent<WeaponSightAttachment>().aimPoint;
-                point.SetLocalPositionAndRotation(entry.Value.position,entry.Value.rotation);
+                foreach (var value in entry.Value)
+                {
+                    var point = root.transform.Find(value.Key);
+                    point.SetLocalPositionAndRotation(value.Value.position, value.Value.rotation);
+                }
                 PrefabUtility.SaveAsPrefabAsset(root,path);
             }
             finally { PrefabUtility.UnloadPrefabContents(root); }
@@ -163,23 +167,50 @@ public class WeaponViewPlacementWindow : EditorWindow
     void DrawSightCalibration(SoldierWeaponSights sights)
     {
         var sight=sights.SelectedSight;
-        var point=sights.ActiveAimPoint;
+        var rear=sights.ActiveAimPoint;
+        var front=sights.ActiveFrontAimPoint;
         EditorGUILayout.ObjectField("Active sight",sight,typeof(WeaponSightDefinition),false);
-        EditorGUILayout.HelpBox("The sight plane sets the aim line. Eye distance brings the weapon closer or farther. These controls update the camera preview and save to this sight's assets.",MessageType.Info);
+        EditorGUILayout.HelpBox("Align the rear-to-front line. Rear rotation controls roll; eye distance controls camera spacing. Save writes these points to their reusable weapon or attachment prefab.",MessageType.Info);
+        sightPointIndex = GUILayout.Toolbar(sightPointIndex, new[] { "Rear handle", "Front handle" });
+        EditorGUILayout.ObjectField("Rear reference",rear,typeof(Transform),true);
+        EditorGUILayout.ObjectField("Front reference",front,typeof(Transform),true);
         EditorGUI.BeginChangeCheck();
         float distance=EditorGUILayout.FloatField("Eye distance",sight.eyeDistance);
         float fov=EditorGUILayout.Slider("ADS field of view",sight.fieldOfView,20f,90f);
-        Vector3 position=EditorGUILayout.Vector3Field("Sight point",point.localPosition);
-        Vector3 rotation=EditorGUILayout.Vector3Field("Sight direction",point.localEulerAngles);
+        Vector3 rearPosition=EditorGUILayout.Vector3Field("Rear position",rear.localPosition);
+        Vector3 frontPosition=EditorGUILayout.Vector3Field("Front position",front.localPosition);
+        Vector3 rotation=EditorGUILayout.Vector3Field("Rear up / roll",rear.localEulerAngles);
         if (EditorGUI.EndChangeCheck())
         {
             Undo.RecordObject(sight,"Calibrate weapon sight");
-            Undo.RecordObject(point,"Calibrate sight point");
+            Undo.RecordObjects(new Object[]{rear,front},"Calibrate sight references");
             sight.eyeDistance=Mathf.Max(.03f,distance);sight.fieldOfView=fov;
-            point.SetLocalPositionAndRotation(position,Quaternion.Euler(rotation));
+            rear.SetLocalPositionAndRotation(rearPosition,Quaternion.Euler(rotation));
+            front.localPosition=frontPosition;
             EditorUtility.SetDirty(sight);changedSights.Add(sight);
-            if (sight.prefab) sightPoints[sight]=new Pose(position,Quaternion.Euler(rotation));
+            QueueSightPoint(rear);
+            QueueSightPoint(front);
         }
+    }
+
+    void QueueSightPoint(Transform point)
+    {
+        Transform source;
+        var attachment = point.GetComponentInParent<WeaponSightAttachment>();
+        if (attachment && attachment.SourcePrefab)
+            source = point == attachment.rearSight ? attachment.SourcePrefab.rearSight : attachment.SourcePrefab.frontSight;
+        else source = EditorUtility.IsPersistent(point) ? point : PrefabUtility.GetCorrespondingObjectFromOriginalSource(point);
+        string path = source ? AssetDatabase.GetAssetPath(source) : "";
+        if (string.IsNullOrEmpty(path))
+        {
+            Debug.LogWarning("No authoring prefab found for " + point.name + ". Edit this reference directly on its prefab.");
+            return;
+        }
+        var root = AssetDatabase.LoadAssetAtPath<GameObject>(path);
+        string relative = AnimationUtility.CalculateTransformPath(source, root.transform);
+        if (!sightPoints.TryGetValue(path, out var points))
+            sightPoints[path] = points = new Dictionary<string, Pose>();
+        points[relative] = new Pose(point.localPosition, point.localRotation);
     }
 
     void FrameWeapon()
@@ -273,10 +304,20 @@ public class WeaponViewPlacementWindow : EditorWindow
         var sights=player.GetComponent<SoldierWeaponLoadout>().EquippedSights;
         if (ads && sights && sights.SelectedSight)
         {
-            var point=sights.ActiveAimPoint;
+            var rear=sights.ActiveAimPoint;
+            var front=sights.ActiveFrontAimPoint;
+            var point=sightPointIndex==0?rear:front;
             Handles.color=Color.cyan;
-            Handles.ArrowHandleCap(0,point.position,point.rotation,HandleUtility.GetHandleSize(point.position)*.12f,EventType.Repaint);
-            Handles.Label(point.position,"Sight plane: edit in the placement window");
+            Handles.DrawLine(rear.position,front.position);
+            Handles.Label(point.position,sightPointIndex==0?"Rear sight reference":"Front sight reference");
+            EditorGUI.BeginChangeCheck();
+            Vector3 position=Handles.PositionHandle(point.position,point.rotation);
+            if(EditorGUI.EndChangeCheck())
+            {
+                Undo.RecordObject(point,"Move sight reference");point.position=position;
+                QueueSightPoint(point);Repaint();
+            }
+            if(Event.current.rawType==EventType.MouseUp)SavePlacement();
             return;
         }
         var definition = player.GetComponent<SoldierWeaponPresentation>().weapon.definition;

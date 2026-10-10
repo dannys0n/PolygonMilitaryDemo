@@ -190,6 +190,37 @@ SkinnedMeshRenderer:
     m_Center: {x: -0.000082998435, y: 0.0021814415, z: -0.00048565055}
     m_Extent: {x: 0.00013271034, y: 0.00013271044, z: 0}
   m_DirtyAABB: 0
+--- !u!1 &2048535432363386207
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 5687739929041312538}
+  m_Layer: 0
+  m_Name: FrontSight
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &5687739929041312538
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2048535432363386207}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: -0.011587345, y: 0.033703342, z: -0.02950146}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 6497924610888644053}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &2191871222405354249
 GameObject:
   m_ObjectHideFlags: 0
@@ -380,7 +411,7 @@ Transform:
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 1790061612579721310}
-  - {fileID: 2143102886196786684}
+  - {fileID: 6497924610888644053}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &6496126315694131337
@@ -395,7 +426,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c7477489f9b70b8459899c8bfed75156, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::WeaponSightAttachment
-  aimPoint: {fileID: 2143102886196786684}
+  rearSight: {fileID: 2143102886196786684}
+  frontSight: {fileID: 5687739929041312538}
   scopeLens: {fileID: 1908222087537453158}
 --- !u!1 &5271615911262015370
 GameObject:
@@ -407,7 +439,7 @@ GameObject:
   m_Component:
   - component: {fileID: 2143102886196786684}
   m_Layer: 0
-  m_Name: SightPlane
+  m_Name: RearSight
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -421,12 +453,12 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 5271615911262015370}
   serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: -0.011587345, y: 0.033703342, z: -0.12950146}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
-  m_Father: {fileID: 7277223655090762985}
+  m_Father: {fileID: 6497924610888644053}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &5525959854777125520
 GameObject:
@@ -651,6 +683,39 @@ Transform:
   - {fileID: 635637051935801400}
   - {fileID: 8627497721916272056}
   m_Father: {fileID: 1880537001360360205}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &7732826770360838604
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 6497924610888644053}
+  m_Layer: 0
+  m_Name: SightReferences
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &6497924610888644053
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7732826770360838604}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children:
+  - {fileID: 5687739929041312538}
+  - {fileID: 2143102886196786684}
+  m_Father: {fileID: 7277223655090762985}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &8401161173345777718
 GameObject:

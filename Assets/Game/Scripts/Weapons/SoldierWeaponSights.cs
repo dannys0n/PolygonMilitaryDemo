@@ -1,11 +1,14 @@
 using UnityEngine;
 using UnityEngine.Rendering;
+using UnityEngine.Serialization;
 
 // Equipment owns its sights. The player keeps the arms and animation controller.
 public class SoldierWeaponSights : MonoBehaviour
 {
-    public Transform firstPersonMount, thirdPersonMount, ironSight;
-    public Transform frontIronSight;
+    public Transform firstPersonMount, thirdPersonMount;
+    [Header("Default weapon sight line")]
+    [FormerlySerializedAs("ironSight")] public Transform rearSight;
+    [FormerlySerializedAs("frontIronSight")] public Transform frontSight;
     public bool cameraReferenceConfigured;
     public Vector3 neutralCameraPosition;
     public Quaternion neutralCameraRotation = Quaternion.identity;
@@ -20,7 +23,10 @@ public class SoldierWeaponSights : MonoBehaviour
     public Quaternion referenceCameraRotation = Quaternion.identity;
 
     public WeaponSightDefinition SelectedSight { get; private set; }
-    public Transform ActiveAimPoint => firstAttachment ? firstAttachment.aimPoint : replacementRear ? replacementRear : ironSight;
+    public Transform ActiveAimPoint => firstAttachment && firstAttachment.rearSight ? firstAttachment.rearSight
+        : replacementRear ? replacementRear : rearSight;
+    public Transform ActiveFrontAimPoint => firstAttachment && firstAttachment.frontSight ? firstAttachment.frontSight
+        : replacementFront ? replacementFront : frontSight;
     public int Revision { get; private set; }
     public WeaponSightAttachment FirstPersonAttachment => firstAttachment;
     SoldierFirstPersonView owner;
@@ -71,6 +77,9 @@ public class SoldierWeaponSights : MonoBehaviour
     static WeaponSightAttachment Create(WeaponSightAttachment prefab, Transform mount, int layer, bool visible, bool firstPerson)
     {
         var attachment = Instantiate(prefab, mount);
+#if UNITY_EDITOR
+        attachment.SourcePrefab = prefab;
+#endif
         attachment.transform.SetLocalPositionAndRotation(Vector3.zero, Quaternion.identity);
         foreach (var node in attachment.GetComponentsInChildren<Transform>(true)) node.gameObject.layer = layer;
         foreach (var renderer in attachment.GetComponentsInChildren<Renderer>(true))
@@ -106,11 +115,9 @@ public class SoldierWeaponSights : MonoBehaviour
         // never enters this calculation, so recoil and sway are not canceled.
         var point = ActiveAimPoint;
         Vector3 localPoint = firstPersonMount.InverseTransformPoint(point.position);
-        Quaternion pointRotation = point.rotation;
-        var front = replacementFront ? replacementFront : frontIronSight;
-        if (!firstAttachment && front && (front.position - point.position).sqrMagnitude > .000001f)
-            pointRotation = Quaternion.LookRotation(front.position - point.position, firstPersonMount.up);
-        Quaternion localRotation = Quaternion.Inverse(firstPersonMount.rotation) * pointRotation;
+        Vector3 localFront = firstPersonMount.InverseTransformPoint(ActiveFrontAimPoint.position);
+        Vector3 localUp = firstPersonMount.InverseTransformDirection(point.up);
+        Quaternion localRotation = Quaternion.LookRotation(localFront - localPoint, localUp);
         Vector3 referencePoint = referenceMountPosition + referenceMountRotation * Vector3.Scale(referenceMountScale, localPoint);
         Quaternion referenceRotation = referenceMountRotation * localRotation;
         rotation = referenceCameraRotation * Quaternion.Inverse(referenceRotation);

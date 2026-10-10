@@ -29,8 +29,9 @@ public class SoldierWeaponAttachments : MonoBehaviour
             var first=Add(selected,mount.firstPerson,view.firstPersonLayer,view.firstPerson);
             if(first.TryGetComponent<WeaponSightAttachment>(out var iron))
             {
-                if(mount.kind==WeaponAttachmentDefinition.MountKind.RearIron)rear=iron.aimPoint;
-                if(mount.kind==WeaponAttachmentDefinition.MountKind.FrontIron)front=iron.aimPoint;
+                // An attachment may override either end, or both (for a complete iron pair).
+                if (iron.rearSight) rear = iron.rearSight;
+                if (iron.frontSight) front = iron.frontSight;
             }
             Add(selected,mount.thirdPerson,view.thirdPersonLayer,true);
         }
@@ -44,6 +45,10 @@ public class SoldierWeaponAttachments : MonoBehaviour
     GameObject Add(WeaponAttachmentDefinition definition,Transform mount,int layer,bool visible)
     {
         var go=Instantiate(definition.prefab,mount,false);
+#if UNITY_EDITOR
+        if (go.TryGetComponent<WeaponSightAttachment>(out var sight))
+            sight.SourcePrefab = definition.prefab.GetComponent<WeaponSightAttachment>();
+#endif
         go.transform.SetLocalPositionAndRotation(definition.positionOffset,Quaternion.Euler(definition.rotationOffset));go.transform.localScale=definition.scale;
         foreach(var t in go.GetComponentsInChildren<Transform>(true))t.gameObject.layer=layer;
         foreach(var r in go.GetComponentsInChildren<Renderer>(true))r.enabled=visible;
