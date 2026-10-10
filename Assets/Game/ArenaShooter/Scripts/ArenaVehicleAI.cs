@@ -23,7 +23,9 @@ public class ArenaVehicleAI : MonoBehaviour
     NavMeshPath path;
     float nextDecision, nextPath, retryAt, boardedAt, progressAt, reverseUntil;
     Vector3 progressPosition;
-    bool landing;
+    bool landing, reservedForCombat;
+    ArenaParticipant vehicleTarget;
+    float nextTargetDecision;
 
     void Awake()
     {
@@ -62,7 +64,7 @@ public class ArenaVehicleAI : MonoBehaviour
         }
         if (reserved)
         {
-            if (reserved.IsDestroyed || infantry.IsCombatAlert || infantry.Target || !reserved.Reserve(occupant, reservedSeat))
+            if (reserved.IsDestroyed || reserved.Health < reserved.maxHealth*.4f || (!reservedForCombat && (infantry.IsCombatAlert || infantry.Target)) || !reserved.Reserve(occupant, reservedSeat))
             {
                 CancelBoarding();
                 return;
@@ -83,10 +85,11 @@ public class ArenaVehicleAI : MonoBehaviour
                 CancelBoarding();
             return;
         }
-        if (Time.time < nextDecision || Time.time < retryAt || infantry.IsCombatAlert || infantry.Target)
+        if (Time.time < nextDecision || Time.time < retryAt)
             return;
         nextDecision = Time.time + decisionInterval;
-        if (Vector3.Distance(transform.position, infantry.Destination) < minimumTrip)
+        bool combat=infantry.IsCombatAlert || infantry.Target;
+        if (!combat && Vector3.Distance(transform.position, infantry.Destination) < minimumTrip)
             return;
         float best = 0;
         Vehicle choice = null;
@@ -94,9 +97,9 @@ public class ArenaVehicleAI : MonoBehaviour
         Vector3 goal = infantry.Destination;
         foreach (var v in Vehicle.Active)
         {
-            if (v.gameObject.scene != gameObject.scene || v.IsDestroyed || !v.motor.CanDisembark || v.Body.linearVelocity.magnitude > 2)
+            if (v.gameObject.scene != gameObject.scene || v.IsDestroyed || v.Health < v.maxHealth*.4f || !v.motor.CanDisembark || v.Body.linearVelocity.magnitude > 2)
                 continue;
-            float distance = Vector3.Distance(transform.position, v.seats[0].exit.position);
+            float distance = Vector3.Distance(transform.position, v.NearestEntryPoint(transform.position).position);
             if (distance > vehicleSearchRadius)
                 continue;
             int seat = v.FirstAvailableSeat(occupant);
@@ -105,16 +108,22 @@ public class ArenaVehicleAI : MonoBehaviour
                 if (!v.CanBoard(occupant, seat))
                     continue;
                 bool driver = v.seats[seat].role == Vehicle.SeatRole.Driver;
+                if(combat && (v.seats[seat].role!=Vehicle.SeatRole.Gunner || !infantry.Target))continue;
                 if (!driver && !v.Driver)
                     continue; // Do not occupy an unpiloted passenger seat indefinitely.
                 Vector3 proposed = infantry.Destination;
-                if (v.motor is HelicopterMotor && (!scenario.allowAIHelicopters || !ChooseLanding(v, out proposed)))
+                if (v.motor is HelicopterMotor && (!scenario.allowAIHelicopters || (driver && !ChooseLanding(v, out proposed))))
                     continue;
-                if (driver && v.motor is HummerMotor && !PlanRoad(v, proposed))
-                    continue;
+                float trip=Vector3.Distance(v.transform.position,proposed);
+                if(driver && v.motor is HummerMotor)
+                {
+                    if(!PlanRoad(v,proposed))continue;
+                    trip=0;var road=path.corners;
+                    for(int i=1;i<road.Length;i++)trip+=Vector3.Distance(road[i-1],road[i]);
+                }
                 if (!ArenaAITactics.Reachable(infantry, v.NearestEntryPoint(transform.position).position, path, out _, out float walk))
                     continue;
-                float trip = Vector3.Distance(v.transform.position, proposed);
+
                 if (driver && trip < minimumTrip)
                     continue;
                 float footTime = Vector3.Distance(transform.position, infantry.Destination) / infantry.soldier.movement.moveSpeed;
@@ -122,6 +131,12 @@ public class ArenaVehicleAI : MonoBehaviour
                     + Vector3.Distance(proposed, infantry.Destination) / infantry.soldier.movement.moveSpeed
                     + (v.motor is HelicopterMotor ? 8f : 0f);
                 float score = footTime - rideTime;
+                if(combat)
+                {
+                    if(walk>8 || Vector3.Distance(transform.position,infantry.Target.transform.position)<infantry.attackRange*.6f
+                        || !HasLineOfFire(v,infantry.Target,v.turret.muzzle.position,EnemyPoint(infantry.Target)))continue;
+                    score=12-walk;
+                }
                 if (score < 3f)
                     continue;
                 if (score <= best)
@@ -134,6 +149,7 @@ public class ArenaVehicleAI : MonoBehaviour
         }
         if (!choice || !choice.Reserve(occupant, seatIndex))
             return;
+        reservedForCombat=combat;
         reserved = choice;
         reservedEntry = choice.NearestEntryPoint(transform.position);
         reservedSeat = seatIndex;
@@ -178,6 +194,7 @@ public class ArenaVehicleAI : MonoBehaviour
         if (reserved)
             reserved.ReleaseReservation(occupant);
         reserved = null;
+        reservedForCombat=false;
         infantry.BoardingTarget = null;
         State = TravelState.OnFoot;
         retryAt = Time.time + 3;
@@ -195,7 +212,7 @@ public class ArenaVehicleAI : MonoBehaviour
             State = TravelState.Passenger;
         if (role != Vehicle.SeatRole.Driver)
         {
-            if (!v.Driver && Time.time - boardedAt > 5 && v.CanExit)
+            if (!v.Driver && (role!=Vehicle.SeatRole.Gunner || !vehicleTarget) && Time.time - boardedAt > 5 && v.CanExit)
                 occupant.Leave(false);
             if (v.Health < v.maxHealth * .25f && v.CanExit)
                 occupant.Leave(false);
@@ -312,6 +329,7 @@ public class ArenaVehicleAI : MonoBehaviour
             occupant.Leave(false);
             retryAt = Time.time + reuseDelay;
         }
+        if(!landing && v.Health>v.maxHealth*.35f && v.transform.position.y-altitude>4)UseRockets(v);
         if (Time.time - boardedAt > 70)
             landing = true;
     }
@@ -344,14 +362,68 @@ public class ArenaVehicleAI : MonoBehaviour
         }
         return best;
     }
+    Vector3 EnemyPoint(ArenaParticipant enemy)
+    {
+        var rider=enemy.GetComponent<VehicleOccupant>();
+        return rider && rider.IsMounted ? rider.MountedVehicle.cameraTarget.position : enemy.transform.position+Vector3.up*1.25f;
+    }
+    bool HasLineOfFire(Vehicle v,ArenaParticipant enemy,Vector3 from,Vector3 to)
+    {
+        Vector3 delta=to-from;
+        var rider=enemy.GetComponent<VehicleOccupant>();
+        foreach(var hit in Physics.RaycastAll(from,delta.normalized,delta.magnitude,Physics.DefaultRaycastLayers,QueryTriggerInteraction.Ignore))
+        {
+            if(hit.transform.IsChildOf(v.transform)||hit.transform.IsChildOf(enemy.transform)||hit.collider.GetComponentInParent<VehicleRocket>())continue;
+            if(rider && rider.IsMounted && hit.transform.IsChildOf(rider.MountedVehicle.transform))continue;
+            return false;
+        }
+        return true;
+    }
+    ArenaParticipant FindVehicleTarget(Vehicle v,Vector3 origin,float range,bool gunner)
+    {
+        if(Time.time<nextTargetDecision)
+            return vehicleTarget && !vehicleTarget.health.IsDead && !vehicleTarget.IsAwaitingSpawn ? vehicleTarget : null;
+        nextTargetDecision=Time.time+.2f;vehicleTarget=null;
+        float nearest=range;
+        foreach(var enemy in infantry.participant.match.participants)
+        {
+            if(enemy.team==infantry.participant.team||enemy.health.IsDead||enemy.IsAwaitingSpawn)continue;
+            Vector3 point=EnemyPoint(enemy),direction=point-origin;
+            float distance=direction.magnitude;if(distance>nearest)continue;
+            if(gunner)
+            {
+                var local=v.turret.yawPivot.parent.InverseTransformDirection(direction);
+                float elevation=Mathf.Atan2(local.y,new Vector2(local.x,local.z).magnitude)*Mathf.Rad2Deg;
+                if(elevation<v.turret.pitchLimits.x||elevation>v.turret.pitchLimits.y)continue;
+            }
+            else if(distance<18 || Vector3.Angle(v.transform.forward,direction)>25)continue;
+            if(!HasLineOfFire(v,enemy,origin,point))continue;
+            vehicleTarget=enemy;nearest=distance;
+        }
+        return vehicleTarget;
+    }
     void UseTurret(Vehicle v)
     {
-        var enemy = NearbyEnemy(100);
-        if (!enemy)
-            return;
-        Vector3 direction = enemy.transform.position + Vector3.up * 1.25f - v.turret.muzzle.position;
+        var enemy=FindVehicleTarget(v,v.turret.muzzle.position,v.turret.range,true);
+        if(!enemy)return;
+        Vector3 point=EnemyPoint(enemy),direction=point-v.turret.muzzle.position;
         v.turret.Aim(direction);
-        if (Vector3.Angle(v.turret.muzzle.forward, direction) < 4)
+        if(Vector3.Angle(v.turret.muzzle.forward,direction)<4 && HasLineOfFire(v,enemy,v.turret.muzzle.position,point))
             v.turret.TryFire(occupant);
+    }
+    void UseRockets(Vehicle v)
+    {
+        var launcher=v.GetComponent<VehicleLauncher>();
+        if(launcher.ReadyIn>0)return;
+        var enemy=FindVehicleTarget(v,launcher.NextShotRay.origin,150,false);
+        if(!enemy)return;
+        Vector3 impact=launcher.PredictedImpactPoint;
+        if(Vector3.Distance(impact,EnemyPoint(enemy))>launcher.projectile.radius*.75f)return;
+        foreach(var ally in infantry.participant.match.participants)
+            if(ally.team==infantry.participant.team&&!ally.health.IsDead&&!ally.IsAwaitingSpawn
+                && Vector3.Distance(impact,EnemyPoint(ally))<launcher.projectile.radius+2)return;
+        if(!HasLineOfFire(v,enemy,launcher.NextShotRay.origin,EnemyPoint(enemy)))return;
+        Vector3 shotOrigin=launcher.NextShotRay.origin;
+        if(launcher.TryFire(occupant))infantry.participant.RecordShotAt(shotOrigin);
     }
 }
