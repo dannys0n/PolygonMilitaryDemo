@@ -8,8 +8,11 @@ public class ArenaMatch : MonoBehaviour
     public ArenaParticipant[] participants { get; private set; } = System.Array.Empty<ArenaParticipant>();
     readonly System.Collections.Generic.List<ArenaParticipant> roster = new System.Collections.Generic.List<ArenaParticipant>();
     readonly System.Collections.Generic.List<ArenaParticipant> pendingJoins = new System.Collections.Generic.List<ArenaParticipant>();
-    [Tooltip("Shared by both teams for respawns and opening-team anchor selection.")]
+    [Tooltip("Shared by both teams for respawns; also used for openings when dedicated anchors are unassigned.")]
     public Transform[] spawnPoints = System.Array.Empty<Transform>();
+    [Header("Fixed match opening")]
+    public Transform redOpeningSpawn;
+    public Transform blueOpeningSpawn;
     [Tooltip("Map patrol routes and encounter areas, separate from respawn locations.")]
     public Transform[] patrolPoints = System.Array.Empty<Transform>();
     public bool IsRunning { get; private set; }

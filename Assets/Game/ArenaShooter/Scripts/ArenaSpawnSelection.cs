@@ -75,6 +75,21 @@ public static class ArenaSpawnSelection
         var red = System.Array.FindAll(match.participants, p => p.team == ArenaParticipant.Team.Red);
         var blue = System.Array.FindAll(match.participants, p => p.team == ArenaParticipant.Team.Blue);
         if (match.participants.Length == 0 || match.spawnPoints.Length == 0) return false;
+        if (match.redOpeningSpawn && match.blueOpeningSpawn)
+        {
+            redAnchor = match.redOpeningSpawn;
+            blueAnchor = match.blueOpeningSpawn;
+            if (red.Length > 0 && !TryFormation(match, redAnchor.position, red, placements) ||
+                blue.Length > 0 && !TryFormation(match, blueAnchor.position, blue, placements)) return false;
+            for (int i = 0; i < placements.Count; i++)
+            {
+                var placement = placements[i];
+                placement.rotation = placement.participant.team == ArenaParticipant.Team.Red
+                    ? redAnchor.rotation : blueAnchor.rotation;
+                placements[i] = placement;
+            }
+            return true;
+        }
         int start = Random.Range(0, match.spawnPoints.Length);
         // A one-team setup is useful for navigation/sprint tests without combat.
         if (red.Length == 0 || blue.Length == 0)
