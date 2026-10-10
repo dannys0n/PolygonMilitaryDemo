@@ -2,6 +2,9 @@ using UnityEngine;
 [CreateAssetMenu(menuName = "Arena Shooter/Class")]
 public class ArenaClassDefinition : ScriptableObject
 {
+    public bool isCustom;
+    public int customIndex,grenadeIndex;
+    public WeaponAttachmentDefinition[] primaryAttachments=System.Array.Empty<WeaponAttachmentDefinition>(), secondaryAttachments=System.Array.Empty<WeaponAttachmentDefinition>();
     public string id;
     public string displayName;
     public SoldierWeaponDefinition primary, secondary;
@@ -23,6 +26,10 @@ public class ArenaClassDefinition : ScriptableObject
             if (!module || !module.Supports(sights[i]))
                 throw new System.InvalidOperationException($"Class {displayName}: {sights[i].name} does not fit the selected weapon.");
         }
+        WeaponAttachmentDefinition[][] attachments={primaryAttachments,secondaryAttachments};
+        for(int i=0;i<indices.Length;i++)foreach(var attachment in attachments[i])
+            if(!loadout.slots[indices[i]].attachments||!loadout.slots[indices[i]].attachments.Supports(attachment))
+                throw new System.InvalidOperationException("Attachment does not fit the selected weapon.");
         return indices;
     }
 }

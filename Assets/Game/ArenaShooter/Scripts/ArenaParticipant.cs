@@ -17,10 +17,10 @@ public class ArenaParticipant : MonoBehaviour
     public bool NeedsClassSelection => player && GetComponent<SoldierLocalInput>() && !SelectedClass;
     public void SelectClass(ArenaClassDefinition choice)
     {
-        if (System.Array.IndexOf(match.settings.classes, choice) < 0)
+        if (!choice.isCustom && System.Array.IndexOf(match.settings.classes, choice) < 0)
             throw new System.ArgumentException("Class is not allowed by this match.");
         choice.ResolveSlots(player.loadout);
-        SelectedClass = choice;
+        SelectedClass = choice.isCustom ? Instantiate(choice) : choice;
         if (waitingForClass && match.IsRunning)
         {
             waitingForClass = false;
@@ -105,7 +105,9 @@ public class ArenaParticipant : MonoBehaviour
             player.SetGameplayAllowed(false);
             player.loadout.ConfigureAvailableSlots(slots);
             player.loadout.SetClassSights(SelectedClass.primarySight, SelectedClass.secondarySight);
+            player.loadout.SetClassAttachments(SelectedClass.primaryAttachments,SelectedClass.secondaryAttachments);
             player.Respawn(position, rotation);
+            GetComponent<SoldierGrenades>().SelectType(SelectedClass.grenadeIndex);
         }
         else
         {

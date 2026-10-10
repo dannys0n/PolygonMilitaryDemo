@@ -151,6 +151,14 @@ public class SoldierWeaponLoadout : MonoBehaviour
         }
     }
 
+    public void SetClassAttachments(WeaponAttachmentDefinition[] primary,WeaponAttachmentDefinition[] secondary)
+    {
+        for(int i=0;i<AvailableSlots.Length;i++)
+        {
+            var module=slots[AvailableSlots[i]].attachments;
+            if(module)module.Apply(i==0?primary:secondary,presentation.view);
+        }
+    }
     public void SetEquippedVisible(bool visible) => SetVisible(slots[selectedSlot], visible);
 
     // Return the same weapon after an upper-body action without rebinding its controllers.

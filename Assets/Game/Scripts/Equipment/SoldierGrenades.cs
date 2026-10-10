@@ -17,6 +17,7 @@ public class SoldierGrenades : MonoBehaviour
     void OnEnable()=>life.Respawned+=ResetEquipment;
     void OnDisable(){life.Respawned-=ResetEquipment;CancelThrow();}
     public int Count(int type)=>counts[type];
+    public void SelectType(int index){Selected=Mathf.Clamp(index,0,types.Length-1);}
     public void Cycle(){if(!IsThrowing)Selected=(Selected+1)%types.Length;}
     void ResetEquipment(){for(int i=0;i<types.Length;i++)counts[i]=types[i].startingCount;flashUntil=flashStrength=0;}
     public bool TryThrow()

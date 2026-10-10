@@ -179,6 +179,7 @@ public class ArenaHud : MonoBehaviour
         weaponName.text = loadout.slots[loadout.selectedSlot].name.ToUpperInvariant();
         ammunition.text = $"{ammo.MagazineAmmo:00}<size=24><color=#B9C0C5> / {ammo.ReserveAmmo:000}</color></size>";
         fireMode.text = player.player.actions.IsReloading ? "RELOADING" : player.player.actions.fireMode == SoldierActions.FireMode.Automatic ? "AUTO" : "SEMI";
+        if(loadout.EquippedWeapon.definition.infiniteAmmunition){ammunition.text="∞";fireMode.text="MELEE";}
         int ordinal = System.Array.IndexOf(loadout.AvailableSlots, loadout.selectedSlot);
         rifleIcon.SetActive(ordinal == 0); pistolIcon.SetActive(ordinal > 0);
         var equippedIcon = (ordinal == 0 ? rifleIcon : pistolIcon).GetComponent<UnityEngine.UI.Image>();

@@ -9,7 +9,7 @@ public class ArenaLobbyMenu : MonoBehaviour
     public string arenaScene = "Assets/Game/ArenaShooter/Scenes/Player_vs_AI.unity";
 
     public void StartMatch() => applicationMenu.LoadScene(arenaScene);
-    public void CreateClass() => status.text = "CREATE A CLASS\nClass editing is not connected yet.";
+    public void CreateClass() => ArenaClassEditor.Open();
     public void Callsign() => status.text = "CALLSIGN & KILLSTREAKS\nPlayer customization is not connected yet.";
     public void Barracks() => status.text = "BARRACKS\nCareer statistics are not connected yet.";
     public void Invite() => status.text = "INVITE\nOnline invitations are not connected yet.";

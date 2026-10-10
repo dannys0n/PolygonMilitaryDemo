@@ -13,6 +13,9 @@ public class ArenaClassMenu : MonoBehaviour
     public Image primaryIcon, secondaryIcon;
     public Sprite rifleSprite, pistolSprite;
     public Button confirm, back, changeClass;
+    public ArenaWeaponCatalog catalog;
+    public Button createClass;
+    readonly System.Collections.Generic.List<ArenaClassDefinition> choices=new System.Collections.Generic.List<ArenaClassDefinition>();
     public bool IsVisible => panel.activeSelf;
     ArenaParticipant participant;
     ArenaClassDefinition preview;
@@ -31,11 +34,20 @@ public class ArenaClassMenu : MonoBehaviour
         confirm.onClick.AddListener(Choose);
         back.onClick.AddListener(Back);
         changeClass.onClick.AddListener(Open);
+        createClass.onClick.AddListener(OpenEditor);
     }
     void Start()
     {
         if (!participant) return;
-        foreach (var choice in participant.match.settings.classes)
+        RefreshChoices();
+        participant.match.MatchEnded += OnMatchEnded;
+        if (participant.NeedsClassSelection) Open();
+    }
+    void RefreshChoices()
+    {
+        foreach(var old in rows){old.gameObject.SetActive(false);Destroy(old.gameObject);}rows.Clear();choices.Clear();
+        choices.AddRange(participant.match.settings.classes);choices.AddRange(ArenaCustomClassStore.Load(catalog));
+        foreach (var choice in choices)
         {
             var row = Instantiate(rowTemplate, rowTemplate.transform.parent);
             row.gameObject.SetActive(true);
@@ -43,8 +55,10 @@ public class ArenaClassMenu : MonoBehaviour
             row.onClick.AddListener(() => Preview(choice));
             rows.Add(row);
         }
-        participant.match.MatchEnded += OnMatchEnded;
-        if (participant.NeedsClassSelection) Open();
+    }
+    public void OpenEditor()
+    {
+        ArenaClassEditor.Open(choice=>{RefreshChoices();Preview(choice);},null,preview&&preview.isCustom?preview.customIndex:0);
     }
     public void Open()
     {
@@ -58,13 +72,13 @@ public class ArenaClassMenu : MonoBehaviour
     void Preview(ArenaClassDefinition choice)
     {
         preview = choice;
-        primaryName.text = choice.primary.name;
-        secondaryName.text = choice.secondary.name;
+        primaryName.text = choice.primary.displayName;
+        secondaryName.text = choice.secondary.displayName;
         primaryIcon.sprite = choice.primary.icon; secondaryIcon.sprite = choice.secondary.icon;
         status.text = participant.NeedsClassSelection ? "SELECT A CLASS TO SPAWN" : "CHANGES APPLY ON YOUR NEXT RESPAWN";
         confirm.GetComponentInChildren<TMP_Text>().text = participant.NeedsClassSelection ? "DEPLOY" : "SELECT CLASS";
         for (int i = 0; i < rows.Count; i++)
-            rows[i].GetComponent<Image>().color = participant.match.settings.classes[i] == choice
+            rows[i].GetComponent<Image>().color = choices[i].id == choice.id
                 ? new Color(1f, .55f, .12f, .3f) : new Color(.12f, .14f, .16f, .65f);
     }
     void Choose()

@@ -18,6 +18,8 @@ public class ArenaPauseMenu : MonoBehaviour
     void Update()
     {
         if (transition.IsLoading) return;
+        var editor=FindAnyObjectByType<ArenaClassEditor>(FindObjectsInactive.Include);
+        if(Input.GetKeyDown(KeyCode.Escape) && editor && editor.IsVisible){editor.Close();return;}
         if (Input.GetKeyDown(KeyCode.Escape)) { if (classMenu && classMenu.IsVisible) classMenu.Back(); else if (IsPaused) Resume(); else Pause(); }
         if (IsPaused) { Cursor.lockState = CursorLockMode.None; Cursor.visible = true; }
     }
