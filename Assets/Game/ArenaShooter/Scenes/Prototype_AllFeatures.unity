@@ -14,17 +14,17 @@ OcclusionCullingSettings:
 RenderSettings:
   m_ObjectHideFlags: 0
   serializedVersion: 10
-  m_Fog: 0
-  m_FogColor: {r: 0.5, g: 0.5, b: 0.5, a: 1}
+  m_Fog: 1
+  m_FogColor: {r: 0.69, g: 0.72, b: 0.74, a: 1}
   m_FogMode: 3
-  m_FogDensity: 0.01
+  m_FogDensity: 0.0018
   m_LinearFogStart: 0
   m_LinearFogEnd: 300
-  m_AmbientSkyColor: {r: 0.212, g: 0.227, b: 0.259, a: 1}
-  m_AmbientEquatorColor: {r: 0.114, g: 0.125, b: 0.133, a: 1}
-  m_AmbientGroundColor: {r: 0.047, g: 0.043, b: 0.035, a: 1}
+  m_AmbientSkyColor: {r: 0.48, g: 0.53, b: 0.6, a: 1}
+  m_AmbientEquatorColor: {r: 0.3, g: 0.31, b: 0.32, a: 1}
+  m_AmbientGroundColor: {r: 0.17, g: 0.16, b: 0.14, a: 1}
   m_AmbientIntensity: 1
-  m_AmbientMode: 0
+  m_AmbientMode: 1
   m_SubtractiveShadowColor: {r: 0.42, g: 0.478, b: 0.627, a: 1}
   m_SkyboxMaterial: {fileID: 10304, guid: 0000000000000000f000000000000000, type: 0}
   m_HaloStrength: 0.5
@@ -37,7 +37,7 @@ RenderSettings:
   m_ReflectionBounces: 1
   m_ReflectionIntensity: 1
   m_CustomReflection: {fileID: 0}
-  m_Sun: {fileID: 0}
+  m_Sun: {fileID: 1561322522}
   m_UseRadianceAmbientProbe: 0
 --- !u!157 &3
 LightmapSettings:
@@ -189,6 +189,18 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 983396718603580253, guid: 34f2961e4465e3243bb2a72b2a0a83a1, type: 3}
+      propertyPath: m_Antialiasing
+      value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: 983396718603580253, guid: 34f2961e4465e3243bb2a72b2a0a83a1, type: 3}
+      propertyPath: m_RenderPostProcessing
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 983396718603580253, guid: 34f2961e4465e3243bb2a72b2a0a83a1, type: 3}
+      propertyPath: m_RequiresDepthTextureOption
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 6180148673987260905, guid: 34f2961e4465e3243bb2a72b2a0a83a1, type: 3}
       propertyPath: m_Name
       value: Red Bot 6
@@ -368,6 +380,18 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 983396718603580253, guid: 34f2961e4465e3243bb2a72b2a0a83a1, type: 3}
+      propertyPath: m_Antialiasing
+      value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: 983396718603580253, guid: 34f2961e4465e3243bb2a72b2a0a83a1, type: 3}
+      propertyPath: m_RenderPostProcessing
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 983396718603580253, guid: 34f2961e4465e3243bb2a72b2a0a83a1, type: 3}
+      propertyPath: m_RequiresDepthTextureOption
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 6180148673987260905, guid: 34f2961e4465e3243bb2a72b2a0a83a1, type: 3}
       propertyPath: m_Name
       value: Red Bot 9
@@ -861,6 +885,7 @@ GameObject:
   - component: {fileID: 118423077}
   - component: {fileID: 118423079}
   - component: {fileID: 118423078}
+  - component: {fileID: 118423080}
   m_Layer: 0
   m_Name: Death Spectator
   m_TagString: Untagged
@@ -955,6 +980,50 @@ Camera:
   m_OcclusionCulling: 1
   m_StereoConvergence: 10
   m_StereoSeparation: 0.022
+--- !u!114 &118423080
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 118423076}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a79441f348de89743a2939f4d699eac1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Unity.RenderPipelines.Universal.Runtime::UnityEngine.Rendering.Universal.UniversalAdditionalCameraData
+  m_RenderShadows: 1
+  m_RequiresDepthTextureOption: 1
+  m_RequiresOpaqueTextureOption: 2
+  m_CameraType: 0
+  m_Cameras: []
+  m_RendererIndex: -1
+  m_VolumeLayerMask:
+    serializedVersion: 2
+    m_Bits: 1
+  m_VolumeTrigger: {fileID: 0}
+  m_VolumeFrameworkUpdateModeOption: 2
+  m_RenderPostProcessing: 1
+  m_Antialiasing: 2
+  m_AntialiasingQuality: 2
+  m_StopNaN: 0
+  m_Dithering: 0
+  m_ClearDepth: 1
+  m_AllowXRRendering: 1
+  m_AllowHDROutput: 1
+  m_UseScreenCoordOverride: 0
+  m_ScreenSizeOverride: {x: 0, y: 0, z: 0, w: 0}
+  m_ScreenCoordScaleBias: {x: 0, y: 0, z: 0, w: 0}
+  m_RequiresDepthTexture: 0
+  m_RequiresColorTexture: 0
+  m_TaaSettings:
+    m_Quality: 3
+    m_FrameInfluence: 0.1
+    m_JitterScale: 1
+    m_MipBias: 0
+    m_VarianceClampScale: 0.9
+    m_ContrastAdaptiveSharpening: 0
+  m_Version: 2
 --- !u!1 &136004158
 GameObject:
   m_ObjectHideFlags: 0
@@ -994,6 +1063,18 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 983396718603580253, guid: 34f2961e4465e3243bb2a72b2a0a83a1, type: 3}
+      propertyPath: m_Antialiasing
+      value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: 983396718603580253, guid: 34f2961e4465e3243bb2a72b2a0a83a1, type: 3}
+      propertyPath: m_RenderPostProcessing
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 983396718603580253, guid: 34f2961e4465e3243bb2a72b2a0a83a1, type: 3}
+      propertyPath: m_RequiresDepthTextureOption
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 6180148673987260905, guid: 34f2961e4465e3243bb2a72b2a0a83a1, type: 3}
       propertyPath: m_Name
       value: Red Bot 11
@@ -1273,6 +1354,18 @@ PrefabInstance:
       propertyPath: match
       value: 
       objectReference: {fileID: 1015117810}
+    - target: {fileID: 9058402742099249346, guid: 89e1423a87bf91a43bc6129ea4e78c71, type: 3}
+      propertyPath: m_Antialiasing
+      value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: 9058402742099249346, guid: 89e1423a87bf91a43bc6129ea4e78c71, type: 3}
+      propertyPath: m_RenderPostProcessing
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 9058402742099249346, guid: 89e1423a87bf91a43bc6129ea4e78c71, type: 3}
+      propertyPath: m_RequiresDepthTextureOption
+      value: 1
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -1369,6 +1462,18 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 983396718603580253, guid: 34f2961e4465e3243bb2a72b2a0a83a1, type: 3}
+      propertyPath: m_Antialiasing
+      value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: 983396718603580253, guid: 34f2961e4465e3243bb2a72b2a0a83a1, type: 3}
+      propertyPath: m_RenderPostProcessing
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 983396718603580253, guid: 34f2961e4465e3243bb2a72b2a0a83a1, type: 3}
+      propertyPath: m_RequiresDepthTextureOption
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 6180148673987260905, guid: 34f2961e4465e3243bb2a72b2a0a83a1, type: 3}
       propertyPath: m_Name
       value: Red Bot 14
@@ -1565,6 +1670,18 @@ PrefabInstance:
       propertyPath: match
       value: 
       objectReference: {fileID: 1015117810}
+    - target: {fileID: 9058402742099249346, guid: 89e1423a87bf91a43bc6129ea4e78c71, type: 3}
+      propertyPath: m_Antialiasing
+      value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: 9058402742099249346, guid: 89e1423a87bf91a43bc6129ea4e78c71, type: 3}
+      propertyPath: m_RenderPostProcessing
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 9058402742099249346, guid: 89e1423a87bf91a43bc6129ea4e78c71, type: 3}
+      propertyPath: m_RequiresDepthTextureOption
+      value: 1
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -1661,6 +1778,18 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 983396718603580253, guid: 34f2961e4465e3243bb2a72b2a0a83a1, type: 3}
+      propertyPath: m_Antialiasing
+      value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: 983396718603580253, guid: 34f2961e4465e3243bb2a72b2a0a83a1, type: 3}
+      propertyPath: m_RenderPostProcessing
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 983396718603580253, guid: 34f2961e4465e3243bb2a72b2a0a83a1, type: 3}
+      propertyPath: m_RequiresDepthTextureOption
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 6180148673987260905, guid: 34f2961e4465e3243bb2a72b2a0a83a1, type: 3}
       propertyPath: m_Name
       value: Red Bot 7
@@ -1893,6 +2022,18 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 983396718603580253, guid: 34f2961e4465e3243bb2a72b2a0a83a1, type: 3}
+      propertyPath: m_Antialiasing
+      value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: 983396718603580253, guid: 34f2961e4465e3243bb2a72b2a0a83a1, type: 3}
+      propertyPath: m_RenderPostProcessing
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 983396718603580253, guid: 34f2961e4465e3243bb2a72b2a0a83a1, type: 3}
+      propertyPath: m_RequiresDepthTextureOption
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 6180148673987260905, guid: 34f2961e4465e3243bb2a72b2a0a83a1, type: 3}
       propertyPath: m_Name
       value: Red Bot 12
@@ -2041,6 +2182,18 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 983396718603580253, guid: 34f2961e4465e3243bb2a72b2a0a83a1, type: 3}
+      propertyPath: m_Antialiasing
+      value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: 983396718603580253, guid: 34f2961e4465e3243bb2a72b2a0a83a1, type: 3}
+      propertyPath: m_RenderPostProcessing
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 983396718603580253, guid: 34f2961e4465e3243bb2a72b2a0a83a1, type: 3}
+      propertyPath: m_RequiresDepthTextureOption
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 6180148673987260905, guid: 34f2961e4465e3243bb2a72b2a0a83a1, type: 3}
       propertyPath: m_Name
       value: Red Bot 16
@@ -2482,6 +2635,18 @@ PrefabInstance:
       propertyPath: match
       value: 
       objectReference: {fileID: 1015117810}
+    - target: {fileID: 9058402742099249346, guid: 89e1423a87bf91a43bc6129ea4e78c71, type: 3}
+      propertyPath: m_Antialiasing
+      value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: 9058402742099249346, guid: 89e1423a87bf91a43bc6129ea4e78c71, type: 3}
+      propertyPath: m_RenderPostProcessing
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 9058402742099249346, guid: 89e1423a87bf91a43bc6129ea4e78c71, type: 3}
+      propertyPath: m_RequiresDepthTextureOption
+      value: 1
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -2772,6 +2937,18 @@ PrefabInstance:
       propertyPath: match
       value: 
       objectReference: {fileID: 1015117810}
+    - target: {fileID: 9058402742099249346, guid: 89e1423a87bf91a43bc6129ea4e78c71, type: 3}
+      propertyPath: m_Antialiasing
+      value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: 9058402742099249346, guid: 89e1423a87bf91a43bc6129ea4e78c71, type: 3}
+      propertyPath: m_RenderPostProcessing
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 9058402742099249346, guid: 89e1423a87bf91a43bc6129ea4e78c71, type: 3}
+      propertyPath: m_RequiresDepthTextureOption
+      value: 1
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -3009,6 +3186,18 @@ PrefabInstance:
       propertyPath: match
       value: 
       objectReference: {fileID: 1015117810}
+    - target: {fileID: 9058402742099249346, guid: 89e1423a87bf91a43bc6129ea4e78c71, type: 3}
+      propertyPath: m_Antialiasing
+      value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: 9058402742099249346, guid: 89e1423a87bf91a43bc6129ea4e78c71, type: 3}
+      propertyPath: m_RenderPostProcessing
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 9058402742099249346, guid: 89e1423a87bf91a43bc6129ea4e78c71, type: 3}
+      propertyPath: m_RequiresDepthTextureOption
+      value: 1
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -3189,6 +3378,18 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 983396718603580253, guid: 34f2961e4465e3243bb2a72b2a0a83a1, type: 3}
+      propertyPath: m_Antialiasing
+      value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: 983396718603580253, guid: 34f2961e4465e3243bb2a72b2a0a83a1, type: 3}
+      propertyPath: m_RenderPostProcessing
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 983396718603580253, guid: 34f2961e4465e3243bb2a72b2a0a83a1, type: 3}
+      propertyPath: m_RequiresDepthTextureOption
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 6180148673987260905, guid: 34f2961e4465e3243bb2a72b2a0a83a1, type: 3}
       propertyPath: m_Name
       value: Red Bot 2
@@ -3329,6 +3530,63 @@ MonoBehaviour:
   life: {fileID: 521827391}
   soldier: {fileID: 521827390}
   faction: 0
+--- !u!1001 &536857277
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 0}
+    m_Modifications:
+    - target: {fileID: 3170134028789761222, guid: e1c43ca479863b341b0c057dea9de3ba, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3170134028789761222, guid: e1c43ca479863b341b0c057dea9de3ba, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3170134028789761222, guid: e1c43ca479863b341b0c057dea9de3ba, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3170134028789761222, guid: e1c43ca479863b341b0c057dea9de3ba, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 3170134028789761222, guid: e1c43ca479863b341b0c057dea9de3ba, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3170134028789761222, guid: e1c43ca479863b341b0c057dea9de3ba, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3170134028789761222, guid: e1c43ca479863b341b0c057dea9de3ba, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3170134028789761222, guid: e1c43ca479863b341b0c057dea9de3ba, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3170134028789761222, guid: e1c43ca479863b341b0c057dea9de3ba, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3170134028789761222, guid: e1c43ca479863b341b0c057dea9de3ba, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5606060772947462030, guid: e1c43ca479863b341b0c057dea9de3ba, type: 3}
+      propertyPath: m_Name
+      value: Gameplay_Atmosphere
+      objectReference: {fileID: 0}
+    m_RemovedComponents: []
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents: []
+  m_SourcePrefab: {fileID: 100100000, guid: e1c43ca479863b341b0c057dea9de3ba, type: 3}
 --- !u!1 &570904504
 GameObject:
   m_ObjectHideFlags: 0
@@ -3416,6 +3674,18 @@ PrefabInstance:
       propertyPath: match
       value: 
       objectReference: {fileID: 1015117810}
+    - target: {fileID: 9058402742099249346, guid: 89e1423a87bf91a43bc6129ea4e78c71, type: 3}
+      propertyPath: m_Antialiasing
+      value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: 9058402742099249346, guid: 89e1423a87bf91a43bc6129ea4e78c71, type: 3}
+      propertyPath: m_RenderPostProcessing
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 9058402742099249346, guid: 89e1423a87bf91a43bc6129ea4e78c71, type: 3}
+      propertyPath: m_RequiresDepthTextureOption
+      value: 1
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -3512,6 +3782,18 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 983396718603580253, guid: 34f2961e4465e3243bb2a72b2a0a83a1, type: 3}
+      propertyPath: m_Antialiasing
+      value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: 983396718603580253, guid: 34f2961e4465e3243bb2a72b2a0a83a1, type: 3}
+      propertyPath: m_RenderPostProcessing
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 983396718603580253, guid: 34f2961e4465e3243bb2a72b2a0a83a1, type: 3}
+      propertyPath: m_RequiresDepthTextureOption
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 6180148673987260905, guid: 34f2961e4465e3243bb2a72b2a0a83a1, type: 3}
       propertyPath: m_Name
       value: Red Bot 15
@@ -3761,6 +4043,18 @@ PrefabInstance:
       propertyPath: match
       value: 
       objectReference: {fileID: 1015117810}
+    - target: {fileID: 9058402742099249346, guid: 89e1423a87bf91a43bc6129ea4e78c71, type: 3}
+      propertyPath: m_Antialiasing
+      value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: 9058402742099249346, guid: 89e1423a87bf91a43bc6129ea4e78c71, type: 3}
+      propertyPath: m_RenderPostProcessing
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 9058402742099249346, guid: 89e1423a87bf91a43bc6129ea4e78c71, type: 3}
+      propertyPath: m_RequiresDepthTextureOption
+      value: 1
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -3936,6 +4230,18 @@ PrefabInstance:
       propertyPath: match
       value: 
       objectReference: {fileID: 1015117810}
+    - target: {fileID: 9058402742099249346, guid: 89e1423a87bf91a43bc6129ea4e78c71, type: 3}
+      propertyPath: m_Antialiasing
+      value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: 9058402742099249346, guid: 89e1423a87bf91a43bc6129ea4e78c71, type: 3}
+      propertyPath: m_RenderPostProcessing
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 9058402742099249346, guid: 89e1423a87bf91a43bc6129ea4e78c71, type: 3}
+      propertyPath: m_RequiresDepthTextureOption
+      value: 1
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -4032,6 +4338,18 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 983396718603580253, guid: 34f2961e4465e3243bb2a72b2a0a83a1, type: 3}
+      propertyPath: m_Antialiasing
+      value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: 983396718603580253, guid: 34f2961e4465e3243bb2a72b2a0a83a1, type: 3}
+      propertyPath: m_RenderPostProcessing
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 983396718603580253, guid: 34f2961e4465e3243bb2a72b2a0a83a1, type: 3}
+      propertyPath: m_RequiresDepthTextureOption
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 6180148673987260905, guid: 34f2961e4465e3243bb2a72b2a0a83a1, type: 3}
       propertyPath: m_Name
       value: Red Bot 5
@@ -4180,6 +4498,18 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 983396718603580253, guid: 34f2961e4465e3243bb2a72b2a0a83a1, type: 3}
+      propertyPath: m_Antialiasing
+      value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: 983396718603580253, guid: 34f2961e4465e3243bb2a72b2a0a83a1, type: 3}
+      propertyPath: m_RenderPostProcessing
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 983396718603580253, guid: 34f2961e4465e3243bb2a72b2a0a83a1, type: 3}
+      propertyPath: m_RequiresDepthTextureOption
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 6180148673987260905, guid: 34f2961e4465e3243bb2a72b2a0a83a1, type: 3}
       propertyPath: m_Name
       value: Red Bot 1
@@ -4564,6 +4894,18 @@ PrefabInstance:
       propertyPath: match
       value: 
       objectReference: {fileID: 1015117810}
+    - target: {fileID: 9058402742099249346, guid: 89e1423a87bf91a43bc6129ea4e78c71, type: 3}
+      propertyPath: m_Antialiasing
+      value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: 9058402742099249346, guid: 89e1423a87bf91a43bc6129ea4e78c71, type: 3}
+      propertyPath: m_RenderPostProcessing
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 9058402742099249346, guid: 89e1423a87bf91a43bc6129ea4e78c71, type: 3}
+      propertyPath: m_RequiresDepthTextureOption
+      value: 1
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -4846,6 +5188,18 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 983396718603580253, guid: 34f2961e4465e3243bb2a72b2a0a83a1, type: 3}
+      propertyPath: m_Antialiasing
+      value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: 983396718603580253, guid: 34f2961e4465e3243bb2a72b2a0a83a1, type: 3}
+      propertyPath: m_RenderPostProcessing
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 983396718603580253, guid: 34f2961e4465e3243bb2a72b2a0a83a1, type: 3}
+      propertyPath: m_RequiresDepthTextureOption
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 6180148673987260905, guid: 34f2961e4465e3243bb2a72b2a0a83a1, type: 3}
       propertyPath: m_Name
       value: Red Bot 3
@@ -5042,6 +5396,18 @@ PrefabInstance:
       propertyPath: match
       value: 
       objectReference: {fileID: 1015117810}
+    - target: {fileID: 9058402742099249346, guid: 89e1423a87bf91a43bc6129ea4e78c71, type: 3}
+      propertyPath: m_Antialiasing
+      value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: 9058402742099249346, guid: 89e1423a87bf91a43bc6129ea4e78c71, type: 3}
+      propertyPath: m_RenderPostProcessing
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 9058402742099249346, guid: 89e1423a87bf91a43bc6129ea4e78c71, type: 3}
+      propertyPath: m_RequiresDepthTextureOption
+      value: 1
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -5186,6 +5552,18 @@ PrefabInstance:
       propertyPath: match
       value: 
       objectReference: {fileID: 1015117810}
+    - target: {fileID: 9058402742099249346, guid: 89e1423a87bf91a43bc6129ea4e78c71, type: 3}
+      propertyPath: m_Antialiasing
+      value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: 9058402742099249346, guid: 89e1423a87bf91a43bc6129ea4e78c71, type: 3}
+      propertyPath: m_RenderPostProcessing
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 9058402742099249346, guid: 89e1423a87bf91a43bc6129ea4e78c71, type: 3}
+      propertyPath: m_RequiresDepthTextureOption
+      value: 1
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -5282,6 +5660,18 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 983396718603580253, guid: 34f2961e4465e3243bb2a72b2a0a83a1, type: 3}
+      propertyPath: m_Antialiasing
+      value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: 983396718603580253, guid: 34f2961e4465e3243bb2a72b2a0a83a1, type: 3}
+      propertyPath: m_RenderPostProcessing
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 983396718603580253, guid: 34f2961e4465e3243bb2a72b2a0a83a1, type: 3}
+      propertyPath: m_RequiresDepthTextureOption
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 6180148673987260905, guid: 34f2961e4465e3243bb2a72b2a0a83a1, type: 3}
       propertyPath: m_Name
       value: Red Bot 8
@@ -5748,6 +6138,18 @@ PrefabInstance:
       propertyPath: match
       value: 
       objectReference: {fileID: 1015117810}
+    - target: {fileID: 9058402742099249346, guid: 89e1423a87bf91a43bc6129ea4e78c71, type: 3}
+      propertyPath: m_Antialiasing
+      value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: 9058402742099249346, guid: 89e1423a87bf91a43bc6129ea4e78c71, type: 3}
+      propertyPath: m_RenderPostProcessing
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 9058402742099249346, guid: 89e1423a87bf91a43bc6129ea4e78c71, type: 3}
+      propertyPath: m_RequiresDepthTextureOption
+      value: 1
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -6329,6 +6731,18 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 983396718603580253, guid: 34f2961e4465e3243bb2a72b2a0a83a1, type: 3}
+      propertyPath: m_Antialiasing
+      value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: 983396718603580253, guid: 34f2961e4465e3243bb2a72b2a0a83a1, type: 3}
+      propertyPath: m_RenderPostProcessing
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 983396718603580253, guid: 34f2961e4465e3243bb2a72b2a0a83a1, type: 3}
+      propertyPath: m_RequiresDepthTextureOption
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 6180148673987260905, guid: 34f2961e4465e3243bb2a72b2a0a83a1, type: 3}
       propertyPath: m_Name
       value: Red Bot 4
@@ -7668,6 +8082,18 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 983396718603580253, guid: 34f2961e4465e3243bb2a72b2a0a83a1, type: 3}
+      propertyPath: m_Antialiasing
+      value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: 983396718603580253, guid: 34f2961e4465e3243bb2a72b2a0a83a1, type: 3}
+      propertyPath: m_RenderPostProcessing
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 983396718603580253, guid: 34f2961e4465e3243bb2a72b2a0a83a1, type: 3}
+      propertyPath: m_RequiresDepthTextureOption
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 6180148673987260905, guid: 34f2961e4465e3243bb2a72b2a0a83a1, type: 3}
       propertyPath: m_Name
       value: Red Bot 13
@@ -7819,6 +8245,7 @@ GameObject:
   - component: {fileID: 1561322523}
   - component: {fileID: 1561322522}
   - component: {fileID: 1561322521}
+  - component: {fileID: 1561322524}
   m_Layer: 0
   m_Name: Directional Light
   m_TagString: Untagged
@@ -7865,17 +8292,17 @@ Light:
   m_Enabled: 1
   serializedVersion: 13
   m_Type: 1
-  m_Color: {r: 1, g: 1, b: 1, a: 1}
-  m_Intensity: 1
+  m_Color: {r: 1, g: 0.98, b: 0.94, a: 1}
+  m_Intensity: 1.1
   m_Range: 10
   m_SpotAngle: 30
   m_InnerSpotAngle: 21.80208
   m_CookieSize2D: {x: 0.5, y: 0.5}
   m_Shadows:
-    m_Type: 1
+    m_Type: 2
     m_Resolution: -1
     m_CustomResolution: -1
-    m_Strength: 1
+    m_Strength: 0.85
     m_Bias: 0.05
     m_NormalBias: 0.4
     m_NearPlane: 0.2
@@ -7935,6 +8362,133 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 50, y: -30, z: 0}
+--- !u!114 &1561322524
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1561322520}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: cc4d76f733087744991913c9d19d5274, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Unity.RenderPipelines.Core.Runtime::UnityEngine.Rendering.LensFlareComponentSRP
+  m_LensFlareData: {fileID: 11400000, guid: b2813513428609249aa43de04e270461, type: 2}
+  version: 0
+  intensity: 0.32
+  maxAttenuationDistance: 100
+  maxAttenuationScale: 100
+  distanceAttenuationCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    - serializedVersion: 3
+      time: 1
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  scaleByDistanceCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    - serializedVersion: 3
+      time: 1
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  attenuationByLightShape: 1
+  radialScreenAttenuationCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    - serializedVersion: 3
+      time: 1
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  useOcclusion: 1
+  environmentOcclusion: 0
+  occlusionRadius: 0.12
+  sampleCount: 16
+  occlusionOffset: 0.05
+  scale: 1
+  allowOffScreen: 0
+  occlusionRemapCurve:
+    <length>k__BackingField: 2
+    m_Loop: 0
+    m_ZeroValue: 1
+    m_Range: 1
+    m_Curve:
+      serializedVersion: 2
+      m_Curve:
+      - serializedVersion: 3
+        time: 0
+        value: 0
+        inSlope: 0
+        outSlope: 1
+        tangentMode: 0
+        weightedMode: 0
+        inWeight: 0
+        outWeight: 0
+      - serializedVersion: 3
+        time: 1
+        value: 1
+        inSlope: 1
+        outSlope: 0
+        tangentMode: 0
+        weightedMode: 0
+        inWeight: 0
+        outWeight: 0
+      m_PreInfinity: 2
+      m_PostInfinity: 2
+      m_RotationOrder: 4
+  lightOverride: {fileID: 0}
 --- !u!1 &1563677314
 GameObject:
   m_ObjectHideFlags: 0
@@ -8279,6 +8833,18 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 6251891034064856757, guid: acb21014eddba4a4d92b497670d7a275, type: 3}
+      propertyPath: m_Antialiasing
+      value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: 6251891034064856757, guid: acb21014eddba4a4d92b497670d7a275, type: 3}
+      propertyPath: m_RenderPostProcessing
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 6251891034064856757, guid: acb21014eddba4a4d92b497670d7a275, type: 3}
+      propertyPath: m_RequiresDepthTextureOption
+      value: 1
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -8499,6 +9065,18 @@ PrefabInstance:
       propertyPath: match
       value: 
       objectReference: {fileID: 1015117810}
+    - target: {fileID: 9058402742099249346, guid: 89e1423a87bf91a43bc6129ea4e78c71, type: 3}
+      propertyPath: m_Antialiasing
+      value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: 9058402742099249346, guid: 89e1423a87bf91a43bc6129ea4e78c71, type: 3}
+      propertyPath: m_RenderPostProcessing
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 9058402742099249346, guid: 89e1423a87bf91a43bc6129ea4e78c71, type: 3}
+      propertyPath: m_RequiresDepthTextureOption
+      value: 1
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -9125,6 +9703,18 @@ PrefabInstance:
       propertyPath: match
       value: 
       objectReference: {fileID: 1015117810}
+    - target: {fileID: 9058402742099249346, guid: 89e1423a87bf91a43bc6129ea4e78c71, type: 3}
+      propertyPath: m_Antialiasing
+      value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: 9058402742099249346, guid: 89e1423a87bf91a43bc6129ea4e78c71, type: 3}
+      propertyPath: m_RenderPostProcessing
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 9058402742099249346, guid: 89e1423a87bf91a43bc6129ea4e78c71, type: 3}
+      propertyPath: m_RequiresDepthTextureOption
+      value: 1
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -9535,6 +10125,18 @@ PrefabInstance:
       propertyPath: match
       value: 
       objectReference: {fileID: 1015117810}
+    - target: {fileID: 9058402742099249346, guid: 89e1423a87bf91a43bc6129ea4e78c71, type: 3}
+      propertyPath: m_Antialiasing
+      value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: 9058402742099249346, guid: 89e1423a87bf91a43bc6129ea4e78c71, type: 3}
+      propertyPath: m_RenderPostProcessing
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 9058402742099249346, guid: 89e1423a87bf91a43bc6129ea4e78c71, type: 3}
+      propertyPath: m_RequiresDepthTextureOption
+      value: 1
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -9980,6 +10582,18 @@ PrefabInstance:
       propertyPath: match
       value: 
       objectReference: {fileID: 1015117810}
+    - target: {fileID: 9058402742099249346, guid: 89e1423a87bf91a43bc6129ea4e78c71, type: 3}
+      propertyPath: m_Antialiasing
+      value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: 9058402742099249346, guid: 89e1423a87bf91a43bc6129ea4e78c71, type: 3}
+      propertyPath: m_RenderPostProcessing
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 9058402742099249346, guid: 89e1423a87bf91a43bc6129ea4e78c71, type: 3}
+      propertyPath: m_RequiresDepthTextureOption
+      value: 1
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -10307,3 +10921,4 @@ SceneRoots:
   - {fileID: 838205935}
   - {fileID: 1885275379}
   - {fileID: 190740914}
+  - {fileID: 536857277}
