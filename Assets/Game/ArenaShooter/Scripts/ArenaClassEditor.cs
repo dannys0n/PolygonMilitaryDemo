@@ -66,7 +66,7 @@ public class ArenaClassEditor : MonoBehaviour
     }
     void ChangeWeapon(bool first)
     {
-        if(refreshing)return;if(first){draft.primary=primaryWeapons[primary.value];draft.primarySight=null;draft.primaryAttachments=Array.Empty<WeaponAttachmentDefinition>();}else{draft.secondary=secondaryWeapons[secondary.value];draft.secondarySight=null;draft.secondaryAttachments=Array.Empty<WeaponAttachmentDefinition>();}RefreshWeapon(first);SetPreviewWeapon(first);
+        if(refreshing)return;if(first){draft.primary=primaryWeapons[primary.value];draft.primarySight=catalog.Find(draft.primary).defaultSight;draft.primaryAttachments=Array.Empty<WeaponAttachmentDefinition>();}else{draft.secondary=secondaryWeapons[secondary.value];draft.secondarySight=catalog.Find(draft.secondary).defaultSight;draft.secondaryAttachments=Array.Empty<WeaponAttachmentDefinition>();}RefreshWeapon(first);SetPreviewWeapon(first);
     }
     void RefreshWeapon(bool first)
     {

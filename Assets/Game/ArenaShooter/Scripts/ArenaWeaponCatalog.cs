@@ -7,6 +7,8 @@ public class ArenaWeaponCatalog : ScriptableObject
         public SoldierWeaponDefinition weapon;
         public GameObject basePrefab;
         public WeaponSightDefinition[] sights;
+        [Tooltip("Initial optic for a newly selected weapon; custom classes can override it.")]
+        public WeaponSightDefinition defaultSight;
         public WeaponAttachmentDefinition[] attachments;
         public string animationStyle;
     }
