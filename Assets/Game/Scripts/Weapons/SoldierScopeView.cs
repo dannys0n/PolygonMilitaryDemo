@@ -42,9 +42,11 @@ public class SoldierScopeView : MonoBehaviour
                 texture.name="Owned Scope Lens";texture.antiAliasing=1;texture.Create();
             }
             lens=attachment.scopeLens;originalMaterial=lens.sharedMaterial;
-            lensMaterial=new Material(Shader.Find("Universal Render Pipeline/Unlit"));
+            lensMaterial=new Material(Shader.Find("Game/Scope Surface"));
             lensMaterial.SetTexture("_BaseMap",texture);lensMaterial.SetColor("_BaseColor",Color.white);
-            lensMaterial.SetFloat("_Cull",0);lens.sharedMaterial=lensMaterial;renderedSight=sight;
+            // Only the visible lens aperture admits the reticle; the housing keeps normal depth testing.
+            lensMaterial.SetFloat("_StencilPass",2);lensMaterial.renderQueue=2450;
+            lens.sharedMaterial=lensMaterial;renderedSight=sight;
             scopeCamera.targetTexture=texture;
         }
         var camera=view.playerCamera;
