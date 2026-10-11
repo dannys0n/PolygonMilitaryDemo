@@ -13,7 +13,8 @@ public class ArmoryController : MonoBehaviour
     public SoldierHealth health;
     public TMP_Text status, equipment;
     public CanvasGroup crosshair;
-    public ArmoryTarget[] targets;
+    public ArmoryWall wall;
+    [NonSerialized] public ArmoryTarget[] targets;
     readonly Dictionary<int,List<WeaponAttachmentDefinition>> selections = new();
     ArmoryTarget pending;
     ArmoryTarget heldTarget;
@@ -23,6 +24,7 @@ public class ArmoryController : MonoBehaviour
 
     void Start()
     {
+        targets = wall.Build();
         health.DamageFilter = _ => false;
         foreach(var slot in loadout.slots)
         {
