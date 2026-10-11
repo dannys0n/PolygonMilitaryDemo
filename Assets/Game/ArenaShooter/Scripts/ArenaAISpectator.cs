@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.Rendering;
 
 // Minimal observation controls and feedback for the AI-versus-AI test scene.
 [DefaultExecutionOrder(200)]
@@ -26,16 +27,26 @@ public class ArenaAISpectator : MonoBehaviour
     public bool FirstPersonSpectating { get; private set; }
     SoldierFirstPersonView observedView;
     bool previousFirstPerson, previousCameraEnabled, previousSpectatorEnabled;
-    int previousCameraMask;
+    int previousCameraMask, previousSpectatorMask;
+    RenderTexture previousCameraTarget, previousSpectatorTarget, insetTexture;
     Renderer[] hiddenBody;
     UnityEngine.Rendering.ShadowCastingMode[] previousShadows;
     float yaw, pitch;
     public bool ShowControls { get; private set; } = true;
     public bool IsSpectating => !localPlayer || localDeathView;
     public bool ControlsBlocked { get; set; }
+    bool bodyDirty;
+
+    public void SetInsetTexture(RenderTexture texture)
+    {
+        insetTexture = texture;
+        RouteCameras();
+    }
 
     void OnEnable()
     {
+        RenderPipelineManager.beginCameraRendering += BeforeCamera;
+        RenderPipelineManager.endCameraRendering += AfterCamera;
         if (!localPlayer) return;
         localPlayer.health.Died += OnLocalPlayerDied;
         localPlayer.player.Respawned += OnLocalPlayerRespawned;
@@ -96,19 +107,21 @@ public class ArenaAISpectator : MonoBehaviour
         CancelDeathWatch();
         bool perspective = FirstPersonSpectating;
         if (FollowedCharacter) FollowedCharacter.health.Died -= OnFollowedCharacterDied;
-        ExitPerspective();
+        ReleasePerspective();
         FollowedCharacter = character;
         FollowedCharacter.health.Died += OnFollowedCharacterDied;
         followedHead = character.player.actions.animator.GetBoneTransform(HumanBodyBones.Head);
         ShowFollowHud(character);
-        if (perspective) EnterPerspective();
+        PreparePerspective();
+        FirstPersonSpectating = perspective;
+        RouteCameras();
     }
 
     public void StopFollowing()
     {
         CancelDeathWatch();
         if (FollowedCharacter) FollowedCharacter.health.Died -= OnFollowedCharacterDied;
-        ExitPerspective();
+        ReleasePerspective();
         FollowedCharacter = null; followedHead = null;
         if (followHud)
         {
@@ -203,44 +216,101 @@ public class ArenaAISpectator : MonoBehaviour
 
     void EnterPerspective()
     {
-        observedView = FollowedCharacter.player.view;
+        if (!observedView) PreparePerspective();
         FirstPersonSpectating = true;
+        RouteCameras();
+    }
+
+    void PreparePerspective()
+    {
+        observedView = FollowedCharacter.player.view;
         var camera = observedView.playerCamera;
         previousFirstPerson = observedView.firstPerson;
         previousCameraEnabled = camera.enabled;
         previousCameraMask = camera.cullingMask;
+        previousSpectatorMask = spectatorCamera.cullingMask;
         previousSpectatorEnabled = spectatorCamera.enabled;
+        previousCameraTarget = camera.targetTexture;
+        previousSpectatorTarget = spectatorCamera.targetTexture;
         var aimRotation = camera.transform.localRotation;
+        camera.enabled = true;
         observedView.SetFirstPerson(true);
         camera.transform.localRotation = aimRotation;
         // Other soldiers remain visible. Only the observed body becomes shadow-only.
         camera.cullingMask |= 1 << observedView.thirdPersonLayer;
+        CacheBody();
+        observedView.GetComponent<SoldierWeaponLoadout>().PresentationChanging += MarkBodyDirty;
+        spectatorCamera.cullingMask &= ~(1 << observedView.firstPersonLayer);
+        observedView.GetComponent<SoldierWeaponLoadout>().RefreshFirstPersonPresentation();
+    }
+
+    void MarkBodyDirty() => bodyDirty = true;
+
+    void CacheBody()
+    {
         hiddenBody = observedView.thirdPersonRoot.GetComponentsInChildren<Renderer>(true);
-        previousShadows = new UnityEngine.Rendering.ShadowCastingMode[hiddenBody.Length];
+        previousShadows = new ShadowCastingMode[hiddenBody.Length];
         for (int i = 0; i < hiddenBody.Length; i++)
-        {
             previousShadows[i] = hiddenBody[i].shadowCastingMode;
-            hiddenBody[i].shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.ShadowsOnly;
-        }
-        spectatorCamera.enabled = false;
-        camera.enabled = true; observedView.GetComponent<SoldierWeaponLoadout>().RefreshFirstPersonPresentation();
+        bodyDirty = false;
+    }
+
+    void BeforeCamera(ScriptableRenderContext context, Camera camera)
+    {
+        if (!observedView || camera != observedView.playerCamera) return;
+        if (bodyDirty) CacheBody();
+        for (int i = 0; i < hiddenBody.Length; i++)
+            if (hiddenBody[i]) hiddenBody[i].shadowCastingMode = ShadowCastingMode.ShadowsOnly;
+    }
+
+    void AfterCamera(ScriptableRenderContext context, Camera camera)
+    {
+        if (!observedView || camera != observedView.playerCamera) return;
+        RestoreBody();
+    }
+
+    void RestoreBody()
+    {
+        if (hiddenBody == null) return;
+        for (int i = 0; i < hiddenBody.Length; i++)
+            if (hiddenBody[i]) hiddenBody[i].shadowCastingMode = previousShadows[i];
+    }
+
+    void RouteCameras()
+    {
+        if (!observedView) return;
+        // Exactly one camera owns the screen; the alternate writes to the HUD texture.
+        observedView.playerCamera.targetTexture = FirstPersonSpectating ? null : insetTexture;
+        spectatorCamera.targetTexture = FirstPersonSpectating ? insetTexture : null;
+        observedView.playerCamera.enabled = FirstPersonSpectating || insetTexture;
+        spectatorCamera.enabled = !FirstPersonSpectating || insetTexture;
     }
 
     void ExitPerspective()
     {
-        if (!FirstPersonSpectating) return;
+        FirstPersonSpectating = false;
+        RouteCameras();
+    }
+
+    void ReleasePerspective()
+    {
+        RestoreBody();
         if (observedView)
         {
+            observedView.GetComponent<SoldierWeaponLoadout>().PresentationChanging -= MarkBodyDirty;
             var camera = observedView.playerCamera;
             var aimRotation = camera.transform.localRotation;
             observedView.SetFirstPerson(previousFirstPerson);
             camera.transform.localRotation = aimRotation;
             camera.cullingMask = previousCameraMask;
             camera.enabled = previousCameraEnabled;
+            camera.targetTexture = previousCameraTarget;
+            spectatorCamera.targetTexture = previousSpectatorTarget;
+            spectatorCamera.cullingMask = previousSpectatorMask;
+            spectatorCamera.enabled = previousSpectatorEnabled;
+            observedView.GetComponent<SoldierWeaponLoadout>().RefreshFirstPersonPresentation();
         }
-        for (int i = 0; i < hiddenBody.Length; i++)
-            if (hiddenBody[i]) hiddenBody[i].shadowCastingMode = previousShadows[i];
-        spectatorCamera.enabled = previousSpectatorEnabled;
+        hiddenBody = null;
         observedView = null;
         FirstPersonSpectating = false;
     }
@@ -277,6 +347,8 @@ public class ArenaAISpectator : MonoBehaviour
 
     void OnDisable()
     {
+        RenderPipelineManager.beginCameraRendering -= BeforeCamera;
+        RenderPipelineManager.endCameraRendering -= AfterCamera;
         if (localPlayer)
         {
             OnLocalPlayerRespawned();
