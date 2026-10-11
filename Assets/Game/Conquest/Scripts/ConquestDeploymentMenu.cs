@@ -15,6 +15,9 @@ public class ConquestDeploymentMenu : MonoBehaviour
     public GameObject panel;
     public Button baseButton, deployButton, classButton;
     public Button[] flagButtons;
+    public Button[] squadButtons=System.Array.Empty<Button>();
+    readonly System.Collections.Generic.List<ArenaParticipant> squadMembers=new System.Collections.Generic.List<ArenaParticipant>();
+    ArenaParticipant selectedMember;
     public TMP_Text status, className;
     ConquestCapturePoint selected;
     bool visible, requested, previousInputBlocked, previousSpectatorBlocked, restoreOnRestart;
@@ -28,6 +31,15 @@ public class ConquestDeploymentMenu : MonoBehaviour
         {
             var point=rules.points[i];
             flagButtons[i].onClick.AddListener(()=>Select(point));
+        }
+        for(int i=0;i<squadButtons.Length;i++)
+        {
+            int index=i;
+            squadButtons[i].onClick.AddListener(()=>
+            {
+                selected=null;selectedMember=squadMembers[index];
+                rules.SelectSquadDeployment(participant,selectedMember);
+            });
         }
         deployButton.onClick.AddListener(()=>{requested=true;nextAttempt=0;rules.ApproveDeployment(participant);});
         classButton.onClick.AddListener(()=>
@@ -49,7 +61,7 @@ public class ConquestDeploymentMenu : MonoBehaviour
             restoreOnRestart=false;
         }
     }
-    void Select(ConquestCapturePoint point) { selected=point;rules.SelectDeployment(participant,point); }
+    void Select(ConquestCapturePoint point) { selected=point;selectedMember=null;rules.SelectDeployment(participant,point); }
     void LateUpdate()
     {
         bool waiting=participant.health.IsDead || participant.IsAwaitingSpawn;
@@ -57,10 +69,10 @@ public class ConquestDeploymentMenu : MonoBehaviour
         bool show=participant.match.IsRunning && waiting && !participant.NeedsClassSelection && !pause.IsPaused && !classMenu.IsVisible;
         SetVisible(show);
         if(!show)return;
-        if(!rules.CanDeploy(participant,selected))Select(null);
+        if(!rules.CanDeploy(participant,selected) || selectedMember && !rules.squads.CanDeploy(participant,selectedMember))Select(null);
         Cursor.lockState=CursorLockMode.None;Cursor.visible=true;
         className.text=participant.SelectedClass.displayName;
-        baseButton.GetComponentInChildren<TMP_Text>().text=(selected?"":"> ")+"TEAM BASE";
+        baseButton.GetComponentInChildren<TMP_Text>().text=(selected || selectedMember?"":"> ")+"TEAM BASE";
         for(int i=0;i<flagButtons.Length;i++)
         {
             var p=rules.points[i];var b=flagButtons[i];
@@ -69,9 +81,20 @@ public class ConquestDeploymentMenu : MonoBehaviour
             label.text=(selected==p?"> ":"")+p.letter+"  /  "+p.displayName.ToUpperInvariant()+(p.IsContested?"  /  CONTESTED":"");
             label.color=b.interactable?ConquestCapturePoint.TeamColor(p.Owner):new Color(.4f,.4f,.4f);
         }
+        squadMembers.Clear();
+        if(rules.squads)foreach(var member in rules.squads.Members(participant))if(member!=participant)squadMembers.Add(member);
+        for(int i=0;i<squadButtons.Length;i++)
+        {
+            var button=squadButtons[i];button.gameObject.SetActive(i<squadMembers.Count);
+            if(i>=squadMembers.Count)continue;
+            var member=squadMembers[i];string reason=rules.squads.UnavailableReason(participant,member);
+            button.interactable=reason=="";
+            button.GetComponentInChildren<TMP_Text>().text=(selectedMember==member?"> ":"")+member.name.ToUpperInvariant()+(reason==""?"": " / "+reason);
+        }
+        if(rules.squads)className.text+="  /  "+ConquestSquads.SquadName(rules.squads.SquadOf(participant));
         bool ready=participant.RespawnRemaining<=0;
         deployButton.interactable=ready && !requested;
-        status.text=!ready?$"DEPLOY IN {Mathf.CeilToInt(participant.RespawnRemaining)}" : requested?"WAITING FOR A CLEAR SPAWN" : "SELECT A FRIENDLY FLAG OR YOUR TEAM BASE";
+        status.text=!ready?$"DEPLOY IN {Mathf.CeilToInt(participant.RespawnRemaining)}" : requested?"WAITING FOR A CLEAR SPAWN" : "SELECT BASE, FRIENDLY FLAG, OR SAFE SQUADMATE";
         if(requested && ready && Time.time>=nextAttempt)
         {
             nextAttempt=Time.time+.5f;

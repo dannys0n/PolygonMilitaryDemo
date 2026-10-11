@@ -13,5 +13,7 @@ public abstract class ArenaMatchRules : MonoBehaviour
     public abstract bool TryChooseSpawn(ArenaParticipant actor, Dictionary<Transform,float> history, out Transform spawn);
     public abstract void OnSpawned(ArenaParticipant actor, bool wasDead);
     public virtual bool NeedsDeployment(ArenaParticipant actor) => false;
+    // Null keeps the HUD's nearby-team display for modes without squads.
+    public virtual IEnumerable<ArenaParticipant> SquadMembers(ArenaParticipant actor) => null;
     public virtual bool TryGetObjective(ArenaAIInput ai, out Vector3 destination) { destination=default; return false; }
 }

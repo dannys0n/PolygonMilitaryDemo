@@ -243,9 +243,10 @@ public class ArenaHud : MonoBehaviour
         }
         health.text = $"+ {Mathf.CeilToInt(player.health.CurrentHealth):000}";
         healthProgress.fillAmount = player.health.CurrentHealth / player.health.maxHealth;
-        var squad = match.participants.Where(p => p.team == player.team && p != player)
+        var members = match.rules ? match.rules.SquadMembers(player) : null;
+        var squad = members != null ? members.Where(p => p != player) : match.participants.Where(p => p.team == player.team && p != player)
             .OrderBy(p => (p.transform.position-player.transform.position).sqrMagnitude).Take(3);
-        teammates.text = string.Join("\n", squad.Select((p,i) => $"{i+1:00}  {Escape(p.name)}  <color=#{accentHex}>{(p.health.IsDead ? "DOWN" : Mathf.CeilToInt(p.health.CurrentHealth).ToString())}</color>"));
+        teammates.text = string.Join("\n", squad.Select((p,i) => $"{i+1:00}  {Escape(p.name)}  <color=#{accentHex}>{(p.health.IsDead || p.IsAwaitingSpawn ? "DOWN" : Mathf.CeilToInt(p.health.CurrentHealth).ToString())}</color>"));
         kills.RemoveAll(k => k.expires < Time.time);
         for (int i = 0; i < killWeapons.Length; i++)
         {

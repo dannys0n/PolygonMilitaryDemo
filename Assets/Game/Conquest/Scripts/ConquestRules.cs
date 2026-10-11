@@ -10,6 +10,7 @@ public class ConquestRules : ArenaMatchRules
     [Min(1)] public int ticketsPerExtraFlag=1;
     [Header("Map")]
     public ConquestCapturePoint[] points;
+    public ConquestSquads squads;
     public Transform[] redBaseSpawns, blueBaseSpawns;
     [Header("AI objectives")]
     [Min(1)] public float objectiveDecisionInterval=4;
@@ -24,6 +25,7 @@ public class ConquestRules : ArenaMatchRules
     int redTickets,blueTickets;
     float captureClock,bleedClock;
     readonly Dictionary<ArenaParticipant,ConquestCapturePoint> deployments=new Dictionary<ArenaParticipant,ConquestCapturePoint>();
+    readonly Dictionary<ArenaParticipant,ArenaParticipant> squadDeployments=new Dictionary<ArenaParticipant,ArenaParticipant>();
     readonly HashSet<ArenaParticipant> approved=new HashSet<ArenaParticipant>();
     readonly Dictionary<ArenaParticipant,Assignment> assignments=new Dictionary<ArenaParticipant,Assignment>();
     readonly List<Transform> candidates=new List<Transform>();
@@ -32,7 +34,7 @@ public class ConquestRules : ArenaMatchRules
     public override void Begin(ArenaMatch owner)
     {
         match=owner;redTickets=blueTickets=startingTickets;captureClock=bleedClock=0;
-        deployments.Clear();approved.Clear();assignments.Clear();
+        deployments.Clear();squadDeployments.Clear();approved.Clear();assignments.Clear();
         query ??= new NavMeshPath();
         foreach(var point in points)point.ResetCapture();
     }
@@ -61,14 +63,32 @@ public class ConquestRules : ArenaMatchRules
     }
     public bool CanDeploy(ArenaParticipant actor, ConquestCapturePoint point) => !point || point.Owner==actor.team
         && point.Count(actor.team==ArenaParticipant.Team.Red?ArenaParticipant.Team.Blue:ArenaParticipant.Team.Red)==0;
-    public void SelectDeployment(ArenaParticipant actor, ConquestCapturePoint point) { deployments[actor]=point; }
+    public void SelectDeployment(ArenaParticipant actor, ConquestCapturePoint point) { deployments[actor]=point;squadDeployments.Remove(actor); }
+    public void SelectSquadDeployment(ArenaParticipant actor,ArenaParticipant member){squadDeployments[actor]=member;deployments[actor]=null;}
     public void ApproveDeployment(ArenaParticipant actor) => approved.Add(actor);
     public void CancelDeployment(ArenaParticipant actor) => approved.Remove(actor);
     public override bool NeedsDeployment(ArenaParticipant actor) => actor.player && actor.GetComponent<SoldierLocalInput>();
+    public override IEnumerable<ArenaParticipant> SquadMembers(ArenaParticipant actor) => squads ? squads.Members(actor) : null;
     public override bool TryChooseSpawn(ArenaParticipant actor, Dictionary<Transform,float> history, out Transform spawn)
     {
         spawn=null;
         if(TeamScore(actor.team)<=0 || actor.RespawnRemaining>0 || actor.NeedsClassSelection || NeedsDeployment(actor) && !approved.Contains(actor))return false;
+        if(squads)
+        {
+            ArenaParticipant mate=null;
+            if(NeedsDeployment(actor))squadDeployments.TryGetValue(actor,out mate);
+            else
+            {
+                float closest=float.PositiveInfinity;
+                foreach(var member in squads.Members(actor))
+                {
+                    float distance=(actor.transform.position-member.transform.position).sqrMagnitude;
+                    if(distance>=closest || !squads.CanDeploy(actor,member))continue;
+                    closest=distance;mate=member;
+                }
+            }
+            if(mate && squads.TryChooseSpawn(actor,mate,history,out spawn))return true;
+        }
         candidates.Clear();
         if(NeedsDeployment(actor))
         {
