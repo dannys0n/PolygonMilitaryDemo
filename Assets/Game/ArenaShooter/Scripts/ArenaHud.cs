@@ -218,7 +218,7 @@ public class ArenaHud : MonoBehaviour
             bool owned = i < loadout.AvailableSlots.Length;
             equipmentIcons[i].transform.parent.gameObject.SetActive(owned);
             if (!owned) continue;
-            equipmentIcons[i].sprite = loadout.slots[loadout.AvailableSlots[i]].weapon.definition.icon;
+            equipmentIcons[i].sprite = loadout.slots[loadout.AvailableSlots[i]].definition.icon;
             equipmentIcons[i].color = i == ordinal ? Color.white : new Color(1,1,1,.6f);
             equipmentKeys[i].color = i == ordinal ? accent : Color.white;
             equipmentBackgrounds[i].color = i == ordinal ? new Color(accent.r,accent.g,accent.b,.12f) : new Color(1,1,1,.035f);
@@ -271,5 +271,3 @@ public class ArenaHud : MonoBehaviour
         }
     }
 }
-
-

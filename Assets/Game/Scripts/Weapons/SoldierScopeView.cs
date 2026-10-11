@@ -21,7 +21,7 @@ public class SoldierScopeView : MonoBehaviour
         var sight=sights?sights.SelectedSight:null;
         var attachment=sights?sights.FirstPersonAttachment:null;
         bool equippedInViewer=view.isActiveAndEnabled && view.firstPerson && view.playerCamera.isActiveAndEnabled
-            && loadout.slots[loadout.selectedSlot].firstPersonWeapon.gameObject.activeInHierarchy
+            && loadout.HasFirstPersonPresentation && loadout.FirstPersonView.gameObject.activeInHierarchy
             && sight && sight.pictureInPicture && attachment && attachment.scopeLens
             && attachment.scopeLens.enabled && attachment.scopeLens.gameObject.activeInHierarchy
             && !attachment.scopeLens.forceRenderingOff

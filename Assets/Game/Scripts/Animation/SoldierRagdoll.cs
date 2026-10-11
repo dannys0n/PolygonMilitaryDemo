@@ -30,7 +30,8 @@ public class SoldierRagdoll : MonoBehaviour
 
     void Awake()
     {
-        bones = animator.GetBoneTransform(HumanBodyBones.Hips).GetComponentsInChildren<Transform>(true);
+        bones = System.Array.FindAll(animator.GetBoneTransform(HumanBodyBones.Hips).GetComponentsInChildren<Transform>(true),
+            bone => !bone.IsChildOf(life.loadout.thirdPersonMount));
         restPositions = new Vector3[bones.Length]; restRotations = new Quaternion[bones.Length];
         for (int i = 0; i < bones.Length; i++)
         { restPositions[i] = bones[i].localPosition; restRotations[i] = bones[i].localRotation; }
@@ -87,7 +88,7 @@ public class SoldierRagdoll : MonoBehaviour
         rig.enabled = false; animator.enabled = false; life.controller.enabled = false;
         for (int i = 0; i < bones.Length; i++)
         { bones[i].localPosition = positions[i]; bones[i].localRotation = rotations[i]; }
-        heldWeapon = life.loadout.slots[life.loadout.selectedSlot].thirdPersonWeapon;
+        heldWeapon = life.loadout.ThirdPersonView.transform;
         weaponParent = heldWeapon.parent; weaponPosition = heldWeapon.localPosition; weaponRotation = heldWeapon.localRotation;
         weaponScale = heldWeapon.localScale;
         heldWeapon.SetParent(animator.GetBoneTransform(HumanBodyBones.RightHand), true);
@@ -114,9 +115,12 @@ public class SoldierRagdoll : MonoBehaviour
     {
         if (!IsRagdoll) return;
         SetPhysics(false);
-        heldWeapon.SetParent(weaponParent, false);
-        heldWeapon.localPosition = weaponPosition; heldWeapon.localRotation = weaponRotation;
-        heldWeapon.localScale = weaponScale;
+        if(heldWeapon && heldWeapon==life.loadout.ThirdPersonView.transform)
+        {
+            heldWeapon.SetParent(weaponParent, false);
+            heldWeapon.localPosition = weaponPosition; heldWeapon.localRotation = weaponRotation;
+            heldWeapon.localScale = weaponScale;
+        }
         for (int i = 0; i < bones.Length; i++)
         { bones[i].localPosition = restPositions[i]; bones[i].localRotation = restRotations[i]; }
         for (int i = 0; i < constraints.Length; i++)

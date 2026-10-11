@@ -227,7 +227,7 @@ public class WeaponViewPlacementWindow : EditorWindow
     {
         if (player == null || SceneView.lastActiveSceneView == null) return;
         var loadout = player.GetComponent<SoldierWeaponLoadout>();
-        var renderers = loadout.slots[loadout.selectedSlot].firstPersonWeapon.GetComponentsInChildren<Renderer>();
+        var renderers = loadout.FirstPersonView.GetComponentsInChildren<Renderer>();
         if (renderers.Length == 0) return;
         var bounds = renderers[0].bounds;
         foreach (var mesh in renderers) bounds.Encapsulate(mesh.bounds);

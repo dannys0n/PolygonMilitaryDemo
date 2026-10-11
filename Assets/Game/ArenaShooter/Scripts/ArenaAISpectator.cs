@@ -223,7 +223,7 @@ public class ArenaAISpectator : MonoBehaviour
             hiddenBody[i].shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.ShadowsOnly;
         }
         spectatorCamera.enabled = false;
-        camera.enabled = true;
+        camera.enabled = true; observedView.GetComponent<SoldierWeaponLoadout>().RefreshFirstPersonPresentation();
     }
 
     void ExitPerspective()

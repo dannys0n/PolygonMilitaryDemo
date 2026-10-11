@@ -102,7 +102,7 @@ public class SoldierFirstPersonView : MonoBehaviour
         armsRenderers = System.Array.FindAll(firstPersonRoot.GetComponentsInChildren<SkinnedMeshRenderer>(true),
             mesh => System.Array.IndexOf(mesh.bones, leftHand) >= 0 || System.Array.IndexOf(mesh.bones, rightHand) >= 0);
         armsAnimator.cullingMode = AnimatorCullingMode.AlwaysAnimate;
-        weaponAnimator.cullingMode = AnimatorCullingMode.AlwaysAnimate;
+        if (loadout.HasFirstPersonPresentation) weaponAnimator.cullingMode = AnimatorCullingMode.AlwaysAnimate;
         foreach (Renderer mesh in firstPersonRenderers)
             mesh.shadowCastingMode = ShadowCastingMode.Off;
         ApplyHandVisibility();
@@ -111,7 +111,7 @@ public class SoldierFirstPersonView : MonoBehaviour
     void ApplyHandVisibility()
     {
         foreach (var mesh in armsRenderers) mesh.forceRenderingOff = !definition.showFirstPersonHands;
-        loadout.firstPersonGripRig.gripEnabled = definition.showFirstPersonHands;
+        loadout.firstPersonGripRig.gripEnabled = definition.showFirstPersonHands && loadout.HasFirstPersonPresentation;
     }
 
     public void CancelAim()
@@ -146,6 +146,7 @@ public class SoldierFirstPersonView : MonoBehaviour
 
     private void ApplyPlacement(float blend)
     {
+        if (!loadout.HasFirstPersonPresentation) return;
         Quaternion rotation = firstPersonRestRotation * Quaternion.Euler(definition.viewRotationOffset)
             * Quaternion.Slerp(Quaternion.Euler(definition.hipFireRotationOffset),
                 Quaternion.Euler(definition.aimRotationOffset), blend);
@@ -218,6 +219,7 @@ public class SoldierFirstPersonView : MonoBehaviour
     public void SetFirstPerson(bool enabled)
     {
         firstPerson = enabled;
+        loadout.RefreshFirstPersonPresentation();
         playerCamera.fieldOfView = originalFieldOfView;
         firstPersonRoot.gameObject.SetActive(true);
         foreach (Renderer mesh in firstPersonRenderers) mesh.enabled = enabled;
@@ -232,27 +234,27 @@ public class SoldierFirstPersonView : MonoBehaviour
     public void PlayFire()
     {
         armsAnimator.ResetTrigger("Fire");
-        weaponAnimator.ResetTrigger("Fire");
+        if(loadout.HasFirstPersonPresentation)weaponAnimator.ResetTrigger("Fire");
         armsAnimator.CrossFadeInFixedTime("Fire", definition.fireBlendTime, 0, 0f);
-        weaponAnimator.Play("Fire", 0, 0f);
+        if(loadout.HasFirstPersonPresentation)weaponAnimator.Play("Fire", 0, 0f);
     }
 
     public void CancelReload()
     {
         armsAnimator.ResetTrigger("Reload");
-        weaponAnimator.ResetTrigger("Reload");
+        if(loadout.HasFirstPersonPresentation)weaponAnimator.ResetTrigger("Reload");
         armsAnimator.Play("Idle", 0, 0f);
-        weaponAnimator.Play("Idle", 0, 0f);
+        if(loadout.HasFirstPersonPresentation)weaponAnimator.Play("Idle", 0, 0f);
     }
 
     public void PlayReload()
     {
 
         armsAnimator.ResetTrigger("Fire");
-        weaponAnimator.ResetTrigger("Fire");
+        if(loadout.HasFirstPersonPresentation)weaponAnimator.ResetTrigger("Fire");
         armsAnimator.SetBool("Aim", false);
         armsAnimator.SetLayerWeight(aimTransitionLayer, 0f);
         armsAnimator.SetTrigger("Reload");
-        weaponAnimator.SetTrigger("Reload");
+        if(loadout.HasFirstPersonPresentation)weaponAnimator.SetTrigger("Reload");
     }
 }

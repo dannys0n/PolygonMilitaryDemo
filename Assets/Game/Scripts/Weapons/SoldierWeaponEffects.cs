@@ -16,7 +16,7 @@ public class SoldierWeaponEffects : MonoBehaviour
     SoldierWeaponLoadout loadout;
     SoldierFirstPersonView view;
     SoldierController controller;
-    MuzzleEffect[] firstPerson, thirdPerson;
+    MuzzleEffect firstPerson, thirdPerson;
     readonly Queue<int> pendingShots = new Queue<int>();
 
     void Awake()
@@ -25,19 +25,20 @@ public class SoldierWeaponEffects : MonoBehaviour
         loadout = GetComponent<SoldierWeaponLoadout>();
         view = GetComponent<SoldierFirstPersonView>();
         controller = GetComponent<SoldierController>();
-        firstPerson = new MuzzleEffect[loadout.slots.Length];
-        thirdPerson = new MuzzleEffect[loadout.slots.Length];
+
+
     }
-    void OnEnable() => actions.FireStarted += OnShot;
+    void OnEnable() { actions.FireStarted += OnShot; loadout.PresentationChanging += ReleaseEffects; }
     void OnDisable()
     {
         actions.FireStarted -= OnShot;
+        loadout.PresentationChanging -= ReleaseEffects;
         pendingShots.Clear();
         ClearEffects();
     }
 
     bool IsLocalOwner => controller.inputSource is SoldierLocalInput local && local.isActiveAndEnabled;
-    bool CanIlluminate => view.firstPerson && view.playerCamera.enabled && IsLocalOwner;
+    bool CanIlluminate => loadout.HasFirstPersonPresentation && view.firstPerson && view.playerCamera.enabled && IsLocalOwner;
 
     void OnShot() => pendingShots.Enqueue(loadout.selectedSlot);
 
@@ -49,20 +50,20 @@ public class SoldierWeaponEffects : MonoBehaviour
 
     void PresentShot(int index)
     {
-        var slot = loadout.slots[index];
-        var definition = slot.weapon.definition;
+        if(index!=loadout.selectedSlot)return;
+        var definition = loadout.EquippedWeapon.definition;
         // Casings are an owner-only cosmetic effect, including when the owner uses TPS.
         if (IsLocalOwner && definition.shellCasing)
         {
-            Transform port = (view.firstPerson && view.playerCamera.enabled
-                ? slot.firstPersonSockets : slot.thirdPersonSockets).shellEjection;
+            Transform port = (loadout.HasFirstPersonPresentation && view.firstPerson && view.playerCamera.enabled
+                ? loadout.FirstPersonView.effects : loadout.ThirdPersonView.effects).shellEjection;
             var casing = Instantiate(definition.shellCasing, port.position, port.rotation);
             casing.Launch(port.rotation, controller.movement.controller.velocity);
         }
         // World flash remains visible to TPS viewers. FPS flash uses the owner's view layer.
-        Emit(ref thirdPerson[index], slot.thirdPersonSockets.muzzleFlash, definition, view.thirdPersonLayer, false);
-        if (view.firstPerson && view.playerCamera.enabled)
-            Emit(ref firstPerson[index], slot.firstPersonSockets.muzzleFlash, definition, view.firstPersonLayer, CanIlluminate);
+        Emit(ref thirdPerson, loadout.ThirdPersonView.effects.muzzleFlash, definition, view.thirdPersonLayer, false);
+        if (loadout.HasFirstPersonPresentation && view.firstPerson && view.playerCamera.enabled)
+            Emit(ref firstPerson, loadout.FirstPersonView.effects.muzzleFlash, definition, view.firstPersonLayer, CanIlluminate);
     }
 
     void Emit(ref MuzzleEffect effect, Transform muzzle, SoldierWeaponDefinition definition, int layer, bool illuminate)
@@ -99,23 +100,24 @@ public class SoldierWeaponEffects : MonoBehaviour
 
     void Update()
     {
-        // Ownership/view changes and automatic fire cannot leave a light enabled.
-        for (int i = 0; i < firstPerson.Length; i++)
-        {
-            var effect = firstPerson[i];
-            if (effect?.light != null && (!CanIlluminate || i != loadout.selectedSlot || Time.time >= effect.lightEnd))
-                effect.light.enabled = false;
-        }
+        if(firstPerson?.light!=null&&(!CanIlluminate||Time.time>=firstPerson.lightEnd))firstPerson.light.enabled=false;
     }
-
     void ClearEffects()
     {
-        foreach (var array in new[] { firstPerson, thirdPerson })
-            foreach (var effect in array)
-            {
-                if (effect == null) continue;
-                effect.particles.Stop(true, ParticleSystemStopBehavior.StopEmittingAndClear);
-                if (effect.light != null) effect.light.enabled = false;
-            }
+        foreach(var effect in new[]{firstPerson,thirdPerson})
+        {
+            if(effect?.particles)effect.particles.Stop(true,ParticleSystemStopBehavior.StopEmittingAndClear);
+            if(effect?.light)effect.light.enabled=false;
+        }
+    }
+    void ReleaseEffects()
+    {
+        pendingShots.Clear();ClearEffects();
+        foreach(var effect in new[]{firstPerson,thirdPerson})
+        {
+            if(effect?.particles)Destroy(effect.particles.gameObject);
+            if(effect?.light)Destroy(effect.light.gameObject);
+        }
+        firstPerson=thirdPerson=null;
     }
 }

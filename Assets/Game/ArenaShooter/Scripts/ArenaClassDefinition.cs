@@ -13,7 +13,7 @@ public class ArenaClassDefinition : ScriptableObject
     {
         int Find(SoldierWeaponDefinition weapon)
         {
-            int slot = System.Array.FindIndex(loadout.slots, s => s.weapon.definition == weapon);
+            int slot = System.Array.FindIndex(loadout.slots, s => s.definition == weapon);
             if (slot < 0) throw new System.InvalidOperationException($"Class {displayName}: {weapon.name} is missing from {loadout.name}'s catalog.");
             return slot;
         }
@@ -22,13 +22,12 @@ public class ArenaClassDefinition : ScriptableObject
         for (int i=0;i<indices.Length;i++)
         {
             if (!sights[i]) continue;
-            var module=loadout.slots[indices[i]].sights;
-            if (!module || !module.Supports(sights[i]))
+            if (!loadout.slots[indices[i]].Supports(sights[i]))
                 throw new System.InvalidOperationException($"Class {displayName}: {sights[i].name} does not fit the selected weapon.");
         }
         WeaponAttachmentDefinition[][] attachments={primaryAttachments,secondaryAttachments};
         for(int i=0;i<indices.Length;i++)foreach(var attachment in attachments[i])
-            if(!loadout.slots[indices[i]].attachments||!loadout.slots[indices[i]].attachments.Supports(attachment))
+            if(!loadout.slots[indices[i]].Supports(attachment))
                 throw new System.InvalidOperationException("Attachment does not fit the selected weapon.");
         return indices;
     }

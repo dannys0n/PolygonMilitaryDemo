@@ -19,10 +19,10 @@ public class SoldierWeaponSights : MonoBehaviour
     Transform replacementRear, replacementFront;
     public WeaponSightDefinition defaultSight;
     public WeaponSightDefinition[] compatibleSights;
-    [Header("Neutral ADS reference, relative to FirstPersonView")]
-    public Vector3 referenceMountPosition;
-    public Quaternion referenceMountRotation = Quaternion.identity;
-    public Vector3 referenceMountScale = Vector3.one;
+    [Header("Neutral weapon pose, relative to FirstPersonView")]
+    public Vector3 referenceWeaponPosition;
+    public Quaternion referenceWeaponRotation = Quaternion.identity;
+    public Vector3 referenceWeaponScale = Vector3.one;
     public Vector3 referenceCameraPosition;
     public Quaternion referenceCameraRotation = Quaternion.identity;
 
@@ -34,6 +34,7 @@ public class SoldierWeaponSights : MonoBehaviour
     public int Revision { get; private set; }
     public WeaponSightAttachment FirstPersonAttachment => firstAttachment;
     SoldierFirstPersonView owner;
+    SoldierWeaponLoadout loadout;
     WeaponSightAttachment firstAttachment, thirdAttachment;
     float sightLift;
 
@@ -42,6 +43,7 @@ public class SoldierWeaponSights : MonoBehaviour
     public void Initialize(SoldierFirstPersonView view)
     {
         owner = view;
+        loadout = view.GetComponent<SoldierWeaponLoadout>();
         if (!SelectedSight) SetSight(defaultSight);
     }
 
@@ -54,7 +56,7 @@ public class SoldierWeaponSights : MonoBehaviour
         SelectedSight = sight;
         if (sight.prefab)
         {
-            firstAttachment = Create(sight.prefab, firstPersonMount, owner.firstPersonLayer, owner.firstPerson, true);
+            if (firstPersonMount) firstAttachment = Create(sight.prefab, firstPersonMount, owner.firstPersonLayer, owner.firstPerson, true);
             thirdAttachment = Create(sight.prefab, thirdPersonMount, owner.thirdPersonLayer, true, false);
         }
         else firstAttachment = thirdAttachment = null;
@@ -62,6 +64,13 @@ public class SoldierWeaponSights : MonoBehaviour
         Revision++;
         // Removed attachments are detached before Destroy, so no stale renderer references remain.
         owner.RefreshVisuals();
+    }
+
+    public void ClearPresentation()
+    {
+        Remove(firstAttachment); Remove(thirdAttachment);
+        firstAttachment=thirdAttachment=null; replacementRear=replacementFront=null;
+        SelectedSight=null; sightLift=0; Revision++;
     }
 
     public void Cycle()
@@ -115,15 +124,16 @@ public class SoldierWeaponSights : MonoBehaviour
 
     public void GetAdsPlacement(Vector3 rootScale, out Vector3 position, out Quaternion rotation)
     {
-        // Read only the sight relative to its mounting socket. Animated weapon motion
-        // never enters this calculation, so recoil and sway are not canceled.
+        // Sight markers share the weapon root coordinate space, regardless of parent/socket edits.
+        // The saved neutral weapon pose preserves authored sway and recoil.
         var point = ActiveAimPoint;
-        Vector3 localPoint = firstPersonMount.InverseTransformPoint(point.position);
-        Vector3 localFront = firstPersonMount.InverseTransformPoint(ActiveFrontAimPoint.position);
-        Vector3 localUp = firstPersonMount.InverseTransformDirection(point.up);
+        var firstPersonWeaponRoot = loadout.FirstPersonView.transform;
+        Vector3 localPoint = firstPersonWeaponRoot.InverseTransformPoint(point.position);
+        Vector3 localFront = firstPersonWeaponRoot.InverseTransformPoint(ActiveFrontAimPoint.position);
+        Vector3 localUp = firstPersonWeaponRoot.InverseTransformDirection(point.up);
         Quaternion localRotation = Quaternion.LookRotation(localFront - localPoint, localUp);
-        Vector3 referencePoint = referenceMountPosition + referenceMountRotation * Vector3.Scale(referenceMountScale, localPoint);
-        Quaternion referenceRotation = referenceMountRotation * localRotation;
+        Vector3 referencePoint = referenceWeaponPosition + referenceWeaponRotation * Vector3.Scale(referenceWeaponScale, localPoint);
+        Quaternion referenceRotation = referenceWeaponRotation * localRotation;
         rotation = referenceCameraRotation * Quaternion.Inverse(referenceRotation);
         Vector3 target = referenceCameraPosition + referenceCameraRotation * Vector3.forward * SelectedSight.eyeDistance;
         position = target - rotation * Vector3.Scale(rootScale, referencePoint);

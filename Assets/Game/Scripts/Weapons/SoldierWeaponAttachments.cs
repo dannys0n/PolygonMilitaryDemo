@@ -26,8 +26,8 @@ public class SoldierWeaponAttachments : MonoBehaviour
             if(!replacement)continue;
             if (mount.kind == WeaponAttachmentDefinition.MountKind.SightRiser)
                 sightLift = selected.sightLift;
-            var first=Add(selected,mount.firstPerson,view.firstPersonLayer,view.firstPerson);
-            if(first.TryGetComponent<WeaponSightAttachment>(out var iron))
+            var first=mount.firstPerson?Add(selected,mount.firstPerson,view.firstPersonLayer,view.firstPerson):null;
+            if(first && first.TryGetComponent<WeaponSightAttachment>(out var iron))
             {
                 // An attachment may override either end, or both (for a complete iron pair).
                 if (iron.rearSight) rear = iron.rearSight;

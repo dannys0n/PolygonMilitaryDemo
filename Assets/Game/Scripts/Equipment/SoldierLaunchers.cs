@@ -36,12 +36,11 @@ public class SoldierLaunchers : MonoBehaviour
         // Use the class's rifle hold as a deliberately basic launcher pose.
         life.loadout.SetStartingSlot(life.loadout.AvailableSlots[0]);
         Selected=index;life.view.CancelAim();life.view.SetAimRequested(false);
-        var slot=life.loadout.slots[life.loadout.selectedSlot];
-        hiddenFirst=slot.firstPersonWeapon.GetComponentsInChildren<Renderer>(true);
-        hiddenThird=slot.thirdPersonWeapon.GetComponentsInChildren<Renderer>(true);
-        first=Held(slot.firstPersonSockets.muzzleFlash,life.view.firstPersonLayer);
-        third=Held(slot.thirdPersonSockets.muzzleFlash,life.view.thirdPersonLayer);
+        hiddenFirst=System.Array.Empty<Renderer>();
+        hiddenThird=life.loadout.ThirdPersonView.GetComponentsInChildren<Renderer>(true);
+        third=Held(life.loadout.ThirdPersonView.effects.muzzleFlash,life.view.thirdPersonLayer);
         IsEquipped=true;life.view.RefreshVisuals();UpdateVisibility();
+        RefreshFirstPersonPresentation();
         return true;
     }
     InfantryLauncherVisual Held(Transform parent,int layer)
@@ -60,22 +59,36 @@ public class SoldierLaunchers : MonoBehaviour
         if(!IsEquipped)return;
         IsEquipped=false;
         // Detach before refreshing visibility; Destroy is deferred until the frame ends.
-        first.gameObject.SetActive(false);third.gameObject.SetActive(false);
-        first.transform.SetParent(null);third.transform.SetParent(null);
-        Destroy(first.gameObject);Destroy(third.gameObject);
-        foreach(var r in hiddenFirst){r.forceRenderingOff=false;r.enabled=life.view.firstPerson;}
+        if(first){first.gameObject.SetActive(false);first.transform.SetParent(null);Destroy(first.gameObject);first=null;}
+        third.gameObject.SetActive(false);third.transform.SetParent(null);Destroy(third.gameObject);
+        foreach(var r in hiddenFirst)if(r){r.forceRenderingOff=false;r.enabled=life.view.firstPerson;}
         foreach(var r in hiddenThird){r.forceRenderingOff=false;r.enabled=true;}
         life.loadout.SetStartingSlot(previousSlot);
         life.view.RefreshVisuals();
     }
     void LateUpdate(){if(IsEquipped)UpdateVisibility();}
+    public void RefreshFirstPersonPresentation()
+    {
+        if(!IsEquipped)return;
+        if(life.loadout.HasFirstPersonPresentation&&!first)
+        {
+            hiddenFirst=life.loadout.FirstPersonView.GetComponentsInChildren<Renderer>(true);
+            first=Held(life.loadout.FirstPersonView.effects.muzzleFlash,life.view.firstPersonLayer);
+        }
+        else if(!life.loadout.HasFirstPersonPresentation&&first)
+        {
+            first.gameObject.SetActive(false);first.transform.SetParent(null);Destroy(first.gameObject);first=null;
+            hiddenFirst=System.Array.Empty<Renderer>();
+        }
+        UpdateVisibility();
+    }
     void UpdateVisibility()
     {
         // Animation clips can write Renderer.enabled; this visibility override survives that.
-        foreach(var r in hiddenFirst)r.forceRenderingOff=true;
+        foreach(var r in hiddenFirst)if(r)r.forceRenderingOff=true;
         foreach(var r in hiddenThird)r.forceRenderingOff=true;
-        foreach(var r in first.GetComponentsInChildren<Renderer>(true))r.enabled=life.view.firstPerson;
-        if(first.loadedRocket)first.loadedRocket.SetActive(Ready&&rounds[Selected]>0);
+        if(first)foreach(var r in first.GetComponentsInChildren<Renderer>(true))r.enabled=life.view.firstPerson;
+        if(first&&first.loadedRocket)first.loadedRocket.SetActive(Ready&&rounds[Selected]>0);
         if(third.loadedRocket)third.loadedRocket.SetActive(Ready&&rounds[Selected]>0);
     }
     public bool TryFire()
@@ -87,7 +100,7 @@ public class SoldierLaunchers : MonoBehaviour
         float nearest=500;
         foreach(var hit in Physics.RaycastAll(ray,500,Physics.DefaultRaycastLayers,QueryTriggerInteraction.Ignore))
             if(!hit.transform.IsChildOf(transform)&&hit.distance<nearest){nearest=hit.distance;target=hit.point;}
-        Transform muzzle=(life.view.firstPerson?first:third).muzzle;
+        Transform muzzle=(life.loadout.HasFirstPersonPresentation&&life.view.firstPerson?first:third).muzzle;
         // Do not launch through a wall between the soldier and the barrel.
         Vector3 from=transform.position+Vector3.up*1.4f,delta=muzzle.position-from;
         foreach(var hit in Physics.RaycastAll(from,delta.normalized,delta.magnitude,Physics.DefaultRaycastLayers,QueryTriggerInteraction.Ignore))

@@ -26,9 +26,9 @@ public class ArmoryController : MonoBehaviour
         health.DamageFilter = _ => false;
         foreach(var slot in loadout.slots)
         {
-            var definition=Instantiate(slot.weapon.definition);
+            var definition=Instantiate(slot.definition);
             definition.startingReserveAmmo=1000000;
-            slot.weapon.definition=definition;
+            slot.definition=definition;
             runtimeDefinitions.Add(definition);
         }
         loadout.ResetAmmunition();
@@ -74,7 +74,7 @@ public class ArmoryController : MonoBehaviour
     {
         if(target.weapon)
         {
-            int index=Array.FindIndex(loadout.slots,s=>s.weapon.definition.catalogId==target.weapon.catalogId);
+            int index=Array.FindIndex(loadout.slots,s=>s.definition.catalogId==target.weapon.catalogId);
             if(index<0){status.text="Weapon is not in this loadout.";return;}
             if(index!=loadout.selectedSlot)loadout.TrySelectWeapon(index);
             status.text="Equipping "+target.title;
@@ -84,23 +84,23 @@ public class ArmoryController : MonoBehaviour
             var module=loadout.EquippedSights;
             if(target.resetSight)
             {
-                if(module){module.SetSight(module.defaultSight);status.text="Restored default sights.";}
+                if(module){loadout.SetSight(module.defaultSight);status.text="Restored default sights.";}
                 else status.text="This weapon uses built-in sights.";
                 refreshAt=0;return;
             }
             if(!module || !module.Supports(target.sight)){status.text="This sight does not fit the equipped weapon.";return;}
-            module.SetSight(module.SelectedSight==target.sight?module.defaultSight:target.sight);
+            loadout.SetSight(module.SelectedSight==target.sight?module.defaultSight:target.sight);
             status.text="Sight: "+module.SelectedSight.displayName;
         }
         else if(target.attachment)
         {
-            var module=loadout.slots[loadout.selectedSlot].attachments;
+            var module=loadout.EquippedAttachments;
             if(!module || !module.Supports(target.attachment)){status.text="This attachment does not fit the equipped weapon.";return;}
             if(!selections.TryGetValue(loadout.selectedSlot,out var list))selections[loadout.selectedSlot]=list=new();
             bool removing=list.Contains(target.attachment);
             list.RemoveAll(a=>a.mount==target.attachment.mount);
             if(!removing)list.Add(target.attachment);
-            module.Apply(list.ToArray(),loadout.presentation.view);
+            loadout.SetAttachments(list.ToArray());
             status.text=(removing?"Removed ":"Equipped ")+target.title;
         }
         refreshAt=0;
@@ -112,16 +112,16 @@ public class ArmoryController : MonoBehaviour
         selections.TryGetValue(loadout.selectedSlot,out var current);
         foreach(var target in targets)
         {
-            bool compatible=target.weapon || (target.sight && slot.sights && slot.sights.Supports(target.sight))
-                || (target.resetSight && slot.sights)
-                || (target.attachment && slot.attachments && slot.attachments.Supports(target.attachment));
-            bool selected=target.weapon?target.weapon.catalogId==slot.weapon.definition.catalogId:target.resetSight
-                ?slot.sights && slot.sights.SelectedSight==slot.sights.defaultSight:target.sight
-                ?slot.sights && slot.sights.SelectedSight==target.sight:current!=null&&current.Contains(target.attachment);
+            bool compatible=target.weapon || (target.sight && loadout.EquippedSights && loadout.EquippedSights.Supports(target.sight))
+                || (target.resetSight && loadout.EquippedSights)
+                || (target.attachment && loadout.EquippedAttachments && loadout.EquippedAttachments.Supports(target.attachment));
+            bool selected=target.weapon?target.weapon.catalogId==slot.definition.catalogId:target.resetSight
+                ?loadout.EquippedSights && loadout.EquippedSights.SelectedSight==loadout.EquippedSights.defaultSight:target.sight
+                ?loadout.EquippedSights && loadout.EquippedSights.SelectedSight==target.sight:current!=null&&current.Contains(target.attachment);
             target.Show(compatible,selected);
         }
-        equipment.text=slot.weapon.definition.displayName+"   "+loadout.EquippedState.MagazineAmmo+" / ∞"
-            +"\n"+(slot.sights?slot.sights.SelectedSight.displayName:"Built-in sights");
+        equipment.text=slot.definition.displayName+"   "+loadout.EquippedState.MagazineAmmo+" / ∞"
+            +"\n"+(loadout.EquippedSights?loadout.EquippedSights.SelectedSight.displayName:"Built-in sights");
     }
 
     public void ReturnToMenu() => UnityEngine.SceneManagement.SceneManager.LoadScene("MainMenu");

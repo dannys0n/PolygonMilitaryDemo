@@ -42,12 +42,15 @@ public class SoldierWeaponPresentation : MonoBehaviour
         weapon = selectedWeapon;
         SoldierWeaponDefinition set = weapon.definition;
         view.armsAnimator.runtimeAnimatorController = set.firstPerson;
-        view.weaponAnimator.runtimeAnimatorController = set.firstPersonParts;
+        if (GetComponent<SoldierWeaponLoadout>().HasFirstPersonPresentation)
+        {
+            view.weaponAnimator.runtimeAnimatorController = set.firstPersonParts;
+            view.weaponAnimator.Rebind();
+        }
         characterAnimator.runtimeAnimatorController = set.thirdPerson;
         characterAnimator.cullingMode = AnimatorCullingMode.AlwaysAnimate;
         partsAnimator.runtimeAnimatorController = set.firstPersonParts;
         partsAnimator.cullingMode = AnimatorCullingMode.AlwaysAnimate;
-        view.weaponAnimator.Rebind();
         partsAnimator.Rebind();
         view.ApplyWeaponDefinition(set);
         characterSwayLayer = characterAnimator.GetLayerIndex("SourceSway");
