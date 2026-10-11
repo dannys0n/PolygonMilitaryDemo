@@ -183,12 +183,12 @@ public class ArenaAIInput : SoldierInputSource
         { State = Behavior.Inactive; WantsToSprint = false; return default; }
         if(soldier.grenades.FlashAlpha>.1f){WantsToSprint=false;return default;}
         agent.nextPosition = transform.position;
-        if(TryVehicleAttack(out var vehicleInput))return vehicleInput;
+        if(!BoardingTarget && TryVehicleAttack(out var vehicleInput))return vehicleInput;
         bool visible = UpdatePerception();
         float distance = target ? Vector3.Distance(transform.position, lastSeen) : float.PositiveInfinity;
         int selection = ChooseWeapon(distance);
         bool reload = soldier.loadout.EquippedState.MagazineAmmo == 0 && soldier.loadout.EquippedState.ReserveAmmo > 0;
-        if (BoardingTarget && !target && !IsCombatAlert)
+        if (BoardingTarget)
         { State = Behavior.BoardVehicle; SetDestination(BoardingTarget.position); }
         else if (Time.time >= recoveryUntil) ChooseMovement(visible, distance, reload);
         RecoverStuckPath();

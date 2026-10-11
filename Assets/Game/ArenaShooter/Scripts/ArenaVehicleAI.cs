@@ -14,6 +14,7 @@ public class ArenaVehicleAI : MonoBehaviour
     public VehicleOccupant occupant;
     public float minimumTrip = 26, vehicleSearchRadius = 35, decisionInterval = .6f, reuseDelay = 12;
     public float cruiseSpeed = 12, flightHeight = 13;
+    public float combatBoardDistance = 18, combatHoldTime = 8, groundEngagementDistance = 35, airEngagementDistance = 55;
     public TravelState State { get; private set; }
     public Vector3 Goal { get; private set; }
     ArenaVehicleScenario scenario;
@@ -25,7 +26,7 @@ public class ArenaVehicleAI : MonoBehaviour
     Vector3 progressPosition;
     bool landing, reservedForCombat;
     ArenaParticipant vehicleTarget;
-    float nextTargetDecision;
+    float nextTargetDecision, lastVehicleContact = float.NegativeInfinity;
 
     void Awake()
     {
@@ -108,7 +109,8 @@ public class ArenaVehicleAI : MonoBehaviour
                 if (!v.CanBoard(occupant, seat))
                     continue;
                 bool driver = v.seats[seat].role == Vehicle.SeatRole.Driver;
-                if(combat && (v.seats[seat].role!=Vehicle.SeatRole.Gunner || !infantry.Target))continue;
+                bool armedDriver = driver && (v.turret || v.GetComponent<VehicleLauncher>());
+                if (combat && (v.seats[seat].role == Vehicle.SeatRole.Passenger || (!armedDriver && !v.turret))) continue;
                 if (!driver && !v.Driver)
                     continue; // Do not occupy an unpiloted passenger seat indefinitely.
                 Vector3 proposed = infantry.Destination;
@@ -124,7 +126,7 @@ public class ArenaVehicleAI : MonoBehaviour
                 if (!ArenaAITactics.Reachable(infantry, v.NearestEntryPoint(transform.position).position, path, out _, out float walk))
                     continue;
 
-                if (driver && trip < minimumTrip)
+                if (driver && !combat && trip < minimumTrip)
                     continue;
                 float footTime = Vector3.Distance(transform.position, infantry.Destination) / infantry.soldier.movement.moveSpeed;
                 float rideTime = walk / infantry.soldier.movement.moveSpeed + trip / cruiseSpeed + 3f
@@ -133,9 +135,10 @@ public class ArenaVehicleAI : MonoBehaviour
                 float score = footTime - rideTime;
                 if(combat)
                 {
-                    if(walk>8 || Vector3.Distance(transform.position,infantry.Target.transform.position)<infantry.attackRange*.6f
-                        || !HasLineOfFire(v,infantry.Target,v.turret.muzzle.position,EnemyPoint(infantry.Target)))continue;
-                    score=12-walk;
+                    if (walk > combatBoardDistance || !infantry.Target) continue;
+                    Vector3 origin = v.turret ? v.turret.muzzle.position : v.cameraTarget.position;
+                    if (!driver && !HasLineOfFire(v, infantry.Target, origin, EnemyPoint(infantry.Target))) continue;
+                    score = 22 - walk * .65f;
                 }
                 if (score < 3f)
                     continue;
@@ -212,7 +215,12 @@ public class ArenaVehicleAI : MonoBehaviour
             State = TravelState.Passenger;
         if (role != Vehicle.SeatRole.Driver)
         {
-            if (!v.Driver && (role!=Vehicle.SeatRole.Gunner || !vehicleTarget) && Time.time - boardedAt > 5 && v.CanExit)
+            if (!v.Driver && role == Vehicle.SeatRole.Gunner && !vehicleTarget && Time.time - lastVehicleContact > combatHoldTime && v.CanExit)
+            {
+                // A lone gunner can drive to the next encounter instead of abandoning a healthy armed vehicle.
+                if (!v.seats[0].reservation || Time.time >= v.seats[0].reservedUntil) occupant.SwitchSeat(0);
+            }
+            else if (!v.Driver && role == Vehicle.SeatRole.Passenger && Time.time - boardedAt > 5 && v.CanExit)
                 occupant.Leave(false);
             if (v.Health < v.maxHealth * .25f && v.CanExit)
                 occupant.Leave(false);
@@ -240,7 +248,26 @@ public class ArenaVehicleAI : MonoBehaviour
     {
         State = TravelState.Driving;
         float distance = Vector3.ProjectOnPlane(Goal - v.transform.position, Vector3.up).magnitude;
-        bool bail = distance < 6 || v.Health < v.maxHealth * .3f || (threat && Time.time - boardedAt > 4) || recoveries >= 3;
+        var enemy = v.turret ? FindVehicleTarget(v, v.turret.muzzle.position, v.turret.range, true) : null;
+        bool supportingGunner = enemy && HasGunner(v);
+        if (enemy)
+        {
+            Goal = EnemyPoint(enemy) - Vector3.ProjectOnPlane(EnemyPoint(enemy) - v.transform.position, Vector3.up).normalized * groundEngagementDistance;
+            distance = Vector3.ProjectOnPlane(Goal - v.transform.position, Vector3.up).magnitude;
+            if (supportingGunner || distance < 5)
+            {
+                v.DriverInput = new VehicleInput { brake = true };
+                if (!supportingGunner && v.CanExit)
+                    for (int i = 1; i < v.seats.Length; i++)
+                        if (v.seats[i].role == Vehicle.SeatRole.Gunner && !v.seats[i].occupant
+                            && (!v.seats[i].reservation || Time.time >= v.seats[i].reservedUntil))
+                        { occupant.SwitchSeat(i); break; }
+                return;
+            }
+        }
+        bool bail = (!enemy && distance < 6) || v.Health < v.maxHealth * .3f || recoveries >= 3;
+        if (!enemy && Time.time - lastVehicleContact < combatHoldTime && v.turret)
+        { v.DriverInput = new VehicleInput { brake = true }; return; }
         if (bail)
         {
             v.DriverInput = new VehicleInput { brake = true };
@@ -299,9 +326,17 @@ public class ArenaVehicleAI : MonoBehaviour
     {
         if (v.Health < v.maxHealth * .35f)
             landing = true;
-        Vector3 difference = Goal - v.transform.position;
+        var launcher = v.GetComponent<VehicleLauncher>();
+        var enemy = launcher && !landing ? FindVehicleTarget(v, v.cameraTarget.position, 150, false) : null;
+        Vector3 travelGoal = Goal;
+        if (enemy)
+        {
+            Vector3 offset = Vector3.ProjectOnPlane(v.transform.position - EnemyPoint(enemy), Vector3.up).normalized;
+            travelGoal = EnemyPoint(enemy) + offset * airEngagementDistance;
+        }
+        Vector3 difference = travelGoal - v.transform.position;
         float distance = Vector3.ProjectOnPlane(difference, Vector3.up).magnitude;
-        if (distance < 7)
+        if (!enemy && Time.time - lastVehicleContact > combatHoldTime && distance < 7)
             landing = true;
         State = landing ? TravelState.Landing : TravelState.Driving;
         float altitude = GroundHeight(v.transform.position);
@@ -329,8 +364,20 @@ public class ArenaVehicleAI : MonoBehaviour
             occupant.Leave(false);
             retryAt = Time.time + reuseDelay;
         }
-        if(!landing && v.Health>v.maxHealth*.35f && v.transform.position.y-altitude>4)UseRockets(v);
-        if (Time.time - boardedAt > 70)
+        if (enemy && !landing && v.transform.position.y - altitude > 4)
+        {
+            Vector3 aim = EnemyPoint(enemy) - launcher.NextShotRay.origin;
+            var input = v.DriverInput;
+            input.directionalFlight = true;
+            input.aim = true;
+            input.heading = Mathf.Atan2(aim.x, aim.z) * Mathf.Rad2Deg;
+            input.viewPitch = -Mathf.Atan2(aim.y, new Vector2(aim.x, aim.z).magnitude) * Mathf.Rad2Deg;
+            input.movementHeading = v.transform.eulerAngles.y;
+            input.move = Vector2.ClampMagnitude(new Vector2(local.x, local.z) * .08f, .55f);
+            v.DriverInput = input;
+            UseRockets(v);
+        }
+        if (Time.time - boardedAt > 70 && Time.time - lastVehicleContact > combatHoldTime)
             landing = true;
     }
     static float GroundHeight(Vector3 position)
@@ -382,8 +429,9 @@ public class ArenaVehicleAI : MonoBehaviour
     }
     ArenaParticipant FindVehicleTarget(Vehicle v,Vector3 origin,float range,bool gunner)
     {
-        if(Time.time<nextTargetDecision)
-            return vehicleTarget && !vehicleTarget.health.IsDead && !vehicleTarget.IsAwaitingSpawn ? vehicleTarget : null;
+        if (Time.time < nextTargetDecision)
+            return vehicleTarget && !vehicleTarget.health.IsDead && !vehicleTarget.IsAwaitingSpawn
+                && HasLineOfFire(v, vehicleTarget, origin, EnemyPoint(vehicleTarget)) ? vehicleTarget : null;
         nextTargetDecision=Time.time+.2f;vehicleTarget=null;
         float nearest=range;
         foreach(var enemy in infantry.participant.match.participants)
@@ -397,11 +445,17 @@ public class ArenaVehicleAI : MonoBehaviour
                 float elevation=Mathf.Atan2(local.y,new Vector2(local.x,local.z).magnitude)*Mathf.Rad2Deg;
                 if(elevation<v.turret.pitchLimits.x||elevation>v.turret.pitchLimits.y)continue;
             }
-            else if(distance<18 || Vector3.Angle(v.transform.forward,direction)>25)continue;
+            else if(distance<18)continue;
             if(!HasLineOfFire(v,enemy,origin,point))continue;
-            vehicleTarget=enemy;nearest=distance;
+            vehicleTarget=enemy;nearest=distance;lastVehicleContact=Time.time;
         }
         return vehicleTarget;
+    }
+    static bool HasGunner(Vehicle v)
+    {
+        foreach (var seat in v.seats)
+            if (seat.role == Vehicle.SeatRole.Gunner && seat.occupant) return true;
+        return false;
     }
     void UseTurret(Vehicle v)
     {
@@ -415,7 +469,7 @@ public class ArenaVehicleAI : MonoBehaviour
     void UseRockets(Vehicle v)
     {
         var launcher=v.GetComponent<VehicleLauncher>();
-        if(launcher.ReadyIn>0)return;
+        if (!launcher || launcher.ReadyIn > 0) return;
         var enemy=FindVehicleTarget(v,launcher.NextShotRay.origin,150,false);
         if(!enemy)return;
         Vector3 impact=launcher.PredictedImpactPoint;
