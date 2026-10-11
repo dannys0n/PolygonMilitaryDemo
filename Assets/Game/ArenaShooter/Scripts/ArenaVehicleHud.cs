@@ -19,7 +19,7 @@ public class ArenaVehicleHud : MonoBehaviour
     public Image[] seatMarkers, hullSegments;
     public TextMeshProUGUI[] seatNumbers;
     float groundAltitude;
-    readonly Color accent=new Color(1,.68f,0);
+    readonly Color accent=new Color(1,.55f,.12f);
     void Update()
     {
         bool mounted=player.IsMounted;prompt.text=mounted?"":player.Prompt;
@@ -56,7 +56,7 @@ public class ArenaVehicleHud : MonoBehaviour
             seatMarkers[i].color=i==player.SeatIndex?accent:occupied?Color.white:new Color(1,1,1,.18f);
             seatNumbers[i].color=i==player.SeatIndex||occupied?Color.black:Color.white;
             string name=occupied?(seat.occupant==player?"YOU":seat.occupant.name):"EMPTY";
-            crew.text+="<color="+(i==player.SeatIndex?"#FFAE00":"#FFFFFF")+">"+(i+1)+"  "+name+"</color>  <size=12>"+seat.name.ToUpperInvariant()+"</size>\n";
+            crew.text+="<color="+(i==player.SeatIndex?"#FF8C1F":"#FFFFFF")+">"+(i+1)+"  "+name+"</color>  <size=12>"+seat.name.ToUpperInvariant()+"</size>\n";
         }
         float health=v.Health/v.maxHealth;for(int i=0;i<hullSegments.Length;i++)hullSegments[i].color=i<hullSegments.Length*health?Color.white:new Color(1,1,1,.15f);
         if(!air)return;

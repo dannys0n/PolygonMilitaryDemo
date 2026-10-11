@@ -12,6 +12,7 @@ public class ArenaHud : MonoBehaviour
     public bool allowLocalShortcuts = true;
     public TMP_Text redScore, blueScore, timer, mode, weaponName, ammunition, fireMode, slots, health, teammates, medal, deathStatus;
     public Sprite rifleSprite, pistolSprite;
+    public Material normalText, selectedText;
     public UnityEngine.UI.Image[] grenadeIcons, grenadeBackgrounds;
     public TMP_Text[] grenadeCounts;
     public UnityEngine.UI.Image[] launcherIcons=System.Array.Empty<UnityEngine.UI.Image>(), launcherBackgrounds=System.Array.Empty<UnityEngine.UI.Image>();
@@ -211,6 +212,7 @@ public class ArenaHud : MonoBehaviour
             launcherIcons[i].color=new Color(1,1,1,launchers.Count(i)>0?1:.25f);
             launcherCounts[i].text=launchers.Count(i)+"  "+(i==0?"[Q]":"[X]");
             launcherBackgrounds[i].color=selected?new Color(accent.r,accent.g,accent.b,.12f):new Color(1,1,1,.035f);
+            StyleEquipmentText(launcherCounts[i],selected);
         }
         var slotText = new StringBuilder();
         for (int i = 0; i < loadout.AvailableSlots.Length; i++)
@@ -227,7 +229,7 @@ public class ArenaHud : MonoBehaviour
             if (!owned) continue;
             equipmentIcons[i].sprite = loadout.slots[loadout.AvailableSlots[i]].definition.icon;
             equipmentIcons[i].color = i == ordinal ? Color.white : new Color(1,1,1,.6f);
-            equipmentKeys[i].color = i == ordinal ? accent : Color.white;
+            StyleEquipmentText(equipmentKeys[i],i == ordinal);
             equipmentBackgrounds[i].color = i == ordinal ? new Color(accent.r,accent.g,accent.b,.12f) : new Color(1,1,1,.035f);
         }
         var grenades=player.player.GetComponent<SoldierGrenades>();
@@ -237,6 +239,7 @@ public class ArenaHud : MonoBehaviour
             grenadeIcons[i].color=new Color(1,1,1,grenades.Count(i)>0?1:.25f);
             grenadeCounts[i].text=grenades.Count(i)+"  "+(grenades.Selected==i?"[G]":"");
             grenadeBackgrounds[i].color=grenades.Selected==i?new Color(accent.r,accent.g,accent.b,.12f):new Color(1,1,1,.035f);
+            StyleEquipmentText(grenadeCounts[i],grenades.Selected==i);
         }
         health.text = $"+ {Mathf.CeilToInt(player.health.CurrentHealth):000}";
         healthProgress.fillAmount = player.health.CurrentHealth / player.health.maxHealth;
@@ -254,6 +257,12 @@ public class ArenaHud : MonoBehaviour
         }
         deathStatus.text = !match.IsRunning ? $"{match.Result.ToUpperInvariant()}\nBACKSPACE TO RESTART"
             : player.IsRespawning ? $"RESPAWN IN {player.RespawnRemaining:F1}s" : "";
+    }
+    void StyleEquipmentText(TMP_Text label,bool selected)
+    {
+        label.color=Color.white;
+        var material=selected?selectedText:normalText;
+        if(label.fontSharedMaterial!=material){label.fontSharedMaterial=material;label.UpdateMeshPadding();}
     }
     void UpdateRadar()
     {
