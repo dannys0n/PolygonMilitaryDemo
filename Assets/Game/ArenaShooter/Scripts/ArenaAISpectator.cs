@@ -1,5 +1,6 @@
 using UnityEngine;
 using UnityEngine.Rendering;
+using UnityEngine.Rendering.Universal;
 
 // Minimal observation controls and feedback for the AI-versus-AI test scene.
 [DefaultExecutionOrder(200)]
@@ -27,6 +28,7 @@ public class ArenaAISpectator : MonoBehaviour
     public bool FirstPersonSpectating { get; private set; }
     SoldierFirstPersonView observedView;
     bool previousFirstPerson, previousCameraEnabled, previousSpectatorEnabled;
+    bool previousPostProcessing;
     int previousCameraMask, previousSpectatorMask;
     RenderTexture previousCameraTarget, previousSpectatorTarget, insetTexture;
     Renderer[] hiddenBody;
@@ -232,6 +234,8 @@ public class ArenaAISpectator : MonoBehaviour
         previousSpectatorEnabled = spectatorCamera.enabled;
         previousCameraTarget = camera.targetTexture;
         previousSpectatorTarget = spectatorCamera.targetTexture;
+        previousPostProcessing = camera.GetUniversalAdditionalCameraData().renderPostProcessing;
+        camera.GetUniversalAdditionalCameraData().renderPostProcessing = spectatorCamera.GetUniversalAdditionalCameraData().renderPostProcessing;
         var aimRotation = camera.transform.localRotation;
         camera.enabled = true;
         observedView.SetFirstPerson(true);
@@ -305,6 +309,7 @@ public class ArenaAISpectator : MonoBehaviour
             camera.cullingMask = previousCameraMask;
             camera.enabled = previousCameraEnabled;
             camera.targetTexture = previousCameraTarget;
+            camera.GetUniversalAdditionalCameraData().renderPostProcessing = previousPostProcessing;
             spectatorCamera.targetTexture = previousSpectatorTarget;
             spectatorCamera.cullingMask = previousSpectatorMask;
             spectatorCamera.enabled = previousSpectatorEnabled;
