@@ -16,7 +16,9 @@ public class ArenaWeaponPreview : MonoBehaviour, IDragHandler
     Camera previewCamera;
     RenderTexture texture;
     bool dirty;
-    float orbit;
+    float orbit = 20f;
+    const float PreviewElevation = 12f;
+    Light keyLight, fillLight, rimLight;
 
     void EnsureStage()
     {
@@ -27,21 +29,32 @@ public class ArenaWeaponPreview : MonoBehaviour, IDragHandler
         previewCamera.transform.SetParent(stage.transform, false);
         previewCamera.enabled = false;
         previewCamera.cullingMask = 1 << previewLayer;
-        previewCamera.orthographic = true;
+        previewCamera.orthographic = false;
+        previewCamera.fieldOfView = 30f;
         previewCamera.clearFlags = CameraClearFlags.SolidColor;
         previewCamera.backgroundColor = new Color(.025f,.031f,.037f,1);
         previewCamera.nearClipPlane = .01f;
         previewCamera.farClipPlane = 20;
         texture = new RenderTexture(1536,768,24) { name = "Class Weapon Preview" };
         texture.Create(); image.texture = texture;
-        foreach (float yaw in new[]{-60f,130f})
-        {
-            var light = new GameObject("Preview Light").AddComponent<Light>();
-            light.transform.SetParent(stage.transform, false);
-            light.type = LightType.Directional; light.intensity = yaw < 0 ? 2f : 1f;
-            light.cullingMask = 1 << previewLayer;
-            light.transform.rotation = Quaternion.Euler(35,yaw,0);
-        }
+        keyLight = CreateLight("Preview Key", new Color(1f, .94f, .85f), 8f);
+        fillLight = CreateLight("Preview Fill", new Color(.85f, .92f, 1f), 2.5f);
+        rimLight = CreateLight("Preview Rim", new Color(.72f, .84f, 1f), 10f);
+    }
+
+    Light CreateLight(string lightName, Color color, float intensity)
+    {
+        var light = new GameObject(lightName).AddComponent<Light>();
+        light.transform.SetParent(stage.transform, false);
+        light.type = LightType.Spot;
+        light.color = color;
+        light.intensity = intensity;
+        light.spotAngle = 85f;
+        light.innerSpotAngle = 50f;
+        light.range = 10f;
+        light.shadows = LightShadows.None;
+        light.cullingMask = 1 << previewLayer;
+        return light;
     }
 
     public void Show(ArenaWeaponCatalog.Entry entry, WeaponSightDefinition optic, WeaponAttachmentDefinition[] attachments)
@@ -49,7 +62,7 @@ public class ArenaWeaponPreview : MonoBehaviour, IDragHandler
         EnsureStage();
         if(model){model.SetActive(false);Destroy(model);}
         model = Instantiate(entry.basePrefab, stage.transform, false);
-        model.SetActive(true); model.transform.SetLocalPositionAndRotation(Vector3.zero,Quaternion.identity);
+        model.SetActive(true); model.transform.SetLocalPositionAndRotation(Vector3.zero,Quaternion.Euler(-3f,0,0));
         foreach(var behaviour in model.GetComponentsInChildren<MonoBehaviour>(true)) behaviour.enabled = false;
         foreach(var animator in model.GetComponentsInChildren<Animator>(true)) animator.enabled = false;
         foreach(var collider in model.GetComponentsInChildren<Collider>(true)) collider.enabled = false;
@@ -114,10 +127,33 @@ public class ArenaWeaponPreview : MonoBehaviour, IDragHandler
         var renderers=model.GetComponentsInChildren<Renderer>().Where(r=>r.enabled).ToArray();
         if(renderers.Length==0)return;
         var bounds=renderers[0].bounds;foreach(var renderer in renderers)bounds.Encapsulate(renderer.bounds);
-        previewCamera.aspect=2;
-        previewCamera.orthographicSize=Mathf.Max(bounds.size.y*.72f,bounds.size.z*.30f);
-        previewCamera.transform.position=bounds.center+Quaternion.Euler(0,orbit,0)*Vector3.left*4;
-        previewCamera.transform.LookAt(bounds.center,Vector3.up);
+        previewCamera.aspect = (float)texture.width / texture.height;
+        var direction = Quaternion.Euler(0, orbit, 0) * Vector3.left;
+        direction = direction * Mathf.Cos(PreviewElevation * Mathf.Deg2Rad)
+            + Vector3.up * Mathf.Sin(PreviewElevation * Mathf.Deg2Rad);
+        var rotation = Quaternion.LookRotation(-direction, Vector3.up);
+        var inverse = Quaternion.Inverse(rotation);
+        float vertical = Mathf.Tan(previewCamera.fieldOfView * .5f * Mathf.Deg2Rad);
+        float horizontal = vertical * previewCamera.aspect;
+        float distance = .1f;
+        // Fit every bounds corner with a margin, including long barrels and attachments.
+        for (int x = -1; x <= 1; x += 2)
+            for (int y = -1; y <= 1; y += 2)
+                for (int z = -1; z <= 1; z += 2)
+                {
+                    var corner = inverse * Vector3.Scale(bounds.extents, new Vector3(x, y, z));
+                    distance = Mathf.Max(distance, Mathf.Abs(corner.x) * 1.15f / horizontal - corner.z,
+                        Mathf.Abs(corner.y) * 1.15f / vertical - corner.z);
+                }
+        previewCamera.transform.SetPositionAndRotation(bounds.center + direction * distance, rotation);
+        PositionLight(keyLight, bounds.center, new Vector3(-1.6f, 1.8f, -1.2f));
+        PositionLight(fillLight, bounds.center, new Vector3(-1.2f, .6f, 1.8f));
+        PositionLight(rimLight, bounds.center, new Vector3(1.2f, 1.4f, .8f));
+    }
+    static void PositionLight(Light light, Vector3 center, Vector3 offset)
+    {
+        light.transform.position = center + offset;
+        light.transform.LookAt(center);
     }
     public void OnDrag(PointerEventData eventData){if(!model)return;orbit-=eventData.delta.x*.3f;Frame();dirty=true;}
     void LateUpdate(){if(!dirty||!stage)return;RenderPipeline.SubmitRenderRequest(previewCamera,new UniversalRenderPipeline.SingleCameraRequest{destination=texture});dirty=false;}

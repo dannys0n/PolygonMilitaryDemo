@@ -346,8 +346,8 @@ WheelCollider:
   m_Center: {x: 0, y: 0, z: 0}
   m_Radius: 0.51546514
   m_SuspensionSpring:
-    spring: 15555.556
-    damper: 2000
+    spring: 19444.445
+    damper: 2500
     targetPosition: 0.5
   m_SuspensionDistance: 0.24
   m_ForceAppPointDistance: 0
@@ -661,8 +661,8 @@ WheelCollider:
   m_Center: {x: 0, y: 0, z: 0}
   m_Radius: 0.41615987
   m_SuspensionSpring:
-    spring: 15555.556
-    damper: 2000
+    spring: 19444.445
+    damper: 2500
     targetPosition: 0.5
   m_SuspensionDistance: 0.24
   m_ForceAppPointDistance: 0
@@ -943,8 +943,8 @@ WheelCollider:
   m_Center: {x: 0, y: 0, z: 0}
   m_Radius: 0.41615987
   m_SuspensionSpring:
-    spring: 15555.556
-    damper: 2000
+    spring: 19444.445
+    damper: 2500
     targetPosition: 0.5
   m_SuspensionDistance: 0.24
   m_ForceAppPointDistance: 0
@@ -1149,9 +1149,9 @@ Rigidbody:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 9105850512619358215}
   serializedVersion: 5
-  m_Mass: 600
+  m_Mass: 750
   m_LinearDamping: 0.02
-  m_AngularDamping: 0.3
+  m_AngularDamping: 0.6
   m_CenterOfMass: {x: 0, y: 0, z: 0}
   m_InertiaTensor: {x: 1, y: 1, z: 1}
   m_InertiaRotation: {x: 0, y: 0, z: 0, w: 1}
@@ -1213,10 +1213,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::HummerMotor
   vehicle: {fileID: 2966079545542691319}
   wheels:
-  - collider: {fileID: 758042791138509694}
-    mesh: {fileID: 4368354522829629982}
-    steer: 1
-    rotationOffset: {x: 0, y: 0, z: 0, w: 1}
   - collider: {fileID: 2834804993653336138}
     mesh: {fileID: 440944201562739138}
     steer: 0
@@ -1225,22 +1221,26 @@ MonoBehaviour:
     mesh: {fileID: 5862869268064792039}
     steer: 0
     rotationOffset: {x: 0, y: 0, z: 0, w: 1}
-  centerOfMass: {x: 0, y: 0.35, z: -0.22541396}
-  motorTorque: 1155.5555
+  - collider: {fileID: 758042791138509694}
+    mesh: {fileID: 4368354522829629982}
+    steer: 1
+    rotationOffset: {x: 0, y: 0, z: 0, w: 1}
+  centerOfMass: {x: 0, y: 0.12, z: -0.65}
+  motorTorque: 1100
   brakeTorque: 3555.5557
-  maxSpeed: 25
+  maxSpeed: 18
   steeringResponse: 500
-  boostMultiplier: 1.4
+  boostMultiplier: 1.2
   engineBrakeTorque: 400
   aerodynamicDrag: 0.8
-  maxReverseSpeed: 10
+  maxReverseSpeed: 6
   steeringFalloffSpeed: 30
-  yawAssist: 8
-  maxYawRate: 2.8
-  maxCorneringAcceleration: 22
-  lowSpeedSteering: 60
-  highSpeedSteering: 60
-  antiRoll: 2166.6667
+  yawAssist: 5
+  maxYawRate: 1.6
+  maxCorneringAcceleration: 7
+  lowSpeedSteering: 45
+  highSpeedSteering: 45
+  antiRoll: 3000
 --- !u!208 &7908037933694145195
 NavMeshObstacle:
   m_ObjectHideFlags: 0
