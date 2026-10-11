@@ -24,6 +24,8 @@ public class ArenaAIInput : SoldierInputSource
     public float sprintStopDistance = 6f;
     [Header("Combat readiness")]
     [Min(0f)] public float combatReadyDuration = 6f;
+    [Tooltip("Hold ADS through brief occlusion and changes of target; this does not permit firing without sight.")]
+    [Min(0f)] public float aimHoldDuration = .8f;
     [Min(0f)] public float hearingRange = 20f;
     public float strafeDistance = 2f;
     public Vector2 repositionInterval = new Vector2(1.5f, 3f);
@@ -73,7 +75,7 @@ public class ArenaAIInput : SoldierInputSource
     float patrolWaitUntil, nextPerception;
     int lastPatrolIndex = -1;
     bool hasPatrolDestination, targetVisible;
-    bool wasVisible;
+    float aimHoldUntil;
     float combatAlertUntil, heardAt = float.NegativeInfinity, investigationUntil, nextLook;
     Vector3 investigationPoint, openLook;
     bool investigating;
@@ -158,7 +160,8 @@ public class ArenaAIInput : SoldierInputSource
 
     void ResetIntent()
     {
-        target = null; HasCover = wasVisible = false; State = Behavior.Inactive;
+        target = null; HasCover = false; State = Behavior.Inactive;
+        aimHoldUntil = 0f;
         WantsToSprint = false;
         combatAlertUntil = investigationUntil = nextLook = 0f;
         heardAt = float.NegativeInfinity; investigating = false; openLook = transform.forward;
@@ -183,26 +186,30 @@ public class ArenaAIInput : SoldierInputSource
         { State = Behavior.Inactive; WantsToSprint = false; return default; }
         if(soldier.grenades.FlashAlpha>.1f){WantsToSprint=false;return default;}
         agent.nextPosition = transform.position;
-        if(!BoardingTarget && TryVehicleAttack(out var vehicleInput))return vehicleInput;
         bool visible = UpdatePerception();
+        // A visible infantry threat takes priority over scanning for launcher targets.
+        if(!BoardingTarget && !visible && Time.time >= aimHoldUntil && TryVehicleAttack(out var vehicleInput))return vehicleInput;
         float distance = target ? Vector3.Distance(transform.position, lastSeen) : float.PositiveInfinity;
         int selection = ChooseWeapon(distance);
+        if (visible && soldier.launchers && soldier.launchers.IsEquipped)
+            selection = System.Array.IndexOf(soldier.loadout.AvailableSlots, soldier.loadout.selectedSlot) + 1;
         bool reload = soldier.loadout.EquippedState.MagazineAmmo == 0 && soldier.loadout.EquippedState.ReserveAmmo > 0;
         if (BoardingTarget)
         { State = Behavior.BoardVehicle; SetDestination(BoardingTarget.position); }
         else if (Time.time >= recoveryUntil) ChooseMovement(visible, distance, reload);
         RecoverStuckPath();
-        bool wantsAim = visible && distance <= attackRange && State != Behavior.MoveToCover && State != Behavior.Hide;
+        if (visible) aimHoldUntil = Time.time + aimHoldDuration;
+        bool faceThreat = !BoardingTarget && (target || Time.time < aimHoldUntil);
+        bool wantsAim = faceThreat && (visible || Time.time < aimHoldUntil)
+            && State != Behavior.MoveToCover && State != Behavior.Hide;
         bool busy = soldier.actions.IsReloading || soldier.loadout.IsSwitching || selection != 0;
-        bool faceMemory = target && State == Behavior.Peek;
-        Vector3 direction = wantsAim ? GetImperfectAim() - life.look.aimCamera.transform.position
-            : faceMemory ? lastSeen + Vector3.up * 1.25f - life.look.aimCamera.transform.position
+        Vector3 direction = faceThreat ? (visible ? GetImperfectAim() : lastSeen + Vector3.up * 1.25f) - life.look.aimCamera.transform.position
             : agent.steeringTarget - transform.position;
         float yaw = direction.x * direction.x + direction.z * direction.z > .001f
             ? Mathf.Atan2(direction.x, direction.z) * Mathf.Rad2Deg : transform.eulerAngles.y;
-        float up = wantsAim ? Mathf.Atan2(direction.y, new Vector2(direction.x, direction.z).magnitude) * Mathf.Rad2Deg : 0f;
-        if (wantsAim) { yaw += aimNoise.x; up += aimNoise.y; }
-        else
+        float up = faceThreat ? Mathf.Atan2(direction.y, new Vector2(direction.x, direction.z).magnitude) * Mathf.Rad2Deg : 0f;
+        if (visible && faceThreat) { yaw += aimNoise.x; up += aimNoise.y; }
+        if (!faceThreat)
         {
             if (State == Behavior.Hide) direction = cover.peek - transform.position;
             direction = GetOpenLook(direction);
@@ -225,15 +232,14 @@ public class ArenaAIInput : SoldierInputSource
         // The controller applies yaw before movement.
         Vector3 local = Quaternion.Inverse(Quaternion.Euler(0f, transform.eulerAngles.y + look.x, 0f))
             * velocity / Mathf.Max(agent.speed, .01f);
-        bool fire = wantsAim && !busy && !reload && Time.time >= readyAt
+        bool fire = visible && wantsAim && distance <= attackRange && !busy && !reload && Time.time >= readyAt
             && Mathf.Abs(yawError) < 4f && Mathf.Abs(pitchError) < 4f
             && ArenaAITactics.ClearShot(this, life.look.aimCamera.transform.position, AimPoint(target), target) && InBurst();
         bool pressed = fire && Time.time >= nextSemi;
         if (pressed) nextSemi = Time.time + Mathf.Max(semiAutoInterval, 60f / soldier.actions.roundsPerMinute);
-        wasVisible = visible;
         return new SoldierInputFrame {
             move = Vector2.ClampMagnitude(new Vector2(local.x, local.z), 1f), lookDelta = look,
-            aim = wantsAim && !busy, sprint = WantsToSprint, fireHeld = fire, firePressed = pressed,
+            aim = wantsAim, sprint = WantsToSprint, fireHeld = fire, firePressed = pressed,
             reload = reload && selection == 0, weaponSelection = selection
         };
     }
@@ -257,18 +263,22 @@ public class ArenaAIInput : SoldierInputSource
         }
         heardAt = Time.time;
         if (heardEnemy && !target && !investigating) Investigate(soundPoint);
-        ArenaParticipant visible = null; float nearest = sightRange * sightRange;
-        foreach (var enemy in participant.match.participants)
+        // Finish the current engagement while it remains visible. Only acquire another
+        // enemy when this one is lost, instead of chasing the closest candidate each scan.
+        ArenaParticipant visible = target && !target.health.IsDead
+            && (AimPoint(target) - life.look.aimCamera.transform.position).sqrMagnitude <= sightRange * sightRange
+            && CanSee(target) ? target : null;
+        float nearest = sightRange * sightRange;
+        if (!visible) foreach (var enemy in participant.match.participants)
         {
             if (enemy.team == participant.team || enemy.health.IsDead || enemy.IsAwaitingSpawn) continue;
             float distance = (AimPoint(enemy) - life.look.aimCamera.transform.position).sqrMagnitude;
-            float score = enemy == target ? distance * .8f : distance;
-            if (distance <= sightRange * sightRange && score < nearest && CanSee(enemy))
-            { nearest = score; visible = enemy; }
+            if (distance < nearest && CanSee(enemy))
+            { nearest = distance; visible = enemy; }
         }
         if (visible)
         {
-            if (target != visible || !wasVisible)
+            if (target != visible || Time.time - seenAt > aimHoldDuration)
             {
                 readyAt = Time.time + reactionTime; acquiredAt = Time.time; trackedAim = AimPoint(visible);
                 burstUntil = pauseUntil = 0f;
@@ -289,12 +299,9 @@ public class ArenaAIInput : SoldierInputSource
     {
         if (Time.time < nextWeapon || soldier.actions.IsReloading || soldier.loadout.IsSwitching) return 0;
         var loadout = soldier.loadout;
-        bool holdingSidearm = System.Array.IndexOf(loadout.AvailableSlots, loadout.selectedSlot) == sidearmWeapon - 1;
-        int desired = target && distance < sidearmRange + (holdingSidearm ? 2f : 0f) ? sidearmWeapon : primaryWeapon;
-        desired = Mathf.Clamp(desired, 1, loadout.AvailableSlots.Length);
-        var state = loadout.slots[loadout.AvailableSlots[desired - 1]].state;
-        if (state.MagazineAmmo + state.ReserveAmmo == 0 ||
-            (loadout.EquippedState.MagazineAmmo == 0 && target && distance < sidearmRange))
+        var current = loadout.EquippedState;
+        int desired = Mathf.Clamp(primaryWeapon, 1, loadout.AvailableSlots.Length);
+        if (current.MagazineAmmo + current.ReserveAmmo == 0)
         {
             int usable = 0;
             for (int i = 0; i < loadout.AvailableSlots.Length; i++)
@@ -303,8 +310,17 @@ public class ArenaAIInput : SoldierInputSource
                 if (alternate.MagazineAmmo > 0) { usable = i + 1; break; }
                 if (usable == 0 && alternate.ReserveAmmo > 0) usable = i + 1;
             }
-            if (usable > 0) desired = usable;
+            if (usable == 0) return 0;
+            desired = usable;
         }
+        else if (current.MagazineAmmo == 0 && targetVisible && distance < sidearmRange)
+        {
+            desired = Mathf.Clamp(sidearmWeapon, 1, loadout.AvailableSlots.Length);
+            if (loadout.slots[loadout.AvailableSlots[desired - 1]].state.MagazineAmmo == 0) return 0;
+        }
+        else if (target || IsCombatAlert || Time.time < aimHoldUntil) return 0;
+        else if (loadout.slots[loadout.AvailableSlots[desired - 1]].state.MagazineAmmo
+            + loadout.slots[loadout.AvailableSlots[desired - 1]].state.ReserveAmmo == 0) return 0;
         if (loadout.AvailableSlots[desired - 1] == loadout.selectedSlot) return 0;
         nextWeapon = Time.time + weaponDecisionInterval;
         return desired;

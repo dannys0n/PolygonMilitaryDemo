@@ -62,7 +62,8 @@ public class SoldierLaunchers : MonoBehaviour
         if(first){first.gameObject.SetActive(false);first.transform.SetParent(null);Destroy(first.gameObject);first=null;}
         third.gameObject.SetActive(false);third.transform.SetParent(null);Destroy(third.gameObject);
         foreach(var r in hiddenFirst)if(r){r.forceRenderingOff=false;r.enabled=life.view.firstPerson;}
-        foreach(var r in hiddenThird){r.forceRenderingOff=false;r.enabled=true;}
+        // Cached descendants can include short-lived muzzle particles destroyed while held.
+        foreach(var r in hiddenThird)if(r){r.forceRenderingOff=false;r.enabled=true;}
         life.loadout.SetStartingSlot(previousSlot);
         life.view.RefreshVisuals();
     }
@@ -86,7 +87,7 @@ public class SoldierLaunchers : MonoBehaviour
     {
         // Animation clips can write Renderer.enabled; this visibility override survives that.
         foreach(var r in hiddenFirst)if(r)r.forceRenderingOff=true;
-        foreach(var r in hiddenThird)r.forceRenderingOff=true;
+        foreach(var r in hiddenThird)if(r)r.forceRenderingOff=true;
         if(first)foreach(var r in first.GetComponentsInChildren<Renderer>(true))r.enabled=life.view.firstPerson;
         if(first&&first.loadedRocket)first.loadedRocket.SetActive(Ready&&rounds[Selected]>0);
         if(third.loadedRocket)third.loadedRocket.SetActive(Ready&&rounds[Selected]>0);
