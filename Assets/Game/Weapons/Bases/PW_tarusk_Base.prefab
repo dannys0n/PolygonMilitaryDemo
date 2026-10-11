@@ -9,6 +9,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 3294084171570564673}
+  - component: {fileID: 7063810384851854595}
   m_Layer: 0
   m_Name: OpticMount
   m_TagString: Untagged
@@ -24,13 +25,71 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 334249608314666014}
   serializedVersion: 2
-  m_LocalRotation: {x: 1.0036419e-15, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0.000906, y: 0.0764, z: 0.012200034}
-  m_LocalScale: {x: 1, y: 0.9999998, z: 0.9999998}
+  m_LocalRotation: {x: -1.0136784e-24, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 7.275958e-12, y: 0.053400002, z: 0.01220004}
+  m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 5801076651673436567}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &7063810384851854595
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 334249608314666014}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 03e841738b6be124bbe22cf82e6359c7, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::WeaponAttachmentSocket
+  requiredSightSupports:
+  - sight: {fileID: 11400000, guid: 4956283e03ea53b418c98c2735847c92, type: 2}
+    riser: {fileID: 11400000, guid: bb26fa1868c00a44e9259a62a422cb80, type: 2}
+    contactPoint: {x: 0, y: 0, z: 0}
+    supportScale: {x: 1, y: 1, z: 2.4}
+  - sight: {fileID: 11400000, guid: 2061f9f28b8b3a846a406a0f537b1228, type: 2}
+    riser: {fileID: 11400000, guid: bb26fa1868c00a44e9259a62a422cb80, type: 2}
+    contactPoint: {x: 0, y: 0, z: 0.01208}
+    supportScale: {x: 1, y: 1, z: 2.4}
+  - sight: {fileID: 11400000, guid: 7df660291639dbc4db02b9eae0e3a0ad, type: 2}
+    riser: {fileID: 11400000, guid: bb26fa1868c00a44e9259a62a422cb80, type: 2}
+    contactPoint: {x: 0, y: 0, z: -0.02471}
+    supportScale: {x: 1, y: 1, z: 2.4}
+  - sight: {fileID: 11400000, guid: c7833469142e4384cbb915eadc49ad76, type: 2}
+    riser: {fileID: 11400000, guid: bb26fa1868c00a44e9259a62a422cb80, type: 2}
+    contactPoint: {x: 0, y: 0, z: 0.00478}
+    supportScale: {x: 1, y: 1, z: 2.4}
+  - sight: {fileID: 11400000, guid: 1bbe9dbdfc587b34f9a75c4c19189438, type: 2}
+    riser: {fileID: 11400000, guid: bb26fa1868c00a44e9259a62a422cb80, type: 2}
+    contactPoint: {x: 0, y: 0, z: -0.00219}
+    supportScale: {x: 1, y: 1, z: 2.4}
+  - sight: {fileID: 11400000, guid: aa7d65b2f0dbb3446bb064c28216adc4, type: 2}
+    riser: {fileID: 11400000, guid: bb26fa1868c00a44e9259a62a422cb80, type: 2}
+    contactPoint: {x: -0.00003, y: 0.0015, z: 0.00007}
+    supportScale: {x: 1, y: 1, z: 1}
+  - sight: {fileID: 11400000, guid: 80b1b00eca475fb44a99d74be20909cb, type: 2}
+    riser: {fileID: 11400000, guid: bb26fa1868c00a44e9259a62a422cb80, type: 2}
+    contactPoint: {x: -0.00002, y: 0.00807, z: -0.01339}
+    supportScale: {x: 1, y: 1, z: 1}
+  - sight: {fileID: 11400000, guid: d3559e90db1981140b18f0ed49418e2c, type: 2}
+    riser: {fileID: 11400000, guid: bb26fa1868c00a44e9259a62a422cb80, type: 2}
+    contactPoint: {x: 0, y: 0.00771, z: -0.00913}
+    supportScale: {x: 1, y: 1, z: 1}
+  - sight: {fileID: 11400000, guid: 93f366eb4d09cbf4c96da69dc944a093, type: 2}
+    riser: {fileID: 11400000, guid: bb26fa1868c00a44e9259a62a422cb80, type: 2}
+    contactPoint: {x: 0.00017, y: 0.00919, z: 0.00279}
+    supportScale: {x: 1.4, y: 1, z: 1.55}
+  - sight: {fileID: 11400000, guid: 42335187722f20045b895305d4023f23, type: 2}
+    riser: {fileID: 11400000, guid: bb26fa1868c00a44e9259a62a422cb80, type: 2}
+    contactPoint: {x: 0, y: -0.00714, z: -0.00122}
+    supportScale: {x: 1, y: 1, z: 1}
+  - sight: {fileID: 11400000, guid: 2c04d93907919254f97c56ca25fae557, type: 2}
+    riser: {fileID: 11400000, guid: bb26fa1868c00a44e9259a62a422cb80, type: 2}
+    contactPoint: {x: 0, y: 0.01125, z: -0.00565}
+    supportScale: {x: 1, y: 1, z: 1}
+  placements: []
 --- !u!1 &359890846387316757
 GameObject:
   m_ObjectHideFlags: 0

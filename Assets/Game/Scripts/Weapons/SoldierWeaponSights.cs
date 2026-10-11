@@ -119,8 +119,41 @@ public class SoldierWeaponSights : MonoBehaviour
 
     void ApplySightLift()
     {
-        if (firstAttachment) firstAttachment.transform.localPosition = Vector3.up * sightLift;
-        if (thirdAttachment) thirdAttachment.transform.localPosition = Vector3.up * sightLift;
+        ApplySightSupport(firstAttachment, firstPersonMount);
+        ApplySightSupport(thirdAttachment, thirdPersonMount);
+    }
+
+    void ApplySightSupport(WeaponSightAttachment attachment, Transform mount)
+    {
+        if (!attachment) return;
+        var placement = mount.TryGetComponent<WeaponAttachmentSocket>(out var socket)
+            ? socket.SupportFor(SelectedSight) : default;
+        var required = placement.riser;
+        float lift = Mathf.Max(sightLift, required ? required.sightLift : 0f);
+        attachment.transform.localPosition = Vector3.up * lift;
+        if (required) attachment.transform.localPosition -= new Vector3(placement.contactPoint.x, placement.contactPoint.y, 0f);
+        var old = attachment.transform.Find("RequiredSightRiser");
+        if (old)
+        {
+            old.gameObject.SetActive(false);
+            old.SetParent(null);
+            if (Application.isPlaying) Destroy(old.gameObject); else DestroyImmediate(old.gameObject);
+        }
+        // An explicitly equipped riser already supplies the support mesh.
+        if (!required || sightLift >= required.sightLift) return;
+        var support = Instantiate(required.prefab, attachment.transform, false);
+        support.name = "RequiredSightRiser";
+        support.transform.SetLocalPositionAndRotation(required.positionOffset + Vector3.forward * placement.contactPoint.z - attachment.transform.localPosition,
+            Quaternion.Euler(required.rotationOffset));
+        support.transform.localScale = Vector3.Scale(required.scale, placement.supportScale);
+        foreach (var node in support.GetComponentsInChildren<Transform>(true))
+            node.gameObject.layer = attachment.gameObject.layer;
+        bool visible = mount != firstPersonMount || owner.firstPerson;
+        foreach (var renderer in support.GetComponentsInChildren<Renderer>(true))
+        {
+            renderer.enabled = visible;
+            if (mount == firstPersonMount) renderer.shadowCastingMode = ShadowCastingMode.Off;
+        }
     }
 
     public void GetAdsPlacement(Vector3 rootScale, out Vector3 position, out Quaternion rotation)

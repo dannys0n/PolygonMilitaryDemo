@@ -11,6 +11,29 @@ public class WeaponAttachmentSocket : MonoBehaviour
         public Quaternion rotation;
         public Vector3 scale;
     }
+    [System.Serializable] public struct SightSupport
+    {
+        public WeaponSightDefinition sight;
+        public WeaponAttachmentDefinition riser;
+        public Vector3 contactPoint;
+        public Vector3 supportScale;
+    }
+    public SightSupport[] requiredSightSupports = System.Array.Empty<SightSupport>();
+
+    public SightSupport SupportFor(WeaponSightDefinition sight)
+    {
+        foreach (var support in requiredSightSupports)
+            if (support.sight == sight) return support;
+        return default;
+    }
+
+    public WeaponAttachmentDefinition RequiredRiser(WeaponSightDefinition sight)
+    {
+        foreach (var support in requiredSightSupports)
+            if (support.sight == sight) return support.riser;
+        return null;
+    }
+
     public Placement[] placements = System.Array.Empty<Placement>();
 
     public void Place(WeaponAttachmentDefinition attachment, Transform instance)
