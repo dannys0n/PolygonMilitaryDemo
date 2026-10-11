@@ -490,15 +490,16 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::SoldierWeaponSights
   firstPersonMount: {fileID: 0}
   thirdPersonMount: {fileID: 1112844835673048289}
-  ironSight: {fileID: 0}
-  frontIronSight: {fileID: 0}
+  rearSight: {fileID: 0}
+  frontSight: {fileID: 0}
+  authoringPrefab: {fileID: 0}
   cameraReferenceConfigured: 0
   neutralCameraPosition: {x: 0, y: 0, z: 0}
   neutralCameraRotation: {x: 0, y: 0, z: 0, w: 1}
-  defaultSight: {fileID: 11400000, guid: ae5906bab53d87b4f99a0a83cd4864b3, type: 2}
+  defaultSight: {fileID: 11400000, guid: 9be768d8a863d2f4e8c381ee96a9a575, type: 2}
   compatibleSights:
   - {fileID: 11400000, guid: 4e1259dda0d80474285fbbee02d7367d, type: 2}
-  - {fileID: 11400000, guid: ae5906bab53d87b4f99a0a83cd4864b3, type: 2}
+  - {fileID: 11400000, guid: 9be768d8a863d2f4e8c381ee96a9a575, type: 2}
   - {fileID: 11400000, guid: 36d3dcaf7680f26419346a0ce7c3d393, type: 2}
   - {fileID: 11400000, guid: bfb4c7f4c5638ea4b8b65d6ed7022031, type: 2}
   - {fileID: 11400000, guid: 15bd7bedf87d11b418cd48a199d32719, type: 2}
@@ -508,9 +509,9 @@ MonoBehaviour:
   - {fileID: 11400000, guid: d3559e90db1981140b18f0ed49418e2c, type: 2}
   - {fileID: 11400000, guid: 93f366eb4d09cbf4c96da69dc944a093, type: 2}
   - {fileID: 11400000, guid: 33faa6f9fab62a34897f3dc95f64d37e, type: 2}
-  referenceMountPosition: {x: -0.050512027, y: -0.020905018, z: 0.2560085}
-  referenceMountRotation: {x: -0.0026594403, y: 0.000026632946, z: 0.000000073790034, w: 0.9999965}
-  referenceMountScale: {x: 0.87, y: 0.87000006, z: 0.87000006}
+  referenceWeaponPosition: {x: 0, y: 0, z: 0}
+  referenceWeaponRotation: {x: 0, y: 0, z: 0, w: 1}
+  referenceWeaponScale: {x: 1, y: 1, z: 1}
   referenceCameraPosition: {x: 0, y: 0, z: 0}
   referenceCameraRotation: {x: 0, y: 0, z: 0, w: 1}
 --- !u!114 &6045433726810918381
@@ -558,6 +559,7 @@ MonoBehaviour:
     thirdPerson: {fileID: 3759982029710806767}
     compatible:
     - {fileID: 11400000, guid: 4e27a8fc2d2e0ac489f9cc759cf6318d, type: 2}
+    - {fileID: 11400000, guid: bddf3f1b8bff2ca43917c33e8e8dcd94, type: 2}
     builtInFirstPerson:
     - {fileID: 0}
     builtInThirdPerson:
