@@ -3,7 +3,7 @@ using UnityEngine.Rendering;
 using UnityEngine.Rendering.Universal;
 
 // Minimal observation controls and feedback for the AI-versus-AI test scene.
-[DefaultExecutionOrder(200)]
+[DefaultExecutionOrder(300)]
 public class ArenaAISpectator : MonoBehaviour
 {
     public ArenaMatch match;
@@ -38,6 +38,8 @@ public class ArenaAISpectator : MonoBehaviour
     public bool IsSpectating => !localPlayer || localDeathView;
     public bool ControlsBlocked { get; set; }
     bool bodyDirty;
+    VehicleOccupant observedOccupant;
+    bool wasMounted;
 
     public void SetInsetTexture(RenderTexture texture)
     {
@@ -90,7 +92,7 @@ public class ArenaAISpectator : MonoBehaviour
         if (FirstPersonSpectating && (!FollowedCharacter || !observedView)) StopFollowing();
         if (FollowedCharacter && !FirstPersonSpectating)
             orbitDistance = Mathf.Clamp(orbitDistance - Input.GetAxis("Mouse ScrollWheel") * zoomSpeed, .5f, 8f);
-        bool looking = !FirstPersonSpectating && Input.GetMouseButton(1);
+        bool looking = !FollowedCharacter && Input.GetMouseButton(1);
         Cursor.lockState = looking ? CursorLockMode.Locked : CursorLockMode.None;
         Cursor.visible = !looking;
         if (!looking) return;
@@ -226,6 +228,8 @@ public class ArenaAISpectator : MonoBehaviour
     void PreparePerspective()
     {
         observedView = FollowedCharacter.player.view;
+        observedOccupant = FollowedCharacter.GetComponent<VehicleOccupant>();
+        wasMounted = observedOccupant && observedOccupant.IsMounted;
         var camera = observedView.playerCamera;
         previousFirstPerson = observedView.firstPerson;
         previousCameraEnabled = camera.enabled;
@@ -240,6 +244,8 @@ public class ArenaAISpectator : MonoBehaviour
         camera.enabled = true;
         observedView.SetFirstPerson(true);
         camera.transform.localRotation = aimRotation;
+        if (wasMounted)
+            foreach (var mesh in observedView.firstPersonRoot.GetComponentsInChildren<Renderer>(true)) mesh.enabled = false;
         // Other soldiers remain visible. Only the observed body becomes shadow-only.
         camera.cullingMask |= 1 << observedView.thirdPersonLayer;
         CacheBody();
@@ -305,6 +311,8 @@ public class ArenaAISpectator : MonoBehaviour
             var camera = observedView.playerCamera;
             var aimRotation = camera.transform.localRotation;
             observedView.SetFirstPerson(previousFirstPerson);
+            if (observedOccupant && observedOccupant.IsMounted)
+                foreach (var mesh in observedView.firstPersonRoot.GetComponentsInChildren<Renderer>(true)) mesh.enabled = false;
             camera.transform.localRotation = aimRotation;
             camera.cullingMask = previousCameraMask;
             camera.enabled = previousCameraEnabled;
@@ -317,6 +325,7 @@ public class ArenaAISpectator : MonoBehaviour
         }
         hiddenBody = null;
         observedView = null;
+        observedOccupant = null;
         FirstPersonSpectating = false;
     }
 
@@ -337,17 +346,35 @@ public class ArenaAISpectator : MonoBehaviour
     void LateUpdate()
     {
         if (!FollowedCharacter) return;
-        // Follow the animated head after movement/animation; keep yaw independent of the bot.
-        Vector3 pivot = followedHead.position;
-        Vector3 backward = -transform.forward;
-        float distance = orbitDistance;
-        foreach (var hit in Physics.SphereCastAll(pivot, .15f, backward, distance,
-                     Physics.DefaultRaycastLayers, QueryTriggerInteraction.Ignore))
+        bool mounted = observedOccupant && observedOccupant.IsMounted;
+        if (mounted)
         {
-            if (hit.collider.GetComponentInParent<ArenaParticipant>()) continue;
-            distance = Mathf.Min(distance, Mathf.Max(0f, hit.distance - .05f));
+            observedOccupant.GetSpectatorCameraPose(true, out var firstPosition, out var firstRotation);
+            observedView.playerCamera.transform.SetPositionAndRotation(firstPosition, firstRotation);
+            observedView.playerCamera.fieldOfView = observedOccupant.IsLocal && observedOccupant.ActiveVehicleCamera
+                ? observedOccupant.ActiveVehicleCamera.fieldOfView : 70f;
+            observedOccupant.GetSpectatorCameraPose(false, out var thirdPosition, out var thirdRotation);
+            spectatorCamera.transform.SetPositionAndRotation(thirdPosition, thirdRotation);
+            spectatorCamera.fieldOfView = observedView.playerCamera.fieldOfView;
         }
-        transform.position = pivot + backward * distance;
+        else if (deathWatch)
+        {
+            // Hold the victim view during the short death watch.
+            transform.position = followedHead.position - transform.forward * orbitDistance;
+        }
+        else
+        {
+            if (wasMounted)
+            {
+                observedView.SetFirstPerson(true);
+                observedView.GetComponent<SoldierWeaponLoadout>().RefreshFirstPersonPresentation();
+                observedView.playerCamera.cullingMask |= 1 << observedView.thirdPersonLayer;
+            }
+            observedView.GetThirdPersonCameraPose(out var position, out var rotation);
+            spectatorCamera.transform.SetPositionAndRotation(position, rotation);
+            spectatorCamera.fieldOfView = observedView.ThirdPersonFieldOfView;
+        }
+        wasMounted = mounted;
     }
 
     void OnDisable()

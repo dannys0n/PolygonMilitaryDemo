@@ -43,6 +43,7 @@ public class SoldierFirstPersonView : MonoBehaviour
     private Quaternion adsRotation=Quaternion.identity, previousAdsRotation=Quaternion.identity;
     private float sightChangeTime;
     public float AimBlend => aimBlend;
+    public float ThirdPersonFieldOfView => originalFieldOfView;
 #if UNITY_EDITOR
     // The placement tool can hold a pose without adding runtime equipment objects.
     public bool? EditorPlacementAim { get; set; }
@@ -214,6 +215,14 @@ public class SoldierFirstPersonView : MonoBehaviour
         armsAnimator.SetFloat("AimBlend", 0f);
         ApplyPlacement(0f);
         playerCamera.fieldOfView = originalFieldOfView;
+    }
+
+    public void GetThirdPersonCameraPose(out Vector3 position, out Quaternion rotation)
+    {
+        // Reuse the authored TPS offset while following the live look/recoil direction.
+        var cameraTransform = playerCamera.transform;
+        rotation = cameraTransform.rotation;
+        position = cameraTransform.parent.TransformPoint(thirdPersonCameraPosition);
     }
 
     public void SetFirstPerson(bool enabled)

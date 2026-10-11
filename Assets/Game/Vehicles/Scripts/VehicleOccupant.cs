@@ -389,15 +389,16 @@ public class VehicleOccupant : MonoBehaviour
         var shake=vehicleCameraShake.transform;
         vehicleCamera.transform.SetPositionAndRotation(desired+rotation*shake.localPosition,rotation*shake.localRotation);
     }
-    Vector3 CameraPosition(Vehicle v, Quaternion rotation, bool gunner, bool aircraft, bool pilot)
+    Vector3 CameraPosition(Vehicle v, Quaternion rotation, bool gunner, bool aircraft, bool pilot, bool? cockpitOverride = null)
     {
+        bool cockpit = cockpitOverride ?? CockpitView;
         Vector3 target = gunner ? v.turret.cameraPoint.position : v.cameraTarget.position;
-        if (pilot && ((HelicopterMotor)v.motor).assistEnabled && !CockpitView)
+        if (pilot && ((HelicopterMotor)v.motor).assistEnabled && !cockpit)
             target = v.transform.position + Vector3.up * v.cameraTarget.localPosition.y;
         Vector3 desired;
-        if (CockpitView) desired = gunner ? target : v.seats[SeatIndex].anchor.position + v.transform.up * (aircraft ? 1.15f : 1f);
+        if (cockpit) desired = gunner ? target : v.seats[SeatIndex].anchor.position + v.transform.up * (aircraft ? 1.15f : 1f);
         else desired = target + rotation * (aircraft ? new Vector3(4,1.5f,-20) : new Vector3(0,1,-7));
-        if (!CockpitView)
+        if (!cockpit)
         {
             Vector3 offset = desired - target;
             float distance = offset.magnitude;
@@ -407,6 +408,22 @@ public class VehicleOccupant : MonoBehaviour
         }
         return desired;
     }
+    public void GetSpectatorCameraPose(bool cockpit, out Vector3 position, out Quaternion rotation)
+    {
+        var v = MountedVehicle;
+        bool gunner = v.seats[SeatIndex].role == Vehicle.SeatRole.Gunner;
+        bool aircraft = v.motor is HelicopterMotor;
+        bool pilot = aircraft && v.seats[SeatIndex].role == Vehicle.SeatRole.Driver;
+        // Local occupants already own the live view; AI view comes from its control intent.
+        rotation = IsLocal ? Quaternion.Euler(pitch, yaw, 0)
+            : gunner ? Quaternion.LookRotation(v.turret.RequestedAimDirection, Vector3.up)
+            : aircraft ? Quaternion.Euler(v.DriverInput.viewPitch, v.DriverInput.heading, 0)
+            : Quaternion.Euler(cockpit ? 0 : 14, v.transform.eulerAngles.y, 0);
+        if (pilot && !((HelicopterMotor)v.motor).assistEnabled && (!IsLocal || !Freelook))
+            rotation = cockpit ? v.Body.rotation : Quaternion.LookRotation(v.transform.forward, v.transform.up);
+        position = CameraPosition(v, rotation, gunner, aircraft, pilot, cockpit);
+    }
+
     public void PlayVehicleCameraShake()
     {
         vehicleCameraShake["FireShake"].time=0;
