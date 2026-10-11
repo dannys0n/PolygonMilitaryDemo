@@ -11,8 +11,9 @@ public class SoldierWeaponDefinition : ScriptableObject
     public bool infiniteAmmunition;
     public VehicleRocket rocketProjectile;
     public GrenadeDefinition thrownExplosive;
-    [Min(1)] public int pellets=1;
+    [Tooltip("Half-angle of the shotgun spread cone. Damage is a single radius check per target, not individual pellet traces.")]
     [Range(0,20)] public float spreadDegrees;
+    public bool UsesSpread => category == WeaponCategory.Shotgun && spreadDegrees > 0f;
     [Header("UI")]
     public Sprite icon;
     public enum SprintStyle { Regular, Tactical }

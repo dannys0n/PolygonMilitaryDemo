@@ -22,6 +22,7 @@ public class ArenaHud : MonoBehaviour
     public UnityEngine.UI.Image redProgress, blueProgress, healthProgress;
     public RectTransform crosshairRoot;
     public UnityEngine.UI.Graphic[] crosshairSegments;
+    public UnityEngine.UI.Image[] spreadCrosshairSegments;
     public float crosshairSmoothing = 8f;
     public float minimumCrosshairScale = .15f;
     [Header("Crosshair shot bloom")]
@@ -44,7 +45,7 @@ public class ArenaHud : MonoBehaviour
     readonly List<RectTransform> radarDots = new List<RectTransform>();
     float crosshairScale = 1f, hitUntil, medalUntil, nextRefresh, lastKill = -100f;
     float shotSpread, recoverSpreadAt, killHitUntil;
-    Vector2[] crosshairRestPositions;
+    Vector2[] crosshairRestPositions, spreadRestPositions;
     int streak, multiKill;
     string accentHex;
 
@@ -52,6 +53,7 @@ public class ArenaHud : MonoBehaviour
     {
         accentHex = ColorUtility.ToHtmlStringRGB(accent);
         crosshairRestPositions = crosshairSegments.Select(s => s.rectTransform.anchoredPosition).ToArray();
+        spreadRestPositions = spreadCrosshairSegments.Select(s => s.rectTransform.anchoredPosition).ToArray();
     }
     void OnEnable()
     {
@@ -99,6 +101,9 @@ public class ArenaHud : MonoBehaviour
         for (int i = 0; i < crosshairSegments.Length; i++)
             crosshairSegments[i].rectTransform.anchoredPosition = crosshairRestPositions[i]
                 + crosshairRestPositions[i].normalized * shotSpread;
+        for (int i = 0; i < spreadCrosshairSegments.Length; i++)
+            spreadCrosshairSegments[i].rectTransform.anchoredPosition = spreadRestPositions[i]
+                + spreadRestPositions[i].normalized * shotSpread;
     }
     void ResetFeedback() { kills.Clear(); medalUntil = hitUntil = killHitUntil = 0f; lastKill = -100f; OnRespawn(); }
     void OnConfirmedDamage(CombatEvents.ConfirmedDamage hit)
@@ -146,7 +151,9 @@ public class ArenaHud : MonoBehaviour
         else if (Time.time >= recoverSpreadAt)
             shotSpread = Mathf.Lerp(shotSpread, 0f, 1f - Mathf.Exp(-Time.deltaTime / Mathf.Max(.01f, shotRecoveryTime)));
         PositionCrosshair();
-        foreach (var segment in crosshairSegments) segment.enabled = crosshairScale > minimumCrosshairScale;
+        bool spread = life.loadout.EquippedWeapon.definition.UsesSpread;
+        foreach (var segment in crosshairSegments) segment.enabled = !spread && crosshairScale > minimumCrosshairScale;
+        foreach (var segment in spreadCrosshairSegments) segment.enabled = spread && crosshairScale > minimumCrosshairScale;
         crosshair.alpha = 1f;
         hitMarker.alpha = Time.time < hitUntil ? 1f : 0f;
         medalGroup.alpha = 1f;

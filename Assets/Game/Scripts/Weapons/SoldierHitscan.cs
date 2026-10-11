@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 
 public class SoldierHitscan : MonoBehaviour
@@ -44,9 +45,7 @@ public class SoldierHitscan : MonoBehaviour
             grenade.Launch(definition,gameObject,aim.direction*definition.throwSpeed+Vector3.up*definition.upwardSpeed);
             var shot=new ShotResult{origin=muzzle.position,point=aim.GetPoint(weapon.range)};ShotResolved?.Invoke(shot);return shot;
         }
-        ShotResult result=default;
-        for(int i=0;i<weapon.pellets;i++)result=FireBullet(weapon,muzzle);
-        return result;
+        return weapon.UsesSpread ? FireSpread(weapon, muzzle, aim) : FireBullet(weapon, muzzle);
     }
     ShotResult FireBullet(SoldierWeaponDefinition weapon, Transform muzzle)
     {
@@ -61,24 +60,9 @@ public class SoldierHitscan : MonoBehaviour
 
         Vector3 origin = muzzle.position;
         var result = new ShotResult { origin = origin, point = point };
-        // A muzzle inside cover must not shoot out through its back face.
-        foreach (Collider collider in Physics.OverlapSphere(origin, muzzleClearance,
-            hitLayers, QueryTriggerInteraction.Collide))
+        if (TryMuzzleBlock(origin, out var cover, out var coverPoint))
         {
-            if (!IsShotCollider(collider)) continue;
-            result.collider = collider;
-            result.point = collider.ClosestPoint(origin);
-            return Finish(result, weapon);
-        }
-
-        // Also catch cover between the player and a protruding muzzle.
-        Vector3 firingOrigin = transform.position + Vector3.up *
-            GetComponent<CharacterController>().height * .75f;
-        Vector3 toMuzzle = origin - firingOrigin;
-        if (ClosestHit(new Ray(firingOrigin, toMuzzle), toMuzzle.magnitude, out RaycastHit coverHit))
-        {
-            result.collider = coverHit.collider;
-            result.point = coverHit.point;
+            result.collider = cover; result.point = coverPoint;
             return Finish(result, weapon);
         }
 
@@ -91,6 +75,90 @@ public class SoldierHitscan : MonoBehaviour
             result.point = hit.point;
         }
         return Finish(result, weapon);
+    }
+
+    struct SpreadHit
+    {
+        public SoldierHealth health;
+        public Vehicle vehicle;
+        public Collider collider;
+        public Vector3 point;
+        public float damage;
+    }
+    readonly Dictionary<GameObject, SpreadHit> spreadHits = new Dictionary<GameObject, SpreadHit>();
+
+    ShotResult FireSpread(SoldierWeaponDefinition weapon, Transform muzzle, Ray aim)
+    {
+        var result = new ShotResult { origin = muzzle.position, point = aim.GetPoint(weapon.range) };
+        if (TryMuzzleBlock(result.origin, out var cover, out var coverPoint))
+        {
+            result.collider = cover; result.point = coverPoint;
+            return Publish(result);
+        }
+        if (ClosestHit(aim, weapon.range, out var centerHit))
+        { result.collider = centerHit.collider; result.point = centerHit.point; }
+
+        spreadHits.Clear();
+        float slope = Mathf.Tan(weapon.spreadDegrees * Mathf.Deg2Rad);
+        float halfRange = weapon.range * .5f;
+        // One broadphase query encloses the cone; the actual hit test is its radius at target depth.
+        float radius = Mathf.Sqrt(halfRange * halfRange + weapon.range * weapon.range * slope * slope);
+        foreach (var collider in Physics.OverlapSphere(aim.GetPoint(halfRange), radius,
+                     hitLayers, QueryTriggerInteraction.Collide))
+        {
+            if (!IsShotCollider(collider)) continue;
+            var region = collider.GetComponent<SoldierHitRegion>();
+            var vehicle = region ? null : collider.GetComponentInParent<Vehicle>();
+            if (!region && !vehicle) continue;
+            var owner = region ? region.health.gameObject : vehicle.gameObject;
+            float centerDepth = Vector3.Dot(collider.bounds.center - aim.origin, aim.direction);
+            Vector3 point = collider.ClosestPoint(aim.GetPoint(centerDepth));
+            Vector3 delta = point - aim.origin;
+            float depth = Vector3.Dot(delta, aim.direction);
+            if (depth <= 0f || depth > weapon.range) continue;
+            float spreadRadius = Mathf.Max(.001f, depth * slope);
+            float radialDistance = (delta - aim.direction * depth).magnitude;
+            if (radialDistance > spreadRadius) continue;
+            if (!VisibleTo(point, aim.origin, owner) || !VisibleTo(point, result.origin, owner)) continue;
+            // Center hits retain close-range damage; distance and cone-edge hits lose power smoothly.
+            float damage = weapon.damage * Mathf.Lerp(1f, .15f, depth / weapon.range)
+                * Mathf.Lerp(1f, .25f, radialDistance / spreadRadius);
+            if (spreadHits.TryGetValue(owner, out var previous) && previous.damage >= damage) continue;
+            spreadHits[owner] = new SpreadHit { health = region ? region.health : null, vehicle = vehicle,
+                collider = collider, point = point, damage = damage };
+        }
+        foreach (var hit in spreadHits.Values)
+        {
+            bool damaged = hit.health ? hit.health.ApplyDamage(hit.damage, gameObject)
+                : hit.vehicle.ApplyBulletDamage(hit.damage, gameObject);
+            if (!damaged) continue;
+            result.collider = hit.collider; result.point = hit.point; result.damaged = true;
+            result.killed |= hit.health ? hit.health.IsDead : hit.vehicle.IsDestroyed;
+        }
+        return Publish(result);
+    }
+
+    bool VisibleTo(Vector3 point, Vector3 origin, GameObject owner)
+    {
+        Vector3 direction = point - origin;
+        if (!ClosestHit(new Ray(origin, direction), direction.magnitude + .01f, out var hit)) return true;
+        var region = hit.collider.GetComponent<SoldierHitRegion>();
+        if (region) return region.health.gameObject == owner;
+        var vehicle = hit.collider.GetComponentInParent<Vehicle>();
+        return vehicle && vehicle.gameObject == owner;
+    }
+
+    bool TryMuzzleBlock(Vector3 origin, out Collider cover, out Vector3 point)
+    {
+        foreach (var collider in Physics.OverlapSphere(origin, muzzleClearance,
+                     hitLayers, QueryTriggerInteraction.Collide))
+            if (IsShotCollider(collider))
+            { cover = collider; point = collider.ClosestPoint(origin); return true; }
+        Vector3 firingOrigin = transform.position + Vector3.up * GetComponent<CharacterController>().height * .75f;
+        Vector3 toMuzzle = origin - firingOrigin;
+        if (ClosestHit(new Ray(firingOrigin, toMuzzle), toMuzzle.magnitude, out var hit))
+        { cover = hit.collider; point = hit.point; return true; }
+        cover = null; point = default; return false;
     }
 
     ShotResult Finish(ShotResult result, SoldierWeaponDefinition weapon)
@@ -106,6 +174,11 @@ public class SoldierHitscan : MonoBehaviour
             result.damaged = vehicle.ApplyBulletDamage(weapon.damage, gameObject);
             result.killed = result.damaged && vehicle.IsDestroyed;
         }
+        return Publish(result);
+    }
+
+    ShotResult Publish(ShotResult result)
+    {
         if (drawDebug) Debug.DrawLine(result.origin, result.point, Color.yellow, 1f);
         ShotResolved?.Invoke(result);
         return result;
