@@ -32,7 +32,8 @@ Material:
   m_CustomRenderQueue: -1
   stringTagMap:
     RenderType: Opaque
-  disabledShaderPasses: []
+  disabledShaderPasses:
+  - MOTIONVECTORS
   m_LockedProperties: 
   m_SavedProperties:
     serializedVersion: 3
@@ -103,10 +104,13 @@ Material:
         m_Offset: {x: 0, y: 0}
     m_Ints: []
     m_Floats:
+    - _AddPrecomputedVelocity: 0
     - _AlphaClip: 0
+    - _AlphaToMask: 0
     - _AoIntensity: 1
     - _Blend: 0
     - _BlendMainNormal: 1
+    - _BlendModePreserveSpecular: 1
     - _BlendmodeOverlay: 0
     - _Brightness: 1
     - _BumpScale: 1
@@ -123,6 +127,7 @@ Material:
     - _DetailSource: 0
     - _DetailSpecularIntensity: 0.2
     - _DstBlend: 0
+    - _DstBlendAlpha: 0
     - _EmissionIntensity: 1
     - _EnableDetailMask: 0
     - _EnableTriplanarProjection: 1
@@ -140,6 +145,8 @@ Material:
     - _QueueOffset: 0
     - _ReceiveShadows: 1
     - _Saturation: 0
+    - _ScreenSpaceReflections: 1
+    - _ScreenSpaceReflectionsContributeTransparent: 1
     - _Smoothness: 0.5
     - _SmoothnessTextureChannel: 0
     - _Source: 0
@@ -148,6 +155,7 @@ Material:
     - _SpecularIntensity: 1.11
     - _SpreadDetailMap: 0
     - _SrcBlend: 1
+    - _SrcBlendAlpha: 1
     - _Surface: 0
     - _TriplanarFalloff: 20
     - _TriplanarSpaceProjection: 0
@@ -156,6 +164,7 @@ Material:
     - _UseEmissionFromMainProperties: 1
     - _VisualizeMask: 0
     - _WorkflowMode: 1
+    - _XRMotionVectorsPass: 1
     - _ZTest: 4
     - _ZWrite: 1
     - __dirty: 1

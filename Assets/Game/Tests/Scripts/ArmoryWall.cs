@@ -14,10 +14,14 @@ public class ArmoryWall : MonoBehaviour
     public float bottomHeight = 1.05f;
     public Vector2 modelSize = new Vector2(1.85f, .55f);
     readonly List<Mesh> generatedMeshes = new();
+    readonly Dictionary<Transform, (int columns, float scale)> layouts = new();
 
     public ArmoryTarget[] Build()
     {
         var targets = new List<ArmoryTarget>();
+        SetLayout(weaponWall, catalog.entries.Length);
+        SetLayout(attachmentWall, 1 + catalog.entries.SelectMany(e => e.sights).Distinct().Count(s => s.prefab)
+            + catalog.entries.SelectMany(e => e.attachments).Distinct().Count());
         var staging = new GameObject("Display preparation");
         staging.SetActive(false);
         try
@@ -55,14 +59,23 @@ public class ArmoryWall : MonoBehaviour
         return targets.ToArray();
     }
 
+    void SetLayout(Transform wall, int count)
+    {
+        int cols = Mathf.Max(columns, Mathf.CeilToInt(Mathf.Sqrt(count * columns / 3f)));
+        int rows = Mathf.Max(1, Mathf.CeilToInt(count / (float)cols));
+        layouts[wall] = (cols, Mathf.Min(1f, columns / (float)cols, 3f / rows));
+    }
+
     ArmoryTarget Add(string title, Transform wall, int index)
     {
+        var layout = layouts[wall];
         var target = Instantiate(displayPrefab, wall, false);
+        target.transform.localScale = Vector3.one * layout.scale;
         target.name = title;
         target.title = title;
         target.transform.localPosition = new Vector3(
-            (index % columns - (columns - 1) * .5f) * spacing.x,
-            bottomHeight + index / columns * spacing.y, -.18f);
+            (index % layout.columns - (layout.columns - 1) * .5f) * spacing.x * layout.scale,
+            bottomHeight + index / layout.columns * spacing.y * layout.scale, -.18f);
         target.label.text = title;
         return target;
     }
@@ -186,3 +199,4 @@ public class ArmoryWall : MonoBehaviour
         foreach (var mesh in generatedMeshes) Destroy(mesh);
     }
 }
+

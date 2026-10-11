@@ -1,5 +1,36 @@
 %YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
+--- !u!1 &3245319543655359367
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 2638663018726237925}
+  m_Layer: 0
+  m_Name: HandguardMount
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &2638663018726237925
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3245319543655359367}
+  serializedVersion: 2
+  m_LocalRotation: {x: -3.907985e-14, y: 4.556416e-15, z: 1.0084664e-14, w: 1}
+  m_LocalPosition: {x: -0.00005439556, y: 0.01652135, z: 0.16400656}
+  m_LocalScale: {x: 1.0000006, y: 1.0000002, z: 1.0000002}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 4495955193121816442}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &7535580459343235253
 GameObject:
   m_ObjectHideFlags: 0
@@ -105,6 +136,9 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 4658246611585802757, guid: 318b61c90502cfd4ebe305c7ce69ba1f, type: 3}
       insertIndex: -1
       addedObject: {fileID: 7491258489508529968}
+    - targetCorrespondingSourceObject: {fileID: 3800143043187981396, guid: 318b61c90502cfd4ebe305c7ce69ba1f, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 2638663018726237925}
     m_AddedComponents:
     - targetCorrespondingSourceObject: {fileID: 5417143323792822401, guid: 318b61c90502cfd4ebe305c7ce69ba1f, type: 3}
       insertIndex: -1
@@ -139,6 +173,11 @@ Transform:
 --- !u!4 &3352221437874149239 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 2620388240893219929, guid: 318b61c90502cfd4ebe305c7ce69ba1f, type: 3}
+  m_PrefabInstance: {fileID: 781381801577612078}
+  m_PrefabAsset: {fileID: 0}
+--- !u!4 &4495955193121816442 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 3800143043187981396, guid: 318b61c90502cfd4ebe305c7ce69ba1f, type: 3}
   m_PrefabInstance: {fileID: 781381801577612078}
   m_PrefabAsset: {fileID: 0}
 --- !u!1 &4752856426952643503 stripped
@@ -185,6 +224,9 @@ MonoBehaviour:
     builtIn: []
   - kind: 5
     socket: {fileID: 6138942703633396573}
+    builtIn: []
+  - kind: 6
+    socket: {fileID: 2638663018726237925}
     builtIn: []
 --- !u!4 &5367565108539040043 stripped
 Transform:

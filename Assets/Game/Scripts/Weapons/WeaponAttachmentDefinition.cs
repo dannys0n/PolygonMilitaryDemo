@@ -2,7 +2,7 @@ using UnityEngine;
 [CreateAssetMenu(menuName="Soldier/Weapon attachment")]
 public class WeaponAttachmentDefinition : ScriptableObject
 {
-    public enum MountKind { Muzzle, Rail, Grip, RearIron, FrontIron, SightRiser }
+    public enum MountKind { Muzzle, Rail, Grip, RearIron, FrontIron, SightRiser, Handguard }
     public string id,displayName;
     public MountKind mount;
     public GameObject prefab;
