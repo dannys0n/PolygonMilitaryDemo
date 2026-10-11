@@ -12,7 +12,7 @@ public class ArenaMenuNavigation : MonoBehaviour
     public Transform[] cameraPoses;
     public GameObject[] pages;
     public TMP_Text serverStatus;
-    public float transitionDuration = .75f;
+    public float transitionDuration = .4f;
     public Page CurrentPage { get; private set; }
     Coroutine transition;
 
@@ -61,3 +61,4 @@ public class ArenaMenuNavigation : MonoBehaviour
     }
     public void RefreshServers() => serverStatus.text = "16 PLACEHOLDER SERVERS  /  VISUAL PREVIEW ONLY";
 }
+

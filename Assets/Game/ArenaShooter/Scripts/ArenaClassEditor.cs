@@ -20,6 +20,7 @@ public class ArenaClassEditor : MonoBehaviour
     public ArenaWeaponPreview weaponPreview;
     public GameObject primaryGunsmith,secondaryGunsmith;
     public UnityEngine.UI.Button previewPrimary,previewSecondary;
+    public UnityEngine.UI.Image primarySelection, secondarySelection;
     public TMP_Text previewTitle;
     bool previewFirst=true;
     ArenaClassDefinition draft;
@@ -78,8 +79,10 @@ public class ArenaClassEditor : MonoBehaviour
     public void SetPreviewWeapon(bool first)
     {
         previewFirst=first;primaryGunsmith.SetActive(first);secondaryGunsmith.SetActive(!first);
-        previewPrimary.GetComponent<UnityEngine.UI.Image>().color=first?new Color(1,.55f,.12f,.22f):new Color(.07f,.09f,.11f,.9f);
-        previewSecondary.GetComponent<UnityEngine.UI.Image>().color=!first?new Color(1,.55f,.12f,.22f):new Color(.07f,.09f,.11f,.9f);
+        previewPrimary.GetComponent<UnityEngine.UI.Image>().color=first?new Color(.82f,.9f,1f,1f):new Color(.6f,.67f,.75f,1f);
+        primarySelection.enabled=first;
+        previewSecondary.GetComponent<UnityEngine.UI.Image>().color=!first?new Color(.82f,.9f,1f,1f):new Color(.6f,.67f,.75f,1f);
+        secondarySelection.enabled=!first;
         RefreshPreview();
     }
     WeaponAttachmentDefinition[] Selected(TMP_Dropdown[] controls,WeaponAttachmentDefinition[][] options)

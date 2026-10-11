@@ -17,6 +17,7 @@ public class ArenaWeaponPreview : MonoBehaviour, IDragHandler
     RenderTexture texture;
     bool dirty;
     float orbit = 20f;
+    float viewingDistance;
     const float PreviewElevation = 12f;
     Light keyLight, fillLight, rimLight;
 
@@ -120,9 +121,9 @@ public class ArenaWeaponPreview : MonoBehaviour, IDragHandler
                 if(iron.transform.parent!=opticMount)iron.gameObject.SetActive(false);
         foreach(var t in model.GetComponentsInChildren<Transform>(true))t.gameObject.layer=previewLayer;
         foreach(var renderer in model.GetComponentsInChildren<Renderer>(true))renderer.shadowCastingMode=ShadowCastingMode.Off;
-        Frame(); dirty=true;
+        Frame(true); dirty=true;
     }
-    void Frame()
+    void Frame(bool fit = false)
     {
         var renderers=model.GetComponentsInChildren<Renderer>().Where(r=>r.enabled).ToArray();
         if(renderers.Length==0)return;
@@ -145,7 +146,8 @@ public class ArenaWeaponPreview : MonoBehaviour, IDragHandler
                     distance = Mathf.Max(distance, Mathf.Abs(corner.x) * 1.15f / horizontal - corner.z,
                         Mathf.Abs(corner.y) * 1.15f / vertical - corner.z);
                 }
-        previewCamera.transform.SetPositionAndRotation(bounds.center + direction * distance, rotation);
+        if (fit) viewingDistance = distance;
+        previewCamera.transform.SetPositionAndRotation(bounds.center + direction * viewingDistance, rotation);
         PositionLight(keyLight, bounds.center, new Vector3(-1.6f, 1.8f, -1.2f));
         PositionLight(fillLight, bounds.center, new Vector3(-1.2f, .6f, 1.8f));
         PositionLight(rimLight, bounds.center, new Vector3(1.2f, 1.4f, .8f));
