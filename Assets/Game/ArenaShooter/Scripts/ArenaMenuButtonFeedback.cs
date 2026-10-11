@@ -10,6 +10,7 @@ public class ArenaMenuButtonFeedback : MonoBehaviour, IPointerEnterHandler, IPoi
     public Button button;
     public Image focusEdge, glow;
     public TMP_Text label, context;
+    public Material normalText, pressedText;
     [TextArea] public string description;
     public float responseTime = .16f;
     public float sweepDuration = .38f;
@@ -22,6 +23,7 @@ public class ArenaMenuButtonFeedback : MonoBehaviour, IPointerEnterHandler, IPoi
         hovered = pressed = wasFocused = false;
         selected = EventSystem.current && EventSystem.current.currentSelectedGameObject == gameObject;
         focusAmount = revealTime = 0f;
+        submitUntil = 0f;
         Refresh();
     }
     void Update() => Refresh();
@@ -36,8 +38,14 @@ public class ArenaMenuButtonFeedback : MonoBehaviour, IPointerEnterHandler, IPoi
         revealTime += Time.unscaledDeltaTime;
         float progress = Mathf.Clamp01(revealTime / Mathf.Max(.01f, sweepDuration));
         float reveal = 1f - Mathf.Pow(1f - progress, 3f);
-        float pulse = pressed || Time.unscaledTime < submitUntil ? 1f : 0f;
-        label.color = Color.Lerp(new Color(.65f, .65f, .65f), Color.white, eased);
+        float pulse = button.interactable && (pressed || Time.unscaledTime < submitUntil) ? 1f : 0f;
+        var material = pulse > 0f ? pressedText : normalText;
+        if (label.fontSharedMaterial != material)
+        {
+            label.fontSharedMaterial = material;
+            label.UpdateMeshPadding();
+        }
+        label.color = pulse > 0f ? Color.white : Color.Lerp(new Color(.65f, .65f, .65f), new Color(.9f, .9f, .9f), eased);
         // Top anchors stay fixed while the marker and its diffuse spill grow downward.
         focusEdge.rectTransform.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, markerHeight * reveal);
         focusEdge.color = new Color(1f, 1f, 1f, eased * (1f + pulse * .1f));
@@ -48,7 +56,7 @@ public class ArenaMenuButtonFeedback : MonoBehaviour, IPointerEnterHandler, IPoi
     { hovered = true; EventSystem.current.SetSelectedGameObject(gameObject); }
     public void OnPointerExit(PointerEventData data) { hovered = false; pressed = false; }
     public void OnPointerDown(PointerEventData data)
-    { if (data.button == PointerEventData.InputButton.Left) pressed = true; }
+    { if (data.button == PointerEventData.InputButton.Left) { pressed = true; submitUntil = Time.unscaledTime + .08f; } }
     public void OnPointerUp(PointerEventData data) { pressed = false; }
     public void OnSelect(BaseEventData data) { selected = true; context.text = description; }
     public void OnDeselect(BaseEventData data) { selected = false; pressed = false; }

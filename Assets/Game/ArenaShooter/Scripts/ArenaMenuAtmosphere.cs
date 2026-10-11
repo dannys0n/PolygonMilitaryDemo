@@ -10,7 +10,7 @@ public class ArenaMenuAtmosphere : MonoBehaviour
     Image image;
     Material source, instance;
     Camera menuCamera;
-    readonly List<Image> settingsLines = new List<Image>();
+    readonly List<Image> pageLines = new List<Image>();
     readonly Vector4[] filaments = new Vector4[6];
     readonly float[] strengths = new float[6];
     static readonly int Filaments = Shader.PropertyToID("_Filaments");
@@ -23,10 +23,10 @@ public class ArenaMenuAtmosphere : MonoBehaviour
         instance = new Material(source);
         image.material = instance;
         menuCamera = image.canvas.worldCamera;
-        settingsLines.Clear();
-        var settings = FindAnyObjectByType<ArenaMenuNavigation>().pages[3];
-        foreach (var feedback in settings.GetComponentsInChildren<ArenaMenuSelectionFeedback>(true))
-            if (feedback.highlightLine) settingsLines.Add(feedback.highlightLine);
+        pageLines.Clear();
+        foreach (var page in FindAnyObjectByType<ArenaMenuNavigation>().pages)
+            foreach (var feedback in page.GetComponentsInChildren<ArenaMenuSelectionFeedback>(true))
+                if (feedback.highlightLine) pageLines.Add(feedback.highlightLine);
     }
 
     void LateUpdate()
@@ -41,7 +41,7 @@ public class ArenaMenuAtmosphere : MonoBehaviour
             if (marker.gameObject.activeInHierarchy && marker.color.a > .001f)
                 AddLight(marker, marker.color.a * Mathf.Clamp01(marker.rectTransform.rect.height / feedback.markerHeight), ref count);
         }
-        foreach (var marker in settingsLines)
+        foreach (var marker in pageLines)
             if (marker.gameObject.activeInHierarchy && marker.color.a > .001f)
                 AddLight(marker, marker.color.a, ref count);
         instance.SetVectorArray(Filaments, filaments);

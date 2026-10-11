@@ -4,24 +4,27 @@ using UnityEngine.EventSystems;
 
 // Presentation only: each Selectable keeps its existing action and selected state.
 public class ArenaMenuSelectionFeedback : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler,
-    ISelectHandler, IDeselectHandler
+    ISelectHandler, IDeselectHandler, IPointerDownHandler, IPointerUpHandler, ISubmitHandler
 {
     public UnityEngine.UI.Selectable control;
-    [Tooltip("Only the Game, Controls, and Video tabs have a hover filament.")]
+    [Tooltip("Optional vertical hover filament for menu navigation buttons.")]
     public UnityEngine.UI.Image highlightLine;
     public TMP_Text[] labels;
     public GameObject selectionIndicator;
     public Material normalText, selectedText;
+    [Tooltip("Add a stronger white glow on press to the normal hover brightening.")]
+    public bool brightenOnPress;
     public float responseTime = .16f;
     public float sweepDuration = .38f;
     [Tooltip("Gap from the filament core to the visible left edge of the label, in UI units.")]
     public float textGap = 24f;
-    bool hovered, focused, wasHighlighted;
-    float highlightAmount, textAmount, revealTime;
+    bool hovered, focused, pressed, wasHighlighted;
+    float highlightAmount, textAmount, revealTime, submitUntil;
 
     void OnEnable()
     {
-        hovered = wasHighlighted = false;
+        hovered = pressed = wasHighlighted = false;
+        submitUntil = 0f;
         focused = EventSystem.current && EventSystem.current.currentSelectedGameObject == gameObject;
         highlightAmount = textAmount = revealTime = 0f;
         if (highlightLine)
@@ -37,17 +40,21 @@ public class ArenaMenuSelectionFeedback : MonoBehaviour, IPointerEnterHandler, I
         if (control is UnityEngine.UI.Toggle toggle) chosen |= toggle.isOn;
         chosen &= control.IsInteractable();
         bool highlighted = control.IsInteractable() && (hovered || focused);
+        bool pressHighlight = brightenOnPress && control.IsInteractable()
+            && (pressed || Time.unscaledTime < submitUntil);
         float step = Time.unscaledDeltaTime / Mathf.Max(.01f, responseTime);
-        textAmount = Mathf.MoveTowards(textAmount, highlighted || chosen ? 1f : 0f, step);
+        bool brightText = chosen || highlighted || pressHighlight;
+        textAmount = pressHighlight ? 1f : Mathf.MoveTowards(textAmount, brightText ? 1f : 0f, step);
         foreach (var label in labels)
         {
-            var material = chosen ? selectedText : normalText;
+            var material = chosen || pressHighlight ? selectedText : normalText;
             if (label.fontSharedMaterial != material)
             {
                 label.fontSharedMaterial = material;
                 label.UpdateMeshPadding();
             }
-            label.color = Color.Lerp(new Color(.7f, .7f, .7f), Color.white, Mathf.SmoothStep(0, 1, textAmount));
+            var brightColor = chosen || pressHighlight ? Color.white : new Color(.9f, .9f, .9f);
+            label.color = Color.Lerp(new Color(.7f, .7f, .7f), brightColor, Mathf.SmoothStep(0, 1, textAmount));
         }
         if (!highlightLine) return;
         if (highlighted && !wasHighlighted) revealTime = 0f;
@@ -81,12 +88,16 @@ public class ArenaMenuSelectionFeedback : MonoBehaviour, IPointerEnterHandler, I
 
     void OnDisable()
     {
-        hovered = focused = false;
+        hovered = focused = pressed = false;
         if (highlightLine) highlightLine.color = new Color(1, 1, 1, 0);
     }
 
     public void OnPointerEnter(PointerEventData data) { hovered = true; }
-    public void OnPointerExit(PointerEventData data) { hovered = false; }
+    public void OnPointerExit(PointerEventData data) { hovered = pressed = false; }
     public void OnSelect(BaseEventData data) { focused = true; }
-    public void OnDeselect(BaseEventData data) { focused = false; }
+    public void OnDeselect(BaseEventData data) { focused = pressed = false; }
+    public void OnPointerDown(PointerEventData data)
+    { if (data.button == PointerEventData.InputButton.Left) { pressed = true; submitUntil = Time.unscaledTime + .08f; } }
+    public void OnPointerUp(PointerEventData data) { pressed = false; }
+    public void OnSubmit(BaseEventData data) { submitUntil = Time.unscaledTime + .12f; }
 }

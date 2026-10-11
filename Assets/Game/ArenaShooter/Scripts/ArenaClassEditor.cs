@@ -79,10 +79,9 @@ public class ArenaClassEditor : MonoBehaviour
     public void SetPreviewWeapon(bool first)
     {
         previewFirst=first;primaryGunsmith.SetActive(first);secondaryGunsmith.SetActive(!first);
-        previewPrimary.GetComponent<UnityEngine.UI.Image>().color=first?new Color(.82f,.9f,1f,1f):new Color(.6f,.67f,.75f,1f);
-        primarySelection.enabled=first;
-        previewSecondary.GetComponent<UnityEngine.UI.Image>().color=!first?new Color(.82f,.9f,1f,1f):new Color(.6f,.67f,.75f,1f);
-        secondarySelection.enabled=!first;
+        // Keep the selected state for text feedback instead of repainting the cards.
+        primarySelection.gameObject.SetActive(first);
+        secondarySelection.gameObject.SetActive(!first);
         RefreshPreview();
     }
     WeaponAttachmentDefinition[] Selected(TMP_Dropdown[] controls,WeaponAttachmentDefinition[][] options)
