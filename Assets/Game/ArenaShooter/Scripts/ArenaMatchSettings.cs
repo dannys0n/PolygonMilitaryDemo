@@ -10,6 +10,7 @@ public class ArenaMatchSettings : ScriptableObject
     [Header("Respawn safety")]
     [Min(0f)] public float unsafeEnemyDistance = 8f;
     [Min(.5f)] public float spawnClearance = 1.2f;
+    [Min(1f)] public float spawnSearchRadius = 12f;
     [Min(0f)] public float recentSpawnTime = 8f;
     [Header("Opening team placement")]
     [Min(2f)] public float openingTeamRadius = 6f;

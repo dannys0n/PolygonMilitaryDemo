@@ -25,14 +25,14 @@ public static class ArenaSpawnSelection
         bool foundSafe = false;
         foreach (var point in points)
         {
-            if (!HasSpace(match, incoming, point.position)) continue;
+            if (!TryFindPosition(match, incoming, point.position, out var position)) continue;
             float enemyDistance = 40f;
             int exposed = 0;
             foreach (var other in match.participants)
             {
                 if (other == incoming || other.health.IsDead || other.IsAwaitingSpawn || other.team == incoming.team) continue;
-                enemyDistance = Mathf.Min(enemyDistance, Vector3.Distance(point.position, other.transform.position));
-                if (VisibleToEnemy(other, point.position + Vector3.up * 1.25f)) exposed++;
+                enemyDistance = Mathf.Min(enemyDistance, Vector3.Distance(position, other.transform.position));
+                if (VisibleToEnemy(other, position + Vector3.up * 1.25f)) exposed++;
             }
             bool safe = enemyDistance >= match.settings.unsafeEnemyDistance && exposed == 0;
             float score = enemyDistance - exposed * 25f;
@@ -51,7 +51,7 @@ public static class ArenaSpawnSelection
     {
         if (!opening)
             foreach (var other in match.participants)
-                if (other != incoming && other.gameObject.activeInHierarchy &&
+                if (other != incoming && !other.health.IsDead && !other.IsAwaitingSpawn && other.gameObject.activeInHierarchy &&
                     Vector3.Distance(position, other.transform.position) < match.settings.spawnClearance) return false;
         Vector3 center = position + Vector3.up;
         float radius = .4f, halfSegment = .5f;
@@ -148,31 +148,57 @@ public static class ArenaSpawnSelection
         return false;
     }
 
-    static bool TryFormation(ArenaMatch match, Vector3 anchor, ArenaParticipant[] team, List<Placement> plan)
+    // A spawn marker is a preferred area, not a single exact position. Search nearby
+    // walkable points in distance order, then check clearance and path connectivity.
+    public static bool TryFindPosition(ArenaMatch match, ArenaParticipant incoming, Vector3 anchor,
+        out Vector3 position, float searchRadius = -1f, List<Placement> reserved = null)
     {
-        int placed = 0;
-        float spacing = Mathf.Max(2f, match.settings.spawnClearance + .4f);
-        var agent = team[0].GetComponent<NavMeshAgent>();
-        var filter = new NavMeshQueryFilter { agentTypeID = agent ? agent.agentTypeID : NavMesh.GetSettingsByIndex(0).agentTypeID,
-            areaMask = NavMesh.AllAreas };
-        for (float radius = 0f; radius <= match.settings.openingTeamRadius; radius += spacing)
+        position = default;
+        float limit = searchRadius >= 0f ? searchRadius : match.settings.spawnSearchRadius;
+        var agent = incoming.GetComponent<NavMeshAgent>();
+        var filter = new NavMeshQueryFilter {
+            agentTypeID = agent ? agent.agentTypeID : NavMesh.GetSettingsByIndex(0).agentTypeID,
+            areaMask = agent ? agent.areaMask : NavMesh.AllAreas
+        };
+        if (!NavMesh.SamplePosition(anchor, out var origin, Mathf.Max(2f, limit), filter)) return false;
+        var path = new NavMeshPath();
+        float step = Mathf.Max(.75f, match.settings.spawnClearance);
+        for (float radius = 0f; radius <= limit + .01f; radius += step)
         {
-            int count = radius == 0f ? 1 : Mathf.CeilToInt(2f * Mathf.PI * radius / spacing);
-            for (int i = 0; i < count && placed < team.Length; i++)
+            int count = radius == 0f ? 1 : Mathf.CeilToInt(2f * Mathf.PI * radius / step);
+            for (int i = 0; i < count; i++)
             {
-                Vector3 proposed = anchor + Quaternion.Euler(0, i * 360f / count, 0) * Vector3.forward * radius;
-                if (!NavMesh.SamplePosition(proposed, out var hit, .75f, filter)) continue;
-                if (Vector3.Distance(anchor, hit.position) > match.settings.openingTeamRadius + .05f
-                    || Mathf.Abs(hit.position.y - anchor.y) > .6f || NavMesh.Raycast(anchor, hit.position, out _, filter)) continue;
+                Vector3 candidate = origin.position + Quaternion.Euler(0, i * 360f / count, 0) * Vector3.forward * radius;
+                if (!NavMesh.SamplePosition(candidate, out var hit, step * .5f, filter)) continue;
+                if (Vector3.Distance(hit.position, anchor) > limit + 2f) continue;
+                // Lift the capsule clear of the floor, without ignoring blocking map colliders.
+                Vector3 proposed = hit.position + Vector3.up * .08f;
                 bool crowded = false;
-                foreach (var reserved in plan)
-                    if (Vector3.Distance(reserved.position, hit.position) < match.settings.spawnClearance) { crowded = true; break; }
-                if (crowded || !HasSpace(match, team[placed], hit.position, true)) continue;
-                plan.Add(new Placement { participant = team[placed++], position = hit.position });
+                if (reserved != null)
+                    foreach (var other in reserved)
+                        if (Vector3.Distance(other.position, proposed) < match.settings.spawnClearance)
+                        { crowded = true; break; }
+                if (crowded || !HasSpace(match, incoming, proposed, reserved != null)) continue;
+                if (!NavMesh.CalculatePath(origin.position, hit.position, filter, path)
+                    || path.status != NavMeshPathStatus.PathComplete) continue;
+                position = proposed;
+                return true;
             }
-            if (placed == team.Length) return true;
         }
         return false;
+    }
+
+    static bool TryFormation(ArenaMatch match, Vector3 anchor, ArenaParticipant[] team, List<Placement> plan)
+    {
+        // Grow the opening search with the roster instead of requiring a fixed-size empty disk.
+        float radius = Mathf.Max(match.settings.openingTeamRadius,
+            Mathf.Sqrt(team.Length) * Mathf.Max(1f, match.settings.spawnClearance) * 2f);
+        foreach (var participant in team)
+        {
+            if (!TryFindPosition(match, participant, anchor, out var position, radius, plan)) return false;
+            plan.Add(new Placement { participant = participant, position = position });
+        }
+        return true;
     }
 
     static bool VisibleToEnemy(ArenaParticipant enemy, Vector3 destination)

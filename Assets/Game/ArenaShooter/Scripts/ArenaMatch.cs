@@ -171,8 +171,9 @@ public class ArenaMatch : MonoBehaviour
         bool found = rules ? rules.TryChooseSpawn(participant, spawnHistory, out spawn)
             : ArenaSpawnSelection.TryChoose(this, participant, spawnHistory, out spawn);
         if (!found) return false;
+        if (!ArenaSpawnSelection.TryFindPosition(this, participant, spawn.position, out var position)) return false;
         bool wasDead = participant.health.IsDead;
-        participant.Respawn(spawn);
+        participant.Respawn(position, spawn.rotation);
         if (participant.IsAwaitingSpawn) return false;
         if (rules) rules.OnSpawned(participant, wasDead);
         spawnHistory[spawn] = Time.time;
