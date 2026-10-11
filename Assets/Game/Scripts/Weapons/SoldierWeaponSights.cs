@@ -61,6 +61,7 @@ public class SoldierWeaponSights : MonoBehaviour
         }
         else firstAttachment = thirdAttachment = null;
         ApplySightLift();
+        if(TryGetComponent<SoldierWeaponAttachments>(out var attachments))attachments.RefreshIronVisibility();
         Revision++;
         // Removed attachments are detached before Destroy, so no stale renderer references remain.
         owner.RefreshVisuals();

@@ -11,9 +11,11 @@ public class SoldierWeaponAttachments : MonoBehaviour
     }
     public Mount[] mounts;
     readonly List<GameObject> visuals=new List<GameObject>();
+    WeaponAttachmentDefinition[] selections=System.Array.Empty<WeaponAttachmentDefinition>();
     public bool Supports(WeaponAttachmentDefinition attachment)=>System.Array.Exists(mounts,m=>m.kind==attachment.mount&&System.Array.IndexOf(m.compatible,attachment)>=0);
     public void Apply(WeaponAttachmentDefinition[] selections,SoldierFirstPersonView view)
     {
+        this.selections=selections;
         foreach(var go in visuals){go.SetActive(false);go.transform.SetParent(null);if(Application.isPlaying)Destroy(go);else DestroyImmediate(go);}visuals.Clear();
         Transform rear=null,front=null;
         float sightLift=0;
@@ -40,7 +42,21 @@ public class SoldierWeaponAttachments : MonoBehaviour
             sights.SetIronReplacements(rear,front);
             sights.SetRiser(sightLift);
         }
+        RefreshIronVisibility();
         view.RefreshVisuals();
+    }
+    public void RefreshIronVisibility()
+    {
+        bool optic=TryGetComponent<SoldierWeaponSights>(out var sights) && sights.SelectedSight && sights.SelectedSight.prefab;
+        foreach(var mount in mounts)
+        {
+            if(mount.kind!=WeaponAttachmentDefinition.MountKind.RearIron && mount.kind!=WeaponAttachmentDefinition.MountKind.FrontIron)continue;
+            var replacement=System.Array.Find(selections,a=>a && a.mount==mount.kind && Supports(a));
+            foreach(var r in mount.builtInFirstPerson)r.forceRenderingOff=optic || replacement;
+            foreach(var r in mount.builtInThirdPerson)r.forceRenderingOff=optic || replacement;
+        }
+        foreach(var go in visuals)
+            if(go.TryGetComponent<WeaponSightAttachment>(out _))go.SetActive(!optic);
     }
     GameObject Add(WeaponAttachmentDefinition definition,Transform mount,int layer,bool visible)
     {
@@ -56,4 +72,3 @@ public class SoldierWeaponAttachments : MonoBehaviour
         visuals.Add(go);return go;
     }
 }
-
