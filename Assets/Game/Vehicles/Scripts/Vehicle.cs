@@ -51,6 +51,8 @@ public class Vehicle : MonoBehaviour
     }
     public bool CanExit => !IsDestroyed && Body.linearVelocity.magnitude < 3f && motor.CanDisembark;
     NavMeshObstacle obstacle;
+    // The authored carving box describes the chassis, in vehicle-local coordinates.
+    public Bounds NavigationBounds => new Bounds(obstacle.center, obstacle.size);
 
     void Awake()
     {

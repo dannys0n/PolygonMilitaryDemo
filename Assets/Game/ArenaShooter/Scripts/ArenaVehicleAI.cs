@@ -292,16 +292,21 @@ public class ArenaVehicleAI : MonoBehaviour
         }
         var corners = path.corners;
         if (corners.Length < 2)
-            return;
+        { v.DriverInput = new VehicleInput { brake = true }; return; }
         corner = Mathf.Clamp(corner, 1, corners.Length - 1);
-        while (corner < corners.Length - 1 && Vector3.Distance(v.transform.position, corners[corner]) < 5)
+        // Reach the corner before advancing: a five-metre shortcut cuts through narrow bends.
+        while (corner < corners.Length - 1 && Vector3.Distance(v.transform.position, corners[corner]) < 2)
             corner++;
         Vector3 local = v.transform.InverseTransformPoint(corners[corner]);
         float angle = Mathf.Atan2(local.x, local.z) * Mathf.Rad2Deg;
         float desired = cruiseSpeed * Mathf.Lerp(1, .25f, Mathf.Clamp01(Mathf.Abs(angle) / 65));
         float speed = Vector3.Dot(v.Body.linearVelocity, v.transform.forward);
         bool blocked = false;
-        foreach (var hit in Physics.SphereCastAll(v.transform.position + Vector3.up, .8f, v.transform.forward, Mathf.Max(4, speed * .7f), Physics.DefaultRaycastLayers, QueryTriggerInteraction.Ignore))
+        var hull = v.NavigationBounds;
+        Vector3 nose = v.transform.TransformPoint(hull.center + Vector3.forward * hull.extents.z);
+        Vector3 clearance = new Vector3(hull.extents.x + .2f, hull.extents.y * .65f, .2f);
+        foreach (var hit in Physics.BoxCastAll(nose, clearance, v.transform.forward, v.transform.rotation,
+            Mathf.Max(2, speed * .7f), Physics.DefaultRaycastLayers, QueryTriggerInteraction.Ignore))
             if (!hit.transform.IsChildOf(v.transform) && !(hit.collider is WheelCollider) && hit.normal.y < .65f)
             {
                 blocked = true;
