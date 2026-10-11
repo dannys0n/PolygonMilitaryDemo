@@ -4,6 +4,8 @@ using UnityEngine;
 public class ArenaMatch : MonoBehaviour
 {
     public ArenaMatchSettings settings;
+    [Tooltip("Optional mode rules. Unassigned keeps team deathmatch.")]
+    public ArenaMatchRules rules;
     // Runtime roster, not a second manually maintained scene configuration.
     public ArenaParticipant[] participants { get; private set; } = System.Array.Empty<ArenaParticipant>();
     readonly System.Collections.Generic.List<ArenaParticipant> roster = new System.Collections.Generic.List<ArenaParticipant>();
@@ -16,8 +18,11 @@ public class ArenaMatch : MonoBehaviour
     [Tooltip("Map patrol routes and encounter areas, separate from respawn locations.")]
     public Transform[] patrolPoints = System.Array.Empty<Transform>();
     public bool IsRunning { get; private set; }
-    public int RedScore { get; private set; }
-    public int BlueScore { get; private set; }
+    int redKills, blueKills;
+    public int RedScore => rules ? rules.TeamScore(ArenaParticipant.Team.Red) : redKills;
+    public int BlueScore => rules ? rules.TeamScore(ArenaParticipant.Team.Blue) : blueKills;
+    public int ScoreLimit => rules ? rules.ScoreLimit : settings.scoreLimit;
+    public string DisplayName => rules ? rules.DisplayName : "TEAM DEATHMATCH";
     public float TimeRemaining { get; private set; }
     public string Result { get; private set; } = "";
     public event System.Action MatchEnded;
@@ -81,7 +86,8 @@ public class ArenaMatch : MonoBehaviour
     public void BeginMatch()
     {
         RefreshParticipants();
-        RedScore = BlueScore = 0;
+        redKills = blueKills = 0;
+        if (rules) rules.Begin(this);
         spawnHistory.Clear();
         TimeRemaining = settings.matchDuration;
         Result = "";
@@ -89,7 +95,7 @@ public class ArenaMatch : MonoBehaviour
         RedOpeningPoint = BlueOpeningPoint = null;
         foreach (var participant in participants)
         {
-            participant.Kills = participant.Deaths = 0;
+            participant.Kills = participant.Deaths = participant.Captures = participant.ObjectiveScore = 0;
             participant.CancelRespawn();
             if (participant.player) participant.player.SetGameplayAllowed(false);
         }
@@ -123,6 +129,11 @@ public class ArenaMatch : MonoBehaviour
             EndMatch();
             return;
         }
+        if (rules)
+        {
+            rules.Tick(Mathf.Max(0f, deltaTime));
+            if (rules.HasEnded) { EndMatch(); return; }
+        }
         foreach (ArenaParticipant participant in participants) participant.TickRespawn();
     }
 
@@ -144,20 +155,30 @@ public class ArenaMatch : MonoBehaviour
         var attacker = source ? source.GetComponentInParent<ArenaParticipant>() : null;
         if (!attacker || attacker == victim || attacker.match != this || attacker.team == victim.team) return;
         attacker.Kills++;
-        if (attacker.team == ArenaParticipant.Team.Red) RedScore++;
-        else BlueScore++;
+        if (!rules)
+        {
+            if (attacker.team == ArenaParticipant.Team.Red) redKills++;
+            else blueKills++;
+        }
         KillRecorded?.Invoke(attacker, victim);
-        if (RedScore >= settings.scoreLimit || BlueScore >= settings.scoreLimit) EndMatch();
+        if (!rules && (RedScore >= settings.scoreLimit || BlueScore >= settings.scoreLimit)) EndMatch();
     }
 
     public bool Spawn(ArenaParticipant participant)
     {
         if (!IsRunning) return false;
-        if (!ArenaSpawnSelection.TryChoose(this, participant, spawnHistory, out var spawn)) return false;
+        Transform spawn;
+        bool found = rules ? rules.TryChooseSpawn(participant, spawnHistory, out spawn)
+            : ArenaSpawnSelection.TryChoose(this, participant, spawnHistory, out spawn);
+        if (!found) return false;
+        bool wasDead = participant.health.IsDead;
         participant.Respawn(spawn);
+        if (participant.IsAwaitingSpawn) return false;
+        if (rules) rules.OnSpawned(participant, wasDead);
         spawnHistory[spawn] = Time.time;
         // Successive spawns in the same frame must see the previous actor's new collider position.
         Physics.SyncTransforms();
+        if (rules && rules.HasEnded) EndMatch();
         return true;
     }
 

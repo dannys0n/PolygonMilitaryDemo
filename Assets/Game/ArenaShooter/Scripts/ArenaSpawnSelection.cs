@@ -15,11 +15,15 @@ public static class ArenaSpawnSelection
 
     public static bool TryChoose(ArenaMatch match, ArenaParticipant incoming,
         Dictionary<Transform, float> history, out Transform selected)
+        => TryChooseFrom(match, incoming, match.spawnPoints, history, out selected);
+
+    public static bool TryChooseFrom(ArenaMatch match, ArenaParticipant incoming,
+        IEnumerable<Transform> points, Dictionary<Transform, float> history, out Transform selected)
     {
         selected = null;
         float best = float.NegativeInfinity;
         bool foundSafe = false;
-        foreach (var point in match.spawnPoints)
+        foreach (var point in points)
         {
             if (!HasSpace(match, incoming, point.position)) continue;
             float enemyDistance = 40f;

@@ -21,7 +21,7 @@ public class ArenaParticipant : MonoBehaviour
             throw new System.ArgumentException("Class is not allowed by this match.");
         choice.ResolveSlots(player.loadout);
         SelectedClass = choice.isCustom ? Instantiate(choice) : choice;
-        if (waitingForClass && match.IsRunning)
+        if (waitingForClass && match.IsRunning && (!match.rules || !match.rules.NeedsDeployment(this)))
         {
             waitingForClass = false;
             Respawn(openingPosition, openingRotation);
@@ -29,7 +29,9 @@ public class ArenaParticipant : MonoBehaviour
     }
     public int Kills { get; internal set; }
     public int Deaths { get; internal set; }
-    public int Score => Kills * 100;
+    public int Captures { get; internal set; }
+    public int ObjectiveScore { get; internal set; }
+    public int Score => Kills * 100 + ObjectiveScore;
     public float LastShotTime { get; private set; } = float.NegativeInfinity;
     public Vector3 LastShotPosition { get; private set; }
     private float respawnAt = -1f;
@@ -93,10 +95,19 @@ public class ArenaParticipant : MonoBehaviour
                 openingPosition = position; openingRotation = rotation;
                 waitingForClass = true; IsAwaitingSpawn = true;
                 player.SetGameplayAllowed(false);
+                if (match.rules && match.rules.NeedsDeployment(this))
+                {
+                    // Keep the waiting camera at the opening base, not the prefab's old position.
+                    player.controller.enabled = false;
+                    transform.SetPositionAndRotation(position, rotation);
+                    player.look.ResetLook();
+                    player.controller.enabled = true;
+                }
                 return;
             }
             SelectClass(match.settings.classes[Random.Range(0, match.settings.classes.Length)]);
         }
+        waitingForClass = false;
         CancelRespawn();
         LastShotTime = float.NegativeInfinity;
         IsAwaitingSpawn = false;

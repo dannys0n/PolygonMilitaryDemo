@@ -379,6 +379,12 @@ public class ArenaAIInput : SoldierInputSource
 
     void Patrol()
     {
+        var rules = participant.match.rules;
+        if (rules && rules.TryGetObjective(this, out var objective))
+        {
+            hasPatrolDestination = false; patrolWaitUntil = 0;
+            State = Behavior.Patrol; SetDestination(objective); return;
+        }
         if (Time.time < patrolWaitUntil)
         { State = Behavior.Idle; SetDestination(transform.position); return; }
         if (hasPatrolDestination && HorizontalDistance(transform.position, patrolDestination) < 1.2f)

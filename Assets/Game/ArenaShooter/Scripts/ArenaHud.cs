@@ -180,9 +180,9 @@ public class ArenaHud : MonoBehaviour
         redScore.text = match.RedScore.ToString("000"); blueScore.text = match.BlueScore.ToString("000");
         int seconds = Mathf.CeilToInt(match.TimeRemaining);
         timer.text = $"{seconds / 60:00}:{seconds % 60:00}";
-        mode.text = $"TEAM DEATHMATCH  /  FIRST TO {match.settings.scoreLimit}";
-        redProgress.fillAmount = Mathf.Clamp01((float)match.RedScore / match.settings.scoreLimit);
-        blueProgress.fillAmount = Mathf.Clamp01((float)match.BlueScore / match.settings.scoreLimit);
+        mode.text = match.rules ? $"{match.DisplayName}  /  TEAM TICKETS" : $"{match.DisplayName}  /  FIRST TO {match.ScoreLimit}";
+        redProgress.fillAmount = Mathf.Clamp01((float)match.RedScore / match.ScoreLimit);
+        blueProgress.fillAmount = Mathf.Clamp01((float)match.BlueScore / match.ScoreLimit);
         var loadout = player.player.loadout; var ammo = loadout.EquippedState;
         weaponName.text = loadout.slots[loadout.selectedSlot].name.ToUpperInvariant();
         ammunition.text = $"{ammo.MagazineAmmo:00}<size=24><color=#B9C0C5> / {ammo.ReserveAmmo:000}</color></size>";

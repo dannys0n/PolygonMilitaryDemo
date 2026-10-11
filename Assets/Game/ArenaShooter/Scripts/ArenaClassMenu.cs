@@ -75,8 +75,9 @@ public class ArenaClassMenu : MonoBehaviour
         primaryName.text = choice.primary.displayName;
         secondaryName.text = choice.secondary.displayName;
         primaryIcon.sprite = choice.primary.icon; secondaryIcon.sprite = choice.secondary.icon;
-        status.text = participant.NeedsClassSelection ? "SELECT A CLASS TO SPAWN" : "CHANGES APPLY ON YOUR NEXT RESPAWN";
-        confirm.GetComponentInChildren<TMP_Text>().text = participant.NeedsClassSelection ? "DEPLOY" : "SELECT CLASS";
+        bool deployment = participant.match.rules && participant.match.rules.NeedsDeployment(participant);
+        status.text = participant.NeedsClassSelection ? (deployment ? "SELECT A CLASS, THEN A DEPLOYMENT LOCATION" : "SELECT A CLASS TO SPAWN") : "CHANGES APPLY ON YOUR NEXT RESPAWN";
+        confirm.GetComponentInChildren<TMP_Text>().text = participant.NeedsClassSelection && !deployment ? "DEPLOY" : "SELECT CLASS";
         for (int i = 0; i < rows.Count; i++)
             rows[i].GetComponent<Image>().color = choices[i].id == choice.id
                 ? new Color(1f, .55f, .12f, .3f) : new Color(.12f, .14f, .16f, .65f);
