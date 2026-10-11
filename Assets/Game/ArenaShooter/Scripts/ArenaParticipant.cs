@@ -84,6 +84,8 @@ public class ArenaParticipant : MonoBehaviour
 
     public void Respawn(Vector3 position, Quaternion rotation)
     {
+        if (player && match.settings.randomizeAIClassOnRespawn && GetComponent<ArenaAIInput>())
+            SelectClass(match.settings.classes[Random.Range(0, match.settings.classes.Length)]);
         if (player && !SelectedClass)
         {
             if (NeedsClassSelection)

@@ -39,8 +39,11 @@ public class ArenaVehicleScenario : MonoBehaviour
     {
         if (vehicle.gameObject.scene != gameObject.scene)
             return;
-        vehicle.turret.ShotFired -= OnVehicleShot;
-        vehicle.turret.ShotFired += OnVehicleShot;
+        if (vehicle.turret)
+        {
+            vehicle.turret.ShotFired -= OnVehicleShot;
+            vehicle.turret.ShotFired += OnVehicleShot;
+        }
         vehicle.DamageFilter = source =>
         {
             if (!match.IsRunning)

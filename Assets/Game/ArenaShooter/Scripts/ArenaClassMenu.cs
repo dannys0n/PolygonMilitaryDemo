@@ -58,7 +58,7 @@ public class ArenaClassMenu : MonoBehaviour
     }
     public void OpenEditor()
     {
-        ArenaClassEditor.Open(choice=>{RefreshChoices();Preview(choice);},null,preview&&preview.isCustom?preview.customIndex:0);
+        ArenaClassEditor.Open(choice=>{RefreshChoices();Preview(choice);},null,preview&&preview.isCustom?preview.customIndex:0,catalog);
     }
     public void Open()
     {

@@ -14,5 +14,7 @@ public class ArenaMatchSettings : ScriptableObject
     [Header("Opening team placement")]
     [Min(2f)] public float openingTeamRadius = 6f;
     [Min(0f)] public float openingTeamSeparation = 30f;
+    [Tooltip("Choose a fresh preset for AI on every respawn in a prototype match.")]
+    public bool randomizeAIClassOnRespawn;
     public ArenaClassDefinition[] classes;
 }

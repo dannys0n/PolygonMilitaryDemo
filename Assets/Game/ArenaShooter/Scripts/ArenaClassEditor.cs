@@ -33,10 +33,11 @@ public class ArenaClassEditor : MonoBehaviour
     bool refreshing;
     public bool IsVisible=>panel.activeSelf;
 
-    public static ArenaClassEditor Open(Action<ArenaClassDefinition> saved=null,Action closed=null,int selected=0)
+    public static ArenaClassEditor Open(Action<ArenaClassDefinition> saved=null,Action closed=null,int selected=0,ArenaWeaponCatalog weaponCatalog=null)
     {
         var editor=FindAnyObjectByType<ArenaClassEditor>(FindObjectsInactive.Include);
         if(!editor)editor=Instantiate(Resources.Load<GameObject>("ArenaClassEditor")).GetComponent<ArenaClassEditor>();
+        if(weaponCatalog)editor.catalog=weaponCatalog;
         editor.saved=saved;editor.closed=closed;editor.Show(selected);return editor;
     }
     void Awake()
