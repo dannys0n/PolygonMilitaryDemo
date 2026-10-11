@@ -80,6 +80,15 @@ public class HummerMotor : VehicleMotor
         if (r)
             vehicle.Body.AddForceAtPosition(right.transform.up * force, right.transform.position);
     }
+    void OnDisable()
+    {
+        // WheelCollider keeps assigned torque even after its controller stops updating.
+        foreach (var wheel in wheels)
+        {
+            wheel.collider.motorTorque = 0f;
+            wheel.collider.brakeTorque = brakeTorque;
+        }
+    }
     void LateUpdate()
     {
         foreach (var w in wheels)

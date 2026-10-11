@@ -8,6 +8,8 @@ public class VehicleTurret : MonoBehaviour
     public Transform shellEjection;
     public SoldierShellCasing shellCasing;
     public Sprite weaponIcon;
+    public string weaponName = "MINIGUN";
+    public bool spinBarrels = true;
     public AnimationClip cameraShake;
     public Transform barrelAssembly;
     public float barrelSpinUp = 1200f, barrelSpinDown = 400f;
@@ -58,7 +60,7 @@ public class VehicleTurret : MonoBehaviour
         bool firing=Time.time-lastBarrelShot < 60f/roundsPerMinute+.02f;
         barrelSpeed=Mathf.MoveTowards(barrelSpeed,firing ? roundsPerMinute/6f : 0,(firing?barrelSpinUp:barrelSpinDown)*Time.deltaTime);
         barrelAngle=(barrelAngle+barrelSpeed*6f*Time.deltaTime)%360;
-        barrelAssembly.localRotation=barrelRest*Quaternion.AngleAxis(barrelAngle,Vector3.forward);
+        if (spinBarrels) barrelAssembly.localRotation=barrelRest*Quaternion.AngleAxis(barrelAngle,Vector3.forward);
         // Sample the final turret pose so effects follow the receiver during turns.
         if (pendingFlashes > 0) muzzleFlash.Emit(4 * pendingFlashes);
         pendingFlashes = 0;

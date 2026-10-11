@@ -36,7 +36,7 @@ public class ArenaVehicleHud : MonoBehaviour
             bool gunner = role == Vehicle.SeatRole.Gunner;
             var launcher = air && !gunner ? v.GetComponent<VehicleLauncher>() : null;
             equippedIcon.sprite = slotIcon.sprite = gunner ? v.turret.weaponIcon : launcher.weaponIcon;
-            equippedName.text = gunner ? "MINIGUN" : "ROCKETS"; ammunition.text = gunner ? "INF" : launcher.Missiles + " / " + launcher.capacity;
+            equippedName.text = gunner ? v.turret.weaponName : "ROCKETS"; ammunition.text = gunner ? "INF" : launcher.Missiles + " / " + launcher.capacity;
             fireMode.text = gunner ? "AUTO" : launcher.ReadyIn <= 0 ? "READY" : launcher.ReadyIn.ToString("F1") + " S";
             slotKey.text = "LMB"; equipmentLabel.text = "VEHICLE WEAPON";
         }
