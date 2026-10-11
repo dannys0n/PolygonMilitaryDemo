@@ -34,8 +34,8 @@ public class ArenaSpectatorHud : MonoBehaviour
         redScore.text = match.RedScore.ToString("000"); blueScore.text = match.BlueScore.ToString("000");
         int seconds = Mathf.CeilToInt(match.TimeRemaining);
         timer.text = $"{seconds/60:00}:{seconds%60:00}";
-        mode.text = match.IsRunning ? $"TEAM DEATHMATCH / {match.TeamSize(ArenaParticipant.Team.Red)} v {match.TeamSize(ArenaParticipant.Team.Blue)}" : match.Result.ToUpperInvariant();
-        redProgress.fillAmount = Mathf.Clamp01((float)match.RedScore / match.settings.scoreLimit);
-        blueProgress.fillAmount = Mathf.Clamp01((float)match.BlueScore / match.settings.scoreLimit);
+        mode.text = match.IsRunning ? $"{match.DisplayName} / {match.TeamSize(ArenaParticipant.Team.Red)} v {match.TeamSize(ArenaParticipant.Team.Blue)}" : match.Result.ToUpperInvariant();
+        redProgress.fillAmount = Mathf.Clamp01((float)match.RedScore / match.ScoreLimit);
+        blueProgress.fillAmount = Mathf.Clamp01((float)match.BlueScore / match.ScoreLimit);
     }
 }

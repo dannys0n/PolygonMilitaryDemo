@@ -119,7 +119,7 @@ public class ArenaAISpectator : MonoBehaviour
 
     void ShowFollowHud(ArenaParticipant character)
     {
-        if (!followHud) followHud = FindAnyObjectByType<ArenaHud>();
+        if (!followHud) followHud = FindAnyObjectByType<ArenaHud>(FindObjectsInactive.Include);
         if (!followHud)
         {
             // Configure the shared prefab before activating its player event subscriptions.
