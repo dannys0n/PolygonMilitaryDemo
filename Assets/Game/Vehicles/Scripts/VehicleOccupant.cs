@@ -342,14 +342,36 @@ public class VehicleOccupant : MonoBehaviour
     {
         if (!IsMounted || index<0 || index>=MountedVehicle.seats.Length || index==SeatIndex) return false;
         var vehicle=MountedVehicle; var seat=vehicle.seats[index];
-        if (seat.occupant) return false; // A player's direct seat selection takes priority over an AI reservation.
+        if (vehicle.IsDestroyed || life.health.IsDead) return false;
+        var previousSeat=vehicle.seats[SeatIndex];
+        var displaced=seat.occupant;
+        if (displaced)
+        {
+            // Players may trade seats with an AI driver/pilot, never another player.
+            if (!IsLocal || seat.role!=Vehicle.SeatRole.Driver
+                || !(displaced.soldier.inputSource is ArenaAIInput) || displaced.life.health.IsDead
+                || (faction>=0 && displaced.faction>=0 && faction!=displaced.faction)) return false;
+        }
         seat.reservation=null;
-        if (vehicle.seats[SeatIndex].role==Vehicle.SeatRole.Driver) vehicle.DriverInput=default;
-        vehicle.seats[SeatIndex].occupant=null;seat.occupant=this;SeatIndex=index;
+        previousSeat.reservation=null;
+        if (previousSeat.role==Vehicle.SeatRole.Driver || seat.role==Vehicle.SeatRole.Driver)
+            vehicle.DriverInput=default;
+        int previousIndex=SeatIndex;
+        previousSeat.occupant=displaced;
+        seat.occupant=this;
+        if (displaced) displaced.MoveToSeat(previousIndex);
+        MoveToSeat(index);
+        return true;
+    }
+    void MoveToSeat(int index)
+    {
+        SeatIndex=index;
+        var vehicle=MountedVehicle;
+        var seat=vehicle.seats[index];
         transform.SetParent(seat.anchor,false);transform.SetLocalPositionAndRotation(Vector3.zero,Quaternion.identity);
         if(IsLocal)ResetVehicleCameraShake();
         flightYaw=yaw=vehicle.transform.eulerAngles.y;flightPitch=pitch=0;Freelook=false;
-        return true;
+        lastVehicleYaw=vehicle.transform.eulerAngles.y;
     }
     void LateUpdate()
     {
