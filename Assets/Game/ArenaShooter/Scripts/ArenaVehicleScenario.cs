@@ -22,7 +22,7 @@ public class ArenaVehicleScenario : MonoBehaviour
         match.MatchEnded -= OnEnded;
         Vehicle.Spawned -= Configure;
         foreach (var vehicle in Vehicle.Active)
-            if (vehicle.gameObject.scene == gameObject.scene)
+            if (vehicle.gameObject.scene == gameObject.scene && vehicle.turret)
                 vehicle.turret.ShotFired -= OnVehicleShot;
         OnEnded();
     }

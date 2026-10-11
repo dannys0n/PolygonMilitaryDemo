@@ -4,6 +4,9 @@ using UnityEngine;
 public class VehicleSpawnPoint : MonoBehaviour
 {
     public Vehicle prefab;
+    public VehicleCatalog catalog;
+    public bool combatPool;
+    public bool groundOnly;
     public Vector3 clearanceCenter = new Vector3(0, 1.4f, 0);
     public Vector3 clearanceSize = new Vector3(3, 2.4f, 5);
     public float respawnDelay = 15, abandonedDelay = 90, cleanupDelay = 7;
@@ -39,7 +42,11 @@ public class VehicleSpawnPoint : MonoBehaviour
             spawnAt = Time.time + 1;
             return;
         }
-        Current = Instantiate(prefab, transform.position, transform.rotation);
+        var choices = catalog ? (combatPool ? catalog.combatVehicles : catalog.transports) : null;
+        if (groundOnly && choices != null)
+            choices = System.Array.FindAll(choices, v => !(v.motor is HelicopterMotor));
+        var selected = choices != null && choices.Length > 0 ? choices[Random.Range(0, choices.Length)] : prefab;
+        Current = Instantiate(selected, transform.position, transform.rotation);
         Current.Destroyed += OnDestroyed;
         unattendedAt = Time.time;
     }

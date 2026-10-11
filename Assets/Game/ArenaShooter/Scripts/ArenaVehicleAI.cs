@@ -265,7 +265,8 @@ public class ArenaVehicleAI : MonoBehaviour
                 return;
             }
         }
-        bool bail = (!enemy && distance < 6) || v.Health < v.maxHealth * .3f || recoveries >= 3;
+        bool bail = (!enemy && distance < 6) || (threat && !v.turret && Time.time - boardedAt > 4)
+            || v.Health < v.maxHealth * .3f || recoveries >= 3;
         if (!enemy && Time.time - lastVehicleContact < combatHoldTime && v.turret)
         { v.DriverInput = new VehicleInput { brake = true }; return; }
         if (bail)

@@ -28,8 +28,8 @@ public class ArenaVehicleHud : MonoBehaviour
         vehicleEquipment.SetActive(false);
         if(!mounted)return;
         var v=player.MountedVehicle;bool air=v.motor is HelicopterMotor;var role=v.seats[player.SeatIndex].role;
-        diagram.sprite = air ? helicopterDiagram : humveeDiagram;
-        bool armed = role == Vehicle.SeatRole.Gunner || (air && role == Vehicle.SeatRole.Driver);
+        diagram.sprite = v.seatDiagram ? v.seatDiagram : air ? helicopterDiagram : humveeDiagram;
+        bool armed = (role == Vehicle.SeatRole.Gunner && v.turret) || (air && role == Vehicle.SeatRole.Driver && v.GetComponent<VehicleLauncher>());
         vehicleEquipment.SetActive(armed);
         if (armed)
         {
@@ -42,15 +42,17 @@ public class ArenaVehicleHud : MonoBehaviour
         }
         status.text=v.displayName.ToUpperInvariant()+" / "+v.seats[player.SeatIndex].name.ToUpperInvariant()+"    "+Mathf.RoundToInt(v.Body.linearVelocity.magnitude*3.6f)+" KPH";
         if (player.HornFeedback>0) status.text+="  HORN";
-        controls.text=role==Vehicle.SeatRole.Driver?(air?"CLIMB  [SPACE]\nDESCEND  [CTRL]\nMOVE  [WASD]\nAIM ALIGN  [RMB]":"BRAKE / REV  [S]\nACCELERATE  [W]\nBOOST  [SHIFT]\nHANDBRAKE  [Z]\nHORN  [H]"):"FIRE  [LMB]\nZOOM  [RMB]\nAMMO  INF";
+        controls.text=role==Vehicle.SeatRole.Driver?(air?"CLIMB  [SPACE]\nDESCEND  [CTRL]\nMOVE  [WASD]\nAIM ALIGN  [RMB]":"BRAKE / REV  [S]\nACCELERATE  [W]\nBOOST  [SHIFT]\nHANDBRAKE  [Z]\nHORN  [H]"):role==Vehicle.SeatRole.Gunner?"FIRE  [LMB]\nZOOM  [RMB]\nAMMO  INF":"PASSENGER";
         if (air && role == Vehicle.SeatRole.Driver) controls.text += "\n[T] ASSIST " + (((HelicopterMotor)v.motor).assistEnabled ? "ON" : "OFF");
         rightControls.text="[C]  CAMERA\n[V]  FREELOOK"+(player.Freelook?" ON":"")+"\nHOLD [E]  EXIT\n[F1-F"+v.seats.Length+"]  SEATS";
+        EnsureSeatMarkers(v.seats.Length);
+        crew.fontSize = v.seats.Length > 5 ? 13 : 18;
         crew.text="";
         for(int i=0;i<seatMarkers.Length;i++)
         {
             bool exists=i<v.seats.Length;seatMarkers[i].gameObject.SetActive(exists);if(!exists)continue;
             var seat=v.seats[i];bool occupied=seat.occupant;
-            seatMarkers[i].rectTransform.anchoredPosition=air?new Vector2(0,i==0?26:54):i==1?new Vector2(0,-7):new Vector2(i==0||i==3?-15:15,i<3?20:-30);
+            seatMarkers[i].rectTransform.anchoredPosition=v.seatDiagram?seat.diagramPosition:air?new Vector2(0,i==0?26:54):i==1?new Vector2(0,-7):new Vector2(i==0||i==3?-15:15,i<3?20:-30);
             seatMarkers[i].color=i==player.SeatIndex?accent:occupied?Color.white:new Color(1,1,1,.18f);
             seatNumbers[i].color=i==player.SeatIndex||occupied?Color.black:Color.white;
             string name=occupied?(seat.occupant==player?"YOU":seat.occupant.name):"EMPTY";
@@ -65,17 +67,19 @@ public class ArenaVehicleHud : MonoBehaviour
         telemetry.text=Mathf.RoundToInt(v.Body.linearVelocity.magnitude*3.6f)+" KPH    ALT "+altitude.ToString("F0")+" M    V/S "+v.Body.linearVelocity.y.ToString("+0.0;-0.0;0.0");
         groundAltitude = altitude;
         var rockets=v.GetComponent<VehicleLauncher>();
-        weapon.text="RKT  [LMB]  "+rockets.Missiles+" / "+rockets.capacity+(rockets.Missiles<rockets.capacity ? "   +1 IN "+rockets.RechargeRemaining.ToString("F1")+" S" : "");
+        weapon.text=rockets?"RKT  [LMB]  "+rockets.Missiles+" / "+rockets.capacity+(rockets.Missiles<rockets.capacity ? "   +1 IN "+rockets.RechargeRemaining.ToString("F1")+" S" : ""):"TRANSPORT / NO PILOT WEAPON";
     }
     void LateUpdate()
     {
+        if (player.IsMounted && player.MountedVehicle.motor is HelicopterMotor && player.MountedVehicle.seats[player.SeatIndex].role == Vehicle.SeatRole.Driver)
+            UpdateFlightInstruments(player.MountedVehicle, groundAltitude);
         bool armed = player.IsMounted && vehicleEquipment.activeSelf;
         desiredAim.gameObject.SetActive(armed); actualAim.gameObject.SetActive(armed);
         if (!armed) return;
         var vehicle = player.MountedVehicle; Camera camera = player.ActiveVehicleCamera;
         bool gunner = vehicle.seats[player.SeatIndex].role == Vehicle.SeatRole.Gunner;
         actualAim.GetComponent<Graphic>().canvasRenderer.SetAlpha(gunner || vehicle.GetComponent<VehicleLauncher>().Missiles > 0 ? 1f : .2f);
-        if (!gunner && vehicle.motor is HelicopterMotor) UpdateFlightInstruments(vehicle, groundAltitude);
+
         Vector3 requested; Ray actual; float range;
         if (gunner)
         {
@@ -96,6 +100,20 @@ public class ArenaVehicleHud : MonoBehaviour
             ? ResolvePoint(actual,Mathf.Min(range,Vector3.Distance(actual.origin,desiredPoint)),vehicle)
             : vehicle.GetComponent<VehicleLauncher>().PredictedImpactPoint;
         PlaceMarker(actualAim,camera,impact);
+    }
+    void EnsureSeatMarkers(int count)
+    {
+        int previous = seatMarkers.Length;
+        if (count <= previous) return;
+        System.Array.Resize(ref seatMarkers, count);
+        System.Array.Resize(ref seatNumbers, count);
+        for (int i = previous; i < count; i++)
+        {
+            seatMarkers[i] = Instantiate(seatMarkers[0], seatMarkers[0].transform.parent);
+            seatMarkers[i].name = "Seat " + (i + 1);
+            seatNumbers[i] = seatMarkers[i].GetComponentInChildren<TextMeshProUGUI>();
+            seatNumbers[i].text = (i + 1).ToString();
+        }
     }
     void UpdateFlightInstruments(Vehicle vehicle, float altitude)
     {

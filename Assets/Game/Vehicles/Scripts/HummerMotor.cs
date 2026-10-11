@@ -19,7 +19,10 @@ public class HummerMotor : VehicleMotor
     public float maxYawRate = 2.8f, maxCorneringAcceleration = 22f;
     float steeringAngle;
     public float lowSpeedSteering = 60f, highSpeedSteering = 60f, antiRoll = 6500f;
-    public override bool CanDisembark => wheels[0].collider.isGrounded || wheels[1].collider.isGrounded;
+    public override bool CanDisembark
+    {
+        get { foreach (var wheel in wheels) if (wheel.collider.isGrounded) return true; return false; }
+    }
     void Start()
     {
         vehicle.Body.centerOfMass = centerOfMass;
@@ -41,12 +44,20 @@ public class HummerMotor : VehicleMotor
             w.collider.motorTorque = powered && !braking && !input.handbrake && Mathf.Abs(speed) < speedLimit
                 ? input.move.y * motorTorque * (input.boost ? boostMultiplier : 1f) : 0;
         }
-        StabilizeAxle(wheels[0].collider, wheels[1].collider, antiRoll);
-        StabilizeAxle(wheels[2].collider, wheels[3].collider, antiRoll);
+        // Wheels are ordered left/right per axle. Single-track bikes do not have an anti-roll pair.
+        for (int i = 0; i + 1 < wheels.Length; i += 2)
+            if (Mathf.Abs(wheels[i].collider.transform.localPosition.z - wheels[i + 1].collider.transform.localPosition.z) < .25f)
+                StabilizeAxle(wheels[i].collider, wheels[i + 1].collider, antiRoll);
         // Grounded steering assistance improves response without rotating the transform.
         if (powered && GroundedWheels() >= 2)
         {
-            float wheelbase = Mathf.Abs(wheels[2].collider.transform.localPosition.z - wheels[0].collider.transform.localPosition.z);
+            float front = float.NegativeInfinity, rear = float.PositiveInfinity;
+            foreach (var wheel in wheels)
+            {
+                float z = wheel.collider.transform.localPosition.z;
+                front = Mathf.Max(front, z); rear = Mathf.Min(rear, z);
+            }
+            float wheelbase = Mathf.Max(.6f, front - rear);
             float yawLimit = Mathf.Min(maxYawRate, maxCorneringAcceleration / Mathf.Max(Mathf.Abs(speed), 1f));
             float desiredYaw = Mathf.Clamp(speed / wheelbase * Mathf.Tan(steeringAngle * Mathf.Deg2Rad), -yawLimit, yawLimit);
             float actualYaw = Vector3.Dot(vehicle.Body.angularVelocity, transform.up);

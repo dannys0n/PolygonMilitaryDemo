@@ -1126,6 +1126,8 @@ MonoBehaviour:
   - {fileID: 1343334234}
   - {fileID: 571250613}
   - {fileID: 1363157761}
+  redOpeningSpawn: {fileID: 0}
+  blueOpeningSpawn: {fileID: 0}
   patrolPoints:
   - {fileID: 1585052059}
   - {fileID: 1911583720}
@@ -1150,6 +1152,7 @@ MonoBehaviour:
   match: {fileID: 180389624}
   vehicleAgentType: -334000983
   allowAIHelicopters: 1
+  autoSelectLocalClass: 1
   landingZones:
   - {fileID: 834698987}
   - {fileID: 621848908}
@@ -2042,8 +2045,11 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::VehicleSpawnPoint
   prefab: {fileID: 8145823736842321480, guid: 20e03afaf3d6074478c69ea957a1af31, type: 3}
-  clearanceCenter: {x: 0, y: 1.4, z: 0}
-  clearanceSize: {x: 3, y: 2.4, z: 5}
+  catalog: {fileID: 11400000, guid: 2b31a9f332f5d244d987324bd810ed85, type: 2}
+  combatPool: 0
+  groundOnly: 1
+  clearanceCenter: {x: 0, y: 2.5, z: 0}
+  clearanceSize: {x: 5, y: 4, z: 10}
   respawnDelay: 15
   abandonedDelay: 90
   cleanupDelay: 7
@@ -5529,6 +5535,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::VehicleSpawnPoint
   prefab: {fileID: 8145823736842321480, guid: 20e03afaf3d6074478c69ea957a1af31, type: 3}
+  catalog: {fileID: 0}
+  combatPool: 0
+  groundOnly: 0
   clearanceCenter: {x: 0, y: 1.4, z: 0}
   clearanceSize: {x: 3, y: 2.4, z: 5}
   respawnDelay: 15
@@ -6445,6 +6454,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::VehicleSpawnPoint
   prefab: {fileID: 5334550186223418224, guid: bcc2f568fa4b1fb43b5bd360a8bec195, type: 3}
+  catalog: {fileID: 0}
+  combatPool: 0
+  groundOnly: 0
   clearanceCenter: {x: 0, y: 2.1, z: 0.7}
   clearanceSize: {x: 12, y: 4, z: 15.5}
   respawnDelay: 15
@@ -6970,6 +6982,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::VehicleSpawnPoint
   prefab: {fileID: 5334550186223418224, guid: bcc2f568fa4b1fb43b5bd360a8bec195, type: 3}
+  catalog: {fileID: 0}
+  combatPool: 0
+  groundOnly: 0
   clearanceCenter: {x: 0, y: 2.1, z: 0.7}
   clearanceSize: {x: 12, y: 4, z: 15.5}
   respawnDelay: 15

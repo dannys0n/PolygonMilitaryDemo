@@ -147,7 +147,8 @@ public class VehicleOccupant : MonoBehaviour
                 {
                     Quaternion view = Quaternion.Euler(pitch,yaw,0);
                     Vector3 origin = CameraPosition(vehicle,view,false,true,true);
-                    Vector3 direction = vehicle.GetComponent<VehicleLauncher>().DirectionToAimPoint(new Ray(origin,view*Vector3.forward),180);
+                    var aimLauncher = vehicle.GetComponent<VehicleLauncher>();
+                    Vector3 direction = aimLauncher ? aimLauncher.DirectionToAimPoint(new Ray(origin,view*Vector3.forward),180) : view*Vector3.forward;
                     flightYaw = Mathf.Atan2(direction.x,direction.z)*Mathf.Rad2Deg;
                     flightPitch = -Mathf.Asin(Mathf.Clamp(direction.y,-1,1))*Mathf.Rad2Deg;
                 }
@@ -231,7 +232,7 @@ public class VehicleOccupant : MonoBehaviour
             vehicleCameraShake.playAutomatically=false;
         }
         ResetVehicleCameraShake();
-        vehicleCameraShake.AddClip(vehicle.turret.cameraShake,"FireShake");
+        if (vehicle.turret) vehicleCameraShake.AddClip(vehicle.turret.cameraShake,"FireShake");
         vehicleCamera.CopyFrom(life.view.playerCamera);
         vehicleCamera.cullingMask = (life.view.playerCamera.cullingMask | (1 << life.view.thirdPersonLayer)) & ~(1 << life.view.firstPersonLayer);
         vehicleCamera.fieldOfView = 70;
