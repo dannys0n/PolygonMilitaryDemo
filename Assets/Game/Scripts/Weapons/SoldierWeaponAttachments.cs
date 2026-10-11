@@ -50,8 +50,10 @@ public class SoldierWeaponAttachments : MonoBehaviour
             sight.SourcePrefab = definition.prefab.GetComponent<WeaponSightAttachment>();
 #endif
         go.transform.SetLocalPositionAndRotation(definition.positionOffset,Quaternion.Euler(definition.rotationOffset));go.transform.localScale=definition.scale;
+        if (mount.TryGetComponent<WeaponAttachmentSocket>(out var socket)) socket.Place(definition, go.transform);
         foreach(var t in go.GetComponentsInChildren<Transform>(true))t.gameObject.layer=layer;
         foreach(var r in go.GetComponentsInChildren<Renderer>(true))r.enabled=visible;
         visuals.Add(go);return go;
     }
 }
+
