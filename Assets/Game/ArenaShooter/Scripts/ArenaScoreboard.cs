@@ -11,6 +11,7 @@ public class ArenaScoreboard : MonoBehaviour
     public GameObject panel;
     public TMP_Text matchInfo, redHeader, blueHeader, instructions;
     public RectTransform redContent, blueContent, rowTemplate;
+    public Material normalText, highlightedText;
     public Color accent = new Color(1,.686f,0);
     public bool IsVisible { get; private set; }
     public bool ResultsVisible { get; private set; }
@@ -63,9 +64,12 @@ public class ArenaScoreboard : MonoBehaviour
             rows[i].gameObject.SetActive(i<actors.Length); if(i>=actors.Length)continue;
             var actor=actors[i];var row=rows[i];
             bool highlighted=actor==localPlayer || !localPlayer && spectator && actor==spectator.FollowedCharacter;
-            row.GetComponent<UnityEngine.UI.Image>().color=highlighted?new Color(accent.r*.17f,accent.g*.17f,accent.b*.17f,.82f):new Color(.025f,.035f,.045f,i%2==0?.68f:.54f);
+            row.GetComponent<UnityEngine.UI.Image>().color=new Color(1,1,1,highlighted?.075f:i%2==0?.025f:.012f);
             row.Find("Rank").GetComponent<TMP_Text>().text=(i+1).ToString("00");
-            var name=row.Find("Player").GetComponent<TMP_Text>();name.text=actor.name.Replace("<","").Replace(">","");name.color=highlighted?accent:Color.white;
+            var name=row.Find("Player").GetComponent<TMP_Text>();name.text=actor.name.Replace("<","").Replace(">","");
+            name.color=highlighted?Color.white:new Color(.85f,.85f,.85f);
+            var material=highlighted?highlightedText:normalText;
+            if(name.fontSharedMaterial!=material){name.fontSharedMaterial=material;name.UpdateMeshPadding();}
             row.Find("Score").GetComponent<TMP_Text>().text=actor.Score.ToString("N0");
             row.Find("Kills").GetComponent<TMP_Text>().text=actor.Kills.ToString();
             row.Find("Deaths").GetComponent<TMP_Text>().text=actor.Deaths.ToString();
