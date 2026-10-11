@@ -3686,6 +3686,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Vehicle
   displayName: Hummer
+  seatDiagram: {fileID: 0}
   motor: {fileID: 7749662443089936875}
   turret: {fileID: 1627803472940609030}
   destructionEffect: {fileID: 695410771644243590, guid: c07b2e8d0c65dad44bf5eaca660002fc, type: 3}
@@ -3695,22 +3696,27 @@ MonoBehaviour:
     role: 0
     anchor: {fileID: 8508221160049698399}
     exit: {fileID: 8516733420892195051}
+    diagramPosition: {x: 0, y: 0}
   - name: Roof gunner
     role: 1
     anchor: {fileID: 6911892878317854645}
     exit: {fileID: 3812979046147326114}
+    diagramPosition: {x: 0, y: 0}
   - name: Front passenger
     role: 2
     anchor: {fileID: 4324808422855201514}
     exit: {fileID: 1149512150917648803}
+    diagramPosition: {x: 0, y: 0}
   - name: Rear left
     role: 2
     anchor: {fileID: 9007821415273648080}
     exit: {fileID: 5375957635729235504}
+    diagramPosition: {x: 0, y: 0}
   - name: Rear right
     role: 2
     anchor: {fileID: 6927058776003512427}
     exit: {fileID: 1286838060516910181}
+    diagramPosition: {x: 0, y: 0}
   maxHealth: 1000
   bulletDamageMultiplier: 0.15
 --- !u!114 &7749662443089936875
@@ -3820,6 +3826,14 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::VehicleDestructionEffects
   blackSmoke: {fileID: 6001782565966554119, guid: 43683e0b5831c7d4ead5064f2a129ac0, type: 3}
   secondaryExplosion: {fileID: 7772868914547752988, guid: 47f535017c67d4c4194b60441dabb8e4, type: 3}
+  intactVisuals:
+  - {fileID: 3239535015783385002}
+  - {fileID: 6267005373394632700}
+  - {fileID: 4159976910278147371}
+  destroyedPrefab: {fileID: 4407139124209218136, guid: 65225ca6a223d8540af6839c349a675a, type: 3}
+  destroyedLocalPosition: {x: 0, y: 0, z: 0}
+  destroyedLocalRotation: {x: 0, y: 0, z: 0}
+  destroyedLocalScale: {x: 1, y: 1, z: 1}
   localOrigin: {x: 0, y: 1, z: 1}
   firstExplosionTime: 0.25
   secondExplosionTime: 1
@@ -4004,6 +4018,11 @@ Transform:
 --- !u!4 &3149171648580556470 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 4175289206841013141, guid: b673e78b6ab8a4d4ea5d2119b6724883, type: 3}
+  m_PrefabInstance: {fileID: 1316600872463492387}
+  m_PrefabAsset: {fileID: 0}
+--- !u!1 &3239535015783385002 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 4517289003729461897, guid: b673e78b6ab8a4d4ea5d2119b6724883, type: 3}
   m_PrefabInstance: {fileID: 1316600872463492387}
   m_PrefabAsset: {fileID: 0}
 --- !u!4 &8785650099912975206 stripped

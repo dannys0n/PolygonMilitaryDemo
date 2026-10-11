@@ -17,12 +17,14 @@ public class Vehicle : MonoBehaviour
         public string name;
         public SeatRole role;
         public Transform anchor, exit;
+        public Vector2 diagramPosition;
         [NonSerialized] public VehicleOccupant occupant, reservation;
         [NonSerialized] public float reservedUntil;
     }
     public static event Action<Vehicle> Spawned;
     public static readonly List<Vehicle> Active = new List<Vehicle>();
     public string displayName;
+    public Sprite seatDiagram;
     public VehicleMotor motor;
     public VehicleTurret turret;
     public ParticleSystem destructionEffect;
@@ -70,7 +72,7 @@ public class Vehicle : MonoBehaviour
     }
     void FixedUpdate()
     {
-        motor.Simulate(IsDestroyed ? default : DriverInput, Driver && !IsDestroyed);
+        if (!IsDestroyed) motor.Simulate(DriverInput, Driver);
         // Carving is only useful while parked; a dynamic body never also owns a NavMeshAgent.
         if (obstacle)
             obstacle.enabled = !Driver && Body.linearVelocity.sqrMagnitude < .1f;
@@ -145,6 +147,10 @@ public class Vehicle : MonoBehaviour
             actor.Leave(true);
             actor.life.health.ApplyDamage(actor.life.health.maxHealth, source);
         }
+        motor.enabled = false;
+        if (turret) turret.enabled = false;
+        if (TryGetComponent<VehicleLauncher>(out var launcher)) launcher.enabled = false;
+        foreach (var s in seats) s.reservation = null;
         foreach (var r in GetComponentsInChildren<Renderer>())
         {
             var block = new MaterialPropertyBlock();
@@ -152,7 +158,7 @@ public class Vehicle : MonoBehaviour
             block.SetColor("_BaseColor", new Color(.16f, .17f, .18f));
             r.SetPropertyBlock(block);
         }
-Destroyed?.Invoke(this);
+        Destroyed?.Invoke(this);
         return true;
     }
     void OnCollisionEnter(Collision collision)
