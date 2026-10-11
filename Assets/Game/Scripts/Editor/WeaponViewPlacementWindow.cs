@@ -200,6 +200,16 @@ public class WeaponViewPlacementWindow : EditorWindow
         if (attachment && attachment.SourcePrefab)
             source = point == attachment.rearSight ? attachment.SourcePrefab.rearSight : attachment.SourcePrefab.frontSight;
         else source = EditorUtility.IsPersistent(point) ? point : PrefabUtility.GetCorrespondingObjectFromOriginalSource(point);
+        if (!source && player)
+        {
+            var sights = player.GetComponent<SoldierWeaponLoadout>().EquippedSights;
+            if (sights && sights.authoringPrefab && (point == sights.rearSight || point == sights.frontSight))
+            {
+                var group = System.Array.Find(sights.authoringPrefab.GetComponentsInChildren<Transform>(true),
+                    t => t.name == "SightReferences");
+                source = group.Find(point == sights.rearSight ? "RearSight" : "FrontSight");
+            }
+        }
         string path = source ? AssetDatabase.GetAssetPath(source) : "";
         if (string.IsNullOrEmpty(path))
         {

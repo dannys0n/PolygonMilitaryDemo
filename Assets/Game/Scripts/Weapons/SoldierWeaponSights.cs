@@ -9,6 +9,10 @@ public class SoldierWeaponSights : MonoBehaviour
     [Header("Default weapon sight line")]
     [FormerlySerializedAs("ironSight")] public Transform rearSight;
     [FormerlySerializedAs("frontIronSight")] public Transform frontSight;
+#if UNITY_EDITOR
+    // Spawned players can lose prefab links; the placement tool still needs their authoring asset.
+    [HideInInspector] public GameObject authoringPrefab;
+#endif
     public bool cameraReferenceConfigured;
     public Vector3 neutralCameraPosition;
     public Quaternion neutralCameraRotation = Quaternion.identity;
