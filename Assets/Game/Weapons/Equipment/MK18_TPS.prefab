@@ -218,7 +218,6 @@ MonoBehaviour:
     - {fileID: 11400000, guid: ee9f4ce40052a144a94b064ed465443b, type: 2}
     - {fileID: 11400000, guid: 88ecda950774deb40bd8b6c454c0db39, type: 2}
     - {fileID: 11400000, guid: 736e9ba785ee69d42898befbf45fc4f9, type: 2}
-    - {fileID: 11400000, guid: 8e570f969a5da9c4fb2ad3e3b7d327d3, type: 2}
     - {fileID: 11400000, guid: a01a778ff1076e445b06418ad38dc7b3, type: 2}
     builtInFirstPerson: []
     builtInThirdPerson: []
@@ -252,6 +251,13 @@ MonoBehaviour:
     compatible:
     - {fileID: 11400000, guid: bb26fa1868c00a44e9259a62a422cb80, type: 2}
     - {fileID: 11400000, guid: 8e2f096669fd13547b502e7cc2c4c4fb, type: 2}
+    builtInFirstPerson: []
+    builtInThirdPerson: []
+  - kind: 7
+    firstPerson: {fileID: 0}
+    thirdPerson: {fileID: 7101917478799244680}
+    compatible:
+    - {fileID: 11400000, guid: 8e570f969a5da9c4fb2ad3e3b7d327d3, type: 2}
     builtInFirstPerson: []
     builtInThirdPerson: []
 --- !u!114 &7270934457021072791
@@ -293,6 +299,9 @@ MonoBehaviour:
     builtIn: []
   - kind: 5
     socket: {fileID: 5769780744010270083}
+    builtIn: []
+  - kind: 7
+    socket: {fileID: 7101917478799244680}
     builtIn: []
 --- !u!1001 &2900053728494788266
 PrefabInstance:
@@ -393,6 +402,14 @@ PrefabInstance:
     - target: {fileID: 5246799313900393464, guid: 4d036e2ff2d9ff8469330af9a898611c, type: 3}
       propertyPath: m_Layer
       value: 9
+      objectReference: {fileID: 0}
+    - target: {fileID: 5381832143457346338, guid: 4d036e2ff2d9ff8469330af9a898611c, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: -0.023952572
+      objectReference: {fileID: 0}
+    - target: {fileID: 5381832143457346338, guid: 4d036e2ff2d9ff8469330af9a898611c, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 0.16180758
       objectReference: {fileID: 0}
     - target: {fileID: 5491169251537939973, guid: 4d036e2ff2d9ff8469330af9a898611c, type: 3}
       propertyPath: m_Layer
@@ -637,6 +654,11 @@ Transform:
 --- !u!4 &6793840038811313333 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 8536465363592165919, guid: 4d036e2ff2d9ff8469330af9a898611c, type: 3}
+  m_PrefabInstance: {fileID: 2900053728494788266}
+  m_PrefabAsset: {fileID: 0}
+--- !u!4 &7101917478799244680 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 5381832143457346338, guid: 4d036e2ff2d9ff8469330af9a898611c, type: 3}
   m_PrefabInstance: {fileID: 2900053728494788266}
   m_PrefabAsset: {fileID: 0}
 --- !u!4 &7233559008971956462 stripped

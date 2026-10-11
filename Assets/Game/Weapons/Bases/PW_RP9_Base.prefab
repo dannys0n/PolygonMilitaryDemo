@@ -362,11 +362,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 03e841738b6be124bbe22cf82e6359c7, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::WeaponAttachmentSocket
-  placements:
-  - attachment: {fileID: 11400000, guid: 8e570f969a5da9c4fb2ad3e3b7d327d3, type: 2}
-    position: {x: 0.06646682, y: -0.018053595, z: -0.022757923}
-    rotation: {x: -0.7071068, y: 0.7071067, z: -0.00000033717478, w: 0.00000033717473}
-    scale: {x: 1, y: 1, z: 0.99999964}
+  placements: []
 --- !u!1 &3358441046136503781
 GameObject:
   m_ObjectHideFlags: 0
@@ -464,6 +460,37 @@ Transform:
   - {fileID: 8197761824075400442}
   - {fileID: 5872077669938803526}
   m_Father: {fileID: 7180719908481559092}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &4892921223416758413
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 7316892371324958066}
+  m_Layer: 0
+  m_Name: LeftRailMount
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &7316892371324958066
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4892921223416758413}
+  serializedVersion: 2
+  m_LocalRotation: {x: -1.1131582e-15, y: -2.5758365e-15, z: -0.7071068, w: 0.70710677}
+  m_LocalPosition: {x: -0.023762817, y: 0.081699476, z: 0.18218844}
+  m_LocalScale: {x: 0.9999999, y: 0.99999994, z: 0.9999997}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 3076820752991326592}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &5758537836974120848
 GameObject:
@@ -719,5 +746,6 @@ Transform:
   - {fileID: 324905635612692515}
   - {fileID: 5006441016294921616}
   - {fileID: 39732057937175884}
+  - {fileID: 7316892371324958066}
   m_Father: {fileID: 7180719908481559092}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}

@@ -185,6 +185,11 @@ Animator:
   m_CorrespondingSourceObject: {fileID: 5193147954701442817, guid: 39903bd75dcb1e24786f0dcc173a87ec, type: 3}
   m_PrefabInstance: {fileID: 6682675953713475405}
   m_PrefabAsset: {fileID: 0}
+--- !u!4 &2485763474077296118 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 9134028926130473659, guid: 39903bd75dcb1e24786f0dcc173a87ec, type: 3}
+  m_PrefabInstance: {fileID: 6682675953713475405}
+  m_PrefabAsset: {fileID: 0}
 --- !u!4 &2527695379983554174 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 9199041845625239859, guid: 39903bd75dcb1e24786f0dcc173a87ec, type: 3}
@@ -386,7 +391,6 @@ MonoBehaviour:
     - {fileID: 11400000, guid: ee9f4ce40052a144a94b064ed465443b, type: 2}
     - {fileID: 11400000, guid: 88ecda950774deb40bd8b6c454c0db39, type: 2}
     - {fileID: 11400000, guid: 736e9ba785ee69d42898befbf45fc4f9, type: 2}
-    - {fileID: 11400000, guid: 8e570f969a5da9c4fb2ad3e3b7d327d3, type: 2}
     - {fileID: 11400000, guid: a01a778ff1076e445b06418ad38dc7b3, type: 2}
     builtInFirstPerson: []
     builtInThirdPerson: []
@@ -416,6 +420,13 @@ MonoBehaviour:
     compatible:
     - {fileID: 11400000, guid: bb26fa1868c00a44e9259a62a422cb80, type: 2}
     - {fileID: 11400000, guid: 8e2f096669fd13547b502e7cc2c4c4fb, type: 2}
+    builtInFirstPerson: []
+    builtInThirdPerson: []
+  - kind: 7
+    firstPerson: {fileID: 0}
+    thirdPerson: {fileID: 2485763474077296118}
+    compatible:
+    - {fileID: 11400000, guid: 8e570f969a5da9c4fb2ad3e3b7d327d3, type: 2}
     builtInFirstPerson: []
     builtInThirdPerson: []
 --- !u!114 &5325334607559435974
@@ -457,6 +468,9 @@ MonoBehaviour:
     builtIn: []
   - kind: 5
     socket: {fileID: 1112773026913912893}
+    builtIn: []
+  - kind: 7
+    socket: {fileID: 2485763474077296118}
     builtIn: []
 --- !u!4 &9024859988904540977 stripped
 Transform:

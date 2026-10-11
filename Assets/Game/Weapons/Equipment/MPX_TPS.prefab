@@ -248,7 +248,6 @@ MonoBehaviour:
     - {fileID: 11400000, guid: ee9f4ce40052a144a94b064ed465443b, type: 2}
     - {fileID: 11400000, guid: 88ecda950774deb40bd8b6c454c0db39, type: 2}
     - {fileID: 11400000, guid: 736e9ba785ee69d42898befbf45fc4f9, type: 2}
-    - {fileID: 11400000, guid: 8e570f969a5da9c4fb2ad3e3b7d327d3, type: 2}
     - {fileID: 11400000, guid: a01a778ff1076e445b06418ad38dc7b3, type: 2}
     builtInFirstPerson: []
     builtInThirdPerson: []
@@ -282,6 +281,13 @@ MonoBehaviour:
     compatible:
     - {fileID: 11400000, guid: bb26fa1868c00a44e9259a62a422cb80, type: 2}
     - {fileID: 11400000, guid: 8e2f096669fd13547b502e7cc2c4c4fb, type: 2}
+    builtInFirstPerson: []
+    builtInThirdPerson: []
+  - kind: 7
+    firstPerson: {fileID: 0}
+    thirdPerson: {fileID: 1192275156367500579}
+    compatible:
+    - {fileID: 11400000, guid: 8e570f969a5da9c4fb2ad3e3b7d327d3, type: 2}
     builtInFirstPerson: []
     builtInThirdPerson: []
 --- !u!114 &5674612432060391734
@@ -324,6 +330,9 @@ MonoBehaviour:
   - kind: 5
     socket: {fileID: 4992125035667013425}
     builtIn: []
+  - kind: 7
+    socket: {fileID: 1192275156367500579}
+    builtIn: []
 --- !u!1001 &1723859269305352713
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -335,6 +344,26 @@ PrefabInstance:
     - target: {fileID: 180425939621348974, guid: bdbd1b34c1ee2cd45912ea057f0aa970, type: 3}
       propertyPath: m_Layer
       value: 9
+      objectReference: {fileID: 0}
+    - target: {fileID: 533587698011285290, guid: bdbd1b34c1ee2cd45912ea057f0aa970, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: -0.03998006
+      objectReference: {fileID: 0}
+    - target: {fileID: 533587698011285290, guid: bdbd1b34c1ee2cd45912ea057f0aa970, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 0.021682717
+      objectReference: {fileID: 0}
+    - target: {fileID: 533587698011285290, guid: bdbd1b34c1ee2cd45912ea057f0aa970, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 0.1150792
+      objectReference: {fileID: 0}
+    - target: {fileID: 533587698011285290, guid: bdbd1b34c1ee2cd45912ea057f0aa970, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: 0.000000029802322
+      objectReference: {fileID: 0}
+    - target: {fileID: 533587698011285290, guid: bdbd1b34c1ee2cd45912ea057f0aa970, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: -0.000000029802322
       objectReference: {fileID: 0}
     - target: {fileID: 635810791504966016, guid: bdbd1b34c1ee2cd45912ea057f0aa970, type: 3}
       propertyPath: m_Layer
@@ -791,6 +820,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4e87a14dacfdff14c9c2bb5209f9fa38, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::SoldierWeaponSockets
+--- !u!4 &1192275156367500579 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 533587698011285290, guid: bdbd1b34c1ee2cd45912ea057f0aa970, type: 3}
+  m_PrefabInstance: {fileID: 1723859269305352713}
+  m_PrefabAsset: {fileID: 0}
 --- !u!4 &1252752298835579466 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 472538534676516931, guid: bdbd1b34c1ee2cd45912ea057f0aa970, type: 3}
