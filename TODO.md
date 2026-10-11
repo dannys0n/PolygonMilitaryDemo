@@ -98,6 +98,14 @@ Do not build classes, dynamic pickups, conquest, battle royale, persistence, pro
 - [ ] Set up collision, spawn points, and the basic match layout.
 - [ ] Test the local gameplay loop on the map.
 
+## 4.1. Conquest and the first official map
+
+- [x] Add ticket-based Conquest, three capture/neutralization zones, objective HUD, and local/AI deployment at friendly flags.
+- [x] Add squads of four with safe teammate deployment, combat blocking, and squad HUD/deployment choices.
+- [x] Create MilitaryBase_Conquest under Assets/Game/Maps: copied military environment, separate infantry/vehicle navigation, opposing 16-player opening bases, 68 deployment positions, eight vehicle pads and three empty helicopter landing clearings.
+- [x] Check capture/ticket/deployment rules, squad eligibility, six base-to-flag paths, live captures, vehicle spawning and AI Humvee/helicopter use. Correct mirrored sidewalk collision in the playable copy.
+- [ ] Human map walkthrough: routes, terrain traversal, spawn safety/balance, helicopter transport/combat and a complete match.
+
 ## 4.5. Vehicles
 
 - [x] Add the ithappy Hummer as a Rigidbody/WheelCollider vehicle with a working roof machine gun.

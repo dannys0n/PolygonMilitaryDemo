@@ -76,6 +76,8 @@ public class ArenaHud : MonoBehaviour
     }
     void UnsubscribePlayer()
     {
+        // The character can be destroyed before this separate HUD root during scene unload.
+        if (!player || !player.player) return;
         player.player.actions.FireStarted -= OnFire;
         var utility=player.player.GetComponent<SoldierLaunchers>(); if(utility)utility.Fired-=OnFire;
         player.player.Respawned -= OnRespawn;

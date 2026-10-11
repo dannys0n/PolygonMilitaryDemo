@@ -196,7 +196,12 @@ public class ArenaMatch : MonoBehaviour
         MatchEnded?.Invoke();
     }
 
-    void OnDisable() => EndMatch();
+    // Scene teardown is not a completed match. UI children may already be destroyed.
+    void OnDisable()
+    {
+        IsRunning = false;
+        foreach (var participant in participants) if (participant) participant.CancelRespawn();
+    }
 
     void OnDrawGizmosSelected()
     {
