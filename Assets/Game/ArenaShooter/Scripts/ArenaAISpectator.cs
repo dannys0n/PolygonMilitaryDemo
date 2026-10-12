@@ -16,6 +16,8 @@ public class ArenaAISpectator : MonoBehaviour
     [Min(.5f)] public float orbitDistance = 2.5f;
     public float zoomSpeed = 2f;
     [Min(0f)] public float deathWatchDuration = 2f;
+    [Tooltip("Wide lens used only while rendering the alternate monitor.")]
+    [Range(60f,110f)] public float insetFieldOfView = 85f;
     [Tooltip("Optional local player: spectate while dead and return on respawn.")]
     public ArenaParticipant localPlayer;
     bool deathWatch, restorePerspective, killerDied, localDeathView, localWasFirstPerson;
@@ -311,8 +313,17 @@ public class ArenaAISpectator : MonoBehaviour
         bodyDirty = false;
     }
 
+    Camera insetLensCamera;
+    float insetOriginalFieldOfView;
+
     void BeforeCamera(ScriptableRenderContext context, Camera camera)
     {
+        if (insetTexture && camera.targetTexture == insetTexture)
+        {
+            insetLensCamera = camera;
+            insetOriginalFieldOfView = camera.fieldOfView;
+            camera.fieldOfView = insetFieldOfView;
+        }
         if (!observedView || camera != observedView.playerCamera) return;
         if (bodyDirty) CacheBody();
         for (int i = 0; i < hiddenBody.Length; i++)
@@ -321,6 +332,11 @@ public class ArenaAISpectator : MonoBehaviour
 
     void AfterCamera(ScriptableRenderContext context, Camera camera)
     {
+        if (camera == insetLensCamera)
+        {
+            camera.fieldOfView = insetOriginalFieldOfView;
+            insetLensCamera = null;
+        }
         if (!observedView || camera != observedView.playerCamera) return;
         RestoreBody();
     }

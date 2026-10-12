@@ -1,12 +1,12 @@
-Shader "Game/UI/Spectator CRT"
+Shader "Game/UI/Spectator Bodycam"
 {
     Properties
     {
         [PerRendererData] _MainTex ("Camera Feed", 2D) = "white" {}
         _Color ("Tint", Color) = (1,1,1,1)
-        _Scanlines ("Scanline Strength", Range(0,0.4)) = 0.12
+        _Distortion ("Wide Lens Distortion", Range(0,0.4)) = 0.14
         _Grain ("Signal Grain", Range(0,0.1)) = 0.018
-        _Curvature ("Screen Curvature", Range(0,0.1)) = 0.025
+        _Fringe ("Lens Edge Fringe", Range(0,2)) = 0.65
         _Vignette ("Edge Dimming", Range(0,0.5)) = 0.22
         _Brightness ("Brightness", Range(0.5,1.5)) = 1.08
         _StencilComp ("Stencil Comparison", Float) = 8
@@ -35,7 +35,7 @@ Shader "Game/UI/Spectator CRT"
             struct v2f { float4 vertex:SV_POSITION; float2 uv:TEXCOORD0; float4 color:COLOR; float4 local:TEXCOORD1; };
             sampler2D _MainTex;
             float4 _MainTex_TexelSize, _Color, _ClipRect;
-            float _Scanlines, _Grain, _Curvature, _Vignette, _Brightness;
+            float _Distortion, _Grain, _Fringe, _Vignette, _Brightness;
             v2f vert(appdata v)
             {
                 v2f o; o.local=v.vertex; o.vertex=UnityObjectToClipPos(v.vertex);
@@ -45,18 +45,22 @@ Shader "Game/UI/Spectator CRT"
             half4 frag(v2f i):SV_Target
             {
                 float2 centered=i.uv*2-1;
-                float2 uv=(centered*(1+_Curvature*dot(centered,centered)))*.5+.5;
-                // Quiet analog character: restrained fringe, phosphor lines and signal grain.
-                float shift=_MainTex_TexelSize.x*.65;
+                float radius=dot(centered,centered);
+                // Barrel distortion belongs to the lens image, not the flat monitor edges.
+                // Corner normalization keeps every sample inside the rectangular feed.
+                float2 uv=centered*(1+_Distortion*radius)/(1+2*_Distortion)*.5+.5;
+                float2 fringe=centered*_MainTex_TexelSize.xy*_Fringe*radius;
                 float3 color;
-                color.r=tex2D(_MainTex,uv+float2(shift,0)).r;
+                color.r=tex2D(_MainTex,uv+fringe).r;
                 color.g=tex2D(_MainTex,uv).g;
-                color.b=tex2D(_MainTex,uv-float2(shift,0)).b;
-                color *= 1-_Scanlines*(.5+.5*cos(uv.y/_MainTex_TexelSize.y*3.14159265));
-                color += (noise(floor(uv/_MainTex_TexelSize.xy)+floor(_Time.y*12))-.5)*_Grain;
-                color *= _Brightness*(1-_Vignette*dot(centered,centered)*.5);
-                float inside=step(0,uv.x)*step(uv.x,1)*step(0,uv.y)*step(uv.y,1);
-                half4 result=half4(max(0,color)*inside,i.color.a);
+                color.b=tex2D(_MainTex,uv-fringe).b;
+                float luma=dot(color,float3(.2126,.7152,.0722));
+                // Digital sensor noise is strongest in shadows; no analog scanlines.
+                float grain=noise(floor(i.uv/_MainTex_TexelSize.xy)+floor(_Time.y*30))-.5;
+                color+=grain*_Grain*lerp(1,.25,saturate(luma*2));
+                color=(color-.5)*1.04+.5;
+                color *= _Brightness*(1-_Vignette*radius*.5);
+                half4 result=half4(saturate(color),i.color.a);
                 result.rgb *= i.color.rgb;
                 #ifdef UNITY_UI_CLIP_RECT
                 result.a *= UnityGet2DClipping(i.local.xy,_ClipRect);

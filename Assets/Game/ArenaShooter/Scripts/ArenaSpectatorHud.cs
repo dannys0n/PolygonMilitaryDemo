@@ -22,7 +22,7 @@ public class ArenaSpectatorHud : MonoBehaviour
     void Awake()
     {
         accentHex = ColorUtility.ToHtmlStringRGB(accent);
-        monitorTexture = new RenderTexture(monitorWidth, Mathf.RoundToInt(monitorWidth * 9f / 16f), 24, RenderTextureFormat.ARGB32)
+        monitorTexture = new RenderTexture(monitorWidth, monitorWidth, 24, RenderTextureFormat.ARGB32)
             { name = "Spectator alternate perspective", filterMode = FilterMode.Bilinear };
         monitorTexture.Create();
         monitorImage.texture = monitorTexture;
