@@ -58,7 +58,7 @@ public class ArenaMenuButtonFeedback : MonoBehaviour, IPointerEnterHandler, IPoi
     public void OnPointerDown(PointerEventData data)
     { if (data.button == PointerEventData.InputButton.Left) { pressed = true; submitUntil = Time.unscaledTime + .08f; } }
     public void OnPointerUp(PointerEventData data) { pressed = false; }
-    public void OnSelect(BaseEventData data) { selected = true; context.text = description; }
+    public void OnSelect(BaseEventData data) { selected = true; if (context) context.text = description; }
     public void OnDeselect(BaseEventData data) { selected = false; pressed = false; }
     public void OnSubmit(BaseEventData data) { submitUntil = Time.unscaledTime + .08f; }
 }

@@ -7,6 +7,7 @@ using UnityEngine.UI;
 public class ArenaMenuAtmosphere : MonoBehaviour
 {
     public ArenaMenuPresentation menu;
+    public Image[] localFilaments = System.Array.Empty<Image>();
     Image image;
     Material source, instance;
     Camera menuCamera;
@@ -24,7 +25,7 @@ public class ArenaMenuAtmosphere : MonoBehaviour
         image.material = instance;
         menuCamera = image.canvas.worldCamera;
         pageLines.Clear();
-        foreach (var page in FindAnyObjectByType<ArenaMenuNavigation>().pages)
+        if (menu) foreach (var page in FindAnyObjectByType<ArenaMenuNavigation>().pages)
             foreach (var feedback in page.GetComponentsInChildren<ArenaMenuSelectionFeedback>(true))
                 if (feedback.highlightLine) pageLines.Add(feedback.highlightLine);
     }
@@ -34,7 +35,7 @@ public class ArenaMenuAtmosphere : MonoBehaviour
         // Reuse the same six light slots on whichever menu is visible.
         System.Array.Clear(strengths, 0, strengths.Length);
         int count = 0;
-        foreach (var button in menu.mainButtons)
+        if (menu) foreach (var button in menu.mainButtons)
         {
             var feedback = button.GetComponent<ArenaMenuButtonFeedback>();
             var marker = feedback.focusEdge;
@@ -42,6 +43,9 @@ public class ArenaMenuAtmosphere : MonoBehaviour
                 AddLight(marker, marker.color.a * Mathf.Clamp01(marker.rectTransform.rect.height / feedback.markerHeight), ref count);
         }
         foreach (var marker in pageLines)
+            if (marker.gameObject.activeInHierarchy && marker.color.a > .001f)
+                AddLight(marker, marker.color.a, ref count);
+        foreach (var marker in localFilaments)
             if (marker.gameObject.activeInHierarchy && marker.color.a > .001f)
                 AddLight(marker, marker.color.a, ref count);
         instance.SetVectorArray(Filaments, filaments);
@@ -52,10 +56,17 @@ public class ArenaMenuAtmosphere : MonoBehaviour
     {
         if (count == filaments.Length) return;
         var rect = marker.rectTransform;
-        Vector3 start = menuCamera.WorldToViewportPoint(rect.TransformPoint(new Vector3(rect.rect.center.x, rect.rect.yMax, 0f)));
-        Vector3 end = menuCamera.WorldToViewportPoint(rect.TransformPoint(new Vector3(rect.rect.center.x, rect.rect.yMin, 0f)));
+        Vector3 start = ViewportPoint(rect.TransformPoint(new Vector3(rect.rect.center.x, rect.rect.yMax, 0f)));
+        Vector3 end = ViewportPoint(rect.TransformPoint(new Vector3(rect.rect.center.x, rect.rect.yMin, 0f)));
         filaments[count] = new Vector4(start.x, start.y, end.x, end.y);
         strengths[count++] = strength;
+    }
+
+    Vector3 ViewportPoint(Vector3 world)
+    {
+        if (menuCamera) return menuCamera.WorldToViewportPoint(world);
+        var screen = RectTransformUtility.WorldToScreenPoint(null, world);
+        return new Vector3(screen.x / Screen.width, screen.y / Screen.height, 0f);
     }
 
     void OnDisable()
