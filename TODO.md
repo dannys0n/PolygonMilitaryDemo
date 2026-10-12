@@ -106,9 +106,11 @@ Do not build classes, dynamic pickups, conquest, battle royale, persistence, pro
 - [x] Check capture/ticket/deployment rules, squad eligibility, six base-to-flag paths, live captures, vehicle spawning and AI Humvee/helicopter use. Correct mirrored sidewalk collision in the playable copy.
 - [ ] Human map walkthrough: routes, terrain traversal, spawn safety/balance, helicopter transport/combat and a complete match.
 
-- [ ] gameplay ui should follow visual language
+- [ ] gameplay ui should follow visual language with tasteful use of filaments, bloomed accents, retain readability
 - [ ] add 2 more cature points to keep things interesting
+- [ ] spread apart main spawn points further 
 - [ ] increase playercount to 64
+- [ ] conquest spawn hud follows mission control style top down + friendly player position pins + mini camera tps preview of selected location/squadmate
 
 ## 4.5. Vehicles
 
@@ -127,6 +129,12 @@ Do not build classes, dynamic pickups, conquest, battle royale, persistence, pro
 - [ ] Tune vehicle navigation and handling on the actual arena map; the open proving ground is the first testbed.
 - [ ] Add seated character poses, hands on controls/turret, entry/exit animations, rotor blur and further destruction polish.
 - [ ] Expand combat-aware helicopter attack maneuvers and vehicle spectator/cockpit presentation.
+
+- [ ] Give vehicle specific ui polish for remaining vehicles to the same level as our helicopter
+- [ ] place fps cameras inside the vehicles to follow correct seating
+- [ ] give fps specific ui for vehicles that follow realistic real world vehicle ui
+- [ ] seats occupied should be taken by character with sitting animation
+
 
 Setup, controls, parameters, limitations and research references: `Assets/Game/Vehicles/README.md`.
 
