@@ -20,7 +20,9 @@ public class ArenaParticipant : MonoBehaviour
         if (!choice.isCustom && System.Array.IndexOf(match.settings.classes, choice) < 0)
             throw new System.ArgumentException("Class is not allowed by this match.");
         choice.ResolveSlots(player.loadout);
+        var previous = SelectedClass;
         SelectedClass = choice.isCustom ? Instantiate(choice) : choice;
+        if (previous && previous.isCustom) Destroy(previous);
         if (waitingForClass && match.IsRunning && (!match.rules || !match.rules.NeedsDeployment(this)))
         {
             waitingForClass = false;
@@ -96,7 +98,9 @@ public class ArenaParticipant : MonoBehaviour
     public void Respawn(Vector3 position, Quaternion rotation)
     {
         if (IsSpectator) return;
-        if (player && match.settings.randomizeAIClassOnRespawn && GetComponent<ArenaAIInput>())
+        var randomEquipment = match.GetComponent<ArenaRandomLoadouts>();
+        if (player && randomEquipment) randomEquipment.Apply(this);
+        else if (player && match.settings.randomizeAIClassOnRespawn && GetComponent<ArenaAIInput>())
             SelectClass(match.settings.classes[Random.Range(0, match.settings.classes.Length)]);
         if (player && !SelectedClass)
         {
