@@ -429,7 +429,7 @@ public class VehicleOccupant : MonoBehaviour
         if (pilot && ((HelicopterMotor)v.motor).assistEnabled && !cockpit)
             target = v.transform.position + Vector3.up * v.cameraTarget.localPosition.y;
         Vector3 desired;
-        if (cockpit) desired = gunner ? target : v.seats[SeatIndex].anchor.position + v.transform.up * (aircraft ? 1.15f : 1f);
+        if (cockpit) desired = v.seats[SeatIndex].eye ? v.seats[SeatIndex].eye.position : gunner ? target : v.seats[SeatIndex].anchor.position + v.transform.up * (aircraft ? 1.15f : 1f);
         else desired = target + rotation * (aircraft ? new Vector3(4,1.5f,-20) : new Vector3(0,1,-7));
         if (!cockpit)
         {

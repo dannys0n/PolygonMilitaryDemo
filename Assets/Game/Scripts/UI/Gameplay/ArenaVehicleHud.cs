@@ -20,14 +20,22 @@ public class ArenaVehicleHud : MonoBehaviour
     public Image[] seatMarkers, hullSegments;
     public TextMeshProUGUI[] seatNumbers;
     float groundAltitude;
+    GameObject roadPanel;
+    VehicleSpeedometerGraphic roadGauge;
+    TMP_Text roadSpeed, roadDetails;
     readonly Color accent=new Color(1,.55f,.12f);
-    void Awake() => ArenaHudTheme.StyleLines(transform, filamentLine, accentLineGlow);
+    void Awake()
+    {
+        ArenaHudTheme.StyleLines(transform, filamentLine, accentLineGlow);
+        BuildRoadDashboard();
+    }
     void Update()
     {
         bool mounted=player.IsMounted;prompt.text=mounted?"":player.Prompt;
         mountedPanel.SetActive(mounted);flightPanel.SetActive(false);
         infantryEquipment.SetActive(!mounted);infantryCrosshair.SetActive(!mounted);
         vehicleEquipment.SetActive(false);
+        roadPanel.SetActive(false);
         if(!mounted)return;
         var v=player.MountedVehicle;bool air=v.motor is HelicopterMotor;var role=v.seats[player.SeatIndex].role;
         diagram.sprite = v.seatDiagram ? v.seatDiagram : air ? helicopterDiagram : humveeDiagram;
@@ -63,7 +71,12 @@ public class ArenaVehicleHud : MonoBehaviour
             crew.text+="<color="+(i==player.SeatIndex?"#FF8C1F":"#FFFFFF")+">"+(i+1)+"  "+name+"</color>  <size=12>"+seat.name.ToUpperInvariant()+"</size>\n";
         }
         float health=v.Health/v.maxHealth;for(int i=0;i<hullSegments.Length;i++)hullSegments[i].color=i<hullSegments.Length*health?Color.white:new Color(1,1,1,.15f);
-        if(!air)return;
+        if(!air)
+        {
+            roadPanel.SetActive(player.CockpitView && role == Vehicle.SeatRole.Driver);
+            if (roadPanel.activeSelf) UpdateRoadDashboard(v);
+            return;
+        }
         flightPanel.SetActive(role==Vehicle.SeatRole.Driver);
         float altitude=0, nearest=float.PositiveInfinity;
         foreach(var hit in Physics.RaycastAll(v.transform.position,Vector3.down,1000,Physics.DefaultRaycastLayers,QueryTriggerInteraction.Ignore))
@@ -104,6 +117,41 @@ public class ArenaVehicleHud : MonoBehaviour
             ? ResolvePoint(actual,Mathf.Min(range,Vector3.Distance(actual.origin,desiredPoint)),vehicle)
             : vehicle.GetComponent<VehicleLauncher>().PredictedImpactPoint;
         PlaceMarker(actualAim,camera,impact);
+    }
+    void BuildRoadDashboard()
+    {
+        roadPanel = new GameObject("Road cockpit instruments", typeof(RectTransform));
+        var rect=(RectTransform)roadPanel.transform;
+        rect.SetParent(transform,false);
+        rect.anchorMin=rect.anchorMax=new Vector2(1f,0f);rect.pivot=new Vector2(1f,0f);
+        rect.anchoredPosition=new Vector2(-50,55);rect.sizeDelta=new Vector2(330,130);
+        var gauge=new GameObject("Speedometer",typeof(RectTransform),typeof(CanvasRenderer),typeof(VehicleSpeedometerGraphic));
+        gauge.transform.SetParent(rect,false);roadGauge=gauge.GetComponent<VehicleSpeedometerGraphic>();
+        roadGauge.rectTransform.sizeDelta=new Vector2(200,115);roadGauge.rectTransform.anchoredPosition=new Vector2(-62,62);
+        roadGauge.raycastTarget=false;
+        roadSpeed=DashboardLabel("Speed",rect,new Vector2(-62,26),new Vector2(140,48),30);
+        roadDetails=DashboardLabel("Drivetrain",rect,new Vector2(95,66),new Vector2(175,105),16);
+        roadDetails.alignment=TextAlignmentOptions.MidlineLeft;
+        roadPanel.SetActive(false);
+    }
+    TMP_Text DashboardLabel(string name,Transform parent,Vector2 position,Vector2 size,float fontSize)
+    {
+        var label=Instantiate(telemetry,parent);label.name=name;
+        label.rectTransform.anchorMin=label.rectTransform.anchorMax=new Vector2(.5f,.5f);
+        label.rectTransform.anchoredPosition=position;label.rectTransform.sizeDelta=size;
+        label.fontSize=fontSize;label.alignment=TextAlignmentOptions.Center;label.raycastTarget=false;
+        label.color=Color.white;label.text="";return label;
+    }
+    void UpdateRoadDashboard(Vehicle vehicle)
+    {
+        float speed=vehicle.Body.linearVelocity.magnitude*3.6f;
+        var motor=(HummerMotor)vehicle.motor;
+        roadGauge.SetSpeed(speed,Mathf.Ceil(motor.maxSpeed*3.6f/20f)*20f);
+        roadSpeed.text=Mathf.RoundToInt(speed)+" <size=12>KM/H</size>";
+        var input=vehicle.DriverInput;
+        string drive=input.handbrake?"PARK BRAKE":input.move.y<-.05f?"REVERSE":input.move.y>.05f?"DRIVE":"COAST";
+        roadDetails.text="<color=#FF9637>"+drive+"</color>\nHDG "+Mathf.RoundToInt(Mathf.Repeat(vehicle.transform.eulerAngles.y,360)).ToString("000")+"\nHULL "+Mathf.RoundToInt(vehicle.Health/vehicle.maxHealth*100)+"%";
+        if(input.boost)roadDetails.text+="\n<color=#FF9637>BOOST</color>";
     }
     void EnsureSeatMarkers(int count)
     {
