@@ -52,12 +52,32 @@ public class SoldierScopeView : MonoBehaviour
         var camera=view.playerCamera;
         scopeCamera.transform.SetPositionAndRotation(camera.transform.position,camera.transform.rotation);
         // Match the firing ray; the native lens UVs/reticle still move with the gun.
-        scopeCamera.fieldOfView=sight.scopeFieldOfView;
+        // A square texture displayed in a small lens shrinks the image again. Account
+        // for that projected lens height, rather than treating a raw camera FOV as zoom.
+        scopeCamera.fieldOfView=LensFieldOfView(camera,attachment.scopeLens,sight.magnification);
         scopeCamera.cullingMask=camera.cullingMask&~(1<<view.firstPersonLayer);
         scopeCamera.nearClipPlane=camera.nearClipPlane;scopeCamera.farClipPlane=camera.farClipPlane;
         scopeCamera.clearFlags=camera.clearFlags;scopeCamera.backgroundColor=camera.backgroundColor;
         scopeCamera.depth=camera.depth-1;scopeCamera.enabled=true;
     }
+    public static float LensFieldOfView(Camera viewer, Renderer aperture, float magnification)
+    {
+        var bounds=aperture.localBounds;
+        float low=float.PositiveInfinity,high=float.NegativeInfinity;
+        for(int i=0;i<8;i++)
+        {
+            var corner=bounds.center+Vector3.Scale(bounds.extents,
+                new Vector3((i&1)==0?-1:1,(i&2)==0?-1:1,(i&4)==0?-1:1));
+            var point=viewer.WorldToViewportPoint(aperture.transform.TransformPoint(corner));
+            if(point.z<=viewer.nearClipPlane)continue;
+            low=Mathf.Min(low,point.y);high=Mathf.Max(high,point.y);
+        }
+        // Do not derive an invalid projection while the gun is off screen during ADS entry.
+        float height=float.IsInfinity(low)? .1f:Mathf.Max(.001f,high-low);
+        float tangent=height*Mathf.Tan(viewer.fieldOfView*Mathf.Deg2Rad*.5f)/Mathf.Max(1f,magnification);
+        return Mathf.Clamp(2f*Mathf.Atan(tangent)*Mathf.Rad2Deg,.01f,120f);
+    }
+
     void EnsureCamera()
     {
         if(scopeCamera)return;

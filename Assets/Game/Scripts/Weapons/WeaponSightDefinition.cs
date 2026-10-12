@@ -12,6 +12,7 @@ public class WeaponSightDefinition : ScriptableObject
     [Min(.01f)] public float sensitivityMultiplier = 1f;
     [Header("Picture-in-picture optics")]
     public bool pictureInPicture;
-    [Range(1f,40f)] public float scopeFieldOfView=5f;
+    [Tooltip("Optical image scale relative to the surrounding ADS view. 1x is unmagnified; lens size is accounted for automatically.")]
+    [Range(1f,20f)] public float magnification=4f;
     [Range(128,1024)] public int scopeTextureSize=512;
 }
