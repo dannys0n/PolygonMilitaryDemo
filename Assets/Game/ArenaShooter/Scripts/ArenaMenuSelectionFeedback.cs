@@ -4,7 +4,7 @@ using UnityEngine.EventSystems;
 
 // Presentation only: each Selectable keeps its existing action and selected state.
 public class ArenaMenuSelectionFeedback : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler,
-    ISelectHandler, IDeselectHandler, IPointerDownHandler, IPointerUpHandler, ISubmitHandler
+    ISelectHandler, IDeselectHandler, IPointerDownHandler, IPointerUpHandler, ISubmitHandler, IMoveHandler
 {
     public UnityEngine.UI.Selectable control;
     [Tooltip("Optional vertical hover filament for menu navigation buttons.")]
@@ -25,7 +25,7 @@ public class ArenaMenuSelectionFeedback : MonoBehaviour, IPointerEnterHandler, I
     {
         hovered = pressed = wasHighlighted = false;
         submitUntil = 0f;
-        focused = EventSystem.current && EventSystem.current.currentSelectedGameObject == gameObject;
+        focused = false;
         highlightAmount = textAmount = revealTime = 0f;
         if (highlightLine)
         {
@@ -39,6 +39,8 @@ public class ArenaMenuSelectionFeedback : MonoBehaviour, IPointerEnterHandler, I
         bool chosen = selectionIndicator && selectionIndicator.activeSelf;
         if (control is UnityEngine.UI.Toggle toggle) chosen |= toggle.isOn;
         chosen &= control.IsInteractable();
+        // A mouse click selects the control in EventSystem without turning hover into persistent keyboard focus.
+        focused &= EventSystem.current && EventSystem.current.currentSelectedGameObject == gameObject;
         bool highlighted = control.IsInteractable() && (hovered || focused);
         bool pressHighlight = brightenOnPress && control.IsInteractable()
             && (pressed || Time.unscaledTime < submitUntil);
@@ -92,12 +94,13 @@ public class ArenaMenuSelectionFeedback : MonoBehaviour, IPointerEnterHandler, I
         if (highlightLine) highlightLine.color = new Color(1, 1, 1, 0);
     }
 
-    public void OnPointerEnter(PointerEventData data) { hovered = true; }
-    public void OnPointerExit(PointerEventData data) { hovered = pressed = false; }
-    public void OnSelect(BaseEventData data) { focused = true; }
-    public void OnDeselect(BaseEventData data) { focused = pressed = false; }
+    public void OnPointerEnter(PointerEventData data) { hovered = true; focused = false; }
+    public void OnPointerExit(PointerEventData data) { hovered = focused = pressed = false; submitUntil = 0f; }
+    public void OnSelect(BaseEventData data) { focused = !(data is PointerEventData); }
+    public void OnDeselect(BaseEventData data) { focused = pressed = false; submitUntil = 0f; }
     public void OnPointerDown(PointerEventData data)
-    { if (data.button == PointerEventData.InputButton.Left) { pressed = true; submitUntil = Time.unscaledTime + .08f; } }
+    { if (data.button == PointerEventData.InputButton.Left) { focused = false; pressed = true; submitUntil = Time.unscaledTime + .08f; } }
     public void OnPointerUp(PointerEventData data) { pressed = false; }
-    public void OnSubmit(BaseEventData data) { submitUntil = Time.unscaledTime + .12f; }
+    public void OnSubmit(BaseEventData data) { focused = true; submitUntil = Time.unscaledTime + .12f; }
+    public void OnMove(AxisEventData data) { focused = true; }
 }

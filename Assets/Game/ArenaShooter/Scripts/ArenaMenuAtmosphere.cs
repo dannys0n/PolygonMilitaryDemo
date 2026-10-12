@@ -56,8 +56,13 @@ public class ArenaMenuAtmosphere : MonoBehaviour
     {
         if (count == filaments.Length) return;
         var rect = marker.rectTransform;
-        Vector3 start = ViewportPoint(rect.TransformPoint(new Vector3(rect.rect.center.x, rect.rect.yMax, 0f)));
-        Vector3 end = ViewportPoint(rect.TransformPoint(new Vector3(rect.rect.center.x, rect.rect.yMin, 0f)));
+        bool horizontal = rect.rect.width > rect.rect.height;
+        Vector3 start = ViewportPoint(rect.TransformPoint(horizontal
+            ? new Vector3(rect.rect.xMin, rect.rect.center.y, 0f)
+            : new Vector3(rect.rect.center.x, rect.rect.yMax, 0f)));
+        Vector3 end = ViewportPoint(rect.TransformPoint(horizontal
+            ? new Vector3(rect.rect.xMax, rect.rect.center.y, 0f)
+            : new Vector3(rect.rect.center.x, rect.rect.yMin, 0f)));
         filaments[count] = new Vector4(start.x, start.y, end.x, end.y);
         strengths[count++] = strength;
     }

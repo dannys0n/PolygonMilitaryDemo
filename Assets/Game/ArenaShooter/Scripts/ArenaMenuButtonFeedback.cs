@@ -5,7 +5,7 @@ using UnityEngine.UI;
 
 // Button owns the action; this component animates only the selection treatment.
 public class ArenaMenuButtonFeedback : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler,
-    IPointerDownHandler, IPointerUpHandler, ISelectHandler, IDeselectHandler, ISubmitHandler
+    IPointerDownHandler, IPointerUpHandler, ISelectHandler, IDeselectHandler, ISubmitHandler, IMoveHandler
 {
     public Button button;
     public Image focusEdge, glow;
@@ -21,7 +21,7 @@ public class ArenaMenuButtonFeedback : MonoBehaviour, IPointerEnterHandler, IPoi
     void OnEnable()
     {
         hovered = pressed = wasFocused = false;
-        selected = EventSystem.current && EventSystem.current.currentSelectedGameObject == gameObject;
+        selected = false;
         focusAmount = revealTime = 0f;
         submitUntil = 0f;
         Refresh();
@@ -29,6 +29,8 @@ public class ArenaMenuButtonFeedback : MonoBehaviour, IPointerEnterHandler, IPoi
     void Update() => Refresh();
     void Refresh()
     {
+        // Pointer selection remains available for navigation, but only keyboard focus keeps the filament lit.
+        selected &= EventSystem.current && EventSystem.current.currentSelectedGameObject == gameObject;
         bool focused = button.interactable && (hovered || selected);
         if (focused && !wasFocused) revealTime = 0f;
         wasFocused = focused;
@@ -53,12 +55,19 @@ public class ArenaMenuButtonFeedback : MonoBehaviour, IPointerEnterHandler, IPoi
         glow.color = new Color(1f, 1f, 1f, eased * reveal * (.6f + pulse * .12f));
     }
     public void OnPointerEnter(PointerEventData data)
-    { hovered = true; EventSystem.current.SetSelectedGameObject(gameObject); }
-    public void OnPointerExit(PointerEventData data) { hovered = false; pressed = false; }
+    { hovered = true; selected = false; if (context) context.text = description; }
+    public void OnPointerExit(PointerEventData data) { hovered = selected = pressed = false; submitUntil = 0f; }
     public void OnPointerDown(PointerEventData data)
-    { if (data.button == PointerEventData.InputButton.Left) { pressed = true; submitUntil = Time.unscaledTime + .08f; } }
+    { if (data.button == PointerEventData.InputButton.Left) { selected = false; pressed = true; submitUntil = Time.unscaledTime + .08f; } }
     public void OnPointerUp(PointerEventData data) { pressed = false; }
-    public void OnSelect(BaseEventData data) { selected = true; if (context) context.text = description; }
-    public void OnDeselect(BaseEventData data) { selected = false; pressed = false; }
-    public void OnSubmit(BaseEventData data) { submitUntil = Time.unscaledTime + .08f; }
+    public void OnSelect(BaseEventData data) { selected = !(data is PointerEventData); if (context) context.text = description; }
+    public void OnDeselect(BaseEventData data) { selected = false; pressed = false; submitUntil = 0f; }
+    public void OnSubmit(BaseEventData data) { selected = true; submitUntil = Time.unscaledTime + .08f; }
+    public void OnMove(AxisEventData data) { selected = true; }
+    void OnDisable()
+    {
+        hovered = selected = pressed = wasFocused = false;
+        focusAmount = revealTime = submitUntil = 0f;
+        focusEdge.color = glow.color = new Color(1f, 1f, 1f, 0f);
+    }
 }
