@@ -15,7 +15,7 @@ public static class ExplosionDamage
             if(blocked)continue;
             float falloff=1-Mathf.Clamp01(Vector3.Distance(point,c.ClosestPoint(point))/radius);
             if(h&&healths.Add(h))h.ApplyDamage(infantryDamage*falloff,source);
-            if(v&&vehicles.Add(v))v.ApplyDamage(vehicleDamage*falloff,source);
+            if(v&&vehicles.Add(v))v.ApplyExplosiveDamage(vehicleDamage*falloff,source);
         }
     }
 }

@@ -31,7 +31,8 @@ public class Vehicle : MonoBehaviour
     public Transform cameraTarget;
     public Seat[] seats;
     public float maxHealth = 900f;
-    [Range(0f,1f)] public float bulletDamageMultiplier=1f;
+    [Range(0f,1f)] public float bulletDamageMultiplier=.5f;
+    [Range(0f,1f)] public float explosiveDamageMultiplier=.8f;
     public float Health { get; private set; }
     public bool IsDestroyed => Health <= 0;
     public Rigidbody Body { get; private set; }
@@ -130,8 +131,9 @@ public class Vehicle : MonoBehaviour
         actor.Mount(this, index);
         return true;
     }
-    // Explosions and collisions use ApplyDamage directly, bypassing bullet armor.
+    // Weapon damage is reduced once here. Collisions and forced cleanup remain raw damage.
     public bool ApplyBulletDamage(float amount, GameObject source) => ApplyDamage(amount*bulletDamageMultiplier,source);
+    public bool ApplyExplosiveDamage(float amount, GameObject source) => ApplyDamage(amount*explosiveDamageMultiplier,source);
     public bool ApplyDamage(float amount, GameObject source)
     {
         if (IsDestroyed || amount <= 0 || (DamageFilter != null && !DamageFilter(source)))

@@ -107,7 +107,7 @@ public class VehicleTurret : MonoBehaviour
             {
                 var other = nearest.collider.GetComponentInParent<Vehicle>();
                 if (other)
-                    other.ApplyDamage(damage, gunner.gameObject);
+                    other.ApplyBulletDamage(damage, gunner.gameObject);
             }
         }
         // Infinite ammunition: fire cadence is the only ammunition-related gate.
