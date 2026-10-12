@@ -7,13 +7,19 @@ public static class ArenaCustomClassStore
 {
     const string Key="Arena.CustomClasses.v1";
     [Serializable] class SaveData { public int version=1; public Record[] classes=new Record[5]; }
-    [Serializable] class Record
+    [Serializable] public class Record
     {
         public string name,primary,secondary,primarySight,secondarySight;
         public string[] primaryAttachments=Array.Empty<string>(),secondaryAttachments=Array.Empty<string>();
         public int grenade;
     }
     static SaveData Read(){try{var data=JsonUtility.FromJson<SaveData>(PlayerPrefs.GetString(Key,""));if(data!=null&&data.version==1&&data.classes!=null&&data.classes.Length==5)return data;}catch(ArgumentException){}return new SaveData();}
+    public static Record[] LoadRecords()=>Read().classes;
+    public static void SaveRecord(int index,Record record)
+    {
+        if(index<0||index>=5)throw new ArgumentOutOfRangeException(nameof(index));
+        var data=Read();data.classes[index]=record;PlayerPrefs.SetString(Key,JsonUtility.ToJson(data));PlayerPrefs.Save();
+    }
     public static ArenaClassDefinition[] Load(ArenaWeaponCatalog catalog)
     {
         var data=Read();var choices=new ArenaClassDefinition[5];

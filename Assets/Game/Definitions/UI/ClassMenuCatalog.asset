@@ -1,0 +1,4852 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f2228bc03613f374a94a97b40a241b17, type: 3}
+  m_Name: ClassMenuCatalog
+  m_EditorClassIdentifier: Assembly-CSharp::ArenaClassMenuCatalog
+  weapons:
+  - id: legacy-mk18
+    name: MK18
+    previewAddress: class-preview/weapon-legacy-mk18
+    category: 0
+    damage: 26
+    rpm: 850
+    rounds: 30
+    icon: {fileID: 21300000, guid: 78c7c99bc6e8e7c4c8f591cde67bb75b, type: 3}
+    defaultSight: holographic
+    sights:
+    - scope_1p29
+    - scope_acog
+    - built-in-irons
+    - holographic
+    - scope_longrange
+    - military_flipscope
+    - military_reddot_01
+    - military_reddot_02
+    - military_reddot_03
+    - military_reddot_04
+    - military_reddot_05
+    - military_scope_01
+    - military_scope_10
+    - military_scope_11
+    - military_scope_12
+    - military_scope_13
+    - military_scope_14
+    - military_scope_15
+    - military_scope_02
+    - military_scope_03
+    - military_scope_04
+    - military_scope_05
+    - military_scope_06
+    - military_scope_07
+    - military_scope_08
+    - military_scope_09
+    - polygon-scope-a
+    - polygon-scope-b
+    - polygon-scope-c
+    - sight_reddot
+    - pack-red_dot_a
+    - pack-red_dot_b
+    - pack-red_dot_c
+    - pack-red_dot_d
+    - pack-red_dot_e
+    - polygon-reflex
+    - sight_rmr
+    - scope_trijicon
+    attachments:
+    - sight-riser-25mm
+    - angledgripmount_45
+    - frontiron
+    - gripmount
+    - hexagon_rail
+    - hexagon_rail_long
+    - hexagon_suppressor
+    - lamp_a_prefab
+    - lamp_laser_a_prefab
+    - lamp_laser_b_prefab
+    - laser_a_prefab
+    - mk18_suppressor
+    - reariron
+    - rk-2
+    - rmr_mount
+    - sm_wep_mod_foregrip_01
+    - sm_wep_mod_rail_01
+    - suppressor_a_prefab
+    - suppressor_b_prefab
+    - suppressor_c_prefab
+    - suppressor_d_prefab
+    - m16a4-rear-iron
+    sockets:
+    - path: Mk18/Root/AttachmentSockets/MuzzleMount
+      mount: 0
+      placements: []
+      supports: []
+    - path: Mk18/Root/AttachmentSockets/RailMount
+      mount: 1
+      placements: []
+      supports: []
+    - path: Mk18/Root/AttachmentSockets/LeftRailMount
+      mount: 7
+      placements: []
+      supports: []
+    - path: Mk18/Root/AttachmentSockets/GripMount
+      mount: 2
+      placements: []
+      supports: []
+    - path: Mk18/Root/AttachmentSockets/RearIronMount
+      mount: 3
+      placements: []
+      supports: []
+    - path: Mk18/Root/AttachmentSockets/FrontIronMount
+      mount: 4
+      placements: []
+      supports: []
+    - path: Mk18/Root/AttachmentSockets/OpticMount
+      mount: 5
+      placements: []
+      supports: []
+    builtIns:
+    - mount: 0
+      rendererNames: []
+    - mount: 1
+      rendererNames: []
+    - mount: 2
+      rendererNames: []
+    - mount: 3
+      rendererNames: []
+    - mount: 4
+      rendererNames: []
+    - mount: 5
+      rendererNames: []
+    - mount: 7
+      rendererNames: []
+  - id: legacy-ak12
+    name: AK12
+    previewAddress: class-preview/weapon-legacy-ak12
+    category: 0
+    damage: 30
+    rpm: 700
+    rounds: 30
+    icon: {fileID: 21300000, guid: 74ff02effec96ef40a288f61e6fc1e96, type: 3}
+    defaultSight: scope_trijicon
+    sights:
+    - scope_1p29
+    - scope_acog
+    - built-in-irons
+    - holographic
+    - scope_longrange
+    - military_flipscope
+    - military_reddot_01
+    - military_reddot_02
+    - military_reddot_03
+    - military_reddot_04
+    - military_reddot_05
+    - military_scope_01
+    - military_scope_10
+    - military_scope_11
+    - military_scope_12
+    - military_scope_13
+    - military_scope_14
+    - military_scope_15
+    - military_scope_02
+    - military_scope_03
+    - military_scope_04
+    - military_scope_05
+    - military_scope_06
+    - military_scope_07
+    - military_scope_08
+    - military_scope_09
+    - polygon-scope-a
+    - polygon-scope-b
+    - polygon-scope-c
+    - sight_reddot
+    - pack-red_dot_a
+    - pack-red_dot_b
+    - pack-red_dot_c
+    - pack-red_dot_d
+    - pack-red_dot_e
+    - polygon-reflex
+    - sight_rmr
+    - scope_trijicon
+    attachments:
+    - sight-riser-25mm
+    - angledgripmount_45
+    - frontiron
+    - gripmount
+    - hexagon_handguard_carbine_length
+    - hexagon_handguard_full_length
+    - "hexagon_handguard_\u0432\u0438\u0442\u044F\u0437"
+    - hexagon_rail
+    - hexagon_rail_long
+    - hexagon_suppressor
+    - lamp_a_prefab
+    - lamp_laser_a_prefab
+    - lamp_laser_b_prefab
+    - laser_a_prefab
+    - mk18_suppressor
+    - reariron
+    - rk-2
+    - rmr_mount
+    - sm_wep_mod_foregrip_01
+    - sm_wep_mod_rail_01
+    - suppressor_a_prefab
+    - suppressor_b_prefab
+    - suppressor_c_prefab
+    - suppressor_d_prefab
+    - m16a4-rear-iron
+    sockets:
+    - path: AK12Rig/Root/AttachmentSockets/MuzzleMount
+      mount: 0
+      placements: []
+      supports: []
+    - path: AK12Rig/Root/AttachmentSockets/RailMount
+      mount: 1
+      placements: []
+      supports: []
+    - path: AK12Rig/Root/AttachmentSockets/LeftRailMount
+      mount: 7
+      placements: []
+      supports: []
+    - path: AK12Rig/Root/AttachmentSockets/GripMount
+      mount: 2
+      placements: []
+      supports: []
+    - path: AK12Rig/Root/AttachmentSockets/RearIronMount
+      mount: 3
+      placements: []
+      supports: []
+    - path: AK12Rig/Root/AttachmentSockets/FrontIronMount
+      mount: 4
+      placements: []
+      supports: []
+    - path: AK12Rig/Root/AttachmentSockets/OpticMount
+      mount: 5
+      placements: []
+      supports: []
+    builtIns:
+    - mount: 0
+      rendererNames: []
+    - mount: 1
+      rendererNames: []
+    - mount: 2
+      rendererNames: []
+    - mount: 3
+      rendererNames: []
+    - mount: 4
+      rendererNames: []
+    - mount: 5
+      rendererNames: []
+    - mount: 6
+      rendererNames: []
+    - mount: 7
+      rendererNames: []
+  - id: legacy-ak
+    name: AK
+    previewAddress: class-preview/weapon-legacy-ak
+    category: 0
+    damage: 34
+    rpm: 600
+    rounds: 30
+    icon: {fileID: 21300000, guid: 87bd272eb07d07a46bdd64e0a8c8ca2b, type: 3}
+    defaultSight: 
+    sights:
+    - scope_1p29
+    - scope_acog
+    - built-in-irons
+    - holographic
+    - scope_longrange
+    - military_flipscope
+    - military_reddot_01
+    - military_reddot_02
+    - military_reddot_03
+    - military_reddot_04
+    - military_reddot_05
+    - military_scope_01
+    - military_scope_10
+    - military_scope_11
+    - military_scope_12
+    - military_scope_13
+    - military_scope_14
+    - military_scope_15
+    - military_scope_02
+    - military_scope_03
+    - military_scope_04
+    - military_scope_05
+    - military_scope_06
+    - military_scope_07
+    - military_scope_08
+    - military_scope_09
+    - polygon-scope-a
+    - polygon-scope-b
+    - polygon-scope-c
+    - sight_reddot
+    - pack-red_dot_a
+    - pack-red_dot_b
+    - pack-red_dot_c
+    - pack-red_dot_d
+    - pack-red_dot_e
+    - polygon-reflex
+    - sight_rmr
+    - scope_trijicon
+    attachments:
+    - sight-riser-25mm
+    - angledgripmount_45
+    - frontiron
+    - gripmount
+    - hexagon_handguard_carbine_length
+    - hexagon_handguard_full_length
+    - "hexagon_handguard_\u0432\u0438\u0442\u044F\u0437"
+    - hexagon_rail
+    - hexagon_rail_long
+    - hexagon_suppressor
+    - lamp_a_prefab
+    - lamp_laser_a_prefab
+    - lamp_laser_b_prefab
+    - laser_a_prefab
+    - mk18_suppressor
+    - reariron
+    - rk-2
+    - rmr_mount
+    - sm_wep_mod_foregrip_01
+    - sm_wep_mod_rail_01
+    - suppressor_a_prefab
+    - suppressor_b_prefab
+    - suppressor_c_prefab
+    - suppressor_d_prefab
+    - m16a4-rear-iron
+    sockets:
+    - path: AK_Base/AK12Rig/Root/AttachmentSockets/MuzzleMount
+      mount: 0
+      placements: []
+      supports: []
+    - path: AK_Base/AK12Rig/Root/AttachmentSockets/RailMount
+      mount: 1
+      placements: []
+      supports: []
+    - path: AK_Base/AK12Rig/Root/AttachmentSockets/LeftRailMount
+      mount: 7
+      placements: []
+      supports: []
+    - path: AK_Base/AK12Rig/Root/AttachmentSockets/GripMount
+      mount: 2
+      placements: []
+      supports: []
+    - path: AK_Base/AK12Rig/Root/AttachmentSockets/RearIronMount
+      mount: 3
+      placements: []
+      supports: []
+    - path: AK_Base/AK12Rig/Root/AttachmentSockets/FrontIronMount
+      mount: 4
+      placements: []
+      supports: []
+    - path: AK_Base/AK12Rig/Root/AttachmentSockets/OpticMount
+      mount: 5
+      placements: []
+      supports: []
+    builtIns:
+    - mount: 0
+      rendererNames: []
+    - mount: 1
+      rendererNames: []
+    - mount: 2
+      rendererNames: []
+    - mount: 3
+      rendererNames: []
+    - mount: 4
+      rendererNames: []
+    - mount: 5
+      rendererNames: []
+    - mount: 6
+      rendererNames: []
+    - mount: 7
+      rendererNames: []
+  - id: legacy-m4
+    name: M4
+    previewAddress: class-preview/weapon-legacy-m4
+    category: 0
+    damage: 28
+    rpm: 800
+    rounds: 30
+    icon: {fileID: 21300000, guid: 4b5d9f060db93d749abee6f6d5b523e5, type: 3}
+    defaultSight: scope_acog
+    sights:
+    - scope_1p29
+    - scope_acog
+    - built-in-irons
+    - holographic
+    - scope_longrange
+    - military_flipscope
+    - military_reddot_01
+    - military_reddot_02
+    - military_reddot_03
+    - military_reddot_04
+    - military_reddot_05
+    - military_scope_01
+    - military_scope_10
+    - military_scope_11
+    - military_scope_12
+    - military_scope_13
+    - military_scope_14
+    - military_scope_15
+    - military_scope_02
+    - military_scope_03
+    - military_scope_04
+    - military_scope_05
+    - military_scope_06
+    - military_scope_07
+    - military_scope_08
+    - military_scope_09
+    - polygon-scope-a
+    - polygon-scope-b
+    - polygon-scope-c
+    - sight_reddot
+    - pack-red_dot_a
+    - pack-red_dot_b
+    - pack-red_dot_c
+    - pack-red_dot_d
+    - pack-red_dot_e
+    - polygon-reflex
+    - sight_rmr
+    - scope_trijicon
+    attachments:
+    - sight-riser-25mm
+    - angledgripmount_45
+    - frontiron
+    - gripmount
+    - hexagon_rail
+    - hexagon_rail_long
+    - hexagon_suppressor
+    - lamp_a_prefab
+    - lamp_laser_a_prefab
+    - lamp_laser_b_prefab
+    - laser_a_prefab
+    - mk18_suppressor
+    - reariron
+    - rk-2
+    - rmr_mount
+    - sm_wep_mod_foregrip_01
+    - sm_wep_mod_rail_01
+    - suppressor_a_prefab
+    - suppressor_b_prefab
+    - suppressor_c_prefab
+    - suppressor_d_prefab
+    - m16a4-rear-iron
+    sockets:
+    - path: M4/Root/AttachmentSockets/MuzzleMount
+      mount: 0
+      placements: []
+      supports: []
+    - path: M4/Root/AttachmentSockets/RailMount
+      mount: 1
+      placements: []
+      supports: []
+    - path: M4/Root/AttachmentSockets/LeftRailMount
+      mount: 7
+      placements: []
+      supports: []
+    - path: M4/Root/AttachmentSockets/GripMount
+      mount: 2
+      placements: []
+      supports: []
+    - path: M4/Root/AttachmentSockets/RearIronMount
+      mount: 3
+      placements: []
+      supports: []
+    - path: M4/Root/AttachmentSockets/FrontIronMount
+      mount: 4
+      placements: []
+      supports: []
+    - path: M4/Root/AttachmentSockets/OpticMount
+      mount: 5
+      placements: []
+      supports: []
+    builtIns:
+    - mount: 0
+      rendererNames: []
+    - mount: 1
+      rendererNames: []
+    - mount: 2
+      rendererNames: []
+    - mount: 3
+      rendererNames: []
+    - mount: 4
+      rendererNames: []
+    - mount: 5
+      rendererNames: []
+    - mount: 7
+      rendererNames: []
+  - id: legacy-fal
+    name: FAL
+    previewAddress: class-preview/weapon-legacy-fal
+    category: 0
+    damage: 40
+    rpm: 480
+    rounds: 20
+    icon: {fileID: 21300000, guid: 7ab4881fe180179469dd287bc6e0b258, type: 3}
+    defaultSight: 
+    sights:
+    - scope_1p29
+    - scope_acog
+    - built-in-irons
+    - holographic
+    - scope_longrange
+    - military_flipscope
+    - military_reddot_01
+    - military_reddot_02
+    - military_reddot_03
+    - military_reddot_04
+    - military_reddot_05
+    - military_scope_01
+    - military_scope_10
+    - military_scope_11
+    - military_scope_12
+    - military_scope_13
+    - military_scope_14
+    - military_scope_15
+    - military_scope_02
+    - military_scope_03
+    - military_scope_04
+    - military_scope_05
+    - military_scope_06
+    - military_scope_07
+    - military_scope_08
+    - military_scope_09
+    - polygon-scope-a
+    - polygon-scope-b
+    - polygon-scope-c
+    - sight_reddot
+    - pack-red_dot_a
+    - pack-red_dot_b
+    - pack-red_dot_c
+    - pack-red_dot_d
+    - pack-red_dot_e
+    - polygon-reflex
+    - sight_rmr
+    - scope_trijicon
+    attachments:
+    - sight-riser-25mm
+    - angledgripmount_45
+    - frontiron
+    - gripmount
+    - hexagon_rail
+    - hexagon_rail_long
+    - hexagon_suppressor
+    - lamp_a_prefab
+    - lamp_laser_a_prefab
+    - lamp_laser_b_prefab
+    - laser_a_prefab
+    - mk18_suppressor
+    - reariron
+    - rk-2
+    - rmr_mount
+    - sm_wep_mod_foregrip_01
+    - sm_wep_mod_rail_01
+    - suppressor_a_prefab
+    - suppressor_b_prefab
+    - suppressor_c_prefab
+    - suppressor_d_prefab
+    - m16a4-rear-iron
+    sockets:
+    - path: FAL/Root/AttachmentSockets/MuzzleMount
+      mount: 0
+      placements: []
+      supports: []
+    - path: FAL/Root/AttachmentSockets/RailMount
+      mount: 1
+      placements: []
+      supports: []
+    - path: FAL/Root/AttachmentSockets/LeftRailMount
+      mount: 7
+      placements: []
+      supports: []
+    - path: FAL/Root/AttachmentSockets/GripMount
+      mount: 2
+      placements: []
+      supports: []
+    - path: FAL/Root/AttachmentSockets/RearIronMount
+      mount: 3
+      placements: []
+      supports: []
+    - path: FAL/Root/AttachmentSockets/FrontIronMount
+      mount: 4
+      placements: []
+      supports: []
+    - path: FAL/Root/AttachmentSockets/OpticMount
+      mount: 5
+      placements: []
+      supports: []
+    builtIns:
+    - mount: 0
+      rendererNames: []
+    - mount: 1
+      rendererNames: []
+    - mount: 2
+      rendererNames: []
+    - mount: 3
+      rendererNames: []
+    - mount: 4
+      rendererNames: []
+    - mount: 5
+      rendererNames: []
+    - mount: 7
+      rendererNames: []
+  - id: legacy-mk23
+    name: MK23
+    previewAddress: class-preview/weapon-legacy-mk23
+    category: 5
+    damage: 40
+    rpm: 400
+    rounds: 12
+    icon: {fileID: 21300000, guid: bc5b87ef5c75d994999cd3d255430a4e, type: 3}
+    defaultSight: 
+    sights:
+    - scope_1p29
+    - scope_acog
+    - built-in-irons
+    - holographic
+    - scope_longrange
+    - military_flipscope
+    - military_reddot_01
+    - military_reddot_02
+    - military_reddot_03
+    - military_reddot_04
+    - military_reddot_05
+    - military_scope_01
+    - military_scope_10
+    - military_scope_11
+    - military_scope_12
+    - military_scope_13
+    - military_scope_14
+    - military_scope_15
+    - military_scope_02
+    - military_scope_03
+    - military_scope_04
+    - military_scope_05
+    - military_scope_06
+    - military_scope_07
+    - military_scope_08
+    - military_scope_09
+    - polygon-scope-a
+    - polygon-scope-b
+    - polygon-scope-c
+    - sight_reddot
+    - pack-red_dot_a
+    - pack-red_dot_b
+    - pack-red_dot_c
+    - pack-red_dot_d
+    - pack-red_dot_e
+    - polygon-reflex
+    - sight_rmr
+    - scope_trijicon
+    attachments:
+    - sight-riser-25mm
+    - frontiron
+    - hexagon_rail
+    - hexagon_rail_long
+    - hexagon_suppressor
+    - lamp_a_prefab
+    - lamp_laser_a_prefab
+    - lamp_laser_b_prefab
+    - laser_a_prefab
+    - mk18_suppressor
+    - reariron
+    - rmr_mount
+    - sm_wep_mod_rail_01
+    - suppressor_a_prefab
+    - suppressor_b_prefab
+    - suppressor_c_prefab
+    - suppressor_d_prefab
+    - m16a4-rear-iron
+    sockets:
+    - path: W_Mk23Mod0_Skeleton/Mk23Mod0Rig/Root/AttachmentSockets/MuzzleMount
+      mount: 0
+      placements: []
+      supports: []
+    - path: W_Mk23Mod0_Skeleton/Mk23Mod0Rig/Root/AttachmentSockets/RailMount
+      mount: 1
+      placements: []
+      supports: []
+    - path: W_Mk23Mod0_Skeleton/Mk23Mod0Rig/Root/AttachmentSockets/LeftRailMount
+      mount: 7
+      placements: []
+      supports: []
+    - path: W_Mk23Mod0_Skeleton/Mk23Mod0Rig/Root/AttachmentSockets/GripMount
+      mount: 2
+      placements: []
+      supports: []
+    - path: W_Mk23Mod0_Skeleton/Mk23Mod0Rig/Root/AttachmentSockets/RearIronMount
+      mount: 3
+      placements: []
+      supports: []
+    - path: W_Mk23Mod0_Skeleton/Mk23Mod0Rig/Root/AttachmentSockets/FrontIronMount
+      mount: 4
+      placements: []
+      supports: []
+    - path: W_Mk23Mod0_Skeleton/Mk23Mod0Rig/Root/AttachmentSockets/OpticMount
+      mount: 5
+      placements: []
+      supports: []
+    builtIns:
+    - mount: 0
+      rendererNames: []
+    - mount: 1
+      rendererNames: []
+    - mount: 2
+      rendererNames: []
+    - mount: 3
+      rendererNames: []
+    - mount: 4
+      rendererNames: []
+    - mount: 5
+      rendererNames: []
+    - mount: 7
+      rendererNames: []
+  - id: legacy-glock
+    name: Glock
+    previewAddress: class-preview/weapon-legacy-glock
+    category: 5
+    damage: 28
+    rpm: 600
+    rounds: 12
+    icon: {fileID: 21300000, guid: 8e3ea3be9fdd82c4f816b8524d81d077, type: 3}
+    defaultSight: 
+    sights:
+    - scope_1p29
+    - scope_acog
+    - built-in-irons
+    - holographic
+    - scope_longrange
+    - military_flipscope
+    - military_reddot_01
+    - military_reddot_02
+    - military_reddot_03
+    - military_reddot_04
+    - military_reddot_05
+    - military_scope_01
+    - military_scope_10
+    - military_scope_11
+    - military_scope_12
+    - military_scope_13
+    - military_scope_14
+    - military_scope_15
+    - military_scope_02
+    - military_scope_03
+    - military_scope_04
+    - military_scope_05
+    - military_scope_06
+    - military_scope_07
+    - military_scope_08
+    - military_scope_09
+    - polygon-scope-a
+    - polygon-scope-b
+    - polygon-scope-c
+    - sight_reddot
+    - pack-red_dot_a
+    - pack-red_dot_b
+    - pack-red_dot_c
+    - pack-red_dot_d
+    - pack-red_dot_e
+    - polygon-reflex
+    - sight_rmr
+    - scope_trijicon
+    attachments:
+    - sight-riser-25mm
+    - frontiron
+    - hexagon_rail
+    - hexagon_rail_long
+    - hexagon_suppressor
+    - lamp_a_prefab
+    - lamp_laser_a_prefab
+    - lamp_laser_b_prefab
+    - laser_a_prefab
+    - mk18_suppressor
+    - reariron
+    - rmr_mount
+    - sm_wep_mod_rail_01
+    - suppressor_a_prefab
+    - suppressor_b_prefab
+    - suppressor_c_prefab
+    - suppressor_d_prefab
+    - m16a4-rear-iron
+    sockets:
+    - path: GlockRig/Parts/Root/AttachmentSockets/MuzzleMount
+      mount: 0
+      placements: []
+      supports: []
+    - path: GlockRig/Parts/Root/AttachmentSockets/RailMount
+      mount: 1
+      placements: []
+      supports: []
+    - path: GlockRig/Parts/Root/AttachmentSockets/LeftRailMount
+      mount: 7
+      placements: []
+      supports: []
+    - path: GlockRig/Parts/Root/AttachmentSockets/GripMount
+      mount: 2
+      placements: []
+      supports: []
+    - path: GlockRig/Parts/Root/AttachmentSockets/RearIronMount
+      mount: 3
+      placements: []
+      supports: []
+    - path: GlockRig/Parts/Root/AttachmentSockets/FrontIronMount
+      mount: 4
+      placements: []
+      supports: []
+    - path: GlockRig/Parts/Root/AttachmentSockets/OpticMount
+      mount: 5
+      placements: []
+      supports: []
+    builtIns:
+    - mount: 0
+      rendererNames: []
+    - mount: 1
+      rendererNames: []
+    - mount: 2
+      rendererNames: []
+    - mount: 3
+      rendererNames: []
+    - mount: 4
+      rendererNames: []
+    - mount: 5
+      rendererNames: []
+    - mount: 7
+      rendererNames: []
+  - id: legacy-m16
+    name: M16
+    previewAddress: class-preview/weapon-legacy-m16
+    category: 0
+    damage: 30
+    rpm: 750
+    rounds: 30
+    icon: {fileID: 21300000, guid: ec330f85d3b1d174ab6eefd177b1f5b7, type: 3}
+    defaultSight: 
+    sights:
+    - scope_1p29
+    - scope_acog
+    - built-in-irons
+    - holographic
+    - scope_longrange
+    - military_flipscope
+    - military_reddot_01
+    - military_reddot_02
+    - military_reddot_03
+    - military_reddot_04
+    - military_reddot_05
+    - military_scope_01
+    - military_scope_10
+    - military_scope_11
+    - military_scope_12
+    - military_scope_13
+    - military_scope_14
+    - military_scope_15
+    - military_scope_02
+    - military_scope_03
+    - military_scope_04
+    - military_scope_05
+    - military_scope_06
+    - military_scope_07
+    - military_scope_08
+    - military_scope_09
+    - polygon-scope-a
+    - polygon-scope-b
+    - polygon-scope-c
+    - sight_reddot
+    - pack-red_dot_a
+    - pack-red_dot_b
+    - pack-red_dot_c
+    - pack-red_dot_d
+    - pack-red_dot_e
+    - polygon-reflex
+    - sight_rmr
+    - scope_trijicon
+    attachments:
+    - sight-riser-25mm
+    - angledgripmount_45
+    - frontiron
+    - gripmount
+    - hexagon_rail
+    - hexagon_rail_long
+    - hexagon_suppressor
+    - lamp_a_prefab
+    - lamp_laser_a_prefab
+    - lamp_laser_b_prefab
+    - laser_a_prefab
+    - mk18_suppressor
+    - reariron
+    - rk-2
+    - rmr_mount
+    - sm_wep_mod_foregrip_01
+    - sm_wep_mod_rail_01
+    - suppressor_a_prefab
+    - suppressor_b_prefab
+    - suppressor_c_prefab
+    - suppressor_d_prefab
+    - m16a4-rear-iron
+    sockets:
+    - path: M16/Root/AttachmentSockets/MuzzleMount
+      mount: 0
+      placements: []
+      supports: []
+    - path: M16/Root/AttachmentSockets/RailMount
+      mount: 1
+      placements: []
+      supports: []
+    - path: M16/Root/AttachmentSockets/LeftRailMount
+      mount: 7
+      placements: []
+      supports: []
+    - path: M16/Root/AttachmentSockets/GripMount
+      mount: 2
+      placements: []
+      supports: []
+    - path: M16/Root/AttachmentSockets/RearIronMount
+      mount: 3
+      placements: []
+      supports: []
+    - path: M16/Root/AttachmentSockets/FrontIronMount
+      mount: 4
+      placements: []
+      supports: []
+    - path: M16/Root/AttachmentSockets/OpticMount
+      mount: 5
+      placements: []
+      supports: []
+    builtIns:
+    - mount: 0
+      rendererNames: []
+    - mount: 1
+      rendererNames: []
+    - mount: 2
+      rendererNames: []
+    - mount: 3
+      rendererNames: []
+    - mount: 4
+      rendererNames: []
+    - mount: 5
+      rendererNames: []
+    - mount: 7
+      rendererNames: []
+  - id: legacy-mpx
+    name: MPX
+    previewAddress: class-preview/weapon-legacy-mpx
+    category: 0
+    damage: 25
+    rpm: 900
+    rounds: 30
+    icon: {fileID: 21300000, guid: c159e747a5e5ccb4f8f916b04415211a, type: 3}
+    defaultSight: polygon-reflex
+    sights:
+    - scope_1p29
+    - scope_acog
+    - built-in-irons
+    - holographic
+    - scope_longrange
+    - military_flipscope
+    - military_reddot_01
+    - military_reddot_02
+    - military_reddot_03
+    - military_reddot_04
+    - military_reddot_05
+    - military_scope_01
+    - military_scope_10
+    - military_scope_11
+    - military_scope_12
+    - military_scope_13
+    - military_scope_14
+    - military_scope_15
+    - military_scope_02
+    - military_scope_03
+    - military_scope_04
+    - military_scope_05
+    - military_scope_06
+    - military_scope_07
+    - military_scope_08
+    - military_scope_09
+    - polygon-scope-a
+    - polygon-scope-b
+    - polygon-scope-c
+    - sight_reddot
+    - pack-red_dot_a
+    - pack-red_dot_b
+    - pack-red_dot_c
+    - pack-red_dot_d
+    - pack-red_dot_e
+    - polygon-reflex
+    - sight_rmr
+    - scope_trijicon
+    attachments:
+    - sight-riser-25mm
+    - angledgripmount_45
+    - frontiron
+    - gripmount
+    - hexagon_rail
+    - hexagon_rail_long
+    - hexagon_suppressor
+    - lamp_a_prefab
+    - lamp_laser_a_prefab
+    - lamp_laser_b_prefab
+    - laser_a_prefab
+    - mk18_suppressor
+    - reariron
+    - rk-2
+    - rmr_mount
+    - sm_wep_mod_foregrip_01
+    - sm_wep_mod_rail_01
+    - suppressor_a_prefab
+    - suppressor_b_prefab
+    - suppressor_c_prefab
+    - suppressor_d_prefab
+    - m16a4-rear-iron
+    sockets:
+    - path: MPX/Root/AttachmentSockets/MuzzleMount
+      mount: 0
+      placements: []
+      supports: []
+    - path: MPX/Root/AttachmentSockets/RailMount
+      mount: 1
+      placements: []
+      supports: []
+    - path: MPX/Root/AttachmentSockets/LeftRailMount
+      mount: 7
+      placements: []
+      supports: []
+    - path: MPX/Root/AttachmentSockets/GripMount
+      mount: 2
+      placements: []
+      supports: []
+    - path: MPX/Root/AttachmentSockets/RearIronMount
+      mount: 3
+      placements: []
+      supports: []
+    - path: MPX/Root/AttachmentSockets/FrontIronMount
+      mount: 4
+      placements: []
+      supports: []
+    - path: MPX/Root/AttachmentSockets/OpticMount
+      mount: 5
+      placements: []
+      supports: []
+    builtIns:
+    - mount: 0
+      rendererNames: []
+    - mount: 1
+      rendererNames: []
+    - mount: 2
+      rendererNames: []
+    - mount: 3
+      rendererNames: []
+    - mount: 4
+      rendererNames: []
+    - mount: 5
+      rendererNames: []
+    - mount: 7
+      rendererNames: []
+  - id: legacy-svd
+    name: SVD
+    previewAddress: class-preview/weapon-legacy-svd
+    category: 4
+    damage: 75
+    rpm: 180
+    rounds: 10
+    icon: {fileID: -3403326567130185808, guid: bcfd364c755d7574ebd6299143fc6d29, type: 3}
+    defaultSight: 
+    sights:
+    - scope_1p29
+    - scope_acog
+    - built-in-irons
+    - holographic
+    - scope_longrange
+    - military_flipscope
+    - military_reddot_01
+    - military_reddot_02
+    - military_reddot_03
+    - military_reddot_04
+    - military_reddot_05
+    - military_scope_01
+    - military_scope_10
+    - military_scope_11
+    - military_scope_12
+    - military_scope_13
+    - military_scope_14
+    - military_scope_15
+    - military_scope_02
+    - military_scope_03
+    - military_scope_04
+    - military_scope_05
+    - military_scope_06
+    - military_scope_07
+    - military_scope_08
+    - military_scope_09
+    - polygon-scope-a
+    - polygon-scope-b
+    - polygon-scope-c
+    - svd-pso-4x
+    - sight_reddot
+    - pack-red_dot_a
+    - pack-red_dot_b
+    - pack-red_dot_c
+    - pack-red_dot_d
+    - pack-red_dot_e
+    - polygon-reflex
+    - sight_rmr
+    - scope_trijicon
+    attachments:
+    - angledgripmount_45
+    - frontiron
+    - gripmount
+    - hexagon_rail
+    - hexagon_rail_long
+    - hexagon_suppressor
+    - lamp_a_prefab
+    - lamp_laser_a_prefab
+    - lamp_laser_b_prefab
+    - laser_a_prefab
+    - mk18_suppressor
+    - reariron
+    - rk-2
+    - sm_wep_mod_foregrip_01
+    - sm_wep_mod_rail_01
+    - suppressor_a_prefab
+    - suppressor_b_prefab
+    - suppressor_c_prefab
+    - suppressor_d_prefab
+    - m16a4-rear-iron
+    sockets:
+    - path: AttachmentSockets/RailMount
+      mount: 1
+      placements: []
+      supports: []
+    - path: AttachmentSockets/LeftRailMount
+      mount: 7
+      placements: []
+      supports: []
+    - path: AttachmentSockets/RearIronMount
+      mount: 3
+      placements: []
+      supports: []
+    - path: AttachmentSockets/OpticMount
+      mount: 5
+      placements: []
+      supports: []
+    builtIns:
+    - mount: 0
+      rendererNames: []
+    - mount: 1
+      rendererNames: []
+    - mount: 2
+      rendererNames: []
+    - mount: 3
+      rendererNames: []
+    - mount: 4
+      rendererNames: []
+    - mount: 7
+      rendererNames: []
+  - id: polygon-assault57
+    name: AK-47
+    previewAddress: class-preview/weapon-polygon-assault57
+    category: 0
+    damage: 25
+    rpm: 650
+    rounds: 30
+    icon: {fileID: 2951691202990463341, guid: b7cb233b8f11e1a489f6f3864a62d987, type: 3}
+    defaultSight: 
+    sights:
+    - scope_1p29
+    - scope_acog
+    - built-in-irons
+    - holographic
+    - scope_longrange
+    - military_flipscope
+    - military_reddot_01
+    - military_reddot_02
+    - military_reddot_03
+    - military_reddot_04
+    - military_reddot_05
+    - military_scope_01
+    - military_scope_10
+    - military_scope_11
+    - military_scope_12
+    - military_scope_13
+    - military_scope_14
+    - military_scope_15
+    - military_scope_02
+    - military_scope_03
+    - military_scope_04
+    - military_scope_05
+    - military_scope_06
+    - military_scope_07
+    - military_scope_08
+    - military_scope_09
+    - polygon-scope-a
+    - polygon-scope-b
+    - polygon-scope-c
+    - sight_reddot
+    - pack-red_dot_a
+    - pack-red_dot_b
+    - pack-red_dot_c
+    - pack-red_dot_d
+    - pack-red_dot_e
+    - polygon-reflex
+    - sight_rmr
+    - scope_trijicon
+    attachments:
+    - sight-riser-25mm
+    - angledgripmount_45
+    - frontiron
+    - gripmount
+    - hexagon_handguard_carbine_length
+    - hexagon_handguard_full_length
+    - "hexagon_handguard_\u0432\u0438\u0442\u044F\u0437"
+    - hexagon_rail
+    - hexagon_rail_long
+    - hexagon_suppressor
+    - lamp_a_prefab
+    - lamp_laser_a_prefab
+    - lamp_laser_b_prefab
+    - laser_a_prefab
+    - mk18_suppressor
+    - reariron
+    - rk-2
+    - rmr_mount
+    - sm_wep_mod_foregrip_01
+    - sm_wep_mod_rail_01
+    - suppressor_a_prefab
+    - suppressor_b_prefab
+    - suppressor_c_prefab
+    - suppressor_d_prefab
+    - m16a4-rear-iron
+    sockets:
+    - path: AttachmentSockets/MuzzleMount
+      mount: 0
+      placements: []
+      supports: []
+    - path: AttachmentSockets/RailMount
+      mount: 1
+      placements: []
+      supports: []
+    - path: AttachmentSockets/LeftRailMount
+      mount: 7
+      placements: []
+      supports: []
+    - path: AttachmentSockets/GripMount
+      mount: 2
+      placements: []
+      supports: []
+    - path: AttachmentSockets/RearIronMount
+      mount: 3
+      placements: []
+      supports: []
+    - path: AttachmentSockets/FrontIronMount
+      mount: 4
+      placements: []
+      supports: []
+    - path: AttachmentSockets/OpticMount
+      mount: 5
+      placements: []
+      supports: []
+    builtIns:
+    - mount: 0
+      rendererNames: []
+    - mount: 1
+      rendererNames: []
+    - mount: 2
+      rendererNames: []
+    - mount: 3
+      rendererNames: []
+    - mount: 4
+      rendererNames: []
+    - mount: 5
+      rendererNames: []
+    - mount: 6
+      rendererNames: []
+    - mount: 7
+      rendererNames: []
+  - id: polygon-auge
+    name: AUG
+    previewAddress: class-preview/weapon-polygon-auge
+    category: 0
+    damage: 25
+    rpm: 650
+    rounds: 30
+    icon: {fileID: -4128142120372629085, guid: b31d2464cb6be184f9a67933251d2138, type: 3}
+    defaultSight: 
+    sights:
+    - aug-built-in-sight
+    - scope_1p29
+    - scope_acog
+    - holographic
+    - scope_longrange
+    - military_flipscope
+    - military_reddot_01
+    - military_reddot_02
+    - military_reddot_03
+    - military_reddot_04
+    - military_reddot_05
+    - military_scope_01
+    - military_scope_10
+    - military_scope_11
+    - military_scope_12
+    - military_scope_13
+    - military_scope_14
+    - military_scope_15
+    - military_scope_02
+    - military_scope_03
+    - military_scope_04
+    - military_scope_05
+    - military_scope_06
+    - military_scope_07
+    - military_scope_08
+    - military_scope_09
+    - polygon-scope-a
+    - polygon-scope-b
+    - polygon-scope-c
+    - sight_reddot
+    - pack-red_dot_a
+    - pack-red_dot_b
+    - pack-red_dot_c
+    - pack-red_dot_d
+    - pack-red_dot_e
+    - polygon-reflex
+    - sight_rmr
+    - scope_trijicon
+    attachments:
+    - angledgripmount_45
+    - frontiron
+    - gripmount
+    - hexagon_rail
+    - hexagon_rail_long
+    - hexagon_suppressor
+    - lamp_a_prefab
+    - lamp_laser_a_prefab
+    - lamp_laser_b_prefab
+    - laser_a_prefab
+    - mk18_suppressor
+    - reariron
+    - rk-2
+    - sm_wep_mod_foregrip_01
+    - sm_wep_mod_rail_01
+    - suppressor_a_prefab
+    - suppressor_b_prefab
+    - suppressor_c_prefab
+    - suppressor_d_prefab
+    - m16a4-rear-iron
+    sockets:
+    - path: AttachmentSockets/MuzzleMount
+      mount: 0
+      placements: []
+      supports: []
+    - path: AttachmentSockets/RailMount
+      mount: 1
+      placements: []
+      supports: []
+    - path: AttachmentSockets/LeftRailMount
+      mount: 7
+      placements: []
+      supports: []
+    - path: AttachmentSockets/GripMount
+      mount: 2
+      placements: []
+      supports: []
+    - path: AttachmentSockets/RearIronMount
+      mount: 3
+      placements: []
+      supports: []
+    - path: AttachmentSockets/FrontIronMount
+      mount: 4
+      placements: []
+      supports: []
+    - path: AttachmentSockets/OpticMount
+      mount: 5
+      placements: []
+      supports: []
+    builtIns:
+    - mount: 0
+      rendererNames: []
+    - mount: 1
+      rendererNames: []
+    - mount: 2
+      rendererNames: []
+    - mount: 3
+      rendererNames: []
+    - mount: 4
+      rendererNames: []
+    - mount: 7
+      rendererNames: []
+  - id: polygon-blast_set
+    name: Timed Charge
+    previewAddress: class-preview/weapon-polygon-blast_set
+    category: 8
+    damage: 25
+    rpm: 650
+    rounds: 1
+    icon: {fileID: 715327753824370532, guid: 7fe8bba4b6f0c0d4aa137c0f9ee95f73, type: 3}
+    defaultSight: 
+    sights: []
+    attachments: []
+    sockets:
+    - path: AttachmentSockets/MuzzleMount
+      mount: 0
+      placements: []
+      supports: []
+    - path: AttachmentSockets/RailMount
+      mount: 1
+      placements: []
+      supports: []
+    - path: AttachmentSockets/GripMount
+      mount: 2
+      placements: []
+      supports: []
+    - path: AttachmentSockets/RearIronMount
+      mount: 3
+      placements: []
+      supports: []
+    - path: AttachmentSockets/FrontIronMount
+      mount: 4
+      placements: []
+      supports: []
+    - path: AttachmentSockets/OpticMount
+      mount: 5
+      placements: []
+      supports: []
+    builtIns:
+    - mount: 0
+      rendererNames: []
+    - mount: 1
+      rendererNames: []
+    - mount: 2
+      rendererNames: []
+    - mount: 3
+      rendererNames: []
+    - mount: 4
+      rendererNames: []
+    - mount: 5
+      rendererNames: []
+  - id: polygon-buzzsub
+    name: Vector
+    previewAddress: class-preview/weapon-polygon-buzzsub
+    category: 1
+    damage: 25
+    rpm: 650
+    rounds: 30
+    icon: {fileID: -2840271204144428574, guid: cad03d5480da8b946bfdaf7a01c1acd6, type: 3}
+    defaultSight: 
+    sights:
+    - scope_1p29
+    - scope_acog
+    - built-in-irons
+    - holographic
+    - scope_longrange
+    - military_flipscope
+    - military_reddot_01
+    - military_reddot_02
+    - military_reddot_03
+    - military_reddot_04
+    - military_reddot_05
+    - military_scope_01
+    - military_scope_10
+    - military_scope_11
+    - military_scope_12
+    - military_scope_13
+    - military_scope_14
+    - military_scope_15
+    - military_scope_02
+    - military_scope_03
+    - military_scope_04
+    - military_scope_05
+    - military_scope_06
+    - military_scope_07
+    - military_scope_08
+    - military_scope_09
+    - polygon-scope-a
+    - polygon-scope-b
+    - polygon-scope-c
+    - sight_reddot
+    - pack-red_dot_a
+    - pack-red_dot_b
+    - pack-red_dot_c
+    - pack-red_dot_d
+    - pack-red_dot_e
+    - polygon-reflex
+    - sight_rmr
+    - scope_trijicon
+    attachments:
+    - sight-riser-25mm
+    - angledgripmount_45
+    - frontiron
+    - gripmount
+    - hexagon_rail
+    - hexagon_rail_long
+    - hexagon_suppressor
+    - lamp_a_prefab
+    - lamp_laser_a_prefab
+    - lamp_laser_b_prefab
+    - laser_a_prefab
+    - mk18_suppressor
+    - reariron
+    - rk-2
+    - rmr_mount
+    - sm_wep_mod_foregrip_01
+    - sm_wep_mod_rail_01
+    - suppressor_a_prefab
+    - suppressor_b_prefab
+    - suppressor_c_prefab
+    - suppressor_d_prefab
+    - m16a4-rear-iron
+    sockets:
+    - path: AttachmentSockets/MuzzleMount
+      mount: 0
+      placements: []
+      supports: []
+    - path: AttachmentSockets/RailMount
+      mount: 1
+      placements: []
+      supports: []
+    - path: AttachmentSockets/LeftRailMount
+      mount: 7
+      placements: []
+      supports: []
+    - path: AttachmentSockets/GripMount
+      mount: 2
+      placements: []
+      supports: []
+    - path: AttachmentSockets/RearIronMount
+      mount: 3
+      placements: []
+      supports: []
+    - path: AttachmentSockets/FrontIronMount
+      mount: 4
+      placements: []
+      supports: []
+    - path: AttachmentSockets/OpticMount
+      mount: 5
+      placements: []
+      supports: []
+    builtIns:
+    - mount: 0
+      rendererNames: []
+    - mount: 1
+      rendererNames: []
+    - mount: 2
+      rendererNames: []
+    - mount: 3
+      rendererNames:
+      - Rear_sight_a
+    - mount: 4
+      rendererNames:
+      - BuiltInFrontIron
+    - mount: 5
+      rendererNames: []
+    - mount: 7
+      rendererNames: []
+  - id: polygon-clustershotgun
+    name: SPAS-12
+    previewAddress: class-preview/weapon-polygon-clustershotgun
+    category: 3
+    damage: 130
+    rpm: 90
+    rounds: 8
+    icon: {fileID: -5193631876747913965, guid: 819ffa729ddec5b42bdce3ffc368a1e9, type: 3}
+    defaultSight: 
+    sights:
+    - scope_1p29
+    - scope_acog
+    - built-in-irons
+    - holographic
+    - scope_longrange
+    - military_flipscope
+    - military_reddot_01
+    - military_reddot_02
+    - military_reddot_03
+    - military_reddot_04
+    - military_reddot_05
+    - military_scope_01
+    - military_scope_10
+    - military_scope_11
+    - military_scope_12
+    - military_scope_13
+    - military_scope_14
+    - military_scope_15
+    - military_scope_02
+    - military_scope_03
+    - military_scope_04
+    - military_scope_05
+    - military_scope_06
+    - military_scope_07
+    - military_scope_08
+    - military_scope_09
+    - polygon-scope-a
+    - polygon-scope-b
+    - polygon-scope-c
+    - sight_reddot
+    - pack-red_dot_a
+    - pack-red_dot_b
+    - pack-red_dot_c
+    - pack-red_dot_d
+    - pack-red_dot_e
+    - polygon-reflex
+    - sight_rmr
+    - scope_trijicon
+    attachments:
+    - sight-riser-25mm
+    - angledgripmount_45
+    - frontiron
+    - gripmount
+    - hexagon_rail
+    - hexagon_rail_long
+    - hexagon_suppressor
+    - lamp_a_prefab
+    - lamp_laser_a_prefab
+    - lamp_laser_b_prefab
+    - laser_a_prefab
+    - mk18_suppressor
+    - reariron
+    - rk-2
+    - rmr_mount
+    - sm_wep_mod_foregrip_01
+    - sm_wep_mod_rail_01
+    - suppressor_a_prefab
+    - suppressor_b_prefab
+    - suppressor_c_prefab
+    - suppressor_d_prefab
+    - m16a4-rear-iron
+    sockets:
+    - path: AttachmentSockets/MuzzleMount
+      mount: 0
+      placements: []
+      supports: []
+    - path: AttachmentSockets/RailMount
+      mount: 1
+      placements: []
+      supports: []
+    - path: AttachmentSockets/LeftRailMount
+      mount: 7
+      placements: []
+      supports: []
+    - path: AttachmentSockets/GripMount
+      mount: 2
+      placements: []
+      supports: []
+    - path: AttachmentSockets/RearIronMount
+      mount: 3
+      placements: []
+      supports: []
+    - path: AttachmentSockets/FrontIronMount
+      mount: 4
+      placements: []
+      supports: []
+    - path: AttachmentSockets/OpticMount
+      mount: 5
+      placements: []
+      supports: []
+    builtIns:
+    - mount: 0
+      rendererNames: []
+    - mount: 1
+      rendererNames: []
+    - mount: 2
+      rendererNames: []
+    - mount: 3
+      rendererNames: []
+    - mount: 4
+      rendererNames: []
+    - mount: 5
+      rendererNames: []
+    - mount: 7
+      rendererNames: []
+  - id: polygon-clustersub
+    name: MAC-10
+    previewAddress: class-preview/weapon-polygon-clustersub
+    category: 1
+    damage: 25
+    rpm: 650
+    rounds: 30
+    icon: {fileID: 8547515905535959176, guid: 46a76ecd4e455fc469f6c6bec5cc338a, type: 3}
+    defaultSight: 
+    sights:
+    - scope_1p29
+    - scope_acog
+    - built-in-irons
+    - holographic
+    - scope_longrange
+    - military_flipscope
+    - military_reddot_01
+    - military_reddot_02
+    - military_reddot_03
+    - military_reddot_04
+    - military_reddot_05
+    - military_scope_01
+    - military_scope_10
+    - military_scope_11
+    - military_scope_12
+    - military_scope_13
+    - military_scope_14
+    - military_scope_15
+    - military_scope_02
+    - military_scope_03
+    - military_scope_04
+    - military_scope_05
+    - military_scope_06
+    - military_scope_07
+    - military_scope_08
+    - military_scope_09
+    - polygon-scope-a
+    - polygon-scope-b
+    - polygon-scope-c
+    - sight_reddot
+    - pack-red_dot_a
+    - pack-red_dot_b
+    - pack-red_dot_c
+    - pack-red_dot_d
+    - pack-red_dot_e
+    - polygon-reflex
+    - sight_rmr
+    - scope_trijicon
+    attachments:
+    - sight-riser-25mm
+    - angledgripmount_45
+    - frontiron
+    - gripmount
+    - hexagon_rail
+    - hexagon_rail_long
+    - hexagon_suppressor
+    - lamp_a_prefab
+    - lamp_laser_a_prefab
+    - lamp_laser_b_prefab
+    - laser_a_prefab
+    - mk18_suppressor
+    - reariron
+    - rk-2
+    - rmr_mount
+    - sm_wep_mod_foregrip_01
+    - sm_wep_mod_rail_01
+    - suppressor_a_prefab
+    - suppressor_b_prefab
+    - suppressor_c_prefab
+    - suppressor_d_prefab
+    - m16a4-rear-iron
+    sockets:
+    - path: AttachmentSockets/MuzzleMount
+      mount: 0
+      placements: []
+      supports: []
+    - path: AttachmentSockets/RailMount
+      mount: 1
+      placements: []
+      supports: []
+    - path: AttachmentSockets/LeftRailMount
+      mount: 7
+      placements: []
+      supports: []
+    - path: AttachmentSockets/GripMount
+      mount: 2
+      placements: []
+      supports: []
+    - path: AttachmentSockets/RearIronMount
+      mount: 3
+      placements: []
+      supports: []
+    - path: AttachmentSockets/FrontIronMount
+      mount: 4
+      placements: []
+      supports: []
+    - path: AttachmentSockets/OpticMount
+      mount: 5
+      placements: []
+      supports: []
+    builtIns:
+    - mount: 0
+      rendererNames: []
+    - mount: 1
+      rendererNames: []
+    - mount: 2
+      rendererNames: []
+    - mount: 3
+      rendererNames: []
+    - mount: 4
+      rendererNames: []
+    - mount: 5
+      rendererNames: []
+    - mount: 7
+      rendererNames: []
+  - id: polygon-crowbar
+    name: Crowbar
+    previewAddress: class-preview/weapon-polygon-crowbar
+    category: 7
+    damage: 75
+    rpm: 75
+    rounds: 30
+    icon: {fileID: -6940178547021986106, guid: 8714ae6fdd8d95f4ba06c5348c71e26c, type: 3}
+    defaultSight: 
+    sights: []
+    attachments: []
+    sockets:
+    - path: AttachmentSockets/MuzzleMount
+      mount: 0
+      placements: []
+      supports: []
+    - path: AttachmentSockets/RailMount
+      mount: 1
+      placements: []
+      supports: []
+    - path: AttachmentSockets/GripMount
+      mount: 2
+      placements: []
+      supports: []
+    - path: AttachmentSockets/RearIronMount
+      mount: 3
+      placements: []
+      supports: []
+    - path: AttachmentSockets/FrontIronMount
+      mount: 4
+      placements: []
+      supports: []
+    - path: AttachmentSockets/OpticMount
+      mount: 5
+      placements: []
+      supports: []
+    builtIns:
+    - mount: 0
+      rendererNames: []
+    - mount: 1
+      rendererNames: []
+    - mount: 2
+      rendererNames: []
+    - mount: 3
+      rendererNames: []
+    - mount: 4
+      rendererNames: []
+    - mount: 5
+      rendererNames: []
+  - id: polygon-fireaxe
+    name: Fireaxe
+    previewAddress: class-preview/weapon-polygon-fireaxe
+    category: 7
+    damage: 75
+    rpm: 75
+    rounds: 30
+    icon: {fileID: -3453943385373274779, guid: 50f941a73e2054e418860608d6ff4038, type: 3}
+    defaultSight: 
+    sights: []
+    attachments: []
+    sockets:
+    - path: AttachmentSockets/MuzzleMount
+      mount: 0
+      placements: []
+      supports: []
+    - path: AttachmentSockets/RailMount
+      mount: 1
+      placements: []
+      supports: []
+    - path: AttachmentSockets/GripMount
+      mount: 2
+      placements: []
+      supports: []
+    - path: AttachmentSockets/RearIronMount
+      mount: 3
+      placements: []
+      supports: []
+    - path: AttachmentSockets/FrontIronMount
+      mount: 4
+      placements: []
+      supports: []
+    - path: AttachmentSockets/OpticMount
+      mount: 5
+      placements: []
+      supports: []
+    builtIns:
+    - mount: 0
+      rendererNames: []
+    - mount: 1
+      rendererNames: []
+    - mount: 2
+      rendererNames: []
+    - mount: 3
+      rendererNames: []
+    - mount: 4
+      rendererNames: []
+    - mount: 5
+      rendererNames: []
+  - id: polygon-grenade_launcher
+    name: M32
+    previewAddress: class-preview/weapon-polygon-grenade_launcher
+    category: 6
+    damage: 25
+    rpm: 120
+    rounds: 6
+    icon: {fileID: -8603924637281971182, guid: dafc6200d53bca54a86279935166219a, type: 3}
+    defaultSight: 
+    sights:
+    - scope_1p29
+    - scope_acog
+    - built-in-irons
+    - holographic
+    - scope_longrange
+    - military_flipscope
+    - military_reddot_01
+    - military_reddot_02
+    - military_reddot_03
+    - military_reddot_04
+    - military_reddot_05
+    - military_scope_01
+    - military_scope_10
+    - military_scope_11
+    - military_scope_12
+    - military_scope_13
+    - military_scope_14
+    - military_scope_15
+    - military_scope_02
+    - military_scope_03
+    - military_scope_04
+    - military_scope_05
+    - military_scope_06
+    - military_scope_07
+    - military_scope_08
+    - military_scope_09
+    - polygon-scope-a
+    - polygon-scope-b
+    - polygon-scope-c
+    - sight_reddot
+    - pack-red_dot_a
+    - pack-red_dot_b
+    - pack-red_dot_c
+    - pack-red_dot_d
+    - pack-red_dot_e
+    - polygon-reflex
+    - sight_rmr
+    - scope_trijicon
+    - m32_builtinscope
+    attachments:
+    - sight-riser-25mm
+    - hexagon_rail
+    - hexagon_rail_long
+    - lamp_a_prefab
+    - lamp_laser_a_prefab
+    - lamp_laser_b_prefab
+    - laser_a_prefab
+    - rmr_mount
+    - sm_wep_mod_rail_01
+    sockets:
+    - path: AttachmentSockets/MuzzleMount
+      mount: 0
+      placements: []
+      supports: []
+    - path: AttachmentSockets/RailMount
+      mount: 1
+      placements: []
+      supports: []
+    - path: AttachmentSockets/LeftRailMount
+      mount: 7
+      placements: []
+      supports: []
+    - path: AttachmentSockets/GripMount
+      mount: 2
+      placements: []
+      supports: []
+    - path: AttachmentSockets/RearIronMount
+      mount: 3
+      placements: []
+      supports: []
+    - path: AttachmentSockets/FrontIronMount
+      mount: 4
+      placements: []
+      supports: []
+    - path: AttachmentSockets/OpticMount
+      mount: 5
+      placements: []
+      supports: []
+    builtIns:
+    - mount: 0
+      rendererNames: []
+    - mount: 1
+      rendererNames: []
+    - mount: 2
+      rendererNames: []
+    - mount: 3
+      rendererNames: []
+    - mount: 4
+      rendererNames: []
+    - mount: 5
+      rendererNames: []
+    - mount: 7
+      rendererNames: []
+  - id: polygon-grenade
+    name: Frag Grenade
+    previewAddress: class-preview/weapon-polygon-grenade
+    category: 8
+    damage: 25
+    rpm: 650
+    rounds: 1
+    icon: {fileID: -5669896694535530792, guid: 355a83d7da195a04da25d407061e07e9, type: 3}
+    defaultSight: 
+    sights: []
+    attachments: []
+    sockets:
+    - path: AttachmentSockets/MuzzleMount
+      mount: 0
+      placements: []
+      supports: []
+    - path: AttachmentSockets/RailMount
+      mount: 1
+      placements: []
+      supports: []
+    - path: AttachmentSockets/GripMount
+      mount: 2
+      placements: []
+      supports: []
+    - path: AttachmentSockets/RearIronMount
+      mount: 3
+      placements: []
+      supports: []
+    - path: AttachmentSockets/FrontIronMount
+      mount: 4
+      placements: []
+      supports: []
+    - path: AttachmentSockets/OpticMount
+      mount: 5
+      placements: []
+      supports: []
+    builtIns:
+    - mount: 0
+      rendererNames: []
+    - mount: 1
+      rendererNames: []
+    - mount: 2
+      rendererNames: []
+    - mount: 3
+      rendererNames: []
+    - mount: 4
+      rendererNames: []
+    - mount: 5
+      rendererNames: []
+  - id: polygon-hunterrifle
+    name: M82
+    previewAddress: class-preview/weapon-polygon-hunterrifle
+    category: 4
+    damage: 80
+    rpm: 120
+    rounds: 10
+    icon: {fileID: -1653236614898966472, guid: f03372b7c4c1ae745a26591592711758, type: 3}
+    defaultSight: 
+    sights:
+    - m82-built-in-scope
+    - scope_1p29
+    - scope_acog
+    - holographic
+    - scope_longrange
+    - military_flipscope
+    - military_reddot_01
+    - military_reddot_02
+    - military_reddot_03
+    - military_reddot_04
+    - military_reddot_05
+    - military_scope_01
+    - military_scope_10
+    - military_scope_11
+    - military_scope_12
+    - military_scope_13
+    - military_scope_14
+    - military_scope_15
+    - military_scope_02
+    - military_scope_03
+    - military_scope_04
+    - military_scope_05
+    - military_scope_06
+    - military_scope_07
+    - military_scope_08
+    - military_scope_09
+    - polygon-scope-a
+    - polygon-scope-b
+    - polygon-scope-c
+    - sight_reddot
+    - pack-red_dot_a
+    - pack-red_dot_b
+    - pack-red_dot_c
+    - pack-red_dot_d
+    - pack-red_dot_e
+    - polygon-reflex
+    - sight_rmr
+    - scope_trijicon
+    attachments:
+    - angledgripmount_45
+    - frontiron
+    - gripmount
+    - hexagon_rail
+    - hexagon_rail_long
+    - hexagon_suppressor
+    - lamp_a_prefab
+    - lamp_laser_a_prefab
+    - lamp_laser_b_prefab
+    - laser_a_prefab
+    - mk18_suppressor
+    - reariron
+    - rk-2
+    - sm_wep_mod_foregrip_01
+    - sm_wep_mod_rail_01
+    - suppressor_a_prefab
+    - suppressor_b_prefab
+    - suppressor_c_prefab
+    - suppressor_d_prefab
+    - m16a4-rear-iron
+    sockets:
+    - path: AttachmentSockets/MuzzleMount
+      mount: 0
+      placements: []
+      supports: []
+    - path: AttachmentSockets/RailMount
+      mount: 1
+      placements: []
+      supports: []
+    - path: AttachmentSockets/LeftRailMount
+      mount: 7
+      placements: []
+      supports: []
+    - path: AttachmentSockets/GripMount
+      mount: 2
+      placements: []
+      supports: []
+    - path: AttachmentSockets/RearIronMount
+      mount: 3
+      placements: []
+      supports: []
+    - path: AttachmentSockets/FrontIronMount
+      mount: 4
+      placements: []
+      supports: []
+    - path: AttachmentSockets/OpticMount
+      mount: 5
+      placements: []
+      supports: []
+    builtIns:
+    - mount: 0
+      rendererNames: []
+    - mount: 1
+      rendererNames: []
+    - mount: 2
+      rendererNames: []
+    - mount: 3
+      rendererNames: []
+    - mount: 4
+      rendererNames: []
+    - mount: 7
+      rendererNames: []
+  - id: polygon-knife
+    name: Knife
+    previewAddress: class-preview/weapon-polygon-knife
+    category: 7
+    damage: 75
+    rpm: 75
+    rounds: 30
+    icon: {fileID: -7938674580191915618, guid: 69c79f98127ecac429d33ff8d161a2e9, type: 3}
+    defaultSight: 
+    sights: []
+    attachments: []
+    sockets:
+    - path: AttachmentSockets/MuzzleMount
+      mount: 0
+      placements: []
+      supports: []
+    - path: AttachmentSockets/RailMount
+      mount: 1
+      placements: []
+      supports: []
+    - path: AttachmentSockets/GripMount
+      mount: 2
+      placements: []
+      supports: []
+    - path: AttachmentSockets/RearIronMount
+      mount: 3
+      placements: []
+      supports: []
+    - path: AttachmentSockets/FrontIronMount
+      mount: 4
+      placements: []
+      supports: []
+    - path: AttachmentSockets/OpticMount
+      mount: 5
+      placements: []
+      supports: []
+    builtIns:
+    - mount: 0
+      rendererNames: []
+    - mount: 1
+      rendererNames: []
+    - mount: 2
+      rendererNames: []
+    - mount: 3
+      rendererNames: []
+    - mount: 4
+      rendererNames: []
+    - mount: 5
+      rendererNames: []
+  - id: polygon-lock
+    name: Glock (Pack)
+    previewAddress: class-preview/weapon-polygon-lock
+    category: 5
+    damage: 30
+    rpm: 360
+    rounds: 12
+    icon: {fileID: -7785258428068003646, guid: 2d760638fa51a97429bf0e4dca6ae45d, type: 3}
+    defaultSight: 
+    sights:
+    - scope_1p29
+    - scope_acog
+    - built-in-irons
+    - holographic
+    - scope_longrange
+    - military_flipscope
+    - military_reddot_01
+    - military_reddot_02
+    - military_reddot_03
+    - military_reddot_04
+    - military_reddot_05
+    - military_scope_01
+    - military_scope_10
+    - military_scope_11
+    - military_scope_12
+    - military_scope_13
+    - military_scope_14
+    - military_scope_15
+    - military_scope_02
+    - military_scope_03
+    - military_scope_04
+    - military_scope_05
+    - military_scope_06
+    - military_scope_07
+    - military_scope_08
+    - military_scope_09
+    - polygon-scope-a
+    - polygon-scope-b
+    - polygon-scope-c
+    - sight_reddot
+    - pack-red_dot_a
+    - pack-red_dot_b
+    - pack-red_dot_c
+    - pack-red_dot_d
+    - pack-red_dot_e
+    - polygon-reflex
+    - sight_rmr
+    - scope_trijicon
+    attachments:
+    - sight-riser-25mm
+    - frontiron
+    - hexagon_rail
+    - hexagon_rail_long
+    - hexagon_suppressor
+    - lamp_a_prefab
+    - lamp_laser_a_prefab
+    - lamp_laser_b_prefab
+    - laser_a_prefab
+    - mk18_suppressor
+    - reariron
+    - rmr_mount
+    - sm_wep_mod_rail_01
+    - suppressor_a_prefab
+    - suppressor_b_prefab
+    - suppressor_c_prefab
+    - suppressor_d_prefab
+    - m16a4-rear-iron
+    sockets:
+    - path: AttachmentSockets/MuzzleMount
+      mount: 0
+      placements: []
+      supports: []
+    - path: AttachmentSockets/RailMount
+      mount: 1
+      placements: []
+      supports: []
+    - path: AttachmentSockets/LeftRailMount
+      mount: 7
+      placements: []
+      supports: []
+    - path: AttachmentSockets/GripMount
+      mount: 2
+      placements: []
+      supports: []
+    - path: AttachmentSockets/RearIronMount
+      mount: 3
+      placements: []
+      supports: []
+    - path: AttachmentSockets/FrontIronMount
+      mount: 4
+      placements: []
+      supports: []
+    - path: AttachmentSockets/OpticMount
+      mount: 5
+      placements: []
+      supports: []
+    builtIns:
+    - mount: 0
+      rendererNames: []
+    - mount: 1
+      rendererNames: []
+    - mount: 2
+      rendererNames: []
+    - mount: 3
+      rendererNames:
+      - BuiltInIron
+    - mount: 4
+      rendererNames: []
+    - mount: 5
+      rendererNames: []
+    - mount: 7
+      rendererNames: []
+  - id: polygon-machinegun
+    name: M249
+    previewAddress: class-preview/weapon-polygon-machinegun
+    category: 2
+    damage: 25
+    rpm: 650
+    rounds: 100
+    icon: {fileID: 5968912647891526172, guid: d2e2ab19ad49c2642bb5fba0c50c2c92, type: 3}
+    defaultSight: 
+    sights:
+    - scope_1p29
+    - scope_acog
+    - built-in-irons
+    - holographic
+    - scope_longrange
+    - military_flipscope
+    - military_reddot_01
+    - military_reddot_02
+    - military_reddot_03
+    - military_reddot_04
+    - military_reddot_05
+    - military_scope_01
+    - military_scope_10
+    - military_scope_11
+    - military_scope_12
+    - military_scope_13
+    - military_scope_14
+    - military_scope_15
+    - military_scope_02
+    - military_scope_03
+    - military_scope_04
+    - military_scope_05
+    - military_scope_06
+    - military_scope_07
+    - military_scope_08
+    - military_scope_09
+    - polygon-scope-a
+    - polygon-scope-b
+    - polygon-scope-c
+    - sight_reddot
+    - pack-red_dot_a
+    - pack-red_dot_b
+    - pack-red_dot_c
+    - pack-red_dot_d
+    - pack-red_dot_e
+    - polygon-reflex
+    - sight_rmr
+    - scope_trijicon
+    attachments:
+    - sight-riser-25mm
+    - angledgripmount_45
+    - frontiron
+    - gripmount
+    - hexagon_rail
+    - hexagon_rail_long
+    - hexagon_suppressor
+    - lamp_a_prefab
+    - lamp_laser_a_prefab
+    - lamp_laser_b_prefab
+    - laser_a_prefab
+    - mk18_suppressor
+    - reariron
+    - rk-2
+    - rmr_mount
+    - sm_wep_mod_foregrip_01
+    - sm_wep_mod_rail_01
+    - suppressor_a_prefab
+    - suppressor_b_prefab
+    - suppressor_c_prefab
+    - suppressor_d_prefab
+    - m16a4-rear-iron
+    sockets:
+    - path: AttachmentSockets/MuzzleMount
+      mount: 0
+      placements: []
+      supports: []
+    - path: AttachmentSockets/RailMount
+      mount: 1
+      placements: []
+      supports: []
+    - path: AttachmentSockets/LeftRailMount
+      mount: 7
+      placements: []
+      supports: []
+    - path: AttachmentSockets/GripMount
+      mount: 2
+      placements: []
+      supports: []
+    - path: AttachmentSockets/RearIronMount
+      mount: 3
+      placements: []
+      supports: []
+    - path: AttachmentSockets/FrontIronMount
+      mount: 4
+      placements: []
+      supports: []
+    - path: AttachmentSockets/OpticMount
+      mount: 5
+      placements: []
+      supports: []
+    builtIns:
+    - mount: 0
+      rendererNames: []
+    - mount: 1
+      rendererNames: []
+    - mount: 2
+      rendererNames: []
+    - mount: 3
+      rendererNames: []
+    - mount: 4
+      rendererNames: []
+    - mount: 5
+      rendererNames: []
+    - mount: 7
+      rendererNames: []
+  - id: polygon-mkb16
+    name: M16A4
+    previewAddress: class-preview/weapon-polygon-mkb16
+    category: 0
+    damage: 25
+    rpm: 650
+    rounds: 30
+    icon: {fileID: 3139543177096035396, guid: aec151c8a325f1346b5cce5a5a141d8c, type: 3}
+    defaultSight: 
+    sights:
+    - scope_1p29
+    - scope_acog
+    - built-in-irons
+    - holographic
+    - scope_longrange
+    - military_flipscope
+    - military_reddot_01
+    - military_reddot_02
+    - military_reddot_03
+    - military_reddot_04
+    - military_reddot_05
+    - military_scope_01
+    - military_scope_10
+    - military_scope_11
+    - military_scope_12
+    - military_scope_13
+    - military_scope_14
+    - military_scope_15
+    - military_scope_02
+    - military_scope_03
+    - military_scope_04
+    - military_scope_05
+    - military_scope_06
+    - military_scope_07
+    - military_scope_08
+    - military_scope_09
+    - polygon-scope-a
+    - polygon-scope-b
+    - polygon-scope-c
+    - sight_reddot
+    - pack-red_dot_a
+    - pack-red_dot_b
+    - pack-red_dot_c
+    - pack-red_dot_d
+    - pack-red_dot_e
+    - polygon-reflex
+    - sight_rmr
+    - scope_trijicon
+    attachments:
+    - sight-riser-25mm
+    - angledgripmount_45
+    - frontiron
+    - gripmount
+    - hexagon_rail
+    - hexagon_rail_long
+    - hexagon_suppressor
+    - lamp_a_prefab
+    - lamp_laser_a_prefab
+    - lamp_laser_b_prefab
+    - laser_a_prefab
+    - mk18_suppressor
+    - reariron
+    - rk-2
+    - rmr_mount
+    - sm_wep_mod_foregrip_01
+    - sm_wep_mod_rail_01
+    - suppressor_a_prefab
+    - suppressor_b_prefab
+    - suppressor_c_prefab
+    - suppressor_d_prefab
+    - m16a4-rear-iron
+    sockets:
+    - path: AttachmentSockets/MuzzleMount
+      mount: 0
+      placements: []
+      supports: []
+    - path: AttachmentSockets/RailMount
+      mount: 1
+      placements: []
+      supports: []
+    - path: AttachmentSockets/LeftRailMount
+      mount: 7
+      placements: []
+      supports: []
+    - path: AttachmentSockets/GripMount
+      mount: 2
+      placements: []
+      supports: []
+    - path: AttachmentSockets/RearIronMount
+      mount: 3
+      placements: []
+      supports: []
+    - path: AttachmentSockets/FrontIronMount
+      mount: 4
+      placements: []
+      supports: []
+    - path: AttachmentSockets/OpticMount
+      mount: 5
+      placements: []
+      supports: []
+    builtIns:
+    - mount: 0
+      rendererNames: []
+    - mount: 1
+      rendererNames: []
+    - mount: 2
+      rendererNames: []
+    - mount: 3
+      rendererNames:
+      - Rear_sight
+      - Rear_sight.001
+    - mount: 4
+      rendererNames: []
+    - mount: 5
+      rendererNames: []
+    - mount: 7
+      rendererNames: []
+  - id: polygon-nsp
+    name: USP .45
+    previewAddress: class-preview/weapon-polygon-nsp
+    category: 5
+    damage: 30
+    rpm: 360
+    rounds: 12
+    icon: {fileID: -5564746711911627283, guid: 89aabd556ee5e3e4c9fbe0be0618f617, type: 3}
+    defaultSight: 
+    sights:
+    - scope_1p29
+    - scope_acog
+    - built-in-irons
+    - holographic
+    - scope_longrange
+    - military_flipscope
+    - military_reddot_01
+    - military_reddot_02
+    - military_reddot_03
+    - military_reddot_04
+    - military_reddot_05
+    - military_scope_01
+    - military_scope_10
+    - military_scope_11
+    - military_scope_12
+    - military_scope_13
+    - military_scope_14
+    - military_scope_15
+    - military_scope_02
+    - military_scope_03
+    - military_scope_04
+    - military_scope_05
+    - military_scope_06
+    - military_scope_07
+    - military_scope_08
+    - military_scope_09
+    - polygon-scope-a
+    - polygon-scope-b
+    - polygon-scope-c
+    - sight_reddot
+    - pack-red_dot_a
+    - pack-red_dot_b
+    - pack-red_dot_c
+    - pack-red_dot_d
+    - pack-red_dot_e
+    - polygon-reflex
+    - sight_rmr
+    - scope_trijicon
+    attachments:
+    - sight-riser-25mm
+    - frontiron
+    - hexagon_rail
+    - hexagon_rail_long
+    - hexagon_suppressor
+    - lamp_a_prefab
+    - lamp_laser_a_prefab
+    - lamp_laser_b_prefab
+    - laser_a_prefab
+    - mk18_suppressor
+    - reariron
+    - rmr_mount
+    - sm_wep_mod_rail_01
+    - suppressor_a_prefab
+    - suppressor_b_prefab
+    - suppressor_c_prefab
+    - suppressor_d_prefab
+    - m16a4-rear-iron
+    sockets:
+    - path: AttachmentSockets/MuzzleMount
+      mount: 0
+      placements: []
+      supports: []
+    - path: AttachmentSockets/RailMount
+      mount: 1
+      placements: []
+      supports: []
+    - path: AttachmentSockets/LeftRailMount
+      mount: 7
+      placements: []
+      supports: []
+    - path: AttachmentSockets/GripMount
+      mount: 2
+      placements: []
+      supports: []
+    - path: AttachmentSockets/RearIronMount
+      mount: 3
+      placements: []
+      supports: []
+    - path: AttachmentSockets/FrontIronMount
+      mount: 4
+      placements: []
+      supports: []
+    - path: AttachmentSockets/OpticMount
+      mount: 5
+      placements: []
+      supports: []
+    builtIns:
+    - mount: 0
+      rendererNames: []
+    - mount: 1
+      rendererNames: []
+    - mount: 2
+      rendererNames: []
+    - mount: 3
+      rendererNames: []
+    - mount: 4
+      rendererNames: []
+    - mount: 5
+      rendererNames: []
+    - mount: 7
+      rendererNames: []
+  - id: polygon-old_pistol
+    name: 1911
+    previewAddress: class-preview/weapon-polygon-old_pistol
+    category: 5
+    damage: 30
+    rpm: 360
+    rounds: 12
+    icon: {fileID: -6075781476702910515, guid: c34cb5afa7e6de742aa76dcb959f3f74, type: 3}
+    defaultSight: 
+    sights:
+    - scope_1p29
+    - scope_acog
+    - built-in-irons
+    - holographic
+    - scope_longrange
+    - military_flipscope
+    - military_reddot_01
+    - military_reddot_02
+    - military_reddot_03
+    - military_reddot_04
+    - military_reddot_05
+    - military_scope_01
+    - military_scope_10
+    - military_scope_11
+    - military_scope_12
+    - military_scope_13
+    - military_scope_14
+    - military_scope_15
+    - military_scope_02
+    - military_scope_03
+    - military_scope_04
+    - military_scope_05
+    - military_scope_06
+    - military_scope_07
+    - military_scope_08
+    - military_scope_09
+    - polygon-scope-a
+    - polygon-scope-b
+    - polygon-scope-c
+    - sight_reddot
+    - pack-red_dot_a
+    - pack-red_dot_b
+    - pack-red_dot_c
+    - pack-red_dot_d
+    - pack-red_dot_e
+    - polygon-reflex
+    - sight_rmr
+    - scope_trijicon
+    attachments:
+    - sight-riser-25mm
+    - frontiron
+    - hexagon_rail
+    - hexagon_rail_long
+    - hexagon_suppressor
+    - lamp_a_prefab
+    - lamp_laser_a_prefab
+    - lamp_laser_b_prefab
+    - laser_a_prefab
+    - mk18_suppressor
+    - reariron
+    - rmr_mount
+    - sm_wep_mod_rail_01
+    - suppressor_a_prefab
+    - suppressor_b_prefab
+    - suppressor_c_prefab
+    - suppressor_d_prefab
+    - m16a4-rear-iron
+    sockets:
+    - path: AttachmentSockets/MuzzleMount
+      mount: 0
+      placements: []
+      supports: []
+    - path: AttachmentSockets/RailMount
+      mount: 1
+      placements: []
+      supports: []
+    - path: AttachmentSockets/LeftRailMount
+      mount: 7
+      placements: []
+      supports: []
+    - path: AttachmentSockets/GripMount
+      mount: 2
+      placements: []
+      supports: []
+    - path: AttachmentSockets/RearIronMount
+      mount: 3
+      placements: []
+      supports: []
+    - path: AttachmentSockets/FrontIronMount
+      mount: 4
+      placements: []
+      supports: []
+    - path: AttachmentSockets/OpticMount
+      mount: 5
+      placements: []
+      supports: []
+    builtIns:
+    - mount: 0
+      rendererNames: []
+    - mount: 1
+      rendererNames: []
+    - mount: 2
+      rendererNames: []
+    - mount: 3
+      rendererNames: []
+    - mount: 4
+      rendererNames: []
+    - mount: 5
+      rendererNames: []
+    - mount: 7
+      rendererNames: []
+  - id: polygon-pistol9
+    name: Pistol 9
+    previewAddress: class-preview/weapon-polygon-pistol9
+    category: 5
+    damage: 30
+    rpm: 360
+    rounds: 12
+    icon: {fileID: 2680376612499445932, guid: 79c6e9e0c33aa674f95fe99dadf7245f, type: 3}
+    defaultSight: 
+    sights:
+    - scope_1p29
+    - scope_acog
+    - built-in-irons
+    - holographic
+    - scope_longrange
+    - military_flipscope
+    - military_reddot_01
+    - military_reddot_02
+    - military_reddot_03
+    - military_reddot_04
+    - military_reddot_05
+    - military_scope_01
+    - military_scope_10
+    - military_scope_11
+    - military_scope_12
+    - military_scope_13
+    - military_scope_14
+    - military_scope_15
+    - military_scope_02
+    - military_scope_03
+    - military_scope_04
+    - military_scope_05
+    - military_scope_06
+    - military_scope_07
+    - military_scope_08
+    - military_scope_09
+    - polygon-scope-a
+    - polygon-scope-b
+    - polygon-scope-c
+    - sight_reddot
+    - pack-red_dot_a
+    - pack-red_dot_b
+    - pack-red_dot_c
+    - pack-red_dot_d
+    - pack-red_dot_e
+    - polygon-reflex
+    - sight_rmr
+    - scope_trijicon
+    attachments:
+    - sight-riser-25mm
+    - frontiron
+    - hexagon_rail
+    - hexagon_rail_long
+    - hexagon_suppressor
+    - lamp_a_prefab
+    - lamp_laser_a_prefab
+    - lamp_laser_b_prefab
+    - laser_a_prefab
+    - mk18_suppressor
+    - reariron
+    - rmr_mount
+    - sm_wep_mod_rail_01
+    - suppressor_a_prefab
+    - suppressor_b_prefab
+    - suppressor_c_prefab
+    - suppressor_d_prefab
+    - m16a4-rear-iron
+    sockets:
+    - path: AttachmentSockets/MuzzleMount
+      mount: 0
+      placements: []
+      supports: []
+    - path: AttachmentSockets/RailMount
+      mount: 1
+      placements: []
+      supports: []
+    - path: AttachmentSockets/LeftRailMount
+      mount: 7
+      placements: []
+      supports: []
+    - path: AttachmentSockets/GripMount
+      mount: 2
+      placements: []
+      supports: []
+    - path: AttachmentSockets/RearIronMount
+      mount: 3
+      placements: []
+      supports: []
+    - path: AttachmentSockets/FrontIronMount
+      mount: 4
+      placements: []
+      supports: []
+    - path: AttachmentSockets/OpticMount
+      mount: 5
+      placements: []
+      supports: []
+    builtIns:
+    - mount: 0
+      rendererNames: []
+    - mount: 1
+      rendererNames: []
+    - mount: 2
+      rendererNames: []
+    - mount: 3
+      rendererNames: []
+    - mount: 4
+      rendererNames: []
+    - mount: 5
+      rendererNames: []
+    - mount: 7
+      rendererNames: []
+  - id: polygon-pumpgun_a
+    name: Pump Shotgun
+    previewAddress: class-preview/weapon-polygon-pumpgun_a
+    category: 3
+    damage: 130
+    rpm: 90
+    rounds: 8
+    icon: {fileID: 602509576038042059, guid: 77e5ffe3bbeb8aa43813e56504d64e37, type: 3}
+    defaultSight: 
+    sights:
+    - scope_1p29
+    - scope_acog
+    - built-in-irons
+    - holographic
+    - scope_longrange
+    - military_flipscope
+    - military_reddot_01
+    - military_reddot_02
+    - military_reddot_03
+    - military_reddot_04
+    - military_reddot_05
+    - military_scope_01
+    - military_scope_10
+    - military_scope_11
+    - military_scope_12
+    - military_scope_13
+    - military_scope_14
+    - military_scope_15
+    - military_scope_02
+    - military_scope_03
+    - military_scope_04
+    - military_scope_05
+    - military_scope_06
+    - military_scope_07
+    - military_scope_08
+    - military_scope_09
+    - polygon-scope-a
+    - polygon-scope-b
+    - polygon-scope-c
+    - sight_reddot
+    - pack-red_dot_a
+    - pack-red_dot_b
+    - pack-red_dot_c
+    - pack-red_dot_d
+    - pack-red_dot_e
+    - polygon-reflex
+    - sight_rmr
+    - scope_trijicon
+    attachments:
+    - sight-riser-25mm
+    - angledgripmount_45
+    - frontiron
+    - gripmount
+    - hexagon_rail
+    - hexagon_rail_long
+    - hexagon_suppressor
+    - lamp_a_prefab
+    - lamp_laser_a_prefab
+    - lamp_laser_b_prefab
+    - laser_a_prefab
+    - mk18_suppressor
+    - reariron
+    - rk-2
+    - rmr_mount
+    - sm_wep_mod_foregrip_01
+    - sm_wep_mod_rail_01
+    - suppressor_a_prefab
+    - suppressor_b_prefab
+    - suppressor_c_prefab
+    - suppressor_d_prefab
+    - m16a4-rear-iron
+    sockets:
+    - path: AttachmentSockets/MuzzleMount
+      mount: 0
+      placements: []
+      supports: []
+    - path: AttachmentSockets/RailMount
+      mount: 1
+      placements: []
+      supports: []
+    - path: AttachmentSockets/LeftRailMount
+      mount: 7
+      placements: []
+      supports: []
+    - path: AttachmentSockets/GripMount
+      mount: 2
+      placements: []
+      supports: []
+    - path: AttachmentSockets/RearIronMount
+      mount: 3
+      placements: []
+      supports: []
+    - path: AttachmentSockets/FrontIronMount
+      mount: 4
+      placements: []
+      supports: []
+    - path: AttachmentSockets/OpticMount
+      mount: 5
+      placements: []
+      supports: []
+    builtIns:
+    - mount: 0
+      rendererNames: []
+    - mount: 1
+      rendererNames: []
+    - mount: 2
+      rendererNames: []
+    - mount: 3
+      rendererNames: []
+    - mount: 4
+      rendererNames: []
+    - mount: 5
+      rendererNames: []
+    - mount: 7
+      rendererNames: []
+  - id: polygon-revolver
+    name: Revolver
+    previewAddress: class-preview/weapon-polygon-revolver
+    category: 5
+    damage: 30
+    rpm: 360
+    rounds: 12
+    icon: {fileID: 3892033970181235501, guid: 565b6da4acee2e740a1b14be5f972618, type: 3}
+    defaultSight: 
+    sights:
+    - scope_1p29
+    - scope_acog
+    - built-in-irons
+    - holographic
+    - scope_longrange
+    - military_flipscope
+    - military_reddot_01
+    - military_reddot_02
+    - military_reddot_03
+    - military_reddot_04
+    - military_reddot_05
+    - military_scope_01
+    - military_scope_10
+    - military_scope_11
+    - military_scope_12
+    - military_scope_13
+    - military_scope_14
+    - military_scope_15
+    - military_scope_02
+    - military_scope_03
+    - military_scope_04
+    - military_scope_05
+    - military_scope_06
+    - military_scope_07
+    - military_scope_08
+    - military_scope_09
+    - polygon-scope-a
+    - polygon-scope-b
+    - polygon-scope-c
+    - sight_reddot
+    - pack-red_dot_a
+    - pack-red_dot_b
+    - pack-red_dot_c
+    - pack-red_dot_d
+    - pack-red_dot_e
+    - polygon-reflex
+    - sight_rmr
+    - scope_trijicon
+    - revolver_builtinscope
+    attachments:
+    - sight-riser-25mm
+    - frontiron
+    - hexagon_rail
+    - hexagon_rail_long
+    - hexagon_suppressor
+    - lamp_a_prefab
+    - lamp_laser_a_prefab
+    - lamp_laser_b_prefab
+    - laser_a_prefab
+    - mk18_suppressor
+    - reariron
+    - rmr_mount
+    - sm_wep_mod_rail_01
+    - suppressor_a_prefab
+    - suppressor_b_prefab
+    - suppressor_c_prefab
+    - suppressor_d_prefab
+    - m16a4-rear-iron
+    sockets:
+    - path: AttachmentSockets/MuzzleMount
+      mount: 0
+      placements: []
+      supports: []
+    - path: AttachmentSockets/RailMount
+      mount: 1
+      placements: []
+      supports: []
+    - path: AttachmentSockets/LeftRailMount
+      mount: 7
+      placements: []
+      supports: []
+    - path: AttachmentSockets/GripMount
+      mount: 2
+      placements: []
+      supports: []
+    - path: AttachmentSockets/RearIronMount
+      mount: 3
+      placements: []
+      supports: []
+    - path: AttachmentSockets/FrontIronMount
+      mount: 4
+      placements: []
+      supports: []
+    - path: AttachmentSockets/OpticMount
+      mount: 5
+      placements: []
+      supports: []
+    builtIns:
+    - mount: 0
+      rendererNames: []
+    - mount: 1
+      rendererNames: []
+    - mount: 2
+      rendererNames: []
+    - mount: 3
+      rendererNames: []
+    - mount: 4
+      rendererNames: []
+    - mount: 5
+      rendererNames: []
+    - mount: 7
+      rendererNames: []
+  - id: polygon-rocket_launcher
+    name: RPG-7
+    previewAddress: class-preview/weapon-polygon-rocket_launcher
+    category: 6
+    damage: 25
+    rpm: 60
+    rounds: 1
+    icon: {fileID: -5478972476646102869, guid: 5e4278cf2a45b4c49971474498ed327e, type: 3}
+    defaultSight: 
+    sights:
+    - scope_1p29
+    - scope_acog
+    - built-in-irons
+    - holographic
+    - scope_longrange
+    - military_flipscope
+    - military_reddot_01
+    - military_reddot_02
+    - military_reddot_03
+    - military_reddot_04
+    - military_reddot_05
+    - military_scope_01
+    - military_scope_10
+    - military_scope_11
+    - military_scope_12
+    - military_scope_13
+    - military_scope_14
+    - military_scope_15
+    - military_scope_02
+    - military_scope_03
+    - military_scope_04
+    - military_scope_05
+    - military_scope_06
+    - military_scope_07
+    - military_scope_08
+    - military_scope_09
+    - polygon-scope-a
+    - polygon-scope-b
+    - polygon-scope-c
+    - sight_reddot
+    - pack-red_dot_a
+    - pack-red_dot_b
+    - pack-red_dot_c
+    - pack-red_dot_d
+    - pack-red_dot_e
+    - polygon-reflex
+    - sight_rmr
+    - scope_trijicon
+    attachments:
+    - sight-riser-25mm
+    - hexagon_rail
+    - hexagon_rail_long
+    - lamp_a_prefab
+    - lamp_laser_a_prefab
+    - lamp_laser_b_prefab
+    - laser_a_prefab
+    - rmr_mount
+    - sm_wep_mod_rail_01
+    sockets:
+    - path: AttachmentSockets/MuzzleMount
+      mount: 0
+      placements: []
+      supports: []
+    - path: AttachmentSockets/RailMount
+      mount: 1
+      placements: []
+      supports: []
+    - path: AttachmentSockets/LeftRailMount
+      mount: 7
+      placements: []
+      supports: []
+    - path: AttachmentSockets/GripMount
+      mount: 2
+      placements: []
+      supports: []
+    - path: AttachmentSockets/RearIronMount
+      mount: 3
+      placements: []
+      supports: []
+    - path: AttachmentSockets/FrontIronMount
+      mount: 4
+      placements: []
+      supports: []
+    - path: AttachmentSockets/OpticMount
+      mount: 5
+      placements: []
+      supports: []
+    builtIns:
+    - mount: 0
+      rendererNames: []
+    - mount: 1
+      rendererNames: []
+    - mount: 2
+      rendererNames: []
+    - mount: 3
+      rendererNames: []
+    - mount: 4
+      rendererNames: []
+    - mount: 5
+      rendererNames: []
+    - mount: 7
+      rendererNames: []
+  - id: polygon-rp9
+    name: P90
+    previewAddress: class-preview/weapon-polygon-rp9
+    category: 1
+    damage: 25
+    rpm: 650
+    rounds: 30
+    icon: {fileID: 5956189942401315661, guid: 00574443c7b5e6a418022584ee356e81, type: 3}
+    defaultSight: 
+    sights:
+    - p90-built-in-sight
+    - scope_1p29
+    - scope_acog
+    - holographic
+    - scope_longrange
+    - military_flipscope
+    - military_reddot_01
+    - military_reddot_02
+    - military_reddot_03
+    - military_reddot_04
+    - military_reddot_05
+    - military_scope_01
+    - military_scope_10
+    - military_scope_11
+    - military_scope_12
+    - military_scope_13
+    - military_scope_14
+    - military_scope_15
+    - military_scope_02
+    - military_scope_03
+    - military_scope_04
+    - military_scope_05
+    - military_scope_06
+    - military_scope_07
+    - military_scope_08
+    - military_scope_09
+    - polygon-scope-a
+    - polygon-scope-b
+    - polygon-scope-c
+    - sight_reddot
+    - pack-red_dot_a
+    - pack-red_dot_b
+    - pack-red_dot_c
+    - pack-red_dot_d
+    - pack-red_dot_e
+    - polygon-reflex
+    - sight_rmr
+    - scope_trijicon
+    attachments:
+    - angledgripmount_45
+    - frontiron
+    - gripmount
+    - hexagon_rail
+    - hexagon_rail_long
+    - hexagon_suppressor
+    - lamp_a_prefab
+    - lamp_laser_a_prefab
+    - lamp_laser_b_prefab
+    - laser_a_prefab
+    - mk18_suppressor
+    - reariron
+    - rk-2
+    - sm_wep_mod_foregrip_01
+    - sm_wep_mod_rail_01
+    - suppressor_a_prefab
+    - suppressor_b_prefab
+    - suppressor_c_prefab
+    - suppressor_d_prefab
+    - m16a4-rear-iron
+    sockets:
+    - path: AttachmentSockets/MuzzleMount
+      mount: 0
+      placements: []
+      supports: []
+    - path: AttachmentSockets/RailMount
+      mount: 1
+      placements: []
+      supports: []
+    - path: AttachmentSockets/LeftRailMount
+      mount: 7
+      placements: []
+      supports: []
+    - path: AttachmentSockets/GripMount
+      mount: 2
+      placements: []
+      supports: []
+    - path: AttachmentSockets/RearIronMount
+      mount: 3
+      placements: []
+      supports: []
+    - path: AttachmentSockets/FrontIronMount
+      mount: 4
+      placements: []
+      supports: []
+    - path: AttachmentSockets/OpticMount
+      mount: 5
+      placements: []
+      supports: []
+    builtIns:
+    - mount: 0
+      rendererNames: []
+    - mount: 1
+      rendererNames: []
+    - mount: 2
+      rendererNames: []
+    - mount: 3
+      rendererNames: []
+    - mount: 4
+      rendererNames: []
+    - mount: 7
+      rendererNames: []
+  - id: polygon-sce5
+    name: SCAR-H
+    previewAddress: class-preview/weapon-polygon-sce5
+    category: 0
+    damage: 25
+    rpm: 650
+    rounds: 30
+    icon: {fileID: -8622133754065310705, guid: 477805efbb6ce2e4885d635f9c028b32, type: 3}
+    defaultSight: 
+    sights:
+    - scope_1p29
+    - scope_acog
+    - built-in-irons
+    - holographic
+    - scope_longrange
+    - military_flipscope
+    - military_reddot_01
+    - military_reddot_02
+    - military_reddot_03
+    - military_reddot_04
+    - military_reddot_05
+    - military_scope_01
+    - military_scope_10
+    - military_scope_11
+    - military_scope_12
+    - military_scope_13
+    - military_scope_14
+    - military_scope_15
+    - military_scope_02
+    - military_scope_03
+    - military_scope_04
+    - military_scope_05
+    - military_scope_06
+    - military_scope_07
+    - military_scope_08
+    - military_scope_09
+    - polygon-scope-a
+    - polygon-scope-b
+    - polygon-scope-c
+    - sight_reddot
+    - pack-red_dot_a
+    - pack-red_dot_b
+    - pack-red_dot_c
+    - pack-red_dot_d
+    - pack-red_dot_e
+    - polygon-reflex
+    - sight_rmr
+    - scope_trijicon
+    attachments:
+    - sight-riser-25mm
+    - angledgripmount_45
+    - frontiron
+    - gripmount
+    - hexagon_rail
+    - hexagon_rail_long
+    - hexagon_suppressor
+    - lamp_a_prefab
+    - lamp_laser_a_prefab
+    - lamp_laser_b_prefab
+    - laser_a_prefab
+    - mk18_suppressor
+    - reariron
+    - rk-2
+    - rmr_mount
+    - sm_wep_mod_foregrip_01
+    - sm_wep_mod_rail_01
+    - suppressor_a_prefab
+    - suppressor_b_prefab
+    - suppressor_c_prefab
+    - suppressor_d_prefab
+    - m16a4-rear-iron
+    sockets:
+    - path: AttachmentSockets/MuzzleMount
+      mount: 0
+      placements: []
+      supports: []
+    - path: AttachmentSockets/RailMount
+      mount: 1
+      placements: []
+      supports: []
+    - path: AttachmentSockets/LeftRailMount
+      mount: 7
+      placements: []
+      supports: []
+    - path: AttachmentSockets/GripMount
+      mount: 2
+      placements: []
+      supports: []
+    - path: AttachmentSockets/RearIronMount
+      mount: 3
+      placements: []
+      supports: []
+    - path: AttachmentSockets/FrontIronMount
+      mount: 4
+      placements: []
+      supports: []
+    - path: AttachmentSockets/OpticMount
+      mount: 5
+      placements: []
+      supports: []
+    builtIns:
+    - mount: 0
+      rendererNames: []
+    - mount: 1
+      rendererNames: []
+    - mount: 2
+      rendererNames: []
+    - mount: 3
+      rendererNames:
+      - BuiltInRearIron
+    - mount: 4
+      rendererNames:
+      - rear_sight_a
+    - mount: 5
+      rendererNames: []
+    - mount: 7
+      rendererNames: []
+  - id: polygon-scorp6
+    name: Skorpion
+    previewAddress: class-preview/weapon-polygon-scorp6
+    category: 1
+    damage: 25
+    rpm: 650
+    rounds: 30
+    icon: {fileID: -6781785719905552456, guid: 4d5eda10a3189c74aaa3acee9f1aeb9e, type: 3}
+    defaultSight: 
+    sights:
+    - scope_1p29
+    - scope_acog
+    - built-in-irons
+    - holographic
+    - scope_longrange
+    - military_flipscope
+    - military_reddot_01
+    - military_reddot_02
+    - military_reddot_03
+    - military_reddot_04
+    - military_reddot_05
+    - military_scope_01
+    - military_scope_10
+    - military_scope_11
+    - military_scope_12
+    - military_scope_13
+    - military_scope_14
+    - military_scope_15
+    - military_scope_02
+    - military_scope_03
+    - military_scope_04
+    - military_scope_05
+    - military_scope_06
+    - military_scope_07
+    - military_scope_08
+    - military_scope_09
+    - polygon-scope-a
+    - polygon-scope-b
+    - polygon-scope-c
+    - sight_reddot
+    - pack-red_dot_a
+    - pack-red_dot_b
+    - pack-red_dot_c
+    - pack-red_dot_d
+    - pack-red_dot_e
+    - polygon-reflex
+    - sight_rmr
+    - scope_trijicon
+    attachments:
+    - sight-riser-25mm
+    - angledgripmount_45
+    - frontiron
+    - gripmount
+    - hexagon_rail
+    - hexagon_rail_long
+    - hexagon_suppressor
+    - lamp_a_prefab
+    - lamp_laser_a_prefab
+    - lamp_laser_b_prefab
+    - laser_a_prefab
+    - mk18_suppressor
+    - reariron
+    - rk-2
+    - rmr_mount
+    - sm_wep_mod_foregrip_01
+    - sm_wep_mod_rail_01
+    - suppressor_a_prefab
+    - suppressor_b_prefab
+    - suppressor_c_prefab
+    - suppressor_d_prefab
+    - m16a4-rear-iron
+    sockets:
+    - path: AttachmentSockets/MuzzleMount
+      mount: 0
+      placements: []
+      supports: []
+    - path: AttachmentSockets/RailMount
+      mount: 1
+      placements: []
+      supports: []
+    - path: AttachmentSockets/LeftRailMount
+      mount: 7
+      placements: []
+      supports: []
+    - path: AttachmentSockets/GripMount
+      mount: 2
+      placements: []
+      supports: []
+    - path: AttachmentSockets/RearIronMount
+      mount: 3
+      placements: []
+      supports: []
+    - path: AttachmentSockets/FrontIronMount
+      mount: 4
+      placements: []
+      supports: []
+    - path: AttachmentSockets/OpticMount
+      mount: 5
+      placements: []
+      supports: []
+    builtIns:
+    - mount: 0
+      rendererNames: []
+    - mount: 1
+      rendererNames: []
+    - mount: 2
+      rendererNames: []
+    - mount: 3
+      rendererNames: []
+    - mount: 4
+      rendererNames: []
+    - mount: 5
+      rendererNames: []
+    - mount: 7
+      rendererNames: []
+  - id: polygon-shotgun3
+    name: M3 Shotgun
+    previewAddress: class-preview/weapon-polygon-shotgun3
+    category: 3
+    damage: 130
+    rpm: 90
+    rounds: 8
+    icon: {fileID: -1959066387300835850, guid: bc21e289149913c42a56952f4983d438, type: 3}
+    defaultSight: 
+    sights:
+    - scope_1p29
+    - scope_acog
+    - built-in-irons
+    - holographic
+    - scope_longrange
+    - military_flipscope
+    - military_reddot_01
+    - military_reddot_02
+    - military_reddot_03
+    - military_reddot_04
+    - military_reddot_05
+    - military_scope_01
+    - military_scope_10
+    - military_scope_11
+    - military_scope_12
+    - military_scope_13
+    - military_scope_14
+    - military_scope_15
+    - military_scope_02
+    - military_scope_03
+    - military_scope_04
+    - military_scope_05
+    - military_scope_06
+    - military_scope_07
+    - military_scope_08
+    - military_scope_09
+    - polygon-scope-a
+    - polygon-scope-b
+    - polygon-scope-c
+    - sight_reddot
+    - pack-red_dot_a
+    - pack-red_dot_b
+    - pack-red_dot_c
+    - pack-red_dot_d
+    - pack-red_dot_e
+    - polygon-reflex
+    - sight_rmr
+    - scope_trijicon
+    attachments:
+    - sight-riser-25mm
+    - angledgripmount_45
+    - frontiron
+    - gripmount
+    - hexagon_rail
+    - hexagon_rail_long
+    - hexagon_suppressor
+    - lamp_a_prefab
+    - lamp_laser_a_prefab
+    - lamp_laser_b_prefab
+    - laser_a_prefab
+    - mk18_suppressor
+    - reariron
+    - rk-2
+    - rmr_mount
+    - sm_wep_mod_foregrip_01
+    - sm_wep_mod_rail_01
+    - suppressor_a_prefab
+    - suppressor_b_prefab
+    - suppressor_c_prefab
+    - suppressor_d_prefab
+    - m16a4-rear-iron
+    sockets:
+    - path: AttachmentSockets/MuzzleMount
+      mount: 0
+      placements: []
+      supports: []
+    - path: AttachmentSockets/RailMount
+      mount: 1
+      placements: []
+      supports: []
+    - path: AttachmentSockets/LeftRailMount
+      mount: 7
+      placements: []
+      supports: []
+    - path: AttachmentSockets/GripMount
+      mount: 2
+      placements: []
+      supports: []
+    - path: AttachmentSockets/RearIronMount
+      mount: 3
+      placements: []
+      supports: []
+    - path: AttachmentSockets/FrontIronMount
+      mount: 4
+      placements: []
+      supports: []
+    - path: AttachmentSockets/OpticMount
+      mount: 5
+      placements: []
+      supports: []
+    builtIns:
+    - mount: 0
+      rendererNames: []
+    - mount: 1
+      rendererNames: []
+    - mount: 2
+      rendererNames: []
+    - mount: 3
+      rendererNames: []
+    - mount: 4
+      rendererNames: []
+    - mount: 5
+      rendererNames: []
+    - mount: 7
+      rendererNames: []
+  - id: polygon-streetsub
+    name: TEC-9
+    previewAddress: class-preview/weapon-polygon-streetsub
+    category: 1
+    damage: 25
+    rpm: 650
+    rounds: 30
+    icon: {fileID: 1288166594487965141, guid: aa6b7ffab58fc674f8bc1ab04e5c54a4, type: 3}
+    defaultSight: 
+    sights:
+    - scope_1p29
+    - scope_acog
+    - built-in-irons
+    - holographic
+    - scope_longrange
+    - military_flipscope
+    - military_reddot_01
+    - military_reddot_02
+    - military_reddot_03
+    - military_reddot_04
+    - military_reddot_05
+    - military_scope_01
+    - military_scope_10
+    - military_scope_11
+    - military_scope_12
+    - military_scope_13
+    - military_scope_14
+    - military_scope_15
+    - military_scope_02
+    - military_scope_03
+    - military_scope_04
+    - military_scope_05
+    - military_scope_06
+    - military_scope_07
+    - military_scope_08
+    - military_scope_09
+    - polygon-scope-a
+    - polygon-scope-b
+    - polygon-scope-c
+    - sight_reddot
+    - pack-red_dot_a
+    - pack-red_dot_b
+    - pack-red_dot_c
+    - pack-red_dot_d
+    - pack-red_dot_e
+    - polygon-reflex
+    - sight_rmr
+    - scope_trijicon
+    attachments:
+    - sight-riser-25mm
+    - angledgripmount_45
+    - frontiron
+    - gripmount
+    - hexagon_rail
+    - hexagon_rail_long
+    - hexagon_suppressor
+    - lamp_a_prefab
+    - lamp_laser_a_prefab
+    - lamp_laser_b_prefab
+    - laser_a_prefab
+    - mk18_suppressor
+    - reariron
+    - rk-2
+    - rmr_mount
+    - sm_wep_mod_foregrip_01
+    - sm_wep_mod_rail_01
+    - suppressor_a_prefab
+    - suppressor_b_prefab
+    - suppressor_c_prefab
+    - suppressor_d_prefab
+    - m16a4-rear-iron
+    sockets:
+    - path: AttachmentSockets/MuzzleMount
+      mount: 0
+      placements: []
+      supports: []
+    - path: AttachmentSockets/RailMount
+      mount: 1
+      placements: []
+      supports: []
+    - path: AttachmentSockets/LeftRailMount
+      mount: 7
+      placements: []
+      supports: []
+    - path: AttachmentSockets/GripMount
+      mount: 2
+      placements: []
+      supports: []
+    - path: AttachmentSockets/RearIronMount
+      mount: 3
+      placements: []
+      supports: []
+    - path: AttachmentSockets/FrontIronMount
+      mount: 4
+      placements: []
+      supports: []
+    - path: AttachmentSockets/OpticMount
+      mount: 5
+      placements: []
+      supports: []
+    builtIns:
+    - mount: 0
+      rendererNames: []
+    - mount: 1
+      rendererNames: []
+    - mount: 2
+      rendererNames: []
+    - mount: 3
+      rendererNames: []
+    - mount: 4
+      rendererNames: []
+    - mount: 5
+      rendererNames: []
+    - mount: 7
+      rendererNames: []
+  - id: polygon-sturmgewehr46
+    name: HK416
+    previewAddress: class-preview/weapon-polygon-sturmgewehr46
+    category: 0
+    damage: 25
+    rpm: 650
+    rounds: 30
+    icon: {fileID: 2052780447462829092, guid: 866628088430024438515a09b9ae9a82, type: 3}
+    defaultSight: 
+    sights:
+    - scope_1p29
+    - scope_acog
+    - built-in-irons
+    - holographic
+    - scope_longrange
+    - military_flipscope
+    - military_reddot_01
+    - military_reddot_02
+    - military_reddot_03
+    - military_reddot_04
+    - military_reddot_05
+    - military_scope_01
+    - military_scope_10
+    - military_scope_11
+    - military_scope_12
+    - military_scope_13
+    - military_scope_14
+    - military_scope_15
+    - military_scope_02
+    - military_scope_03
+    - military_scope_04
+    - military_scope_05
+    - military_scope_06
+    - military_scope_07
+    - military_scope_08
+    - military_scope_09
+    - polygon-scope-a
+    - polygon-scope-b
+    - polygon-scope-c
+    - sight_reddot
+    - pack-red_dot_a
+    - pack-red_dot_b
+    - pack-red_dot_c
+    - pack-red_dot_d
+    - pack-red_dot_e
+    - polygon-reflex
+    - sight_rmr
+    - scope_trijicon
+    attachments:
+    - sight-riser-25mm
+    - angledgripmount_45
+    - frontiron
+    - gripmount
+    - hexagon_rail
+    - hexagon_rail_long
+    - hexagon_suppressor
+    - lamp_a_prefab
+    - lamp_laser_a_prefab
+    - lamp_laser_b_prefab
+    - laser_a_prefab
+    - mk18_suppressor
+    - reariron
+    - rk-2
+    - rmr_mount
+    - sm_wep_mod_foregrip_01
+    - sm_wep_mod_rail_01
+    - suppressor_a_prefab
+    - suppressor_b_prefab
+    - suppressor_c_prefab
+    - suppressor_d_prefab
+    - m16a4-rear-iron
+    sockets:
+    - path: AttachmentSockets/MuzzleMount
+      mount: 0
+      placements: []
+      supports: []
+    - path: AttachmentSockets/RailMount
+      mount: 1
+      placements: []
+      supports: []
+    - path: AttachmentSockets/LeftRailMount
+      mount: 7
+      placements: []
+      supports: []
+    - path: AttachmentSockets/GripMount
+      mount: 2
+      placements: []
+      supports: []
+    - path: AttachmentSockets/RearIronMount
+      mount: 3
+      placements: []
+      supports: []
+    - path: AttachmentSockets/FrontIronMount
+      mount: 4
+      placements: []
+      supports: []
+    - path: AttachmentSockets/OpticMount
+      mount: 5
+      placements: []
+      supports: []
+    builtIns:
+    - mount: 0
+      rendererNames: []
+    - mount: 1
+      rendererNames: []
+    - mount: 2
+      rendererNames: []
+    - mount: 3
+      rendererNames:
+      - Rear_sight_A
+    - mount: 4
+      rendererNames:
+      - BuiltInFrontIron
+    - mount: 5
+      rendererNames: []
+    - mount: 7
+      rendererNames: []
+  - id: polygon-submachine5
+    name: MP5K
+    previewAddress: class-preview/weapon-polygon-submachine5
+    category: 1
+    damage: 25
+    rpm: 650
+    rounds: 30
+    icon: {fileID: -3972488613768696771, guid: a263852e57f3400449eaa646601e268c, type: 3}
+    defaultSight: 
+    sights:
+    - scope_1p29
+    - scope_acog
+    - built-in-irons
+    - holographic
+    - scope_longrange
+    - military_flipscope
+    - military_reddot_01
+    - military_reddot_02
+    - military_reddot_03
+    - military_reddot_04
+    - military_reddot_05
+    - military_scope_01
+    - military_scope_10
+    - military_scope_11
+    - military_scope_12
+    - military_scope_13
+    - military_scope_14
+    - military_scope_15
+    - military_scope_02
+    - military_scope_03
+    - military_scope_04
+    - military_scope_05
+    - military_scope_06
+    - military_scope_07
+    - military_scope_08
+    - military_scope_09
+    - polygon-scope-a
+    - polygon-scope-b
+    - polygon-scope-c
+    - sight_reddot
+    - pack-red_dot_a
+    - pack-red_dot_b
+    - pack-red_dot_c
+    - pack-red_dot_d
+    - pack-red_dot_e
+    - polygon-reflex
+    - sight_rmr
+    - scope_trijicon
+    attachments:
+    - sight-riser-25mm
+    - angledgripmount_45
+    - frontiron
+    - gripmount
+    - hexagon_rail
+    - hexagon_rail_long
+    - hexagon_suppressor
+    - lamp_a_prefab
+    - lamp_laser_a_prefab
+    - lamp_laser_b_prefab
+    - laser_a_prefab
+    - mk18_suppressor
+    - reariron
+    - rk-2
+    - rmr_mount
+    - sm_wep_mod_foregrip_01
+    - sm_wep_mod_rail_01
+    - suppressor_a_prefab
+    - suppressor_b_prefab
+    - suppressor_c_prefab
+    - suppressor_d_prefab
+    - m16a4-rear-iron
+    sockets:
+    - path: AttachmentSockets/MuzzleMount
+      mount: 0
+      placements: []
+      supports: []
+    - path: AttachmentSockets/RailMount
+      mount: 1
+      placements: []
+      supports: []
+    - path: AttachmentSockets/LeftRailMount
+      mount: 7
+      placements: []
+      supports: []
+    - path: AttachmentSockets/GripMount
+      mount: 2
+      placements: []
+      supports: []
+    - path: AttachmentSockets/RearIronMount
+      mount: 3
+      placements: []
+      supports: []
+    - path: AttachmentSockets/FrontIronMount
+      mount: 4
+      placements: []
+      supports: []
+    - path: AttachmentSockets/OpticMount
+      mount: 5
+      placements: []
+      supports: []
+    builtIns:
+    - mount: 0
+      rendererNames: []
+    - mount: 1
+      rendererNames: []
+    - mount: 2
+      rendererNames: []
+    - mount: 3
+      rendererNames: []
+    - mount: 4
+      rendererNames: []
+    - mount: 5
+      rendererNames: []
+    - mount: 7
+      rendererNames: []
+  - id: polygon-tarusk
+    name: TAR-21
+    previewAddress: class-preview/weapon-polygon-tarusk
+    category: 0
+    damage: 25
+    rpm: 650
+    rounds: 30
+    icon: {fileID: -1308996170255673968, guid: f0c2ffe4feb133e49b9d64bee3f5e59f, type: 3}
+    defaultSight: 
+    sights:
+    - scope_1p29
+    - scope_acog
+    - built-in-irons
+    - holographic
+    - scope_longrange
+    - military_flipscope
+    - military_reddot_01
+    - military_reddot_02
+    - military_reddot_03
+    - military_reddot_04
+    - military_reddot_05
+    - military_scope_01
+    - military_scope_10
+    - military_scope_11
+    - military_scope_12
+    - military_scope_13
+    - military_scope_14
+    - military_scope_15
+    - military_scope_02
+    - military_scope_03
+    - military_scope_04
+    - military_scope_05
+    - military_scope_06
+    - military_scope_07
+    - military_scope_08
+    - military_scope_09
+    - polygon-scope-a
+    - polygon-scope-b
+    - polygon-scope-c
+    - sight_reddot
+    - pack-red_dot_a
+    - pack-red_dot_b
+    - pack-red_dot_c
+    - pack-red_dot_d
+    - pack-red_dot_e
+    - polygon-reflex
+    - sight_rmr
+    - scope_trijicon
+    attachments:
+    - sight-riser-25mm
+    - angledgripmount_45
+    - frontiron
+    - gripmount
+    - hexagon_rail
+    - hexagon_rail_long
+    - hexagon_suppressor
+    - lamp_a_prefab
+    - lamp_laser_a_prefab
+    - lamp_laser_b_prefab
+    - laser_a_prefab
+    - mk18_suppressor
+    - reariron
+    - rk-2
+    - rmr_mount
+    - sm_wep_mod_foregrip_01
+    - sm_wep_mod_rail_01
+    - suppressor_a_prefab
+    - suppressor_b_prefab
+    - suppressor_c_prefab
+    - suppressor_d_prefab
+    - m16a4-rear-iron
+    sockets:
+    - path: AttachmentSockets/MuzzleMount
+      mount: 0
+      placements: []
+      supports: []
+    - path: AttachmentSockets/RailMount
+      mount: 1
+      placements: []
+      supports: []
+    - path: AttachmentSockets/LeftRailMount
+      mount: 7
+      placements: []
+      supports: []
+    - path: AttachmentSockets/GripMount
+      mount: 2
+      placements: []
+      supports: []
+    - path: AttachmentSockets/RearIronMount
+      mount: 3
+      placements: []
+      supports: []
+    - path: AttachmentSockets/FrontIronMount
+      mount: 4
+      placements: []
+      supports: []
+    - path: AttachmentSockets/OpticMount
+      mount: 5
+      placements: []
+      supports:
+      - sight: military_reddot_01
+        riser: sight-riser-25mm
+        contactPoint: {x: 0, y: 0, z: 0}
+        scale: {x: 1, y: 1, z: 2.4}
+      - sight: military_reddot_02
+        riser: sight-riser-25mm
+        contactPoint: {x: 0, y: 0, z: 0.01208}
+        scale: {x: 1, y: 1, z: 2.4}
+      - sight: military_reddot_03
+        riser: sight-riser-25mm
+        contactPoint: {x: 0, y: 0, z: -0.02471}
+        scale: {x: 1, y: 1, z: 2.4}
+      - sight: military_reddot_04
+        riser: sight-riser-25mm
+        contactPoint: {x: 0, y: 0, z: 0.00478}
+        scale: {x: 1, y: 1, z: 2.4}
+      - sight: military_reddot_05
+        riser: sight-riser-25mm
+        contactPoint: {x: 0, y: 0, z: -0.00219}
+        scale: {x: 1, y: 1, z: 2.4}
+      - sight: sight_reddot
+        riser: sight-riser-25mm
+        contactPoint: {x: -0.00003, y: 0.0015, z: 0.00007}
+        scale: {x: 1, y: 1, z: 1}
+      - sight: pack-red_dot_a
+        riser: sight-riser-25mm
+        contactPoint: {x: -0.00002, y: 0.00807, z: -0.01339}
+        scale: {x: 1, y: 1, z: 1}
+      - sight: pack-red_dot_c
+        riser: sight-riser-25mm
+        contactPoint: {x: 0, y: 0.00771, z: -0.00913}
+        scale: {x: 1, y: 1, z: 1}
+      - sight: pack-red_dot_d
+        riser: sight-riser-25mm
+        contactPoint: {x: 0.00017, y: 0.00919, z: 0.00279}
+        scale: {x: 1.4, y: 1, z: 1.55}
+      - sight: polygon-reflex
+        riser: sight-riser-25mm
+        contactPoint: {x: 0, y: -0.00714, z: -0.00122}
+        scale: {x: 1, y: 1, z: 1}
+      - sight: sight_rmr
+        riser: sight-riser-25mm
+        contactPoint: {x: 0, y: 0.01125, z: -0.00565}
+        scale: {x: 1, y: 1, z: 1}
+    builtIns:
+    - mount: 0
+      rendererNames: []
+    - mount: 1
+      rendererNames: []
+    - mount: 2
+      rendererNames: []
+    - mount: 3
+      rendererNames:
+      - rear_sight_a
+    - mount: 4
+      rendererNames:
+      - BuiltInFrontIron
+    - mount: 5
+      rendererNames: []
+    - mount: 7
+      rendererNames: []
+  parts:
+  - id: scope_1p29
+    name: 1P29
+    previewAddress: class-preview/optic-scope_1p29
+    icon: {fileID: 7388257915796791767, guid: 839717bb03c2af74ab08069061fff21e, type: 3}
+    mount: 0
+    optic: 1
+    position: {x: 0, y: 0, z: 0}
+    rotation: {x: 0, y: 0, z: 0}
+    scale: {x: 1, y: 1, z: 1}
+    sightLift: 0
+  - id: scope_acog
+    name: ACOG
+    previewAddress: class-preview/optic-scope_acog
+    icon: {fileID: 3840238094411779266, guid: e3499a37b9c9bfd4e971c83b0cc2edc6, type: 3}
+    mount: 0
+    optic: 1
+    position: {x: 0, y: 0, z: 0}
+    rotation: {x: 0, y: 0, z: 0}
+    scale: {x: 1, y: 1, z: 1}
+    sightLift: 0
+  - id: built-in-irons
+    name: Built-in sights
+    previewAddress: 
+    icon: {fileID: 0}
+    mount: 0
+    optic: 1
+    position: {x: 0, y: 0, z: 0}
+    rotation: {x: 0, y: 0, z: 0}
+    scale: {x: 1, y: 1, z: 1}
+    sightLift: 0
+  - id: holographic
+    name: Holographic
+    previewAddress: class-preview/optic-holographic
+    icon: {fileID: 6559791869257329003, guid: 7dfd4098d59d2f24183ab8c0aba9d701, type: 3}
+    mount: 0
+    optic: 1
+    position: {x: 0, y: 0, z: 0}
+    rotation: {x: 0, y: 0, z: 0}
+    scale: {x: 1, y: 1, z: 1}
+    sightLift: 0
+  - id: scope_longrange
+    name: Long range scope
+    previewAddress: class-preview/optic-scope_longrange
+    icon: {fileID: 8864923038850801243, guid: ad0ce3656fe6133499ca20324136205d, type: 3}
+    mount: 0
+    optic: 1
+    position: {x: 0, y: 0, z: 0}
+    rotation: {x: 0, y: 0, z: 0}
+    scale: {x: 1, y: 1, z: 1}
+    sightLift: 0
+  - id: military_flipscope
+    name: Military flip scope
+    previewAddress: class-preview/optic-military_flipscope
+    icon: {fileID: -436284808030090354, guid: a0cf524b1e4d2e14e9ab1c3dd63636b1, type: 3}
+    mount: 0
+    optic: 1
+    position: {x: 0, y: 0, z: 0}
+    rotation: {x: 0, y: 0, z: 0}
+    scale: {x: 1, y: 1, z: 1}
+    sightLift: 0
+  - id: military_reddot_01
+    name: Military red dot 1
+    previewAddress: class-preview/optic-military_reddot_01
+    icon: {fileID: 4223686865450147131, guid: db3ff6933a87b3d438842ac5cb753b8c, type: 3}
+    mount: 0
+    optic: 1
+    position: {x: 0, y: 0, z: 0}
+    rotation: {x: 0, y: 0, z: 0}
+    scale: {x: 1, y: 1, z: 1}
+    sightLift: 0
+  - id: military_reddot_02
+    name: Military red dot 2
+    previewAddress: class-preview/optic-military_reddot_02
+    icon: {fileID: -3411715562415066044, guid: 0f071496b4503964f8280d6f15bd4e6b, type: 3}
+    mount: 0
+    optic: 1
+    position: {x: 0, y: 0, z: 0}
+    rotation: {x: 0, y: 0, z: 0}
+    scale: {x: 1, y: 1, z: 1}
+    sightLift: 0
+  - id: military_reddot_03
+    name: Military red dot 3
+    previewAddress: class-preview/optic-military_reddot_03
+    icon: {fileID: 3622762547550980974, guid: 4eed18ef8fffc3b4ab9af1467c017032, type: 3}
+    mount: 0
+    optic: 1
+    position: {x: 0, y: 0, z: 0}
+    rotation: {x: 0, y: 0, z: 0}
+    scale: {x: 1, y: 1, z: 1}
+    sightLift: 0
+  - id: military_reddot_04
+    name: Military red dot 4
+    previewAddress: class-preview/optic-military_reddot_04
+    icon: {fileID: 3943431381129415471, guid: 3814fb4cad12eaf47aec81e4ab861f72, type: 3}
+    mount: 0
+    optic: 1
+    position: {x: 0, y: 0, z: 0}
+    rotation: {x: 0, y: 0, z: 0}
+    scale: {x: 1, y: 1, z: 1}
+    sightLift: 0
+  - id: military_reddot_05
+    name: Military red dot 5
+    previewAddress: class-preview/optic-military_reddot_05
+    icon: {fileID: 6490424145011401439, guid: 11a6bf0181f9dc941a79b403ed588b8e, type: 3}
+    mount: 0
+    optic: 1
+    position: {x: 0, y: 0, z: 0}
+    rotation: {x: 0, y: 0, z: 0}
+    scale: {x: 1, y: 1, z: 1}
+    sightLift: 0
+  - id: military_scope_01
+    name: Military scope 1
+    previewAddress: class-preview/optic-military_scope_01
+    icon: {fileID: -5301989779157191291, guid: af5913d121409db4da4e91cabe12a761, type: 3}
+    mount: 0
+    optic: 1
+    position: {x: 0, y: 0, z: 0}
+    rotation: {x: 0, y: 0, z: 0}
+    scale: {x: 1, y: 1, z: 1}
+    sightLift: 0
+  - id: military_scope_10
+    name: Military scope 10
+    previewAddress: class-preview/optic-military_scope_10
+    icon: {fileID: -1293091916101991986, guid: 6fb8810e26e5fa24d9885182820b9a2e, type: 3}
+    mount: 0
+    optic: 1
+    position: {x: 0, y: 0, z: 0}
+    rotation: {x: 0, y: 0, z: 0}
+    scale: {x: 1, y: 1, z: 1}
+    sightLift: 0
+  - id: military_scope_11
+    name: Military scope 11
+    previewAddress: class-preview/optic-military_scope_11
+    icon: {fileID: 8334541377492664044, guid: 98af57c0c4d368b48a54b9a36e622114, type: 3}
+    mount: 0
+    optic: 1
+    position: {x: 0, y: 0, z: 0}
+    rotation: {x: 0, y: 0, z: 0}
+    scale: {x: 1, y: 1, z: 1}
+    sightLift: 0
+  - id: military_scope_12
+    name: Military scope 12
+    previewAddress: class-preview/optic-military_scope_12
+    icon: {fileID: 1274217156757658696, guid: 0a3cae1e99f249a4fba3d4cff1bc21e8, type: 3}
+    mount: 0
+    optic: 1
+    position: {x: 0, y: 0, z: 0}
+    rotation: {x: 0, y: 0, z: 0}
+    scale: {x: 1, y: 1, z: 1}
+    sightLift: 0
+  - id: military_scope_13
+    name: Military scope 13
+    previewAddress: class-preview/optic-military_scope_13
+    icon: {fileID: -8913224920502116168, guid: 674c9f88ca2ddca479ab254b4456b172, type: 3}
+    mount: 0
+    optic: 1
+    position: {x: 0, y: 0, z: 0}
+    rotation: {x: 0, y: 0, z: 0}
+    scale: {x: 1, y: 1, z: 1}
+    sightLift: 0
+  - id: military_scope_14
+    name: Military scope 14
+    previewAddress: class-preview/optic-military_scope_14
+    icon: {fileID: 338428619913716275, guid: 516b76691a855974c9c8dac8bbb7d2bf, type: 3}
+    mount: 0
+    optic: 1
+    position: {x: 0, y: 0, z: 0}
+    rotation: {x: 0, y: 0, z: 0}
+    scale: {x: 1, y: 1, z: 1}
+    sightLift: 0
+  - id: military_scope_15
+    name: Military scope 15
+    previewAddress: class-preview/optic-military_scope_15
+    icon: {fileID: -7544263928840466371, guid: 00f53e960b742bb4cb71d0232cda7cc9, type: 3}
+    mount: 0
+    optic: 1
+    position: {x: 0, y: 0, z: 0}
+    rotation: {x: 0, y: 0, z: 0}
+    scale: {x: 1, y: 1, z: 1}
+    sightLift: 0
+  - id: military_scope_02
+    name: Military scope 2
+    previewAddress: class-preview/optic-military_scope_02
+    icon: {fileID: 144894066438726784, guid: ee1a5396841c6904db1c7bf71d6d1285, type: 3}
+    mount: 0
+    optic: 1
+    position: {x: 0, y: 0, z: 0}
+    rotation: {x: 0, y: 0, z: 0}
+    scale: {x: 1, y: 1, z: 1}
+    sightLift: 0
+  - id: military_scope_03
+    name: Military scope 3
+    previewAddress: class-preview/optic-military_scope_03
+    icon: {fileID: -7474473190221799010, guid: abadf7b88dd2b36469ef835b7e3b9eca, type: 3}
+    mount: 0
+    optic: 1
+    position: {x: 0, y: 0, z: 0}
+    rotation: {x: 0, y: 0, z: 0}
+    scale: {x: 1, y: 1, z: 1}
+    sightLift: 0
+  - id: military_scope_04
+    name: Military scope 4
+    previewAddress: class-preview/optic-military_scope_04
+    icon: {fileID: 7997067438352888811, guid: eb9337f68d22dfe449036cd4997ab614, type: 3}
+    mount: 0
+    optic: 1
+    position: {x: 0, y: 0, z: 0}
+    rotation: {x: 0, y: 0, z: 0}
+    scale: {x: 1, y: 1, z: 1}
+    sightLift: 0
+  - id: military_scope_05
+    name: Military scope 5
+    previewAddress: class-preview/optic-military_scope_05
+    icon: {fileID: 4073553264695715975, guid: 13bafcd85806ccd4da106c1e21253a26, type: 3}
+    mount: 0
+    optic: 1
+    position: {x: 0, y: 0, z: 0}
+    rotation: {x: 0, y: 0, z: 0}
+    scale: {x: 1, y: 1, z: 1}
+    sightLift: 0
+  - id: military_scope_06
+    name: Military scope 6
+    previewAddress: class-preview/optic-military_scope_06
+    icon: {fileID: -8755443464193022695, guid: e06efd5247cd4d94c8449a084d4d0c35, type: 3}
+    mount: 0
+    optic: 1
+    position: {x: 0, y: 0, z: 0}
+    rotation: {x: 0, y: 0, z: 0}
+    scale: {x: 1, y: 1, z: 1}
+    sightLift: 0
+  - id: military_scope_07
+    name: Military scope 7
+    previewAddress: class-preview/optic-military_scope_07
+    icon: {fileID: 8214436375542410484, guid: 67aa88fabd3ee844fba378f29849bccd, type: 3}
+    mount: 0
+    optic: 1
+    position: {x: 0, y: 0, z: 0}
+    rotation: {x: 0, y: 0, z: 0}
+    scale: {x: 1, y: 1, z: 1}
+    sightLift: 0
+  - id: military_scope_08
+    name: Military scope 8
+    previewAddress: class-preview/optic-military_scope_08
+    icon: {fileID: 3452521661603933619, guid: b16a76d2a8321484b82739d8fad6c523, type: 3}
+    mount: 0
+    optic: 1
+    position: {x: 0, y: 0, z: 0}
+    rotation: {x: 0, y: 0, z: 0}
+    scale: {x: 1, y: 1, z: 1}
+    sightLift: 0
+  - id: military_scope_09
+    name: Military scope 9
+    previewAddress: class-preview/optic-military_scope_09
+    icon: {fileID: 8114096936176430037, guid: d2ad10957cf96b549b3b2dc4b6b15f2c, type: 3}
+    mount: 0
+    optic: 1
+    position: {x: 0, y: 0, z: 0}
+    rotation: {x: 0, y: 0, z: 0}
+    scale: {x: 1, y: 1, z: 1}
+    sightLift: 0
+  - id: polygon-scope-a
+    name: Polygon Scope A
+    previewAddress: class-preview/optic-polygon-scope-a
+    icon: {fileID: 8588841844248716347, guid: e8ccac6d75d15ad439249b280bd2f267, type: 3}
+    mount: 0
+    optic: 1
+    position: {x: 0, y: 0, z: 0}
+    rotation: {x: 0, y: 0, z: 0}
+    scale: {x: 1, y: 1, z: 1}
+    sightLift: 0
+  - id: polygon-scope-b
+    name: Polygon Scope B
+    previewAddress: class-preview/optic-polygon-scope-b
+    icon: {fileID: 5485060439498464322, guid: 685029fbd3bac0947a03340890522f36, type: 3}
+    mount: 0
+    optic: 1
+    position: {x: 0, y: 0, z: 0}
+    rotation: {x: 0, y: 0, z: 0}
+    scale: {x: 1, y: 1, z: 1}
+    sightLift: 0
+  - id: polygon-scope-c
+    name: Polygon Scope C
+    previewAddress: class-preview/optic-polygon-scope-c
+    icon: {fileID: -6943872537273863223, guid: f90e629bdcda7f540b1a4967b1930f11, type: 3}
+    mount: 0
+    optic: 1
+    position: {x: 0, y: 0, z: 0}
+    rotation: {x: 0, y: 0, z: 0}
+    scale: {x: 1, y: 1, z: 1}
+    sightLift: 0
+  - id: sight_reddot
+    name: Red dot
+    previewAddress: class-preview/optic-sight_reddot
+    icon: {fileID: -4754547513494021818, guid: dc7c92e972c439c4c8edf7457b283e7c, type: 3}
+    mount: 0
+    optic: 1
+    position: {x: 0, y: 0, z: 0}
+    rotation: {x: 0, y: 0, z: 0}
+    scale: {x: 1, y: 1, z: 1}
+    sightLift: 0
+  - id: pack-red_dot_a
+    name: red dot a
+    previewAddress: class-preview/optic-pack-red_dot_a
+    icon: {fileID: -727635585462484831, guid: 6bffccb40b3920f449e16a8eeba857c0, type: 3}
+    mount: 0
+    optic: 1
+    position: {x: 0, y: 0, z: 0}
+    rotation: {x: 0, y: 0, z: 0}
+    scale: {x: 1, y: 1, z: 1}
+    sightLift: 0
+  - id: pack-red_dot_b
+    name: red dot b
+    previewAddress: class-preview/optic-pack-red_dot_b
+    icon: {fileID: 7789354519495812490, guid: b0762a925967b594783ab80cbcb324cb, type: 3}
+    mount: 0
+    optic: 1
+    position: {x: 0, y: 0, z: 0}
+    rotation: {x: 0, y: 0, z: 0}
+    scale: {x: 1, y: 1, z: 1}
+    sightLift: 0
+  - id: pack-red_dot_c
+    name: red dot c
+    previewAddress: class-preview/optic-pack-red_dot_c
+    icon: {fileID: -2997536864934906848, guid: 7b60df65199d94842a2ad1ed407204e9, type: 3}
+    mount: 0
+    optic: 1
+    position: {x: 0, y: 0, z: 0}
+    rotation: {x: 0, y: 0, z: 0}
+    scale: {x: 1, y: 1, z: 1}
+    sightLift: 0
+  - id: pack-red_dot_d
+    name: red dot d
+    previewAddress: class-preview/optic-pack-red_dot_d
+    icon: {fileID: -7139011102893439287, guid: 593ff71bedca2bf4eb58febe114c63c5, type: 3}
+    mount: 0
+    optic: 1
+    position: {x: 0, y: 0, z: 0}
+    rotation: {x: 0, y: 0, z: 0}
+    scale: {x: 1, y: 1, z: 1}
+    sightLift: 0
+  - id: pack-red_dot_e
+    name: red dot e
+    previewAddress: class-preview/optic-pack-red_dot_e
+    icon: {fileID: -3790565029620100611, guid: cc530f0abbc2f324fae14dad96bcad07, type: 3}
+    mount: 0
+    optic: 1
+    position: {x: 0, y: 0, z: 0}
+    rotation: {x: 0, y: 0, z: 0}
+    scale: {x: 1, y: 1, z: 1}
+    sightLift: 0
+  - id: polygon-reflex
+    name: Reflex
+    previewAddress: class-preview/optic-polygon-reflex
+    icon: {fileID: 584628952080991197, guid: 24b779a78686c8b4aa820c9d00ce323b, type: 3}
+    mount: 0
+    optic: 1
+    position: {x: 0, y: 0, z: 0}
+    rotation: {x: 0, y: 0, z: 0}
+    scale: {x: 1, y: 1, z: 1}
+    sightLift: 0
+  - id: sight_rmr
+    name: RMR
+    previewAddress: class-preview/optic-sight_rmr
+    icon: {fileID: 7116952087408015716, guid: 2636820d82f88864c8e9d98d7de30e46, type: 3}
+    mount: 0
+    optic: 1
+    position: {x: 0, y: 0, z: 0}
+    rotation: {x: 0, y: 0, z: 0}
+    scale: {x: 1, y: 1, z: 1}
+    sightLift: 0
+  - id: scope_trijicon
+    name: Trijicon
+    previewAddress: class-preview/optic-scope_trijicon
+    icon: {fileID: 4194347100741386390, guid: 8ee0e8120a49fa34097bd926c3075b2d, type: 3}
+    mount: 0
+    optic: 1
+    position: {x: 0, y: 0, z: 0}
+    rotation: {x: 0, y: 0, z: 0}
+    scale: {x: 1, y: 1, z: 1}
+    sightLift: 0
+  - id: svd-pso-4x
+    name: PSO
+    previewAddress: class-preview/optic-svd-pso-4x
+    icon: {fileID: 5692324862673051381, guid: e3211c2533e5544488e3cf1124fa5d13, type: 3}
+    mount: 0
+    optic: 1
+    position: {x: 0, y: 0, z: 0}
+    rotation: {x: 0, y: 0, z: 0}
+    scale: {x: 1, y: 1, z: 1}
+    sightLift: 0
+  - id: aug-built-in-sight
+    name: AUG factory sight
+    previewAddress: class-preview/optic-aug-built-in-sight
+    icon: {fileID: -2746367858122773432, guid: 4de6732637b20ac46a28bd09b724ba28, type: 3}
+    mount: 0
+    optic: 1
+    position: {x: 0, y: 0, z: 0}
+    rotation: {x: 0, y: 0, z: 0}
+    scale: {x: 1, y: 1, z: 1}
+    sightLift: 0
+  - id: m32_builtinscope
+    name: M32 factory optic
+    previewAddress: class-preview/optic-m32_builtinscope
+    icon: {fileID: 6498058021650667703, guid: de850644c3fa1e541b69281ade61e80a, type: 3}
+    mount: 0
+    optic: 1
+    position: {x: 0, y: 0, z: 0}
+    rotation: {x: 0, y: 0, z: 0}
+    scale: {x: 1, y: 1, z: 1}
+    sightLift: 0
+  - id: m82-built-in-scope
+    name: M82 built-in scope
+    previewAddress: class-preview/optic-m82-built-in-scope
+    icon: {fileID: 1601398406469746094, guid: cd3ec92b738b89146a3722a959d7130e, type: 3}
+    mount: 0
+    optic: 1
+    position: {x: 0, y: 0, z: 0}
+    rotation: {x: 0, y: 0, z: 0}
+    scale: {x: 1, y: 1, z: 1}
+    sightLift: 0
+  - id: revolver_builtinscope
+    name: Revolver factory optic
+    previewAddress: class-preview/optic-revolver_builtinscope
+    icon: {fileID: 2558109262612342679, guid: 9e604be62ab99c14982a9791800a3259, type: 3}
+    mount: 0
+    optic: 1
+    position: {x: 0, y: 0, z: 0}
+    rotation: {x: 0, y: 0, z: 0}
+    scale: {x: 1, y: 1, z: 1}
+    sightLift: 0
+  - id: p90-built-in-sight
+    name: P90 factory sight
+    previewAddress: class-preview/optic-p90-built-in-sight
+    icon: {fileID: -5135112002528862629, guid: 998a3fcbb6697334bbbbb7307af35314, type: 3}
+    mount: 0
+    optic: 1
+    position: {x: 0, y: 0, z: 0}
+    rotation: {x: 0, y: 0, z: 0}
+    scale: {x: 1, y: 1, z: 1}
+    sightLift: 0
+  - id: sight-riser-25mm
+    name: 25 mm sight riser
+    previewAddress: class-preview/part-sight-riser-25mm
+    icon: {fileID: -9191421302459743888, guid: df0237f8593fa9543b104dc68df3cf10, type: 3}
+    mount: 5
+    optic: 0
+    position: {x: 0, y: 0, z: 0}
+    rotation: {x: 0, y: 0, z: 0}
+    scale: {x: 1, y: 1, z: 1}
+    sightLift: 0.025
+  - id: angledgripmount_45
+    name: AngledGripMount 45
+    previewAddress: class-preview/part-angledgripmount_45
+    icon: {fileID: 3813021930761779612, guid: 98e0d4ccee4f0d74483ef26e7dbb1d29, type: 3}
+    mount: 2
+    optic: 0
+    position: {x: 0, y: 0, z: 0}
+    rotation: {x: 0, y: 0, z: 0}
+    scale: {x: 1, y: 1, z: 1}
+    sightLift: 0
+  - id: frontiron
+    name: MK18 Front Iron
+    previewAddress: class-preview/part-frontiron
+    icon: {fileID: 3126004703242976052, guid: fbc856e3b5c4e5f4fa631427890cf094, type: 3}
+    mount: 4
+    optic: 0
+    position: {x: 0, y: 0, z: 0}
+    rotation: {x: 0, y: 0, z: 0}
+    scale: {x: 1, y: 1, z: 1}
+    sightLift: 0
+  - id: gripmount
+    name: GripMount
+    previewAddress: class-preview/part-gripmount
+    icon: {fileID: 4793749963757947255, guid: 309451322e275214a91a03508d38d7e1, type: 3}
+    mount: 2
+    optic: 0
+    position: {x: 0, y: 0, z: 0}
+    rotation: {x: 0, y: 0, z: 0}
+    scale: {x: 1, y: 1, z: 1}
+    sightLift: 0
+  - id: hexagon_rail
+    name: Hexagon rail
+    previewAddress: class-preview/part-hexagon_rail
+    icon: {fileID: -5817990282124023411, guid: 6856ebbd975b6c94d889ad1f33695748, type: 3}
+    mount: 1
+    optic: 0
+    position: {x: 0, y: 0, z: 0}
+    rotation: {x: 0, y: 0, z: 0}
+    scale: {x: 1, y: 1, z: 1}
+    sightLift: 0
+  - id: hexagon_rail_long
+    name: Hexagon rail long
+    previewAddress: class-preview/part-hexagon_rail_long
+    icon: {fileID: -5568459372792270037, guid: 9973e57607e442e41972f725bd7a150e, type: 3}
+    mount: 1
+    optic: 0
+    position: {x: 0, y: 0, z: 0}
+    rotation: {x: 0, y: 0, z: 0}
+    scale: {x: 1, y: 1, z: 1}
+    sightLift: 0
+  - id: hexagon_suppressor
+    name: Hexagon suppressor
+    previewAddress: class-preview/part-hexagon_suppressor
+    icon: {fileID: -9032703729828757967, guid: 55270732bf23ec345a328e8f47bfc805, type: 3}
+    mount: 0
+    optic: 0
+    position: {x: 0, y: 0, z: 0}
+    rotation: {x: 0, y: 0, z: 0}
+    scale: {x: 1, y: 1, z: 1}
+    sightLift: 0
+  - id: lamp_a_prefab
+    name: lamp a
+    previewAddress: class-preview/part-lamp_a_prefab
+    icon: {fileID: 3392326914393239010, guid: 2f14b2276a85a7440b4953ee48bba967, type: 3}
+    mount: 1
+    optic: 0
+    position: {x: 0, y: 0, z: 0}
+    rotation: {x: 0, y: 0, z: 0}
+    scale: {x: 1, y: 1, z: 1}
+    sightLift: 0
+  - id: lamp_laser_a_prefab
+    name: lamp laser a
+    previewAddress: class-preview/part-lamp_laser_a_prefab
+    icon: {fileID: 4381754962055288048, guid: 0bdeb92ad358e8a4790aeb2aa2d13f79, type: 3}
+    mount: 1
+    optic: 0
+    position: {x: 0, y: 0, z: 0}
+    rotation: {x: 0, y: 0, z: 0}
+    scale: {x: 1, y: 1, z: 1}
+    sightLift: 0
+  - id: lamp_laser_b_prefab
+    name: lamp laser b
+    previewAddress: class-preview/part-lamp_laser_b_prefab
+    icon: {fileID: 9148633271051123187, guid: 6fa5d2dc7fd270a4ba9bd16301072800, type: 3}
+    mount: 1
+    optic: 0
+    position: {x: 0, y: 0, z: 0}
+    rotation: {x: 0, y: 0, z: 0}
+    scale: {x: 1, y: 1, z: 1}
+    sightLift: 0
+  - id: laser_a_prefab
+    name: laser a
+    previewAddress: class-preview/part-laser_a_prefab
+    icon: {fileID: 6877183130874491815, guid: 70195780c015ecf42bde6ce81bba1ee9, type: 3}
+    mount: 7
+    optic: 0
+    position: {x: 0, y: 0, z: 0}
+    rotation: {x: 0, y: 0, z: 0}
+    scale: {x: 1, y: 1, z: 1}
+    sightLift: 0
+  - id: mk18_suppressor
+    name: MK18 suppressor
+    previewAddress: class-preview/part-mk18_suppressor
+    icon: {fileID: -4473210622750316173, guid: 03d3dba44ddbdf4458b35929d3c7b3f6, type: 3}
+    mount: 0
+    optic: 0
+    position: {x: 0, y: 0, z: 0}
+    rotation: {x: 0, y: 0, z: 0}
+    scale: {x: 1, y: 1, z: 1}
+    sightLift: 0
+  - id: reariron
+    name: MK18 Rear Iron
+    previewAddress: class-preview/part-reariron
+    icon: {fileID: 7055547864448115324, guid: 96cd2484f0ac3424d829918505758ef1, type: 3}
+    mount: 3
+    optic: 0
+    position: {x: 0, y: 0, z: 0}
+    rotation: {x: 0, y: 0, z: 0}
+    scale: {x: 1, y: 1, z: 1}
+    sightLift: 0
+  - id: rk-2
+    name: RK-2
+    previewAddress: class-preview/part-rk-2
+    icon: {fileID: -5675986966581400536, guid: 6f9134f5403481745889f627205c417c, type: 3}
+    mount: 2
+    optic: 0
+    position: {x: 0, y: 0, z: 0}
+    rotation: {x: 0, y: 0, z: 0}
+    scale: {x: 1, y: 1, z: 1}
+    sightLift: 0
+  - id: rmr_mount
+    name: RMR mount
+    previewAddress: class-preview/part-rmr_mount
+    icon: {fileID: 7355433294996508785, guid: f1f34085d2a7bbd478500bb5f10bc4c9, type: 3}
+    mount: 5
+    optic: 0
+    position: {x: 0, y: 0, z: 0}
+    rotation: {x: 0, y: 0, z: 0}
+    scale: {x: 1, y: 1, z: 1}
+    sightLift: 0.02
+  - id: sm_wep_mod_foregrip_01
+    name: SM Wep Mod ForeGrip 01
+    previewAddress: class-preview/part-sm_wep_mod_foregrip_01
+    icon: {fileID: -3573353951244153686, guid: 7f2eed35a51ab774c82c419927e1afeb, type: 3}
+    mount: 2
+    optic: 0
+    position: {x: 0, y: 0, z: 0}
+    rotation: {x: 0, y: 0, z: 0}
+    scale: {x: 1, y: 1, z: 1}
+    sightLift: 0
+  - id: sm_wep_mod_rail_01
+    name: SM Wep Mod Rail 01
+    previewAddress: class-preview/part-sm_wep_mod_rail_01
+    icon: {fileID: 8304877391233278936, guid: 0b6077be71bd87a49a2d74939fd13797, type: 3}
+    mount: 1
+    optic: 0
+    position: {x: 0, y: 0, z: 0}
+    rotation: {x: 0, y: 0, z: 0}
+    scale: {x: 1, y: 1, z: 1}
+    sightLift: 0
+  - id: suppressor_a_prefab
+    name: suppressor a
+    previewAddress: class-preview/part-suppressor_a_prefab
+    icon: {fileID: 3791436419851110148, guid: 86a060021779b6546a2c555735d6c116, type: 3}
+    mount: 0
+    optic: 0
+    position: {x: 0, y: 0, z: 0}
+    rotation: {x: 0, y: 0, z: 0}
+    scale: {x: 1, y: 1, z: 1}
+    sightLift: 0
+  - id: suppressor_b_prefab
+    name: Suppressor b
+    previewAddress: class-preview/part-suppressor_b_prefab
+    icon: {fileID: 4826949505362051411, guid: be27e2c454ee3a84c9df471d8b269735, type: 3}
+    mount: 0
+    optic: 0
+    position: {x: 0, y: 0, z: 0}
+    rotation: {x: 0, y: 0, z: 0}
+    scale: {x: 1, y: 1, z: 1}
+    sightLift: 0
+  - id: suppressor_c_prefab
+    name: suppressor c
+    previewAddress: class-preview/part-suppressor_c_prefab
+    icon: {fileID: 8636534708312381800, guid: 2620bbf41a0af4f4d9c0f30cbc48f9bd, type: 3}
+    mount: 0
+    optic: 0
+    position: {x: 0, y: 0, z: 0}
+    rotation: {x: 0, y: 0, z: 0}
+    scale: {x: 1, y: 1, z: 1}
+    sightLift: 0
+  - id: suppressor_d_prefab
+    name: suppressor d
+    previewAddress: class-preview/part-suppressor_d_prefab
+    icon: {fileID: -6120353294359528018, guid: 349a857fa8d0f6244b4c803904b87ac0, type: 3}
+    mount: 0
+    optic: 0
+    position: {x: 0, y: 0, z: 0}
+    rotation: {x: 0, y: 0, z: 0}
+    scale: {x: 1, y: 1, z: 1}
+    sightLift: 0
+  - id: m16a4-rear-iron
+    name: M16A4 Rear Iron
+    previewAddress: class-preview/part-m16a4-rear-iron
+    icon: {fileID: -2982936681384509248, guid: fc0eece4f79867b48a51d15ce0a616c4, type: 3}
+    mount: 3
+    optic: 0
+    position: {x: 0, y: 0, z: 0}
+    rotation: {x: 0, y: 0, z: 0}
+    scale: {x: 1, y: 1, z: 1}
+    sightLift: 0
+  - id: hexagon_handguard_carbine_length
+    name: Hexagon handguard carbine length
+    previewAddress: class-preview/part-hexagon_handguard_carbine_length
+    icon: {fileID: 6991566592545322396, guid: 7b978c2ac0fae0149ab4100ebf25edd5, type: 3}
+    mount: 6
+    optic: 0
+    position: {x: 0, y: 0, z: 0}
+    rotation: {x: 0, y: 0, z: 0}
+    scale: {x: 1, y: 1, z: 1}
+    sightLift: 0
+  - id: hexagon_handguard_full_length
+    name: Hexagon handguard full length
+    previewAddress: class-preview/part-hexagon_handguard_full_length
+    icon: {fileID: -1962590677454666080, guid: 89385b3a933246e4d84c5f946c543518, type: 3}
+    mount: 6
+    optic: 0
+    position: {x: 0, y: 0, z: 0}
+    rotation: {x: 0, y: 0, z: 0}
+    scale: {x: 1, y: 1, z: 1}
+    sightLift: 0
+  - id: "hexagon_handguard_\u0432\u0438\u0442\u044F\u0437"
+    name: "Hexagon handguard \u0412\u0438\u0442\u044F\u0437"
+    previewAddress: "class-preview/part-hexagon_handguard_\u0432\u0438\u0442\u044F\u0437"
+    icon: {fileID: 7451879928242220915, guid: 0e3f912dd46059448879a8039d97c642, type: 3}
+    mount: 6
+    optic: 0
+    position: {x: 0, y: 0, z: 0}
+    rotation: {x: 0, y: 0, z: 0}
+    scale: {x: 1, y: 1, z: 1}
+    sightLift: 0

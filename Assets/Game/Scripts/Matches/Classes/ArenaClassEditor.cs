@@ -1,12 +1,13 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 using TMPro;
-using UnityEngine.UI;
 
+// UI reads lightweight metadata and saves IDs; gameplay resolves those IDs at spawn.
 public class ArenaClassEditor : MonoBehaviour
 {
-    public ArenaWeaponCatalog catalog;
+    public ArenaClassMenuCatalog menuCatalog;
     public GameObject panel;
     public TMP_Dropdown customSlot,primary,secondary,primaryOptic,secondaryOptic,grenade;
     public TMP_InputField className;
@@ -14,31 +15,38 @@ public class ArenaClassEditor : MonoBehaviour
     public UnityEngine.UI.Image primaryIcon,secondaryIcon;
     public TMP_Text summary,status;
     public UnityEngine.UI.Button save,back;
-    [Serializable] public class OptionIcon { public UnityEngine.Object asset; public Sprite icon; }
-    public OptionIcon[] optionIcons=Array.Empty<OptionIcon>();
     public Sprite[] grenadeIcons;
     public ArenaWeaponPreview weaponPreview;
     public GameObject primaryGunsmith,secondaryGunsmith;
     public UnityEngine.UI.Button previewPrimary,previewSecondary;
-    public UnityEngine.UI.Image primarySelection, secondarySelection;
+    public UnityEngine.UI.Image primarySelection,secondarySelection;
     public TMP_Text previewTitle;
-    bool previewFirst=true;
-    ArenaClassDefinition draft;
-    ArenaClassDefinition[] classes;
-    SoldierWeaponDefinition[] primaryWeapons,secondaryWeapons;
-    WeaponSightDefinition[] primarySights,secondarySights;
-    WeaponAttachmentDefinition[][] primaryOptions,secondaryOptions;
+    bool previewFirst=true,refreshing;
+    int selectedClass;
+    ArenaCustomClassStore.Record draft;
+    ArenaCustomClassStore.Record[] classes;
+    ArenaClassMenuCatalog.Weapon[] primaryWeapons,secondaryWeapons;
     Action<ArenaClassDefinition> saved;
     Action closed;
-    bool refreshing;
+    // Existing in-game callers already own this catalog. It is never serialized into the menu prefab.
+    ArenaWeaponCatalog contextCatalog;
+    string allowedKey;
+    readonly Dictionary<string,WeaponOptions> options=new Dictionary<string,WeaponOptions>();
+    readonly Dictionary<string,string> defaultSights=new Dictionary<string,string>();
+    class WeaponOptions
+    {
+        public ArenaClassMenuCatalog.Part[] sights;
+        public ArenaClassMenuCatalog.Part[][] attachments;
+        public List<TMP_Dropdown.OptionData> sightLabels;
+        public List<TMP_Dropdown.OptionData>[] attachmentLabels;
+    }
     public bool IsVisible=>panel.activeSelf;
-
     public static ArenaClassEditor Open(Action<ArenaClassDefinition> saved=null,Action closed=null,int selected=0,ArenaWeaponCatalog weaponCatalog=null)
     {
+        if(saved!=null&&!weaponCatalog)throw new ArgumentException("A gameplay save callback requires its weapon catalog. Menu-only editing can omit both.",nameof(weaponCatalog));
         var editor=FindAnyObjectByType<ArenaClassEditor>(FindObjectsInactive.Include);
         if(!editor)editor=Instantiate(Resources.Load<GameObject>("ArenaClassEditor")).GetComponent<ArenaClassEditor>();
-        if(weaponCatalog)editor.catalog=weaponCatalog;
-        editor.saved=saved;editor.closed=closed;editor.Show(selected);return editor;
+        editor.contextCatalog=weaponCatalog;editor.saved=saved;editor.closed=closed;editor.ConfigureWeapons(weaponCatalog);editor.Show(selected);return editor;
     }
     void Awake()
     {
@@ -46,62 +54,87 @@ public class ArenaClassEditor : MonoBehaviour
         primary.onValueChanged.AddListener(_=>ChangeWeapon(true));secondary.onValueChanged.AddListener(_=>ChangeWeapon(false));
         save.onClick.AddListener(Save);back.onClick.AddListener(Close);
         previewPrimary.onClick.AddListener(()=>SetPreviewWeapon(true));previewSecondary.onClick.AddListener(()=>SetPreviewWeapon(false));
-        primaryOptic.onValueChanged.AddListener(_=>RefreshPreview());secondaryOptic.onValueChanged.AddListener(_=>RefreshPreview());
-        foreach(var dropdown in primaryAttachments.Concat(secondaryAttachments))dropdown.onValueChanged.AddListener(_=>RefreshPreview());
+        primaryOptic.onValueChanged.AddListener(_=>RefreshPreview());secondaryOptic.onValueChanged.AddListener(_=>RefreshPreview());grenade.onValueChanged.AddListener(_=>{if(!refreshing)draft.grenade=grenade.value;});
+        foreach(var d in primaryAttachments.Concat(secondaryAttachments))d.onValueChanged.AddListener(_=>RefreshPreview());
+        grenade.options=new List<TMP_Dropdown.OptionData>{new TMP_Dropdown.OptionData("Frag",grenadeIcons[0],Color.white),new TMP_Dropdown.OptionData("Smoke",grenadeIcons[1],Color.white),new TMP_Dropdown.OptionData("Flashbang",grenadeIcons[2],Color.white)};
+    }
+    static List<TMP_Dropdown.OptionData> Labels(ArenaClassMenuCatalog.Part[] parts,string first)=>new[]{new TMP_Dropdown.OptionData(first)}.Concat(parts.Select(p=>new TMP_Dropdown.OptionData(p.name,p.icon,Color.white))).ToList();
+    void ConfigureWeapons(ArenaWeaponCatalog catalog)
+    {
+        var allowed=catalog?new HashSet<string>(catalog.entries.Select(e=>e.weapon.catalogId)):null;
+        var key=catalog?string.Join("|",catalog.entries.Select(e=>e.weapon.catalogId+":"+(e.defaultSight?e.defaultSight.id:"")+":"+string.Join(",",e.sights.Where(s=>s).Select(s=>s.id))+":"+string.Join(",",e.attachments.Where(a=>a).Select(a=>a.id)))):"ALL";
+        if(key==allowedKey)return;allowedKey=key;
+        var all=menuCatalog.weapons.Where(w=>allowed==null||allowed.Contains(w.id)).OrderBy(w=>w.category).ThenBy(w=>w.name).ToArray();
+        options.Clear();defaultSights.Clear();
+        foreach(var w in all)
+        {
+            var context=catalog?catalog.entries.First(e=>e.weapon.catalogId==w.id):null;
+            defaultSights[w.id]=context!=null?(context.defaultSight?context.defaultSight.id:null):w.defaultSight;
+            var o=new WeaponOptions();
+            o.sights=(context!=null?context.sights.Where(s=>s).Select(s=>s.id):w.sights).Select(menuCatalog.FindPart).Where(p=>p!=null).ToArray();o.sightLabels=Labels(o.sights,"BUILT-IN / DEFAULT");
+            o.attachments=new ArenaClassMenuCatalog.Part[primaryAttachments.Length][];o.attachmentLabels=new List<TMP_Dropdown.OptionData>[primaryAttachments.Length];
+            var compatible=(context!=null?context.attachments.Where(a=>a).Select(a=>a.id):w.attachments).Select(menuCatalog.FindPart).Where(p=>p!=null).ToArray();
+            for(int i=0;i<o.attachments.Length;i++){o.attachments[i]=compatible.Where(p=>p.mount==(WeaponAttachmentDefinition.MountKind)i).ToArray();o.attachmentLabels[i]=Labels(o.attachments[i],"STANDARD / NONE");}
+            options[w.id]=o;
+        }
+        primaryWeapons=all.Where(ArenaClassMenuCatalog.IsPrimary).ToArray();secondaryWeapons=all.Where(w=>!ArenaClassMenuCatalog.IsPrimary(w)).ToArray();
+        primary.options=primaryWeapons.Select(w=>new TMP_Dropdown.OptionData(w.name,w.icon,Color.white)).ToList();secondary.options=secondaryWeapons.Select(w=>new TMP_Dropdown.OptionData(w.name,w.icon,Color.white)).ToList();
     }
     public void Show(int index)
     {
-        classes=ArenaCustomClassStore.Load(catalog);primaryWeapons=catalog.entries.Select(e=>e.weapon).Where(ArenaCustomClassStore.IsPrimary).OrderBy(w=>w.category).ThenBy(w=>w.displayName).ToArray();secondaryWeapons=catalog.entries.Select(e=>e.weapon).Where(w=>!ArenaCustomClassStore.IsPrimary(w)).OrderBy(w=>w.category).ThenBy(w=>w.displayName).ToArray();
-        refreshing=true;Options(customSlot,classes.Select(c=>c.displayName));Options(primary,primaryWeapons.Select(w=>w.displayName),primaryWeapons.Select(w=>w.icon));Options(secondary,secondaryWeapons.Select(w=>w.displayName),secondaryWeapons.Select(w=>w.icon));Options(grenade,new[]{"Frag","Smoke","Flashbang"},grenadeIcons);customSlot.SetValueWithoutNotify(Mathf.Clamp(index,0,4));refreshing=false;panel.SetActive(true);SelectClass(customSlot.value);Cursor.lockState=CursorLockMode.None;Cursor.visible=true;
+        if(primaryWeapons==null)ConfigureWeapons(contextCatalog);
+        classes=ArenaCustomClassStore.LoadRecords();
+        for(int i=0;i<classes.Length;i++)
+        {
+            var r=classes[i]??new ArenaCustomClassStore.Record{name="CUSTOM CLASS "+(i+1)};
+            bool newPrimary=!primaryWeapons.Any(w=>w.id==r.primary),newSecondary=!secondaryWeapons.Any(w=>w.id==r.secondary);
+            if(newPrimary){r.primary=primaryWeapons[0].id;r.primarySight=defaultSights[r.primary];r.primaryAttachments=Array.Empty<string>();}
+            if(newSecondary){var pistol=secondaryWeapons.First(w=>w.category==SoldierWeaponDefinition.WeaponCategory.Pistol);r.secondary=pistol.id;r.secondarySight=defaultSights[r.secondary];r.secondaryAttachments=Array.Empty<string>();}
+            r.primaryAttachments=r.primaryAttachments??Array.Empty<string>();r.secondaryAttachments=r.secondaryAttachments??Array.Empty<string>();classes[i]=r;
+        }
+        refreshing=true;customSlot.options=classes.Select(r=>new TMP_Dropdown.OptionData(r.name)).ToList();customSlot.SetValueWithoutNotify(Mathf.Clamp(index,0,4));refreshing=false;
+        panel.SetActive(true);SelectClass(customSlot.value);Cursor.lockState=CursorLockMode.None;Cursor.visible=true;
     }
-    static void Options(TMP_Dropdown control,System.Collections.Generic.IEnumerable<string> names,System.Collections.Generic.IEnumerable<Sprite> icons=null)
-    {
-        var labels=names.ToArray();var images=icons?.ToArray();control.ClearOptions();
-        control.AddOptions(labels.Select((name,i)=>new TMP_Dropdown.OptionData(name,images!=null&&i<images.Length?images[i]:null,Color.white)).ToList());control.RefreshShownValue();
-    }
-    Sprite Icon(UnityEngine.Object asset)=>optionIcons.FirstOrDefault(x=>x.asset==asset)?.icon;
     void SelectClass(int index)
     {
-        if(refreshing)return;draft=classes[index];refreshing=true;className.SetTextWithoutNotify(draft.displayName);primary.SetValueWithoutNotify(Array.IndexOf(primaryWeapons,draft.primary));secondary.SetValueWithoutNotify(Array.IndexOf(secondaryWeapons,draft.secondary));grenade.SetValueWithoutNotify(draft.grenadeIndex);refreshing=false;RefreshWeapon(true);RefreshWeapon(false);SetPreviewWeapon(previewFirst);status.text="CHOOSE YOUR LOADOUT. CHANGES APPLY ON SPAWN.";
+        if(refreshing)return;selectedClass=index;draft=classes[index];refreshing=true;className.SetTextWithoutNotify(draft.name);
+        primary.SetValueWithoutNotify(Array.FindIndex(primaryWeapons,w=>w.id==draft.primary));secondary.SetValueWithoutNotify(Array.FindIndex(secondaryWeapons,w=>w.id==draft.secondary));grenade.SetValueWithoutNotify(Mathf.Clamp(draft.grenade,0,2));refreshing=false;
+        RefreshWeapon(true);RefreshWeapon(false);SetPreviewWeapon(previewFirst);status.text="CHOOSE YOUR LOADOUT. CHANGES APPLY ON SPAWN.";
     }
     void ChangeWeapon(bool first)
     {
-        if(refreshing)return;if(first){draft.primary=primaryWeapons[primary.value];draft.primarySight=catalog.Find(draft.primary).defaultSight;draft.primaryAttachments=Array.Empty<WeaponAttachmentDefinition>();}else{draft.secondary=secondaryWeapons[secondary.value];draft.secondarySight=catalog.Find(draft.secondary).defaultSight;draft.secondaryAttachments=Array.Empty<WeaponAttachmentDefinition>();}RefreshWeapon(first);SetPreviewWeapon(first);
+        if(refreshing)return;var weapon=first?primaryWeapons[primary.value]:secondaryWeapons[secondary.value];
+        if(first){draft.primary=weapon.id;draft.primarySight=defaultSights[weapon.id];draft.primaryAttachments=Array.Empty<string>();}else{draft.secondary=weapon.id;draft.secondarySight=defaultSights[weapon.id];draft.secondaryAttachments=Array.Empty<string>();}
+        RefreshWeapon(first);SetPreviewWeapon(first);
     }
     void RefreshWeapon(bool first)
     {
-        var entry=catalog.Find(first?draft.primary:draft.secondary);var optics=entry.sights;var dropdown=first?primaryOptic:secondaryOptic;Options(dropdown,new[]{"BUILT-IN / DEFAULT"}.Concat(optics.Select(s=>s.displayName)),new Sprite[]{null}.Concat(optics.Select(s=>Icon(s))));dropdown.SetValueWithoutNotify((first?draft.primarySight:draft.secondarySight)?Array.IndexOf(optics,first?draft.primarySight:draft.secondarySight)+1:0);
-        dropdown.interactable=optics.Length>0; if(first)primarySights=optics;else secondarySights=optics;
-        var controls=first?primaryAttachments:secondaryAttachments;var selected=first?draft.primaryAttachments:draft.secondaryAttachments;var choices=new WeaponAttachmentDefinition[controls.Length][];
-        for(int i=0;i<controls.Length;i++){var kind=(WeaponAttachmentDefinition.MountKind)i;choices[i]=entry.attachments.Where(a=>a.mount==kind).ToArray();Options(controls[i],new[]{"STANDARD / NONE"}.Concat(choices[i].Select(a=>a.displayName)),new Sprite[]{null}.Concat(choices[i].Select(a=>Icon(a))));controls[i].SetValueWithoutNotify(Array.IndexOf(choices[i],selected.FirstOrDefault(a=>a.mount==kind))+1);controls[i].interactable=choices[i].Length>0;}
-        if(first){primaryOptions=choices;primaryIcon.sprite=entry.weapon.icon;}else{secondaryOptions=choices;secondaryIcon.sprite=entry.weapon.icon;}
-        summary.text=$"PRIMARY: {draft.primary.category}   {draft.primary.damage:0} DAMAGE   {draft.primary.roundsPerMinute:0} RPM\nSECONDARY: {draft.secondary.category}   {draft.secondary.damage:0} DAMAGE\n";
+        refreshing=true;
+        var w=menuCatalog.FindWeapon(first?draft.primary:draft.secondary);var o=options[w.id];var optic=first?primaryOptic:secondaryOptic;
+        optic.options=o.sightLabels;optic.SetValueWithoutNotify(Array.FindIndex(o.sights,p=>p.id==(first?draft.primarySight:draft.secondarySight))+1);optic.interactable=o.sights.Length>0;
+        var controls=first?primaryAttachments:secondaryAttachments;var selected=first?draft.primaryAttachments:draft.secondaryAttachments;
+        for(int i=0;i<controls.Length;i++){controls[i].options=o.attachmentLabels[i];controls[i].SetValueWithoutNotify(Array.FindIndex(o.attachments[i],p=>selected.Contains(p.id))+1);controls[i].interactable=o.attachments[i].Length>0;}
+        (first?primaryIcon:secondaryIcon).sprite=w.icon;refreshing=false;
     }
-    public void SetPreviewWeapon(bool first)
+    public void SetPreviewWeapon(bool first){previewFirst=first;primaryGunsmith.SetActive(first);secondaryGunsmith.SetActive(!first);primarySelection.gameObject.SetActive(first);secondarySelection.gameObject.SetActive(!first);RefreshPreview();}
+    string[] Selected(TMP_Dropdown[] controls,WeaponOptions o)=>controls.Select((c,i)=>c.value==0?null:o.attachments[i][c.value-1].id).Where(id=>id!=null).ToArray();
+    void UpdateDraft()
     {
-        previewFirst=first;primaryGunsmith.SetActive(first);secondaryGunsmith.SetActive(!first);
-        // Keep the selected state for text feedback instead of repainting the cards.
-        primarySelection.gameObject.SetActive(first);
-        secondarySelection.gameObject.SetActive(!first);
-        RefreshPreview();
+        var p=options[draft.primary];var s=options[draft.secondary];draft.primarySight=primaryOptic.value==0?null:p.sights[primaryOptic.value-1].id;draft.secondarySight=secondaryOptic.value==0?null:s.sights[secondaryOptic.value-1].id;
+        draft.primaryAttachments=Selected(primaryAttachments,p);draft.secondaryAttachments=Selected(secondaryAttachments,s);draft.grenade=grenade.value;
     }
-    WeaponAttachmentDefinition[] Selected(TMP_Dropdown[] controls,WeaponAttachmentDefinition[][] options)
-        =>controls.Select((c,i)=>c.value==0?null:options[i][c.value-1]).Where(a=>a).ToArray();
     void RefreshPreview()
     {
-        if(refreshing || !draft || primaryOptions==null || secondaryOptions==null)return;
-        var weapon=previewFirst?draft.primary:draft.secondary;
-        var sights=previewFirst?primarySights:secondarySights;var optic=previewFirst?primaryOptic:secondaryOptic;
-        var attachments=Selected(previewFirst?primaryAttachments:secondaryAttachments,previewFirst?primaryOptions:secondaryOptions);
-        weaponPreview.Show(catalog.Find(weapon),optic.value==0?null:sights[optic.value-1],attachments);
-        previewTitle.text=weapon.displayName.ToUpperInvariant()+"  /  GUNSMITH";
-        summary.text=$"{weapon.category.ToString().ToUpperInvariant()}    {weapon.damage:0} DAMAGE    {weapon.roundsPerMinute:0} RPM    {weapon.magazineCapacity} ROUNDS\nDRAG THE MODEL TO ROTATE. SELECT A SLOT TO PREVIEW ATTACHMENTS.";
+        if(refreshing||draft==null)return;UpdateDraft();
+        var w=menuCatalog.FindWeapon(previewFirst?draft.primary:draft.secondary);weaponPreview.Show(menuCatalog,w,previewFirst?draft.primarySight:draft.secondarySight,previewFirst?draft.primaryAttachments:draft.secondaryAttachments);
+        previewTitle.text=w.name.ToUpperInvariant()+"  /  GUNSMITH";summary.text=$"{w.category.ToString().ToUpperInvariant()}    {w.damage:0} DAMAGE    {w.rpm:0} RPM    {w.rounds} ROUNDS\nDRAG THE MODEL TO ROTATE. SELECT A SLOT TO PREVIEW ATTACHMENTS.";
     }
     public void Save()
     {
-        draft.displayName=string.IsNullOrWhiteSpace(className.text)?"CUSTOM CLASS "+(draft.customIndex+1):className.text.Trim();
-        draft.primarySight=primaryOptic.value==0?null:primarySights[primaryOptic.value-1];draft.secondarySight=secondaryOptic.value==0?null:secondarySights[secondaryOptic.value-1];
-        draft.primaryAttachments=Selected(primaryAttachments,primaryOptions);draft.secondaryAttachments=Selected(secondaryAttachments,secondaryOptions);draft.grenadeIndex=grenade.value;ArenaCustomClassStore.Save(draft);customSlot.options[draft.customIndex].text=draft.displayName;customSlot.RefreshShownValue();status.text="CLASS SAVED — SELECT IT TO DEPLOY OR ON YOUR NEXT RESPAWN.";saved?.Invoke(draft);
+        UpdateDraft();draft.name=string.IsNullOrWhiteSpace(className.text)?"CUSTOM CLASS "+(selectedClass+1):className.text.Trim();ArenaCustomClassStore.SaveRecord(selectedClass,draft);
+        customSlot.options[selectedClass].text=draft.name;customSlot.RefreshShownValue();status.text="CLASS SAVED — SELECT IT TO DEPLOY OR ON YOUR NEXT RESPAWN.";
+        if(saved!=null&&contextCatalog)saved(ArenaCustomClassStore.Load(contextCatalog)[selectedClass]);
     }
-    public void Close(){panel.SetActive(false);closed?.Invoke();}
+    public void Close(){panel.SetActive(false);var callback=closed;saved=null;closed=null;contextCatalog=null;callback?.Invoke();}
+    void OnDestroy(){saved=null;closed=null;contextCatalog=null;}
 }
