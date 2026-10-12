@@ -76,7 +76,7 @@ public class ConquestDeploymentMenu : MonoBehaviour
     {
         bool waiting=participant.health.IsDead || participant.IsAwaitingSpawn;
         if(!waiting)requested=false;
-        bool show=participant.match.IsRunning && waiting && !participant.NeedsClassSelection && !pause.IsPaused && !classMenu.IsVisible;
+        bool show=!participant.IsSpectator && participant.match.IsRunning && waiting && !participant.NeedsClassSelection && !pause.IsPaused && !classMenu.IsVisible;
         SetVisible(show);
         if(!show)return;
         if(!rules.CanDeploy(participant,selected) || selectedMember && !rules.squads.CanDeploy(participant,selectedMember))Select(null);

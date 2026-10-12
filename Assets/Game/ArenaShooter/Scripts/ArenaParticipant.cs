@@ -38,6 +38,15 @@ public class ArenaParticipant : MonoBehaviour
     private float nextSpawnAttempt;
     public bool IsRespawning => respawnAt >= 0f && health.IsDead;
     public bool IsAwaitingSpawn { get; internal set; }
+    public bool IsSpectator { get; private set; }
+    public void SetSpectating(bool value)
+    {
+        IsSpectator = value;
+        IsAwaitingSpawn = true;
+        CancelRespawn();
+        if (value) player.SetGameplayAllowed(false);
+        else { respawnAt = Time.time; nextSpawnAttempt = Time.time; }
+    }
     public float RespawnRemaining => IsRespawning ? Mathf.Max(0f, respawnAt - Time.time) : 0f;
 
     void Awake()
@@ -75,7 +84,7 @@ public class ArenaParticipant : MonoBehaviour
 
     public void TickRespawn()
     {
-        if (!IsRespawning || Time.time < nextSpawnAttempt) return;
+        if (IsSpectator || respawnAt < 0f || !health.IsDead && !IsAwaitingSpawn || Time.time < nextSpawnAttempt) return;
         nextSpawnAttempt = Time.time + .5f;
         match.Spawn(this);
     }
@@ -86,6 +95,7 @@ public class ArenaParticipant : MonoBehaviour
 
     public void Respawn(Vector3 position, Quaternion rotation)
     {
+        if (IsSpectator) return;
         if (player && match.settings.randomizeAIClassOnRespawn && GetComponent<ArenaAIInput>())
             SelectClass(match.settings.classes[Random.Range(0, match.settings.classes.Length)]);
         if (player && !SelectedClass)

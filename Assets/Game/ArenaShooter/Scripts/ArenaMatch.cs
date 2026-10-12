@@ -166,7 +166,7 @@ public class ArenaMatch : MonoBehaviour
 
     public bool Spawn(ArenaParticipant participant)
     {
-        if (!IsRunning) return false;
+        if (!IsRunning || participant.IsSpectator) return false;
         Transform spawn;
         bool found = rules ? rules.TryChooseSpawn(participant, spawnHistory, out spawn)
             : ArenaSpawnSelection.TryChoose(this, participant, spawnHistory, out spawn);

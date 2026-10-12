@@ -7,14 +7,33 @@ public class ArenaPauseMenu : MonoBehaviour
     public GameObject panel;
     public ArenaSceneTransition transition;
     public bool IsPaused { get; private set; }
+    public UnityEngine.UI.Button spectateButton;
+    ArenaAISpectator spectator;
+    TMPro.TMP_Text spectateLabel;
+    bool previousSpectatorBlocked;
     SoldierLocalInput localInput;
     bool inputEnabled;
     CursorLockMode previousCursor;
     bool previousVisible;
     float previousTimeScale;
 
-    void Awake() => localInput = FindAnyObjectByType<SoldierLocalInput>();
+    void Awake()
+    {
+        localInput = FindAnyObjectByType<SoldierLocalInput>();
+        spectator = FindAnyObjectByType<ArenaAISpectator>();
+        if (spectateButton)
+        {
+            spectateButton.gameObject.SetActive(spectator && spectator.localPlayer);
+            spectateButton.onClick.AddListener(ToggleSpectator);
+            spectateLabel = spectateButton.GetComponentInChildren<TMPro.TMP_Text>();
+        }
+    }
     void Start() => panel.SetActive(false);
+    public void ToggleSpectator()
+    {
+        Resume();
+        spectator.SetManualSpectating(!spectator.ManualSpectating);
+    }
     void Update()
     {
         if (transition.IsLoading) return;
@@ -27,6 +46,8 @@ public class ArenaPauseMenu : MonoBehaviour
     {
         if (IsPaused) return;
         IsPaused = true; previousTimeScale = Time.timeScale;
+        if (spectator) { previousSpectatorBlocked = spectator.ControlsBlocked; spectator.ControlsBlocked = true; }
+        if (spectateLabel && spectator) spectateLabel.text = spectator.ManualSpectating ? "RETURN TO BATTLE" : "SPECTATE";
         previousCursor = Cursor.lockState; previousVisible = Cursor.visible;
         if (localInput)
         {
@@ -44,6 +65,7 @@ public class ArenaPauseMenu : MonoBehaviour
         if (!IsPaused) return;
         IsPaused = false; panel.SetActive(false); Time.timeScale = previousTimeScale;
         if (localInput) localInput.enabled = inputEnabled;
+        if (spectator) spectator.ControlsBlocked = previousSpectatorBlocked;
         Cursor.lockState = previousCursor; Cursor.visible = previousVisible;
     }
     public void ReturnToMenu()

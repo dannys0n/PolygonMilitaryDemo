@@ -35,7 +35,53 @@ public class ArenaAISpectator : MonoBehaviour
     UnityEngine.Rendering.ShadowCastingMode[] previousShadows;
     float yaw, pitch;
     public bool ShowControls { get; private set; } = true;
-    public bool IsSpectating => !localPlayer || localDeathView;
+    public bool IsSpectating => !localPlayer || localDeathView || ManualSpectating;
+    public bool ManualSpectating { get; private set; }
+    readonly System.Collections.Generic.List<(Renderer mesh, bool enabled)> suspendedMeshes = new();
+    readonly System.Collections.Generic.List<(Collider body, bool enabled)> suspendedColliders = new();
+
+    public void SetManualSpectating(bool value)
+    {
+        if (!localPlayer || value == ManualSpectating) return;
+        if (value)
+        {
+            var occupant = localPlayer.GetComponent<VehicleOccupant>();
+            if (occupant && occupant.IsMounted) occupant.Leave(true);
+            if (!localDeathView)
+            {
+                localWasFirstPerson = localPlayer.player.view.firstPerson;
+                localInputEnabled = localInput.enabled;
+            }
+            StopFollowing();
+            ManualSpectating = true;
+            localPlayer.SetSpectating(true);
+            localInput.enabled = false;
+            localPlayer.player.view.SetFirstPerson(false);
+            localPlayer.player.view.playerCamera.enabled = false;
+            suspendedColliders.Clear();
+            foreach (var body in localPlayer.GetComponentsInChildren<Collider>(true))
+            { suspendedColliders.Add((body, body.enabled)); body.enabled = false; }
+            suspendedMeshes.Clear();
+            foreach (var mesh in localPlayer.GetComponentsInChildren<Renderer>(true))
+            { suspendedMeshes.Add((mesh, mesh.enabled)); mesh.enabled = false; }
+            transform.SetPositionAndRotation(localPlayer.transform.position + Vector3.up * 3f, Quaternion.Euler(15, localPlayer.transform.eulerAngles.y, 0));
+            spectatorCamera.enabled = true;
+            CycleCharacter(1);
+        }
+        else
+        {
+            StopFollowing();
+            ManualSpectating = false;
+            foreach (var item in suspendedMeshes) if (item.mesh) item.mesh.enabled = item.enabled;
+            suspendedMeshes.Clear();
+            foreach (var item in suspendedColliders) if (item.body) item.body.enabled = item.enabled;
+            suspendedColliders.Clear();
+            localPlayer.SetSpectating(false);
+            // Conquest shows deployment; other modes retry the normal spawn search.
+            localDeathView = true;
+            if (match.IsRunning) match.Spawn(localPlayer);
+        }
+    }
     public bool ControlsBlocked { get; set; }
     bool bodyDirty;
     VehicleOccupant observedOccupant;
@@ -66,7 +112,7 @@ public class ArenaAISpectator : MonoBehaviour
 
     void Update()
     {
-        if (localPlayer && !localDeathView) return;
+        if (!IsSpectating) return;
         if (!localPlayer && Input.GetKeyDown(KeyCode.Backspace)) { CancelDeathWatch(); match.BeginMatch(); }
         if (deathWatch && Time.time >= deathWatchUntil) CompleteDeathWatch();
         if (ControlsBlocked) return;
@@ -209,7 +255,7 @@ public class ArenaAISpectator : MonoBehaviour
 
     void OnLocalPlayerRespawned()
     {
-        if (!localDeathView) return;
+        if (ManualSpectating || !localDeathView) return;
         StopFollowing(); localDeathView = false;
         localPlayer.player.view.SetFirstPerson(localWasFirstPerson);
         localPlayer.player.view.playerCamera.enabled = true;
@@ -383,6 +429,7 @@ public class ArenaAISpectator : MonoBehaviour
         RenderPipelineManager.endCameraRendering -= AfterCamera;
         if (localPlayer)
         {
+            if (ManualSpectating) SetManualSpectating(false);
             OnLocalPlayerRespawned();
             localPlayer.health.Died -= OnLocalPlayerDied;
             localPlayer.player.Respawned -= OnLocalPlayerRespawned;
