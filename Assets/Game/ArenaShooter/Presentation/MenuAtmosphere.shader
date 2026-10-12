@@ -4,7 +4,7 @@ Shader "Game/UI/Menu Atmosphere"
     {
         [PerRendererData] _MainTex ("Sprite", 2D) = "white" {}
         _Color ("Tint", Color) = (1,1,1,1)
-        [Enum(Atmosphere,0,Marker,1,Spill,2)] _Mode ("Effect", Float) = 0
+        [Enum(Atmosphere,0,Marker,1,Spill,2,HudLine,3,HudOutline,4)] _Mode ("Effect", Float) = 0
         _DustTex ("Dust Texture", 2D) = "black" {}
         _DustStrength ("Dust Visibility", Range(0,4)) = 0.8
         _LightRadius ("Filament Dust Reach", Range(0.01,0.5)) = 0.2
@@ -78,6 +78,25 @@ Shader "Game/UI/Menu Atmosphere"
                     }
                     energy=illumination*_LightStrength*(.025+pow(max(dust,0),.7)*_DustStrength);
                 }
+                else if (_Mode > 3.5)
+                {
+                    float2 pixel=max(fwidth(i.uv),.000001);
+                    float core=tex2D(_MainTex,i.uv).a;
+                    float2 dx=float2(pixel.x*2,0), dy=float2(0,pixel.y*2);
+                    float nearby=(tex2D(_MainTex,i.uv+dx).a+tex2D(_MainTex,i.uv-dx).a
+                        +tex2D(_MainTex,i.uv+dy).a+tex2D(_MainTex,i.uv-dy).a)*.25;
+                    energy=(core*18+max(0,nearby-core)*1.1)*_Intensity;
+                }
+                else if (_Mode > 2.5)
+                {
+                    float2 pixel=max(fwidth(i.uv),.000001);
+                    bool horizontal=pixel.x<pixel.y;
+                    float across=horizontal?(i.uv.y-.5)/pixel.y:(i.uv.x-.5)/pixel.x;
+                    float along=horizontal?min(i.uv.x,1-i.uv.x)/pixel.x:min(i.uv.y,1-i.uv.y)/pixel.y;
+                    // Same filament profile as menu markers, using a fixed twelve-pixel
+                    // envelope so orientation and length cannot stretch the lighting.
+                    energy=filamentEnergy(across/12,1.0/12)*smoothstep(0,1.5,along);
+                }
                 else if (_Mode < 1.5)
                 {
                     float x=i.uv.x-.5;
@@ -90,7 +109,7 @@ Shader "Game/UI/Menu Atmosphere"
                     energy=exp(-i.uv.x*5)*smoothstep(0,.1,i.uv.x)*ends*.35*_Intensity;
                 }
                 float3 light=1-exp(-energy*_Warmth.rgb);
-                float opacity=i.color.a*tex2D(_MainTex,i.uv).a;
+                float opacity=i.color.a*(_Mode>3.5?1:tex2D(_MainTex,i.uv).a);
                 #ifdef UNITY_UI_CLIP_RECT
                 opacity*=UnityGet2DClipping(i.local.xy,_ClipRect);
                 #endif

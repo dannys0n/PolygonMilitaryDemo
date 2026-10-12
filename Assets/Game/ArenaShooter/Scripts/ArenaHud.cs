@@ -13,7 +13,7 @@ public class ArenaHud : MonoBehaviour
     public TMP_Text redScore, blueScore, timer, mode, weaponName, ammunition, fireMode, slots, health, teammates, medal, deathStatus;
     public Sprite rifleSprite, pistolSprite;
     public Material normalText, selectedText;
-    public Material selectedIconGlow, filamentLine;
+    public Material selectedIconGlow, filamentLine, accentLineGlow;
     readonly Dictionary<UnityEngine.UI.Image,Material> iconMaterials = new Dictionary<UnityEngine.UI.Image,Material>();
     public UnityEngine.UI.Image[] grenadeIcons, grenadeBackgrounds;
     public TMP_Text[] grenadeCounts;
@@ -56,7 +56,7 @@ public class ArenaHud : MonoBehaviour
     {
         accent = new Color(1f, .55f, .12f);
         accentHex = ColorUtility.ToHtmlStringRGB(accent);
-        ArenaHudTheme.StyleLines(transform, filamentLine, selectedIconGlow);
+        ArenaHudTheme.StyleLines(transform, filamentLine, accentLineGlow);
         crosshairRestPositions = crosshairSegments.Select(s => s.rectTransform.anchoredPosition).ToArray();
         spreadRestPositions = spreadCrosshairSegments.Select(s => s.rectTransform.anchoredPosition).ToArray();
     }

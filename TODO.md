@@ -167,6 +167,7 @@ Most of this stage can use stub implementations before real networking is added.
 
 ## 6. Create the working NGO baseline
 
+- [ ] Extract player into a blank controller prefab that can inhabit characters, allowing clear separation and flexibility. and NGO player prefab isnt stuck to a specific player mesh
 - [ ] Clone the prototype into a separate NGO project.
 - [ ] Implement real backend/networking using Netcode for GameObjects (NGO).
 - [ ] Replace the application-flow stubs needed for an end-to-end networked experience.

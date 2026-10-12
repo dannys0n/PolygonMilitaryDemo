@@ -4,7 +4,7 @@ using UnityEngine.UI;
 // Presentation shared by infantry and vehicle HUDs. Menu effects stay independent.
 public static class ArenaHudTheme
 {
-    public static void StyleLines(Transform root, Material filament, Material glow = null)
+    public static void StyleLines(Transform root, Material filament, Material accentGlow = null)
     {
         if (!filament) return;
         foreach (var image in root.GetComponentsInChildren<Image>(true))
@@ -12,7 +12,7 @@ public static class ArenaHudTheme
             string name = image.name;
             if (name == "SlimUI Edge Lines")
             {
-                if (glow) image.material = glow;
+                if (accentGlow) image.material = accentGlow;
                 continue;
             }
             if (name != "Corner Horizontal" && name != "Corner Vertical"

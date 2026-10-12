@@ -8,7 +8,7 @@ Material:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_Name: HudFilament
-  m_Shader: {fileID: 4800000, guid: a32d9ef351ec47baa71fb595319ac6b1, type: 3}
+  m_Shader: {fileID: 4800000, guid: 0ffd6a45a0dc3714eaa17a70e634f8fc, type: 3}
   m_Parent: {fileID: 0}
   m_ModifiedSerializedProperties: 0
   m_ValidKeywords: []
@@ -23,15 +23,26 @@ Material:
   m_SavedProperties:
     serializedVersion: 3
     m_TexEnvs:
+    - _DustTex:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
     - _MainTex:
         m_Texture: {fileID: 0}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     m_Ints: []
     m_Floats:
+    - _AtmosphereTime: 0
     - _ColorMask: 15
-    - _Glow: 0.24
-    - _Mode: 1
+    - _Drift: 0.008
+    - _DustStrength: 1.6
+    - _FloatSpeed: 0.6
+    - _FloatingDust: 0.65
+    - _Intensity: 1.25
+    - _Mode: 3
+    - _Parallax: 0.008
+    - _ShaftStrength: 0.18
     - _Stencil: 0
     - _StencilComp: 8
     - _StencilOp: 0
@@ -40,5 +51,7 @@ Material:
     - _UseUIAlphaClip: 0
     m_Colors:
     - _Color: {r: 1, g: 1, b: 1, a: 1}
+    - _LookOffset: {r: 0, g: 0, b: 0, a: 0}
+    - _Warmth: {r: 1, g: 0.5, b: 0.2, a: 1}
   m_BuildTextureStacks: []
   m_AllowLocking: 1

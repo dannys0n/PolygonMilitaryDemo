@@ -15,13 +15,13 @@ public class ArenaVehicleHud : MonoBehaviour
     public VehicleDiagramGraphic headingTape, altitudeTape;
     public GameObject vehicleEquipment;
     public Image equippedIcon, slotIcon;
-    public Material selectedIconGlow, filamentLine;
+    public Material selectedIconGlow, filamentLine, accentLineGlow;
     public TMP_Text equippedName, ammunition, fireMode, slotKey, equipmentLabel;
     public Image[] seatMarkers, hullSegments;
     public TextMeshProUGUI[] seatNumbers;
     float groundAltitude;
     readonly Color accent=new Color(1,.55f,.12f);
-    void Awake() => ArenaHudTheme.StyleLines(transform, filamentLine, selectedIconGlow);
+    void Awake() => ArenaHudTheme.StyleLines(transform, filamentLine, accentLineGlow);
     void Update()
     {
         bool mounted=player.IsMounted;prompt.text=mounted?"":player.Prompt;
