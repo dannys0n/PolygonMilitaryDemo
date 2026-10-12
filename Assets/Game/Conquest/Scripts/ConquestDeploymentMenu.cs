@@ -22,6 +22,17 @@ public class ConquestDeploymentMenu : MonoBehaviour
     ConquestCapturePoint selected;
     bool visible, requested, previousInputBlocked, previousSpectatorBlocked, restoreOnRestart;
     float nextAttempt;
+    public bool IsVisible => visible;
+    public ConquestCapturePoint SelectedPoint => selected;
+    public ArenaParticipant SelectedMember => selectedMember;
+    public void SelectBase() => Select(null);
+    public void SelectFlag(ConquestCapturePoint point) { if(rules.CanDeploy(participant,point)) Select(point); }
+    public void SelectSquadmate(ArenaParticipant member)
+    {
+        if(!rules.squads || !rules.squads.CanDeploy(participant,member)) return;
+        requested=false;rules.CancelDeployment(participant);
+        selected=null;selectedMember=member;rules.SelectSquadDeployment(participant,member);
+    }
 
     void Awake()
     {
@@ -37,8 +48,7 @@ public class ConquestDeploymentMenu : MonoBehaviour
             int index=i;
             squadButtons[i].onClick.AddListener(()=>
             {
-                selected=null;selectedMember=squadMembers[index];
-                rules.SelectSquadDeployment(participant,selectedMember);
+                SelectSquadmate(squadMembers[index]);
             });
         }
         deployButton.onClick.AddListener(()=>{requested=true;nextAttempt=0;rules.ApproveDeployment(participant);});
@@ -61,7 +71,7 @@ public class ConquestDeploymentMenu : MonoBehaviour
             restoreOnRestart=false;
         }
     }
-    void Select(ConquestCapturePoint point) { selected=point;selectedMember=null;rules.SelectDeployment(participant,point); }
+    void Select(ConquestCapturePoint point) { requested=false;rules.CancelDeployment(participant);selected=point;selectedMember=null;rules.SelectDeployment(participant,point); }
     void LateUpdate()
     {
         bool waiting=participant.health.IsDead || participant.IsAwaitingSpawn;
