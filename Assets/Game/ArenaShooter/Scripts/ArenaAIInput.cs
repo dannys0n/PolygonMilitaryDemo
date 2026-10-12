@@ -179,13 +179,27 @@ public class ArenaAIInput : SoldierInputSource
         burstUntil = pauseUntil = nextSemi = phaseUntil = recoveryUntil = 0f;
         aimNoise = desiredNoise = Vector2.zero;
         progressPosition = Destination = transform.position; progressAt = Time.time;
+        RestoreNavigation();
         if (!agent.isActiveAndEnabled) return;
         if (agent.isOnNavMesh) agent.ResetPath();
         if (NavMesh.SamplePosition(transform.position, out var hit, 2f, new NavMeshQueryFilter { agentTypeID = agent.agentTypeID, areaMask = agent.areaMask })) agent.Warp(hit.position);
     }
 
+    void RestoreNavigation()
+    {
+        if (agent.enabled || life.health.IsDead || !gameObject.activeInHierarchy) return;
+        var rider=GetComponent<VehicleOccupant>();
+        if (rider && rider.IsMounted) return;
+        // A forced vehicle exit can occur off mesh. Re-register after landing or
+        // respawning at a valid position; never enable first and warp afterwards.
+        if (NavMesh.SamplePosition(transform.position, out _, .25f,
+            new NavMeshQueryFilter { agentTypeID=agent.agentTypeID, areaMask=agent.areaMask }))
+            agent.enabled=true;
+    }
+
     public override SoldierInputFrame ReadInput()
     {
+        RestoreNavigation();
         if (!soldier.actions.enabled || participant.IsAwaitingSpawn || !participant.match.IsRunning || !agent.isOnNavMesh)
         { State = Behavior.Inactive; WantsToSprint = false; return default; }
         if(soldier.grenades.FlashAlpha>.1f){WantsToSprint=false;return default;}

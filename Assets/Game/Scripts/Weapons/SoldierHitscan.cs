@@ -153,7 +153,14 @@ public class SoldierHitscan : MonoBehaviour
         foreach (var collider in Physics.OverlapSphere(origin, muzzleClearance,
                      hitLayers, QueryTriggerInteraction.Collide))
             if (IsShotCollider(collider))
-            { cover = collider; point = collider.ClosestPoint(origin); return true; }
+            {
+                cover = collider;
+                // The overlap already confirms a blocked muzzle. Non-convex meshes
+                // cannot supply ClosestPoint; use the muzzle for impact feedback.
+                point = collider is MeshCollider mesh && !mesh.convex
+                    ? origin : collider.ClosestPoint(origin);
+                return true;
+            }
         Vector3 firingOrigin = transform.position + Vector3.up * GetComponent<CharacterController>().height * .75f;
         Vector3 toMuzzle = origin - firingOrigin;
         if (ClosestHit(new Ray(firingOrigin, toMuzzle), toMuzzle.magnitude, out var hit))

@@ -265,6 +265,12 @@ public class VehicleOccupant : MonoBehaviour
         departureVelocity = IsLocal ? vehicle.Body.linearVelocity : Vector3.zero;
         if (force && position == default)
             position = seat.exit.position;
+        var agent = GetComponent<NavMeshAgent>();
+        bool restoreAgent = agent && behaviours.TryGetValue(agent, out bool agentWasEnabled) && agentWasEnabled;
+        // Registration occurs when enabled, so validate BEFORE restoring the agent.
+        // Forced exits/deaths may be off the infantry mesh; respawn restores it later.
+        bool validAgentExit = restoreAgent && NavMesh.SamplePosition(position, out _, .25f,
+            new NavMeshQueryFilter { agentTypeID = agent.agentTypeID, areaMask = agent.areaMask });
         ExitLocalPosition = vehicle.transform.InverseTransformPoint(position);
         seat.occupant = null;
         vehicle.ReleaseReservation(this);
@@ -280,12 +286,11 @@ public class VehicleOccupant : MonoBehaviour
         if (pair.Key)
             pair.Key.enabled = pair.Value;
         foreach (var pair in behaviours)
-        if (pair.Key)
+        if (pair.Key && pair.Key != agent)
             pair.Key.enabled = pair.Value;
         life.movement.ResetMovement();
-        var agent = GetComponent<NavMeshAgent>();
-        if (agent && agent.enabled && NavMesh.SamplePosition(position, out var hit, 3, new NavMeshQueryFilter { agentTypeID = agent.agentTypeID, areaMask = agent.areaMask }))
-            agent.Warp(hit.position);
+        if (restoreAgent && validAgentExit && !life.health.IsDead)
+            agent.enabled = true;
         if (IsLocal)
         {
             ResetVehicleCameraShake();
@@ -320,6 +325,17 @@ public class VehicleOccupant : MonoBehaviour
             if (!found)
                 continue;
             proposed = ground.point + Vector3.up * .08f;
+            var navigation = GetComponent<NavMeshAgent>();
+            if (!IsLocal && navigation)
+            {
+                // Exit onto this infantry agent's mesh, not just any physical floor.
+                // Reject other floors and distant projections rather than teleporting.
+                if (!NavMesh.SamplePosition(proposed, out var mesh, .75f,
+                    new NavMeshQueryFilter { agentTypeID = navigation.agentTypeID, areaMask = navigation.areaMask })
+                    || Mathf.Abs(mesh.position.y - ground.point.y) > .2f
+                    || Vector3.ProjectOnPlane(mesh.position-proposed, Vector3.up).magnitude > .2f) continue;
+                proposed = new Vector3(proposed.x, mesh.position.y + .08f, proposed.z);
+            }
             var cc = life.controller;
             Vector3 center = proposed + cc.center;
             float half = Mathf.Max(0, cc.height * .5f - cc.radius);
