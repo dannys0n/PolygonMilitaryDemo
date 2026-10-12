@@ -13,6 +13,8 @@ public class ArenaHud : MonoBehaviour
     public TMP_Text redScore, blueScore, timer, mode, weaponName, ammunition, fireMode, slots, health, teammates, medal, deathStatus;
     public Sprite rifleSprite, pistolSprite;
     public Material normalText, selectedText;
+    public Material selectedIconGlow, filamentLine;
+    readonly Dictionary<UnityEngine.UI.Image,Material> iconMaterials = new Dictionary<UnityEngine.UI.Image,Material>();
     public UnityEngine.UI.Image[] grenadeIcons, grenadeBackgrounds;
     public TMP_Text[] grenadeCounts;
     public UnityEngine.UI.Image[] launcherIcons=System.Array.Empty<UnityEngine.UI.Image>(), launcherBackgrounds=System.Array.Empty<UnityEngine.UI.Image>();
@@ -39,7 +41,7 @@ public class ArenaHud : MonoBehaviour
     public GameObject rifleIcon, pistolIcon;
     public RectTransform radarRoot;
     public RectTransform radarDotTemplate;
-    public Color accent = new Color(1f, .686f, 0f);
+    public Color accent = new Color(1f, .55f, .12f);
     public float radarRange = 45f;
     readonly List<(string attacker, string victim, Sprite weapon, float expires)> kills = new List<(string,string,Sprite,float)>();
     readonly List<float> skullExpires = new List<float>();
@@ -52,7 +54,9 @@ public class ArenaHud : MonoBehaviour
 
     void Awake()
     {
+        accent = new Color(1f, .55f, .12f);
         accentHex = ColorUtility.ToHtmlStringRGB(accent);
+        ArenaHudTheme.StyleLines(transform, filamentLine, selectedIconGlow);
         crosshairRestPositions = crosshairSegments.Select(s => s.rectTransform.anchoredPosition).ToArray();
         spreadRestPositions = spreadCrosshairSegments.Select(s => s.rectTransform.anchoredPosition).ToArray();
     }
@@ -204,6 +208,7 @@ public class ArenaHud : MonoBehaviour
             fireMode.text=count==0?"EMPTY":launchers.Ready?"SINGLE":"REARMING";
             equippedIcon.sprite=launchers.Equipped.icon; ordinal=-1;
         }
+        StyleEquipmentIcon(equippedIcon, true);
         for(int i=0;i<launcherIcons.Length;i++)
         {
             bool owned=launchers && i<launchers.types.Length;
@@ -211,7 +216,7 @@ public class ArenaHud : MonoBehaviour
             if(!owned)continue;
             bool selected=launchers.IsEquipped&&launchers.Selected==i;
             launcherIcons[i].sprite=launchers.types[i].icon;
-            launcherIcons[i].color=new Color(1,1,1,launchers.Count(i)>0?1:.25f);
+            StyleEquipmentIcon(launcherIcons[i],selected,launchers.Count(i)>0?1:.25f);
             launcherCounts[i].text=launchers.Count(i)+"  "+(i==0?"[Q]":"[X]");
             launcherBackgrounds[i].color=selected?new Color(accent.r,accent.g,accent.b,.12f):new Color(1,1,1,.035f);
             StyleEquipmentText(launcherCounts[i],selected);
@@ -230,7 +235,7 @@ public class ArenaHud : MonoBehaviour
             equipmentIcons[i].transform.parent.gameObject.SetActive(owned);
             if (!owned) continue;
             equipmentIcons[i].sprite = loadout.slots[loadout.AvailableSlots[i]].definition.icon;
-            equipmentIcons[i].color = i == ordinal ? Color.white : new Color(1,1,1,.6f);
+            StyleEquipmentIcon(equipmentIcons[i],i == ordinal);
             StyleEquipmentText(equipmentKeys[i],i == ordinal);
             equipmentBackgrounds[i].color = i == ordinal ? new Color(accent.r,accent.g,accent.b,.12f) : new Color(1,1,1,.035f);
         }
@@ -238,7 +243,7 @@ public class ArenaHud : MonoBehaviour
         for(int i=0;i<grenadeIcons.Length;i++)
         {
             grenadeIcons[i].sprite=grenades.types[i].icon;
-            grenadeIcons[i].color=new Color(1,1,1,grenades.Count(i)>0?1:.25f);
+            StyleEquipmentIcon(grenadeIcons[i],grenades.Selected==i,grenades.Count(i)>0?1:.25f);
             grenadeCounts[i].text=grenades.Count(i)+"  "+(grenades.Selected==i?"[G]":"");
             grenadeBackgrounds[i].color=grenades.Selected==i?new Color(accent.r,accent.g,accent.b,.12f):new Color(1,1,1,.035f);
             StyleEquipmentText(grenadeCounts[i],grenades.Selected==i);
@@ -260,6 +265,18 @@ public class ArenaHud : MonoBehaviour
         }
         deathStatus.text = !match.IsRunning ? $"{match.Result.ToUpperInvariant()}\nBACKSPACE TO RESTART"
             : player.IsRespawning ? $"RESPAWN IN {player.RespawnRemaining:F1}s" : "";
+    }
+    void StyleEquipmentIcon(UnityEngine.UI.Image icon, bool selected, float availability = 1f)
+    {
+        if (!iconMaterials.TryGetValue(icon, out var original))
+        {
+            original = icon.material;
+            iconMaterials.Add(icon, original);
+        }
+        icon.material = selected && selectedIconGlow ? selectedIconGlow : original;
+        var tint = selected ? accent : Color.white;
+        tint.a = availability * (selected ? 1f : .6f);
+        icon.color = tint;
     }
     void StyleEquipmentText(TMP_Text label,bool selected)
     {
