@@ -274,7 +274,7 @@ public class ArenaHud : MonoBehaviour
             iconMaterials.Add(icon, original);
         }
         icon.material = selected && selectedIconGlow ? selectedIconGlow : original;
-        var tint = selected ? accent : Color.white;
+        var tint = Color.white;
         tint.a = availability * (selected ? 1f : .6f);
         icon.color = tint;
     }

@@ -49,7 +49,6 @@ public class ArenaAIInput : SoldierInputSource
     [Tooltip("One-based positions in the arena loadout, like keyboard weapon selection.")]
     [Min(1)] public int primaryWeapon = 1;
     [Min(1)] public int sidearmWeapon = 2;
-    public float sidearmRange = 7f;
     public float weaponDecisionInterval = 2f;
     // Optional transport intent supplied by the arena vehicle policy.
     public Transform BoardingTarget { get; set; }
@@ -208,7 +207,7 @@ public class ArenaAIInput : SoldierInputSource
         // A visible infantry threat takes priority over scanning for launcher targets.
         if(!BoardingTarget && !visible && Time.time >= aimHoldUntil && TryVehicleAttack(out var vehicleInput))return vehicleInput;
         float distance = target ? Vector3.Distance(transform.position, lastSeen) : float.PositiveInfinity;
-        int selection = ChooseWeapon(distance);
+        int selection = ChooseWeapon();
         if (visible && soldier.launchers && soldier.launchers.IsEquipped)
             selection = System.Array.IndexOf(soldier.loadout.AvailableSlots, soldier.loadout.selectedSlot) + 1;
         bool reload = soldier.loadout.EquippedState.MagazineAmmo == 0 && soldier.loadout.EquippedState.ReserveAmmo > 0;
@@ -316,37 +315,31 @@ public class ArenaAIInput : SoldierInputSource
         return targetVisible;
     }
 
-    int ChooseWeapon(float distance)
+    int ChooseWeapon()
     {
         if (Time.time < nextWeapon || soldier.actions.IsReloading || soldier.loadout.IsSwitching) return 0;
         var loadout = soldier.loadout;
-        var current = loadout.EquippedState;
-        int desired = Mathf.Clamp(primaryWeapon, 1, loadout.AvailableSlots.Length);
-        if (current.MagazineAmmo + current.ReserveAmmo == 0)
+        int primary = Mathf.Clamp(primaryWeapon, 1, loadout.AvailableSlots.Length);
+        int sidearm = Mathf.Clamp(sidearmWeapon, 1, loadout.AvailableSlots.Length);
+        int primarySlot = loadout.AvailableSlots[primary - 1];
+        var primaryAmmo = loadout.slots[primarySlot].state;
+        bool inCombat = targetVisible || Time.time - LastCombatTime < combatReadyDuration
+            || Time.time < aimHoldUntil;
+        int desired = primary;
+        if (inCombat)
         {
-            int usable = 0;
-            for (int i = 0; i < loadout.AvailableSlots.Length; i++)
-            {
-                var alternate = loadout.slots[loadout.AvailableSlots[i]].state;
-                if (alternate.MagazineAmmo > 0) { usable = i + 1; break; }
-                if (usable == 0 && alternate.ReserveAmmo > 0) usable = i + 1;
-            }
-            if (usable == 0) return 0;
-            desired = usable;
+            // Stay on the pistol for the engagement once the primary magazine runs
+            // dry. Distance and reserves do not cause opportunistic weapon changes.
+            if (loadout.selectedSlot != primarySlot || primaryAmmo.MagazineAmmo > 0) return 0;
+            var sidearmAmmo = loadout.slots[loadout.AvailableSlots[sidearm - 1]].state;
+            if (sidearmAmmo.MagazineAmmo + sidearmAmmo.ReserveAmmo == 0) return 0;
+            desired = sidearm;
         }
-        else if (current.MagazineAmmo == 0 && targetVisible && distance < sidearmRange)
-        {
-            desired = Mathf.Clamp(sidearmWeapon, 1, loadout.AvailableSlots.Length);
-            if (loadout.slots[loadout.AvailableSlots[desired - 1]].state.MagazineAmmo == 0) return 0;
-        }
-        else if (target || IsCombatAlert || Time.time < aimHoldUntil) return 0;
-        else if (loadout.slots[loadout.AvailableSlots[desired - 1]].state.MagazineAmmo
-            + loadout.slots[loadout.AvailableSlots[desired - 1]].state.ReserveAmmo == 0) return 0;
+        // Outside combat, return to the primary; normal reload logic replenishes it.
         if (loadout.AvailableSlots[desired - 1] == loadout.selectedSlot) return 0;
         nextWeapon = Time.time + weaponDecisionInterval;
         return desired;
     }
-
     void ChooseMovement(bool visible, float distance, bool needsReload)
     {
         if (!target)

@@ -15,6 +15,8 @@ public class ArenaClassMenu : MonoBehaviour
     public Button confirm, back, changeClass;
     public ArenaWeaponCatalog catalog;
     public Button createClass;
+    public Material normalText, selectedText;
+    public TMP_FontAsset menuFont;
     readonly System.Collections.Generic.List<ArenaClassDefinition> choices=new System.Collections.Generic.List<ArenaClassDefinition>();
     public bool IsVisible => panel.activeSelf;
     ArenaParticipant participant;
@@ -25,6 +27,7 @@ public class ArenaClassMenu : MonoBehaviour
 
     void Awake()
     {
+        StylePanel();
         panel.SetActive(false);
         rowTemplate.gameObject.SetActive(false);
         var input = FindAnyObjectByType<SoldierLocalInput>();
@@ -50,6 +53,7 @@ public class ArenaClassMenu : MonoBehaviour
         foreach (var choice in choices)
         {
             var row = Instantiate(rowTemplate, rowTemplate.transform.parent);
+            StyleRow(row, choice);
             row.gameObject.SetActive(true);
             row.GetComponentInChildren<TMP_Text>().text = choice.displayName;
             row.onClick.AddListener(() => Preview(choice));
@@ -79,8 +83,91 @@ public class ArenaClassMenu : MonoBehaviour
         status.text = participant.NeedsClassSelection ? (deployment ? "SELECT A CLASS, THEN A DEPLOYMENT LOCATION" : "SELECT A CLASS TO SPAWN") : "CHANGES APPLY ON YOUR NEXT RESPAWN";
         confirm.GetComponentInChildren<TMP_Text>().text = participant.NeedsClassSelection && !deployment ? "DEPLOY" : "SELECT CLASS";
         for (int i = 0; i < rows.Count; i++)
-            rows[i].GetComponent<Image>().color = choices[i].id == choice.id
-                ? new Color(1f, .55f, .12f, .3f) : new Color(.12f, .14f, .16f, .65f);
+        {
+            bool selected = choices[i].id == choice.id;
+            rows[i].GetComponent<Image>().color = new Color(1, 1, 1, selected ? .055f : .015f);
+            rows[i].GetComponent<ArenaMenuSelectionFeedback>().selectionIndicator.SetActive(selected);
+        }
+    }
+    void StylePanel()
+    {
+        var background = panel.GetComponent<Image>();
+        background.color = new Color(.025f, .025f, .025f, .92f);
+        foreach (var label in panel.GetComponentsInChildren<TMP_Text>(true))
+        {
+            label.font = menuFont;
+            label.fontSharedMaterial = normalText;
+            label.fontStyle = FontStyles.Normal;
+            label.color = new Color(.8f, .8f, .8f);
+        }
+        foreach (var button in new[] { confirm, back, createClass }) StyleButton(button);
+        foreach (var scroll in panel.GetComponentsInChildren<ScrollRect>(true)) scroll.scrollSensitivity = 65f;
+        var layout = rowTemplate.transform.parent.GetComponent<VerticalLayoutGroup>();
+        if (layout) layout.spacing = 8f;
+        primaryIcon.preserveAspect = secondaryIcon.preserveAspect = true;
+        primaryIcon.color = secondaryIcon.color = Color.white;
+        primaryName.color = secondaryName.color = Color.white;
+        primaryName.fontSharedMaterial = secondaryName.fontSharedMaterial = selectedText;
+        foreach (var label in panel.GetComponentsInChildren<TMP_Text>(true))
+            if (label.name.EndsWith("header") || label.name == "Presets")
+            {
+                label.fontSize = 19f;
+                label.characterSpacing = 5f;
+                label.color = new Color(1, .55f, .12f);
+            }
+        status.fontSize = 17f;
+        status.color = new Color(.65f, .65f, .65f);
+    }
+    ArenaMenuSelectionFeedback StyleButton(Button button)
+    {
+        button.transition = Selectable.Transition.None;
+        button.GetComponent<Image>().color = Color.clear;
+        var feedback = button.GetComponent<ArenaMenuSelectionFeedback>();
+        if (!feedback) feedback = button.gameObject.AddComponent<ArenaMenuSelectionFeedback>();
+        feedback.control = button;
+        feedback.labels = button.GetComponentsInChildren<TMP_Text>(true);
+        feedback.normalText = normalText;
+        feedback.selectedText = selectedText;
+        feedback.brightenOnPress = true;
+        return feedback;
+    }
+    void StyleRow(Button row, ArenaClassDefinition choice)
+    {
+        var feedback = StyleButton(row);
+        var layout = row.GetComponent<LayoutElement>();
+        if (!layout) layout = row.gameObject.AddComponent<LayoutElement>();
+        layout.minHeight = layout.preferredHeight = 64f;
+        var label = row.GetComponentInChildren<TMP_Text>(true);
+        label.alignment = TextAlignmentOptions.MidlineLeft;
+        label.fontSize = 25f;
+        label.rectTransform.anchorMin = Vector2.zero;
+        label.rectTransform.anchorMax = Vector2.one;
+        label.rectTransform.offsetMin = new Vector2(28, 24);
+        label.rectTransform.offsetMax = new Vector2(-16, -4);
+        var detailObject = new GameObject("Loadout summary", typeof(RectTransform), typeof(TextMeshProUGUI));
+        detailObject.transform.SetParent(row.transform, false);
+        var detail = detailObject.GetComponent<TextMeshProUGUI>();
+        detail.font = label.font;
+        detail.fontSharedMaterial = normalText;
+        detail.fontSize = 15f;
+        detail.text = choice.primary.displayName + "  /  " + choice.secondary.displayName;
+        detail.raycastTarget = false;
+        detail.alignment = TextAlignmentOptions.MidlineLeft;
+        detail.rectTransform.anchorMin = Vector2.zero;
+        detail.rectTransform.anchorMax = Vector2.one;
+        detail.rectTransform.offsetMin = new Vector2(28, 3);
+        detail.rectTransform.offsetMax = new Vector2(-16, -35);
+        var marker = new GameObject("Selected class", typeof(RectTransform), typeof(Image));
+        marker.transform.SetParent(row.transform, false);
+        var image = marker.GetComponent<Image>();
+        image.color = new Color(1, .55f, .12f);
+        image.raycastTarget = false;
+        image.rectTransform.anchorMin = image.rectTransform.anchorMax = new Vector2(0, .5f);
+        image.rectTransform.anchoredPosition = new Vector2(12, 0);
+        image.rectTransform.sizeDelta = new Vector2(3, 40);
+        marker.SetActive(false);
+        feedback.selectionIndicator = marker;
+        feedback.labels = new TMP_Text[] { label, detail };
     }
     void Choose()
     {
