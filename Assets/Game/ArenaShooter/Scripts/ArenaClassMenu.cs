@@ -16,6 +16,7 @@ public class ArenaClassMenu : MonoBehaviour
     public ArenaWeaponCatalog catalog;
     public Button createClass;
     public Material normalText, selectedText;
+    public Material selectionFilament;
     public TMP_FontAsset menuFont;
     readonly System.Collections.Generic.List<ArenaClassDefinition> choices=new System.Collections.Generic.List<ArenaClassDefinition>();
     public bool IsVisible => panel.activeSelf;
@@ -160,11 +161,12 @@ public class ArenaClassMenu : MonoBehaviour
         var marker = new GameObject("Selected class", typeof(RectTransform), typeof(Image));
         marker.transform.SetParent(row.transform, false);
         var image = marker.GetComponent<Image>();
-        image.color = new Color(1, .55f, .12f);
+        image.material = selectionFilament;
+        image.color = Color.white;
         image.raycastTarget = false;
         image.rectTransform.anchorMin = image.rectTransform.anchorMax = new Vector2(0, .5f);
         image.rectTransform.anchoredPosition = new Vector2(12, 0);
-        image.rectTransform.sizeDelta = new Vector2(3, 40);
+        image.rectTransform.sizeDelta = new Vector2(12, 40);
         marker.SetActive(false);
         feedback.selectionIndicator = marker;
         feedback.labels = new TMP_Text[] { label, detail };
