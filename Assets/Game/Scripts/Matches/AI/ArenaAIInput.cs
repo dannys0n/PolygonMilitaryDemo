@@ -333,6 +333,15 @@ public class ArenaAIInput : SoldierInputSource
             // Stay on the pistol for the engagement once the primary magazine runs
             // dry. Distance and reserves do not cause opportunistic weapon changes.
             if (loadout.selectedSlot != primarySlot || primaryAmmo.MagazineAmmo > 0) return 0;
+            // Reload the primary instead of drawing the pistol against a larger group.
+            int visibleEnemies = 0;
+            foreach (var enemy in participant.match.participants)
+            {
+                if (!enemy.isActiveAndEnabled || enemy.team == participant.team
+                    || enemy.health.IsDead || enemy.IsAwaitingSpawn) continue;
+                if ((AimPoint(enemy) - life.look.aimCamera.transform.position).sqrMagnitude > sightRange * sightRange) continue;
+                if (CanSee(enemy) && ++visibleEnemies > 2) return 0;
+            }
             var sidearmAmmo = loadout.slots[loadout.AvailableSlots[sidearm - 1]].state;
             if (sidearmAmmo.MagazineAmmo + sidearmAmmo.ReserveAmmo == 0) return 0;
             desired = sidearm;
