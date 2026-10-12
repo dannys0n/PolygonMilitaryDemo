@@ -33,7 +33,7 @@ public class ArenaWeaponPreview : MonoBehaviour, IDragHandler
         previewCamera.orthographic = false;
         previewCamera.fieldOfView = 30f;
         previewCamera.clearFlags = CameraClearFlags.SolidColor;
-        previewCamera.backgroundColor = new Color(.012f,.012f,.012f,1);
+        previewCamera.backgroundColor = Color.black;
         previewCamera.nearClipPlane = .01f;
         previewCamera.farClipPlane = 20;
         texture = new RenderTexture(1536,768,24) { name = "Class Weapon Preview" };
