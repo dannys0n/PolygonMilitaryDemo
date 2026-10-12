@@ -12,6 +12,7 @@ public class VehicleSpawnPoint : MonoBehaviour
     public float respawnDelay = 15, abandonedDelay = 90, cleanupDelay = 7;
     public Vehicle Current { get; private set; }
     float spawnAt, unattendedAt;
+    bool hasBeenOccupied;
 
     void Start() => Spawn();
 
@@ -24,14 +25,22 @@ public class VehicleSpawnPoint : MonoBehaviour
             return;
         }
         if (vehicle.IsDestroyed) return;
-        if (vehicle.IsOccupied) unattendedAt = Time.time;
-        else if (Time.time - unattendedAt > abandonedDelay
+        if (vehicle.IsOccupied)
+        {
+            hasBeenOccupied = true;
+            unattendedAt = Time.time;
+        }
+        else if (hasBeenOccupied && Time.time - unattendedAt > abandonedDelay
             && Vector3.Distance(vehicle.transform.position, transform.position) > 8)
         {
-            vehicle.ApplyDamage(vehicle.maxHealth, null);
+            DespawnUnused(vehicle);
             return;
         }
-        if (vehicle.transform.position.y < -25) vehicle.ApplyDamage(vehicle.maxHealth, null);
+        if (vehicle.transform.position.y < -25)
+        {
+            if (vehicle.IsOccupied) vehicle.ApplyDamage(vehicle.maxHealth, null);
+            else DespawnUnused(vehicle);
+        }
     }
 
     void Spawn()
@@ -49,6 +58,17 @@ public class VehicleSpawnPoint : MonoBehaviour
         Current = Instantiate(selected, transform.position, transform.rotation);
         Current.Destroyed += OnDestroyed;
         unattendedAt = Time.time;
+        hasBeenOccupied = false;
+    }
+
+    // Recycling an empty vehicle is not a combat death and must not trigger blast effects.
+    void DespawnUnused(Vehicle vehicle)
+    {
+        vehicle.Destroyed -= OnDestroyed;
+        Current = null;
+        spawnAt = Time.time + respawnDelay;
+        vehicle.gameObject.SetActive(false);
+        Destroy(vehicle.gameObject);
     }
 
     void OnDestroyed(Vehicle wreck)
