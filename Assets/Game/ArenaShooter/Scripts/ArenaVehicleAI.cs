@@ -28,6 +28,21 @@ public class ArenaVehicleAI : MonoBehaviour
     ArenaParticipant vehicleTarget;
     float nextTargetDecision, lastVehicleContact = float.NegativeInfinity;
 
+    bool IsVehicleCrew
+    {
+        get
+        {
+            var actor=infantry.participant;
+            if(actor.match.rules is ConquestRules conquest && conquest.squads)
+                return conquest.squads.IsVehicleSquad(actor);
+            int index=0;
+            foreach(var member in actor.match.participants)
+                if(member.team==actor.team && member.GetComponent<ArenaVehicleAI>())
+                {if(member==actor)return index<4;index++;}
+            return false;
+        }
+    }
+
     void Awake()
     {
         path = new NavMeshPath();
@@ -90,7 +105,8 @@ public class ArenaVehicleAI : MonoBehaviour
             return;
         nextDecision = Time.time + decisionInterval;
         bool combat=infantry.IsCombatAlert || infantry.Target;
-        if (!combat && Vector3.Distance(transform.position, infantry.Destination) < minimumTrip)
+        bool crew=IsVehicleCrew;
+        if (!crew && !combat && Vector3.Distance(transform.position, infantry.Destination) < minimumTrip)
             return;
         float best = 0;
         Vehicle choice = null;
@@ -101,7 +117,7 @@ public class ArenaVehicleAI : MonoBehaviour
             if (v.gameObject.scene != gameObject.scene || v.IsDestroyed || v.Health < v.maxHealth*.4f || !v.motor.CanDisembark || v.Body.linearVelocity.magnitude > 2)
                 continue;
             float distance = Vector3.Distance(transform.position, v.NearestEntryPoint(transform.position).position);
-            if (distance > vehicleSearchRadius)
+            if (distance > (crew ? Mathf.Max(vehicleSearchRadius, 100f) : vehicleSearchRadius))
                 continue;
             int seat = v.FirstAvailableSeat(occupant);
             if (seat < 0) continue;
@@ -126,19 +142,25 @@ public class ArenaVehicleAI : MonoBehaviour
                 if (!ArenaAITactics.Reachable(infantry, v.NearestEntryPoint(transform.position).position, path, out _, out float walk))
                     continue;
 
-                if (driver && !combat && trip < minimumTrip)
+                if (driver && !crew && !combat && trip < minimumTrip)
                     continue;
                 float footTime = Vector3.Distance(transform.position, infantry.Destination) / infantry.soldier.movement.moveSpeed;
                 float rideTime = walk / infantry.soldier.movement.moveSpeed + trip / cruiseSpeed + 3f
                     + Vector3.Distance(proposed, infantry.Destination) / infantry.soldier.movement.moveSpeed
                     + (v.motor is HelicopterMotor ? 8f : 0f);
                 float score = footTime - rideTime;
-                if(combat)
+                if(combat && !crew)
                 {
                     if (walk > combatBoardDistance || !infantry.Target) continue;
                     Vector3 origin = v.turret ? v.turret.muzzle.position : v.cameraTarget.position;
                     if (!driver && !HasLineOfFire(v, infantry.Target, origin, EnemyPoint(infantry.Target))) continue;
                     score = 22 - walk * .65f;
+                }
+                if(crew)
+                {
+                    // Crew role chooses a usable vehicle even when walking would be faster.
+                    bool armed=v.turret || v.GetComponent<VehicleLauncher>();
+                    score=35-walk*.2f+(armed?20:0)+(v.seats[seat].role==Vehicle.SeatRole.Gunner?8:0);
                 }
                 if (score < 3f)
                     continue;
@@ -152,7 +174,7 @@ public class ArenaVehicleAI : MonoBehaviour
         }
         if (!choice || !choice.Reserve(occupant, seatIndex))
             return;
-        reservedForCombat=combat;
+        reservedForCombat=combat || crew;
         reserved = choice;
         reservedEntry = choice.NearestEntryPoint(transform.position);
         reservedSeat = seatIndex;
@@ -265,7 +287,10 @@ public class ArenaVehicleAI : MonoBehaviour
                 return;
             }
         }
-        bool bail = (!enemy && distance < 6) || (threat && !v.turret && Time.time - boardedAt > 4)
+        if(!enemy && distance < 6 && IsVehicleCrew && infantry.participant.match.rules
+            && infantry.participant.match.rules.TryGetObjective(infantry,out var nextObjective))
+        {Goal=nextObjective;nextPath=0;distance=Vector3.ProjectOnPlane(Goal-v.transform.position,Vector3.up).magnitude;}
+        bool bail = (!enemy && distance < 6 && !IsVehicleCrew) || (threat && !v.turret && Time.time - boardedAt > 4)
             || v.Health < v.maxHealth * .3f || recoveries >= 3;
         if (!enemy && Time.time - lastVehicleContact < combatHoldTime && v.turret)
         { v.DriverInput = new VehicleInput { brake = true }; return; }
@@ -343,7 +368,14 @@ public class ArenaVehicleAI : MonoBehaviour
         Vector3 difference = travelGoal - v.transform.position;
         float distance = Vector3.ProjectOnPlane(difference, Vector3.up).magnitude;
         if (!enemy && Time.time - lastVehicleContact > combatHoldTime && distance < 7)
-            landing = true;
+        {
+            // Armed crew aircraft remain available over the battlefield rather than
+            // treating every completed short trip as a reason to land and abandon it.
+            if(IsVehicleCrew && launcher && infantry.participant.match.rules
+                && infantry.participant.match.rules.TryGetObjective(infantry,out var nextObjective))
+                Goal=nextObjective;
+            else landing=true;
+        }
         State = landing ? TravelState.Landing : TravelState.Driving;
         float altitude = GroundHeight(v.transform.position);
         float desiredHeight = landing ? Goal.y + .05f : altitude + flightHeight;
@@ -383,7 +415,7 @@ public class ArenaVehicleAI : MonoBehaviour
             v.DriverInput = input;
             UseRockets(v);
         }
-        if (Time.time - boardedAt > 70 && Time.time - lastVehicleContact > combatHoldTime)
+        if (!IsVehicleCrew && Time.time - boardedAt > 70 && Time.time - lastVehicleContact > combatHoldTime)
             landing = true;
     }
     static float GroundHeight(Vector3 position)

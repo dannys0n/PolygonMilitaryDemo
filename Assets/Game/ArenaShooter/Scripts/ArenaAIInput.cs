@@ -61,6 +61,7 @@ public class ArenaAIInput : SoldierInputSource
     public Vector3 PeekPosition => cover.peek;
     public bool WantsToSprint { get; private set; }
     public bool IsCombatAlert => Time.time < combatAlertUntil;
+    public float LastCombatTime { get; private set; } = float.NegativeInfinity;
     float ArrivalDistance => Mathf.Max(.35f, agent.stoppingDistance + .1f);
 
     ArenaParticipant target;
@@ -76,6 +77,7 @@ public class ArenaAIInput : SoldierInputSource
     int lastPatrolIndex = -1;
     bool hasPatrolDestination, targetVisible;
     float aimHoldUntil;
+    int burstShots, burstShotLimit;
     float combatAlertUntil, heardAt = float.NegativeInfinity, investigationUntil, nextLook;
     Vector3 investigationPoint, openLook;
     bool investigating;
@@ -142,12 +144,14 @@ public class ArenaAIInput : SoldierInputSource
         queryPath = new NavMeshPath();
         agent.updatePosition = agent.updateRotation = agent.updateUpAxis = false;
     }
-    void OnEnable() { life.Respawned += ResetIntent; life.health.Died += OnDied; life.health.Damaged += OnDamaged; }
-    void OnDisable() { life.Respawned -= ResetIntent; life.health.Died -= OnDied; life.health.Damaged -= OnDamaged; ResetIntent(); }
+    void OnEnable() { life.Respawned += ResetIntent; life.health.Died += OnDied; life.health.Damaged += OnDamaged; soldier.actions.FireStarted += OnShot; }
+    void OnDisable() { life.Respawned -= ResetIntent; life.health.Died -= OnDied; life.health.Damaged -= OnDamaged; soldier.actions.FireStarted -= OnShot; ResetIntent(); }
     void OnDied(GameObject source) => ResetIntent();
+    void OnShot() { burstShots++; LastCombatTime = Time.time; }
     void OnDamaged(float amount, GameObject source)
     {
         combatAlertUntil = Time.time + combatReadyDuration;
+        LastCombatTime = Time.time;
         if (source && !target) Investigate(source.transform.position);
     }
     void Investigate(Vector3 point)
@@ -161,7 +165,7 @@ public class ArenaAIInput : SoldierInputSource
     void ResetIntent()
     {
         target = null; HasCover = false; State = Behavior.Inactive;
-        aimHoldUntil = 0f;
+        aimHoldUntil = 0f; burstShots = burstShotLimit = 0; LastCombatTime = float.NegativeInfinity;
         WantsToSprint = false;
         combatAlertUntil = investigationUntil = nextLook = 0f;
         heardAt = float.NegativeInfinity; investigating = false; openLook = transform.forward;
@@ -201,7 +205,7 @@ public class ArenaAIInput : SoldierInputSource
         if (visible) aimHoldUntil = Time.time + aimHoldDuration;
         bool faceThreat = !BoardingTarget && (target || Time.time < aimHoldUntil);
         bool wantsAim = faceThreat && (visible || Time.time < aimHoldUntil)
-            && State != Behavior.MoveToCover && State != Behavior.Hide;
+            && (visible || State != Behavior.MoveToCover && State != Behavior.Hide);
         bool busy = soldier.actions.IsReloading || soldier.loadout.IsSwitching || selection != 0;
         Vector3 direction = faceThreat ? (visible ? GetImperfectAim() : lastSeen + Vector3.up * 1.25f) - life.look.aimCamera.transform.position
             : agent.steeringTarget - transform.position;
@@ -232,7 +236,7 @@ public class ArenaAIInput : SoldierInputSource
         // The controller applies yaw before movement.
         Vector3 local = Quaternion.Inverse(Quaternion.Euler(0f, transform.eulerAngles.y + look.x, 0f))
             * velocity / Mathf.Max(agent.speed, .01f);
-        bool fire = visible && wantsAim && distance <= attackRange && !busy && !reload && Time.time >= readyAt
+        bool fire = visible && wantsAim && distance <= Mathf.Max(attackRange, sightRange) && !busy && !reload && Time.time >= readyAt
             && Mathf.Abs(yawError) < 4f && Mathf.Abs(pitchError) < 4f
             && ArenaAITactics.ClearShot(this, life.look.aimCamera.transform.position, AimPoint(target), target) && InBurst();
         bool pressed = fire && Time.time >= nextSemi;
@@ -280,12 +284,15 @@ public class ArenaAIInput : SoldierInputSource
         {
             if (target != visible || Time.time - seenAt > aimHoldDuration)
             {
-                readyAt = Time.time + reactionTime; acquiredAt = Time.time; trackedAim = AimPoint(visible);
-                burstUntil = pauseUntil = 0f;
+                readyAt = Time.time + (IsCombatAlert ? 0f : Mathf.Min(reactionTime, .2f));
+                acquiredAt = Time.time; trackedAim = AimPoint(visible);
+                // Preserve the cadence across target changes rather than repeatedly delaying a shot.
+                if (burstUntil == 0f && Time.time >= pauseUntil) burstShots = 0;
             }
             if (target != visible)
             { HasCover = false; nextCover = Time.time + Random.value; nextReposition = 0f; hasPatrolDestination = false; }
             target = visible; lastSeen = visible.transform.position; seenAt = Time.time;
+            LastCombatTime = Time.time;
             combatAlertUntil = Time.time + combatReadyDuration;
             investigating = false;
         }
@@ -339,7 +346,7 @@ public class ArenaAIInput : SoldierInputSource
         Vector3 threat = lastSeen + Vector3.up * 1.25f;
         bool mustHide = needsReload || soldier.actions.IsReloading;
         bool defensive = mustHide || life.health.CurrentHealth / life.health.maxHealth < retreatHealth;
-        if (Time.time >= nextCover && (defensive || visible && distance < attackRange))
+        if (Time.time >= nextCover && (defensive || !visible && distance < attackRange))
         {
             nextCover = Time.time + coverDecisionInterval;
             if ((defensive || Random.value < coverChance) && ArenaAITactics.FindCover(this, threat, queryPath, out var found))
@@ -484,8 +491,19 @@ public class ArenaAIInput : SoldierInputSource
     bool InBurst()
     {
         if (Time.time < pauseUntil) return false;
-        if (burstUntil == 0f) burstUntil = Time.time + Random.Range(burstDuration.x, burstDuration.y);
-        if (Time.time < burstUntil) return true;
+        if (burstUntil == 0f)
+        {
+            burstUntil = Time.time + Random.Range(burstDuration.x, burstDuration.y);
+            burstShots = 0;
+            // A full-health infantry target normally requires at least two accurate bursts.
+            // Count actual emitted rounds, not frames holding the trigger. High-damage
+            // single-shot weapons remain lethal; this policy does not alter weapon damage.
+            float damage = Mathf.Max(1f, soldier.loadout.EquippedWeapon.definition.damage);
+            int lethalRounds = Mathf.CeilToInt(target.health.maxHealth / damage);
+            burstShotLimit = Mathf.Min(Mathf.Clamp((lethalRounds + 1) / 2, 1, 4),
+                Mathf.Max(1, Mathf.RoundToInt((burstUntil-Time.time)*soldier.actions.roundsPerMinute/60f)));
+        }
+        if (burstShots < burstShotLimit) return true;
         burstUntil = 0f; pauseUntil = Time.time + Random.Range(burstPause.x, burstPause.y); return false;
     }
 

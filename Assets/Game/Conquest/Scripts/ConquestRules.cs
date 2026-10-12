@@ -15,6 +15,7 @@ public class ConquestRules : ArenaMatchRules
     [Header("AI objectives")]
     [Min(1)] public float objectiveDecisionInterval=4;
     [Min(1)] public int defendersPerFlag=2;
+    [Min(0)] public float postCaptureDefenseTime=6;
     public override string DisplayName => "CONQUEST";
     public override int ScoreLimit => startingTickets;
     public override bool HasEnded => redTickets<=0 || blueTickets<=0;
@@ -73,6 +74,10 @@ public class ConquestRules : ArenaMatchRules
     {
         spawn=null;
         if(TeamScore(actor.team)<=0 || actor.RespawnRemaining>0 || actor.NeedsClassSelection || NeedsDeployment(actor) && !approved.Contains(actor))return false;
+        // Dedicated crews return to HQ near vehicle pads instead of repeatedly
+        // deploying into the middle of infantry flag fights.
+        if(squads && squads.IsVehicleSquad(actor) && actor.GetComponent<ArenaVehicleAI>()
+            && ArenaSpawnSelection.TryChooseFrom(match,actor,actor.team==ArenaParticipant.Team.Red?redBaseSpawns:blueBaseSpawns,history,out spawn))return true;
         if(squads)
         {
             ArenaParticipant mate=null;
@@ -124,7 +129,11 @@ public class ConquestRules : ArenaMatchRules
     public override bool TryGetObjective(ArenaAIInput ai, out Vector3 destination)
     {
         var actor=ai.participant;
-        if(assignments.TryGetValue(actor,out var current) && Time.time<current.reconsiderAt)
+        bool hasAssignment=assignments.TryGetValue(actor,out var current);
+        bool captured=hasAssignment && current.point && current.point.Owner==actor.team;
+        bool defending=captured && (current.point.Count(actor.team==ArenaParticipant.Team.Red?ArenaParticipant.Team.Blue:ArenaParticipant.Team.Red)>0
+            || Time.time-ai.LastCombatTime<postCaptureDefenseTime);
+        if(hasAssignment && (defending || !captured && Time.time<current.reconsiderAt))
         {destination=current.destination;return true;}
         ConquestCapturePoint selected=null;Vector3 selectedPosition=default;float best=float.NegativeInfinity;
         foreach(var point in points)
@@ -134,12 +143,15 @@ public class ConquestRules : ArenaMatchRules
                 if(pair.Key!=actor && pair.Key && pair.Key.team==actor.team && !pair.Key.health.IsDead && !pair.Key.IsAwaitingSpawn && pair.Value.point==point)assigned++;
             bool friendly=point.Owner==actor.team;
             int enemies=point.Count(actor.team==ArenaParticipant.Team.Red?ArenaParticipant.Team.Blue:ArenaParticipant.Team.Red);
-            float priority=friendly ? enemies>0 ? 65 : assigned<defendersPerFlag ? 24 : 3 : point.Owner.HasValue ? 45 : 48;
+            // Capturing is not a permanent parking assignment. Quiet owned flags only
+            // receive patrol visits when there are no neutral/enemy objectives to attack.
+            float priority=friendly ? enemies>0 ? 65 : 0 : point.Owner.HasValue ? 45 : 48;
             float angle=Mathf.Repeat(System.Array.IndexOf(match.participants,actor)*137.5f,360);
             Vector3 proposed=point.transform.position+Quaternion.Euler(0,angle,0)*Vector3.forward*(point.radius*.5f);
             if(!NavMesh.SamplePosition(proposed,out var hit,2,new NavMeshQueryFilter{agentTypeID=ai.agent.agentTypeID,areaMask=ai.agent.areaMask}) || !point.Contains(hit.position))continue;
             if(!ArenaAITactics.Reachable(ai,hit.position,query,out var reachable,out float distance))continue;
-            float score=priority-distance*.12f-assigned*6+(current.point==point?3:0);
+            float score=priority-distance*.12f-assigned*6+(current.point==point?3:0)
+                - (captured && !defending && current.point==point ? 35 : 0);
             if(score<=best)continue;
             best=score;selected=point;selectedPosition=reachable;
         }

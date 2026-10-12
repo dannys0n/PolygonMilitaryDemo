@@ -41,6 +41,8 @@ public class ConquestSquads : MonoBehaviour
         }
     }
     int Count(ArenaParticipant.Team team,int squad){int count=0;foreach(var p in membership)if(p.Key.team==team&&p.Value==squad)count++;return count;}
+    // One crew squad per team keeps vehicle intent stable through respawns.
+    public bool IsVehicleSquad(ArenaParticipant actor) => SquadOf(actor) == 0;
     public int SquadOf(ArenaParticipant actor)=>membership.TryGetValue(actor,out int squad)?squad:-1;
     public IEnumerable<ArenaParticipant> Members(ArenaParticipant actor)
     {
