@@ -30,8 +30,10 @@ public class SoldierFirstPersonView : MonoBehaviour
     public float aimBlendSpeed => definition.aimBlendSpeed;
     public Vector3 aimOffset => definition.aimOffset;
 
-    private Vector3 thirdPersonCameraPosition;
-    private Quaternion thirdPersonCameraRotation;
+    [Header("Third person camera")]
+    public Vector3 thirdPersonCameraPosition = new Vector3(.63f, 0f, -1.091f);
+    public Vector3 thirdPersonCameraAngles = new Vector3(5.702f, -6.186f, 0f);
+    private Quaternion thirdPersonCameraRotation => Quaternion.Euler(thirdPersonCameraAngles);
     private Quaternion firstPersonRestRotation;
     private int originalCullingMask;
     private float originalNearClip;
@@ -74,8 +76,6 @@ public class SoldierFirstPersonView : MonoBehaviour
         actions = GetComponent<SoldierActions>();
         loadout = GetComponent<SoldierWeaponLoadout>();
         firstPersonRestRotation = firstPersonRoot.localRotation;
-        thirdPersonCameraPosition = playerCamera.transform.localPosition;
-        thirdPersonCameraRotation = playerCamera.transform.localRotation;
         originalCullingMask = playerCamera.cullingMask;
         originalNearClip = playerCamera.nearClipPlane;
         originalFieldOfView = playerCamera.fieldOfView;
@@ -221,7 +221,9 @@ public class SoldierFirstPersonView : MonoBehaviour
     {
         // Reuse the authored TPS offset while following the live look/recoil direction.
         var cameraTransform = playerCamera.transform;
-        rotation = cameraTransform.rotation;
+        rotation = firstPerson
+            ? cameraTransform.parent.rotation * thirdPersonCameraRotation * cameraTransform.localRotation
+            : cameraTransform.rotation;
         position = cameraTransform.parent.TransformPoint(thirdPersonCameraPosition);
     }
 
