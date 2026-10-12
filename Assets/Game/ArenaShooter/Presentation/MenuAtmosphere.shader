@@ -4,7 +4,7 @@ Shader "Game/UI/Menu Atmosphere"
     {
         [PerRendererData] _MainTex ("Sprite", 2D) = "white" {}
         _Color ("Tint", Color) = (1,1,1,1)
-        [Enum(Atmosphere,0,Marker,1,Spill,2,HudLine,3,HudOutline,4)] _Mode ("Effect", Float) = 0
+        [Enum(Atmosphere,0,Marker,1,Spill,2,HudLine,3,HudOutline,4,HudDust,5)] _Mode ("Effect", Float) = 0
         _DustTex ("Dust Texture", 2D) = "black" {}
         _DustStrength ("Dust Visibility", Range(0,4)) = 0.8
         _LightRadius ("Filament Dust Reach", Range(0.01,0.5)) = 0.2
@@ -37,7 +37,7 @@ Shader "Game/UI/Menu Atmosphere"
             #include "UnityCG.cginc"
             #include "UnityUI.cginc"
             struct appdata { float4 vertex:POSITION; float4 color:COLOR; float2 uv:TEXCOORD0; UNITY_VERTEX_INPUT_INSTANCE_ID };
-            struct v2f { float4 vertex:SV_POSITION; float4 color:COLOR; float2 uv:TEXCOORD0; float4 local:TEXCOORD1; UNITY_VERTEX_OUTPUT_STEREO };
+            struct v2f { float4 vertex:SV_POSITION; float4 color:COLOR; float2 uv:TEXCOORD0; float4 local:TEXCOORD1; float4 screen:TEXCOORD2; UNITY_VERTEX_OUTPUT_STEREO };
             sampler2D _MainTex, _DustTex;
             float4 _Color, _ClipRect, _Warmth;
             float _Mode, _DustStrength, _Intensity, _LightRadius, _LightStrength;
@@ -55,17 +55,19 @@ Shader "Game/UI/Menu Atmosphere"
             v2f vert(appdata v)
             {
                 v2f o; UNITY_SETUP_INSTANCE_ID(v); UNITY_INITIALIZE_VERTEX_OUTPUT_STEREO(o);
-                o.local=v.vertex; o.vertex=UnityObjectToClipPos(v.vertex); o.uv=v.uv; o.color=v.color*_Color; return o;
+                o.local=v.vertex; o.vertex=UnityObjectToClipPos(v.vertex); o.uv=v.uv; o.color=v.color*_Color; o.screen=ComputeScreenPos(o.vertex); return o;
             }
             half4 frag(v2f i):SV_Target
             {
                 float energy;
-                if (_Mode < .5)
+                if (_Mode < .5 || _Mode > 4.5)
                 {
                     float aspect=_ScreenParams.x/_ScreenParams.y;
-                    // Static texture, exposed only by the currently visible filaments.
-                    float dust=tex2D(_DustTex,i.uv).r;
-                    float2 position=float2(i.uv.x*aspect,i.uv.y);
+                    // HUD dust uses screen coordinates so angled panels cannot move the lens texture.
+                    // The menu keeps its existing panel-relative texture.
+                    float2 dustUV=_Mode > 4.5 ? i.screen.xy/i.screen.w : i.uv;
+                    float dust=tex2D(_DustTex,dustUV).r;
+                    float2 position=float2(dustUV.x*aspect,dustUV.y);
                     float illumination=0;
                     [unroll] for(int n=0;n<6;n++)
                     {
@@ -76,7 +78,7 @@ Shader "Game/UI/Menu Atmosphere"
                         float2 offset=position-(start+segment*t);
                         illumination+=exp(-dot(offset,offset)*3/(_LightRadius*_LightRadius))*_FilamentStrengths[n];
                     }
-                    energy=illumination*_LightStrength*(.025+pow(max(dust,0),.7)*_DustStrength);
+                    energy=illumination*_LightStrength*((_Mode > 4.5 ? 0 : .025)+pow(max(dust,0),.7)*_DustStrength);
                 }
                 else if (_Mode > 3.5)
                 {
