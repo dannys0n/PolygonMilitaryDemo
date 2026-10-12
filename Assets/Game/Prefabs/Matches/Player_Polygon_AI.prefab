@@ -104,6 +104,42 @@ PrefabInstance:
       propertyPath: m_Name
       value: Player_Polygon_AI
       objectReference: {fileID: 0}
+    - target: {fileID: 8866584782723430131, guid: 2f2651d4bad0ce246a3126ffed3a5296, type: 3}
+      propertyPath: slots.Array.size
+      value: 41
+      objectReference: {fileID: 0}
+    - target: {fileID: 8866584782723430131, guid: 2f2651d4bad0ce246a3126ffed3a5296, type: 3}
+      propertyPath: slots.Array.data[39].name
+      value: RPG (Military)
+      objectReference: {fileID: 0}
+    - target: {fileID: 8866584782723430131, guid: 2f2651d4bad0ce246a3126ffed3a5296, type: 3}
+      propertyPath: slots.Array.data[40].name
+      value: Rocket Launcher (Military)
+      objectReference: {fileID: 0}
+    - target: {fileID: 8866584782723430131, guid: 2f2651d4bad0ce246a3126ffed3a5296, type: 3}
+      propertyPath: slots.Array.data[39].definition
+      value: 
+      objectReference: {fileID: 11400000, guid: 1a61e66f46babb24d910432fa4936fd1, type: 2}
+    - target: {fileID: 8866584782723430131, guid: 2f2651d4bad0ce246a3126ffed3a5296, type: 3}
+      propertyPath: slots.Array.data[40].definition
+      value: 
+      objectReference: {fileID: 11400000, guid: 5436a94cd83dd2f41be2eb332bce1b2d, type: 2}
+    - target: {fileID: 8866584782723430131, guid: 2f2651d4bad0ce246a3126ffed3a5296, type: 3}
+      propertyPath: slots.Array.data[39].firstPersonPrefab
+      value: 
+      objectReference: {fileID: 3989044082224487609, guid: da2f2b8206f41844e9a1dbcc366c7146, type: 3}
+    - target: {fileID: 8866584782723430131, guid: 2f2651d4bad0ce246a3126ffed3a5296, type: 3}
+      propertyPath: slots.Array.data[39].thirdPersonPrefab
+      value: 
+      objectReference: {fileID: 3816260121217450681, guid: aa1a4ab41d9148441bcd99ed28be76e9, type: 3}
+    - target: {fileID: 8866584782723430131, guid: 2f2651d4bad0ce246a3126ffed3a5296, type: 3}
+      propertyPath: slots.Array.data[40].firstPersonPrefab
+      value: 
+      objectReference: {fileID: 8837847267141164816, guid: a4135b6f82eb0284abce9ade4f459c32, type: 3}
+    - target: {fileID: 8866584782723430131, guid: 2f2651d4bad0ce246a3126ffed3a5296, type: 3}
+      propertyPath: slots.Array.data[40].thirdPersonPrefab
+      value: 
+      objectReference: {fileID: 1824009113543223257, guid: 949799bd6f7059041bf2f0f33d481e27, type: 3}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -199,6 +235,7 @@ MonoBehaviour:
   sprintDistance: 14
   sprintStopDistance: 6
   combatReadyDuration: 6
+  aimHoldDuration: 0.8
   hearingRange: 20
   strafeDistance: 2
   repositionInterval: {x: 1.5, y: 3}
@@ -218,7 +255,6 @@ MonoBehaviour:
   semiAutoInterval: 0.25
   primaryWeapon: 1
   sidearmWeapon: 2
-  sidearmRange: 7
   weaponDecisionInterval: 2
   launcherRange: 80
   launcherSafeDistance: 12
