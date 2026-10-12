@@ -106,6 +106,10 @@ Do not build classes, dynamic pickups, conquest, battle royale, persistence, pro
 - [x] Check capture/ticket/deployment rules, squad eligibility, six base-to-flag paths, live captures, vehicle spawning and AI Humvee/helicopter use. Correct mirrored sidewalk collision in the playable copy.
 - [ ] Human map walkthrough: routes, terrain traversal, spawn safety/balance, helicopter transport/combat and a complete match.
 
+- [ ] gameplay ui should follow visual language
+- [ ] add 2 more cature points to keep things interesting
+- [ ] increase playercount to 64
+
 ## 4.5. Vehicles
 
 - [x] Add the ithappy Hummer as a Rigidbody/WheelCollider vehicle with a working roof machine gun.

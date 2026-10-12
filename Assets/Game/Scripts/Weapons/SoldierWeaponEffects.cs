@@ -83,6 +83,8 @@ public class SoldierWeaponEffects : MonoBehaviour
             foreach (Transform child in effect.particles.GetComponentsInChildren<Transform>(true)) child.gameObject.layer = layer;
             var main = effect.particles.main;
             main.scalingMode = ParticleSystemScalingMode.Hierarchy;
+            // A flash belongs to the barrel throughout its lifetime, including recoil.
+            main.simulationSpace = ParticleSystemSimulationSpace.Local;
             effect.particles.Stop(true, ParticleSystemStopBehavior.StopEmittingAndClear);
         }
         effect.particles.Emit(definition.flashParticlesCount);
