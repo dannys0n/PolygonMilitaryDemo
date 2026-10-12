@@ -179,6 +179,8 @@ public class ArenaAIInput : SoldierInputSource
         aimNoise = desiredNoise = Vector2.zero;
         progressPosition = Destination = transform.position; progressAt = Time.time;
         RestoreNavigation();
+        // Different stable priorities break symmetrical crowd avoidance deadlocks.
+        agent.avoidancePriority = 20 + (int)((uint)GetEntityId().GetHashCode() % 60);
         if (!agent.isActiveAndEnabled) return;
         if (agent.isOnNavMesh) agent.ResetPath();
         if (NavMesh.SamplePosition(transform.position, out var hit, 2f, new NavMeshQueryFilter { agentTypeID = agent.agentTypeID, areaMask = agent.areaMask })) agent.Warp(hit.position);
@@ -279,7 +281,7 @@ public class ArenaAIInput : SoldierInputSource
             { newestSound = actor.LastShotTime; soundPoint = actor.LastShotPosition; heardEnemy = true; }
         }
         heardAt = Time.time;
-        if (heardEnemy && !target && !investigating) Investigate(soundPoint);
+        if (heardEnemy && !target && !investigating && !(participant.match.rules is ConquestRules)) Investigate(soundPoint);
         // Finish the current engagement while it remains visible. Only acquire another
         // enemy when this one is lost, instead of chasing the closest candidate each scan.
         ArenaParticipant visible = target && !target.health.IsDead
@@ -451,12 +453,15 @@ public class ArenaAIInput : SoldierInputSource
     void RecoverStuckPath()
     {
         if (Time.time - progressAt < 1.5f) return;
-        bool blocked = agent.desiredVelocity.sqrMagnitude > .25f && HorizontalDistance(progressPosition, transform.position) < .2f;
+        bool blocked = !agent.pathPending && HorizontalDistance(transform.position, Destination) > ArrivalDistance + .5f
+            && HorizontalDistance(progressPosition, transform.position) < .2f;
         progressPosition = transform.position; progressAt = Time.time;
         if (!blocked) return;
         HasCover = false; agent.ResetPath(); nextPath = nextReposition = 0f;
-        if (ArenaAITactics.FindCombatPosition(this, lastSeen + Vector3.up * 1.25f, queryPath, out var point))
-        { SetDestination(point, true); recoveryUntil = Time.time + 2f; }
+        Vector3 threat = target ? lastSeen + Vector3.up * 1.25f : Destination;
+        if (ArenaAITactics.FindCombatPosition(this, threat, queryPath, out var point))
+        { SetDestination(point, true); recoveryUntil = Time.time + .8f; }
+        else SetDestination(Destination, true);
     }
 
     Vector3 GetImperfectAim()

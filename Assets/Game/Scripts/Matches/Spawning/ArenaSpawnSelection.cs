@@ -151,7 +151,7 @@ public static class ArenaSpawnSelection
     // A spawn marker is a preferred area, not a single exact position. Search nearby
     // walkable points in distance order, then check clearance and path connectivity.
     public static bool TryFindPosition(ArenaMatch match, ArenaParticipant incoming, Vector3 anchor,
-        out Vector3 position, float searchRadius = -1f, List<Placement> reserved = null)
+        out Vector3 position, float searchRadius = -1f, List<Placement> reserved = null, float clearance = -1f)
     {
         position = default;
         float limit = searchRadius >= 0f ? searchRadius : match.settings.spawnSearchRadius;
@@ -162,7 +162,8 @@ public static class ArenaSpawnSelection
         };
         if (!NavMesh.SamplePosition(anchor, out var origin, Mathf.Max(2f, limit), filter)) return false;
         var path = new NavMeshPath();
-        float step = Mathf.Max(.75f, match.settings.spawnClearance);
+        float separation = clearance > 0f ? clearance : match.settings.spawnClearance;
+        float step = Mathf.Max(.75f, separation);
         for (float radius = 0f; radius <= limit + .01f; radius += step)
         {
             int count = radius == 0f ? 1 : Mathf.CeilToInt(2f * Mathf.PI * radius / step);
@@ -176,11 +177,12 @@ public static class ArenaSpawnSelection
                 bool crowded = false;
                 if (reserved != null)
                     foreach (var other in reserved)
-                        if (Vector3.Distance(other.position, proposed) < match.settings.spawnClearance)
+                        if (Vector3.Distance(other.position, proposed) < separation)
                         { crowded = true; break; }
                 if (crowded || !HasSpace(match, incoming, proposed, reserved != null)) continue;
                 if (!NavMesh.CalculatePath(origin.position, hit.position, filter, path)
                     || path.status != NavMeshPathStatus.PathComplete) continue;
+                if (reserved != null && !HasObjectiveExit(match, incoming, proposed)) continue;
                 position = proposed;
                 return true;
             }
@@ -191,14 +193,36 @@ public static class ArenaSpawnSelection
     static bool TryFormation(ArenaMatch match, Vector3 anchor, ArenaParticipant[] team, List<Placement> plan)
     {
         // Grow the opening search with the roster instead of requiring a fixed-size empty disk.
-        float radius = Mathf.Max(match.settings.openingTeamRadius,
-            Mathf.Sqrt(team.Length) * Mathf.Max(1f, match.settings.spawnClearance) * 2f);
-        foreach (var participant in team)
+        float spacing = Mathf.Max(match.settings.spawnClearance, match.settings.openingSpacing);
+        float radius = Mathf.Max(match.settings.openingTeamRadius, Mathf.Sqrt(team.Length) * spacing * 2f);
+        Transform[] authored = null;
+        if (match.rules is ConquestRules conquest)
+            authored = team[0].team == ArenaParticipant.Team.Red ? conquest.redBaseSpawns : conquest.blueBaseSpawns;
+        for (int i = 0; i < team.Length; i++)
         {
-            if (!TryFindPosition(match, participant, anchor, out var position, radius, plan)) return false;
-            plan.Add(new Placement { participant = participant, position = position });
+            // Opening teams use the authored HQ deployment positions too, rather
+            // than ignoring them and squeezing the full team around one marker.
+            Vector3 preferred = authored != null && i < authored.Length ? authored[i].position
+                : anchor + Quaternion.Euler(0, i * 137.5f, 0) * Vector3.forward * (Mathf.Sqrt(i) * spacing);
+            if (!TryFindPosition(match, team[i], preferred, out var position, spacing * 2f, plan, spacing)
+                && !TryFindPosition(match, team[i], anchor, out position, radius, plan, spacing)) return false;
+            plan.Add(new Placement { participant = team[i], position = position });
         }
         return true;
+    }
+
+    static bool HasObjectiveExit(ArenaMatch match, ArenaParticipant participant, Vector3 position)
+    {
+        if (!(match.rules is ConquestRules conquest)) return true;
+        var agent = participant.GetComponent<NavMeshAgent>();
+        var filter = new NavMeshQueryFilter { agentTypeID = agent ? agent.agentTypeID : NavMesh.GetSettingsByIndex(0).agentTypeID,
+            areaMask = agent ? agent.areaMask : NavMesh.AllAreas };
+        var path = new NavMeshPath();
+        foreach (var objective in conquest.points)
+            if (NavMesh.SamplePosition(objective.transform.position, out var hit, objective.radius, filter)
+                && NavMesh.CalculatePath(position, hit.position, filter, path)
+                && path.status == NavMeshPathStatus.PathComplete) return true;
+        return false;
     }
 
     static bool VisibleToEnemy(ArenaParticipant enemy, Vector3 destination)

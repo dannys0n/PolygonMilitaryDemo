@@ -150,7 +150,8 @@ public class ConquestRules : ArenaMatchRules
             Vector3 proposed=point.transform.position+Quaternion.Euler(0,angle,0)*Vector3.forward*(point.radius*.5f);
             if(!NavMesh.SamplePosition(proposed,out var hit,2,new NavMeshQueryFilter{agentTypeID=ai.agent.agentTypeID,areaMask=ai.agent.areaMask}) || !point.Contains(hit.position))continue;
             if(!ArenaAITactics.Reachable(ai,hit.position,query,out var reachable,out float distance))continue;
-            float score=priority-distance*.12f-assigned*6+(current.point==point?3:0)
+            // Distribution is a tie-breaker, never a reason to camp at a quiet owned flag.
+            float score=priority-Mathf.Min(distance*.12f,12)-Mathf.Min(assigned*2,12)+(current.point==point?3:0)
                 - (captured && !defending && current.point==point ? 35 : 0);
             if(score<=best)continue;
             best=score;selected=point;selectedPosition=reachable;

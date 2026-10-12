@@ -14,6 +14,8 @@ public class ArenaMatchSettings : ScriptableObject
     [Min(0f)] public float recentSpawnTime = 8f;
     [Header("Opening team placement")]
     [Min(2f)] public float openingTeamRadius = 6f;
+    [Tooltip("Keep the opening roster spread out so agents can leave HQ without a packed avoidance queue.")]
+    [Min(1f)] public float openingSpacing = 2.4f;
     [Min(0f)] public float openingTeamSeparation = 30f;
     [Tooltip("Choose a fresh preset for AI on every respawn in a prototype match.")]
     public bool randomizeAIClassOnRespawn;
