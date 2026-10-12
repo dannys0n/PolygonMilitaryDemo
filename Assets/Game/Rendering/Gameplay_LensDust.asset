@@ -18,13 +18,13 @@ MonoBehaviour:
     m_Value: 1
   threshold:
     m_OverrideState: 1
-    m_Value: 1.2
+    m_Value: 0.9
   intensity:
     m_OverrideState: 1
-    m_Value: 0.3
+    m_Value: 0.4
   scatter:
     m_OverrideState: 1
-    m_Value: 0.85
+    m_Value: 0.95
   clamp:
     m_OverrideState: 1
     m_Value: 65472
@@ -33,7 +33,7 @@ MonoBehaviour:
     m_Value: {r: 1, g: 1, b: 1, a: 1}
   highQualityFiltering:
     m_OverrideState: 1
-    m_Value: 0
+    m_Value: 1
   filter:
     m_OverrideState: 1
     m_Value: 0
@@ -42,14 +42,42 @@ MonoBehaviour:
     m_Value: 0
   maxIterations:
     m_OverrideState: 1
-    m_Value: 8
+    m_Value: 10
   dirtTexture:
     m_OverrideState: 1
     m_Value: {fileID: 2800000, guid: c61c007f852e0f342aad480c5c49ec13, type: 3}
     dimension: 1
   dirtIntensity:
     m_OverrideState: 1
-    m_Value: 1.5
+    m_Value: 15
+--- !u!114 &-1912964277214004781
+MonoBehaviour:
+  m_ObjectHideFlags: 3
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2e2898c57b7b04142b97d2a4480ab238, type: 3}
+  m_Name: CinematicLensFlare
+  m_EditorClassIdentifier: Assembly-CSharp::CinematicLensFlare
+  active: 1
+  intensity:
+    m_OverrideState: 1
+    m_Value: 0.6
+  threshold:
+    m_OverrideState: 1
+    m_Value: 0.78
+  glare:
+    m_OverrideState: 1
+    m_Value: 0.3
+  ghosts:
+    m_OverrideState: 1
+    m_Value: 0.035
+  rays:
+    m_OverrideState: 1
+    m_Value: 0.08
 --- !u!114 &11400000
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -65,6 +93,7 @@ MonoBehaviour:
   components:
   - {fileID: -8642405179344550568}
   - {fileID: 4407420519620905792}
+  - {fileID: -1912964277214004781}
 --- !u!114 &4407420519620905792
 MonoBehaviour:
   m_ObjectHideFlags: 3
@@ -77,49 +106,49 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 06437c1ff663d574d9447842ba0a72e4, type: 3}
   m_Name: ScreenSpaceLensFlare
   m_EditorClassIdentifier: Unity.RenderPipelines.Universal.Runtime::UnityEngine.Rendering.Universal.ScreenSpaceLensFlare
-  active: 1
+  active: 0
   intensity:
     m_OverrideState: 1
-    m_Value: 0.06
+    m_Value: 4
   tintColor:
     m_OverrideState: 1
     m_Value: {r: 1, g: 1, b: 1, a: 1}
   bloomMip:
     m_OverrideState: 1
-    m_Value: 1
+    m_Value: 0
   firstFlareIntensity:
     m_OverrideState: 1
-    m_Value: 0.3
+    m_Value: 0.8
   secondaryFlareIntensity:
     m_OverrideState: 1
-    m_Value: 0.3
+    m_Value: 0.25
   warpedFlareIntensity:
     m_OverrideState: 1
     m_Value: 0.2
   warpedFlareScale:
     m_OverrideState: 1
-    m_Value: {x: 1, y: 1}
+    m_Value: {x: 1.1, y: 1.1}
   samples:
     m_OverrideState: 1
-    m_Value: 1
+    m_Value: 3
   sampleDimmer:
     m_OverrideState: 1
-    m_Value: 0.5
+    m_Value: 0.45
   vignetteEffect:
     m_OverrideState: 1
     m_Value: 1
   startingPosition:
     m_OverrideState: 1
-    m_Value: 1.25
+    m_Value: 1.1
   scale:
     m_OverrideState: 1
-    m_Value: 1.5
+    m_Value: 1.6
   streaksIntensity:
     m_OverrideState: 1
     m_Value: 0.18
   streaksLength:
     m_OverrideState: 1
-    m_Value: 0.65
+    m_Value: 0.55
   streaksOrientation:
     m_OverrideState: 1
     m_Value: 0
@@ -128,7 +157,7 @@ MonoBehaviour:
     m_Value: 0.25
   resolution:
     m_OverrideState: 1
-    m_Value: 4
+    m_Value: 2
   chromaticAbberationIntensity:
     m_OverrideState: 1
-    m_Value: 0.04
+    m_Value: 0.07
