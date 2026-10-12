@@ -17,6 +17,9 @@ public class Vehicle : MonoBehaviour
         public string name;
         public SeatRole role;
         public Transform anchor, exit;
+        [Tooltip("Authored first-person eye point, relative to the vehicle seat.")]
+        public Transform eye;
+        public Transform leftGrip, rightGrip;
         public Vector2 diagramPosition;
         [NonSerialized] public VehicleOccupant occupant, reservation;
         [NonSerialized] public float reservedUntil;

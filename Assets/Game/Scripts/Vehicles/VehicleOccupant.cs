@@ -20,8 +20,10 @@ public class VehicleOccupant : MonoBehaviour
     public bool IsLocal => soldier.inputSource is SoldierLocalInput;
     readonly Dictionary<Behaviour, bool> behaviours = new Dictionary<Behaviour, bool>();
     readonly Dictionary<Renderer, bool> renderers = new Dictionary<Renderer, bool>();
+    readonly Dictionary<Renderer, UnityEngine.Rendering.ShadowCastingMode> shadowModes = new Dictionary<Renderer, UnityEngine.Rendering.ShadowCastingMode>();
     readonly Dictionary<Collider, bool> colliders = new Dictionary<Collider, bool>();
     Transform originalParent;
+    VehicleSeatPose seatPose;
     Camera vehicleCamera;
     Animation vehicleCameraShake;
     public Camera ActiveVehicleCamera => vehicleCamera;
@@ -189,15 +191,17 @@ public class VehicleOccupant : MonoBehaviour
         life.movement.ResetMovement();
         behaviours.Clear();
         renderers.Clear();
+        shadowModes.Clear();
         colliders.Clear();
         foreach (var b in new Behaviour[] { soldier, life.actions, life.movement, life.look, life.loadout, life.view, GetComponent<SoldierWeaponPresentation>() })
             SaveDisable(b);
         foreach (var b in GetComponentsInChildren<Behaviour>(true))
-            if (b is Animator || b is RigBuilder || b is IRigConstraint || b is SoldierMotionGrip)
+            if (b is Animator || b is RigBuilder || b is IRigConstraint || b is SoldierMotionGrip || b is SoldierFootIK)
                 SaveDisable(b);
         foreach (var r in GetComponentsInChildren<Renderer>(true))
         {
             renderers[r] = r.enabled;
+            shadowModes[r] = r.shadowCastingMode;
             r.enabled = false;
         }
         foreach (var c in GetComponentsInChildren<Collider>(true))
@@ -210,6 +214,14 @@ public class VehicleOccupant : MonoBehaviour
             SaveDisable(agent);
         transform.SetParent(vehicle.seats[seat].anchor, false);
         transform.SetLocalPositionAndRotation(Vector3.zero, Quaternion.identity);
+        seatPose = life.actions.animator.GetComponent<VehicleSeatPose>();
+        if (!seatPose) seatPose = life.actions.animator.gameObject.AddComponent<VehicleSeatPose>();
+        var seated = vehicle.seats[seat];
+        seatPose.Begin(life.actions.animator, seated, seated.leftGrip, seated.rightGrip);
+        // Show the body skeleton, keeping infantry weapons and first-person arms hidden.
+        foreach (var skin in life.view.thirdPersonRoot.GetComponentsInChildren<SkinnedMeshRenderer>(true))
+            if (skin.rootBone && skin.rootBone.IsChildOf(life.actions.animator.transform))
+                { skin.enabled = true; skin.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.On; }
         if (!IsLocal)
             return;
         previousCameraEnabled = life.view.playerCamera.enabled;
@@ -276,6 +288,7 @@ public class VehicleOccupant : MonoBehaviour
         vehicle.ReleaseReservation(this);
         if (seat.role == Vehicle.SeatRole.Driver)
             vehicle.DriverInput = default;
+        seatPose.End();
         MountedVehicle = null;
         transform.SetParent(originalParent, true);
         transform.SetPositionAndRotation(position, Quaternion.Euler(0, vehicle.transform.eulerAngles.y, 0));
@@ -285,6 +298,8 @@ public class VehicleOccupant : MonoBehaviour
         foreach (var pair in renderers)
         if (pair.Key)
             pair.Key.enabled = pair.Value;
+        foreach (var pair in shadowModes)
+            if (pair.Key) pair.Key.shadowCastingMode = pair.Value;
         foreach (var pair in behaviours)
         if (pair.Key && pair.Key != agent)
             pair.Key.enabled = pair.Value;
@@ -384,7 +399,9 @@ public class VehicleOccupant : MonoBehaviour
         SeatIndex=index;
         var vehicle=MountedVehicle;
         var seat=vehicle.seats[index];
+        seatPose.End();
         transform.SetParent(seat.anchor,false);transform.SetLocalPositionAndRotation(Vector3.zero,Quaternion.identity);
+        seatPose.Begin(life.actions.animator, seat, seat.leftGrip, seat.rightGrip);
         if(IsLocal)ResetVehicleCameraShake();
         flightYaw=yaw=vehicle.transform.eulerAngles.y;flightPitch=pitch=0;Freelook=false;
         lastVehicleYaw=vehicle.transform.eulerAngles.y;
@@ -456,3 +473,4 @@ public class VehicleOccupant : MonoBehaviour
             Destroy(vehicleCamera.gameObject);
     }
 }
+
