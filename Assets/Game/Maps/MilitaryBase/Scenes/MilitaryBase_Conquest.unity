@@ -11568,6 +11568,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: SM_Veh_Van_02 (2)
       objectReference: {fileID: 0}
+    - target: {fileID: 1819343274726436, guid: c898ff306e890eb4299487930ad6b347, type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 4058303100478432, guid: c898ff306e890eb4299487930ad6b347, type: 3}
       propertyPath: m_RootOrder
       value: 0
@@ -22468,6 +22472,59 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 4354055789546152, guid: ee996e827b13b8b4eb1a0b2630968b65, type: 3}
   m_PrefabInstance: {fileID: 110818983}
   m_PrefabAsset: {fileID: 0}
+--- !u!1 &111817163
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 111817164}
+  - component: {fileID: 111817165}
+  m_Layer: 0
+  m_Name: Light armored car map respawn
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &111817164
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 111817163}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: -0.707106, z: -0, w: 0.70710754}
+  m_LocalPosition: {x: 48.73901, y: 1.3320425, z: 183.73997}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 282139062}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &111817165
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 111817163}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6caca38928f2ed3408778398c7de22d8, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::VehicleSpawnPoint
+  prefab: {fileID: 6631453624252038100, guid: 3dc87f9c24309de409890126dfd21533, type: 3}
+  catalog: {fileID: 0}
+  combatPool: 0
+  groundOnly: 1
+  clearanceCenter: {x: 0, y: 1.7761476, z: 0.0068769455}
+  clearanceSize: {x: 3.1060672, y: 2.2522955, z: 5.253719}
+  respawnDelay: 15
+  abandonedDelay: 90
+  cleanupDelay: 7
 --- !u!1001 &111850489
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -27100,6 +27157,59 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 4191876069704698, guid: f8755640484c7464c9184bef236673bf, type: 3}
   m_PrefabInstance: {fileID: 134560424}
   m_PrefabAsset: {fileID: 0}
+--- !u!1 &135639698
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 135639699}
+  - component: {fileID: 135639700}
+  m_Layer: 0
+  m_Name: Flatbed truck map respawn
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &135639699
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 135639698}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: -0.013101892, z: -0, w: 0.99991417}
+  m_LocalPosition: {x: 18.6, y: 2.9137514, z: 247.38}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 282139062}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &135639700
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 135639698}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6caca38928f2ed3408778398c7de22d8, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::VehicleSpawnPoint
+  prefab: {fileID: 9054889492115685632, guid: a5c1bbd475487c94eb45896e236b3d3e, type: 3}
+  catalog: {fileID: 0}
+  combatPool: 0
+  groundOnly: 1
+  clearanceCenter: {x: 0, y: 2.0033352, z: 0.69079804}
+  clearanceSize: {x: 3.652164, y: 2.7066708, z: 7.4570007}
+  respawnDelay: 15
+  abandonedDelay: 90
+  cleanupDelay: 7
 --- !u!1001 &136026755
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -39990,6 +40100,59 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 4728318620889086, guid: 3575dc84568bdff46a9840b72e365cac, type: 3}
   m_PrefabInstance: {fileID: 201637536}
   m_PrefabAsset: {fileID: 0}
+--- !u!1 &201859309
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 201859310}
+  - component: {fileID: 201859311}
+  m_Layer: 0
+  m_Name: Military trike map respawn
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &201859310
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 201859309}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0.0058286143, y: 0.99432755, z: 0.06755222, w: -0.08194813}
+  m_LocalPosition: {x: 59.45137, y: 4.798, z: -117.03836}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 282139062}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &201859311
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 201859309}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6caca38928f2ed3408778398c7de22d8, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::VehicleSpawnPoint
+  prefab: {fileID: 2966079545542691319, guid: b5c05c906d555bc42b3498de401f6b96, type: 3}
+  catalog: {fileID: 0}
+  combatPool: 0
+  groundOnly: 1
+  clearanceCenter: {x: 0, y: 1.2552528, z: -0.65155005}
+  clearanceSize: {x: 2.5998755, y: 1.2105058, z: 5.1513734}
+  respawnDelay: 15
+  abandonedDelay: 90
+  cleanupDelay: 7
 --- !u!1001 &202939127
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -41282,6 +41445,59 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 4023786118298960, guid: bb962d837079bea46b47f494c4e53c46, type: 3}
   m_PrefabInstance: {fileID: 208956056}
   m_PrefabAsset: {fileID: 0}
+--- !u!1 &209872920
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 209872921}
+  - component: {fileID: 209872922}
+  m_Layer: 0
+  m_Name: SUV map respawn
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &209872921
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 209872920}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0.008126176, y: 0.00097460544, z: 0.0006828481, w: 0.99996626}
+  m_LocalPosition: {x: 43.403, y: 0.225, z: -65.705}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 282139062}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &209872922
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 209872920}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6caca38928f2ed3408778398c7de22d8, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::VehicleSpawnPoint
+  prefab: {fileID: 5726412018061002555, guid: 8eb6f224b41b67542bdc980c0ef4d909, type: 3}
+  catalog: {fileID: 0}
+  combatPool: 0
+  groundOnly: 1
+  clearanceCenter: {x: -0.030866861, y: 1.862432, z: -0.5491252}
+  clearanceSize: {x: 2.8755727, y: 2.4248643, z: 6.563564}
+  respawnDelay: 15
+  abandonedDelay: 90
+  cleanupDelay: 7
 --- !u!1001 &209932351
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -43810,6 +44026,10 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 1339103976}
     m_Modifications:
+    - target: {fileID: 1192821333268524, guid: 368e0ba8a53b943428fc4dae621dcdc1, type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 4026745405844436, guid: 368e0ba8a53b943428fc4dae621dcdc1, type: 3}
       propertyPath: m_RootOrder
       value: 5
@@ -44386,6 +44606,10 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 1339103976}
     m_Modifications:
+    - target: {fileID: 1773351328975956, guid: d33e727bddeea1543a85c0cd42478ca0, type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 4047383901747822, guid: d33e727bddeea1543a85c0cd42478ca0, type: 3}
       propertyPath: m_RootOrder
       value: 284
@@ -46915,6 +47139,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: SM_Veh_Van_01 (1)
       objectReference: {fileID: 0}
+    - target: {fileID: 1451943412653814, guid: 125e71ada460d3548a96bb655d48f455, type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 4105091948659522, guid: 125e71ada460d3548a96bb655d48f455, type: 3}
       propertyPath: m_RootOrder
       value: 2
@@ -47590,6 +47818,59 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 4944480944954174, guid: 38e3049884387cd45a07fafa103e2e74, type: 3}
   m_PrefabInstance: {fileID: 238587051}
   m_PrefabAsset: {fileID: 0}
+--- !u!1 &238699797
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 238699798}
+  - component: {fileID: 238699799}
+  m_Layer: 0
+  m_Name: Sedan map respawn
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &238699798
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 238699797}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0.06815992, y: -0, z: -0, w: 0.9976744}
+  m_LocalPosition: {x: 56.68, y: 2.6599998, z: -100.2}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 282139062}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &238699799
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 238699797}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6caca38928f2ed3408778398c7de22d8, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::VehicleSpawnPoint
+  prefab: {fileID: 5486282684178490259, guid: f2c68c866b6ed56419ce84d13d503053, type: 3}
+  catalog: {fileID: 0}
+  combatPool: 0
+  groundOnly: 1
+  clearanceCenter: {x: -0.0006661415, y: 1.2367504, z: 0.011836529}
+  clearanceSize: {x: 2.7716913, y: 1.1735007, z: 5.5809536}
+  respawnDelay: 15
+  abandonedDelay: 90
+  cleanupDelay: 7
 --- !u!1001 &240489477
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -51986,6 +52267,59 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 4245925626824120, guid: cd49ab1d2ef97ef48aaac69a01c02137, type: 3}
   m_PrefabInstance: {fileID: 263741024}
   m_PrefabAsset: {fileID: 0}
+--- !u!1 &263745246
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 263745247}
+  - component: {fileID: 263745248}
+  m_Layer: 0
+  m_Name: Light armored car map respawn
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &263745247
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 263745246}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: 0.09794802, z: -0, w: 0.9951915}
+  m_LocalPosition: {x: -5.04, y: 0.5500001, z: -118.24}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 282139062}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &263745248
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 263745246}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6caca38928f2ed3408778398c7de22d8, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::VehicleSpawnPoint
+  prefab: {fileID: 6631453624252038100, guid: 3dc87f9c24309de409890126dfd21533, type: 3}
+  catalog: {fileID: 0}
+  combatPool: 0
+  groundOnly: 1
+  clearanceCenter: {x: 0, y: 1.7761476, z: 0.0068769455}
+  clearanceSize: {x: 3.1060672, y: 2.2522955, z: 5.253719}
+  respawnDelay: 15
+  abandonedDelay: 90
+  cleanupDelay: 7
 --- !u!1001 &264370329
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -56583,6 +56917,80 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 4350820883327034, guid: 03924d6d4b842a04ca7ddadc3aec7336, type: 3}
   m_PrefabInstance: {fileID: 282100187}
   m_PrefabAsset: {fileID: 0}
+--- !u!1 &282139061
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 282139062}
+  m_Layer: 0
+  m_Name: Map vehicle respawn points
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &282139062
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 282139061}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children:
+  - {fileID: 1710943790}
+  - {fileID: 1778854613}
+  - {fileID: 1561290731}
+  - {fileID: 529888145}
+  - {fileID: 2049883027}
+  - {fileID: 301255015}
+  - {fileID: 1969678296}
+  - {fileID: 1712351711}
+  - {fileID: 662280460}
+  - {fileID: 1082433116}
+  - {fileID: 1406666669}
+  - {fileID: 508296311}
+  - {fileID: 1123331526}
+  - {fileID: 1563024593}
+  - {fileID: 296459942}
+  - {fileID: 1349620296}
+  - {fileID: 209872921}
+  - {fileID: 263745247}
+  - {fileID: 1169196386}
+  - {fileID: 609160220}
+  - {fileID: 1762481824}
+  - {fileID: 835678649}
+  - {fileID: 1837204465}
+  - {fileID: 201859310}
+  - {fileID: 1082331942}
+  - {fileID: 238699798}
+  - {fileID: 373226199}
+  - {fileID: 1512230069}
+  - {fileID: 1656064072}
+  - {fileID: 1886250318}
+  - {fileID: 2144711264}
+  - {fileID: 1881450516}
+  - {fileID: 1031054459}
+  - {fileID: 1435195272}
+  - {fileID: 1882188339}
+  - {fileID: 359337666}
+  - {fileID: 1608969779}
+  - {fileID: 135639699}
+  - {fileID: 702123802}
+  - {fileID: 2070295588}
+  - {fileID: 111817164}
+  - {fileID: 847412710}
+  - {fileID: 2078613776}
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1001 &282330352
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -59608,6 +60016,59 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 4329630712373364, guid: 5d88330920ef46244b0ac399c895d51c, type: 3}
   m_PrefabInstance: {fileID: 296409339}
   m_PrefabAsset: {fileID: 0}
+--- !u!1 &296459941
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 296459942}
+  - component: {fileID: 296459943}
+  m_Layer: 0
+  m_Name: Van map respawn
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &296459942
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 296459941}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 7.01, y: 0.3, z: -56.56894}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 282139062}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &296459943
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 296459941}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6caca38928f2ed3408778398c7de22d8, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::VehicleSpawnPoint
+  prefab: {fileID: 879895575397563975, guid: a625d6ce532bf474b82b9cf37a68a1f7, type: 3}
+  catalog: {fileID: 0}
+  combatPool: 0
+  groundOnly: 1
+  clearanceCenter: {x: 0, y: 1.4773068, z: 0.0011014938}
+  clearanceSize: {x: 2.8866568, y: 1.6546139, z: 5.226849}
+  respawnDelay: 15
+  abandonedDelay: 90
+  cleanupDelay: 7
 --- !u!1001 &296898832
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -60438,6 +60899,59 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 4911322533081786, guid: 70d5282405e08ec4ab95e7749890d634, type: 3}
   m_PrefabInstance: {fileID: 300722878}
   m_PrefabAsset: {fileID: 0}
+--- !u!1 &301255014
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 301255015}
+  - component: {fileID: 301255016}
+  m_Layer: 0
+  m_Name: Pickup map respawn
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &301255015
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 301255014}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: 0.80271333, z: -0, w: -0.5963651}
+  m_LocalPosition: {x: 63.48, y: 0.157, z: -76.56}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 282139062}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &301255016
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 301255014}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6caca38928f2ed3408778398c7de22d8, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::VehicleSpawnPoint
+  prefab: {fileID: 1427055911626559471, guid: a594b4f9018d53148b9a275c573ef7be, type: 3}
+  catalog: {fileID: 0}
+  combatPool: 0
+  groundOnly: 1
+  clearanceCenter: {x: -0.036810756, y: 1.9001379, z: -0.046792507}
+  clearanceSize: {x: 2.9736366, y: 2.500276, z: 5.322637}
+  respawnDelay: 15
+  abandonedDelay: 90
+  cleanupDelay: 7
 --- !u!1001 &301673693
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -70820,6 +71334,59 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 4133193444134786, guid: 87f34f6fda934c743bede9cef5dd324a, type: 3}
   m_PrefabInstance: {fileID: 359287767}
   m_PrefabAsset: {fileID: 0}
+--- !u!1 &359337665
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 359337666}
+  - component: {fileID: 359337667}
+  m_Layer: 0
+  m_Name: Attack helicopter 2 map respawn
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &359337666
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 359337665}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: 1, z: -0, w: 0.000000104308114}
+  m_LocalPosition: {x: 15.64, y: 0.61, z: 281.19}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 282139062}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &359337667
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 359337665}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6caca38928f2ed3408778398c7de22d8, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::VehicleSpawnPoint
+  prefab: {fileID: 1134868151786904976, guid: f3a7083ba4d1e46469b6b8465868cc33, type: 3}
+  catalog: {fileID: 0}
+  combatPool: 0
+  groundOnly: 0
+  clearanceCenter: {x: -0.01392293, y: 1.7329639, z: -1.0140619}
+  clearanceSize: {x: 8.535976, y: 3.0659277, z: 10.972702}
+  respawnDelay: 15
+  abandonedDelay: 90
+  cleanupDelay: 7
 --- !u!1001 &359504960
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -73380,6 +73947,59 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 4090371769688014, guid: dca1089ee99925743b9fe02ed9da4eff, type: 3}
   m_PrefabInstance: {fileID: 372419997}
   m_PrefabAsset: {fileID: 0}
+--- !u!1 &373226198
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 373226199}
+  - component: {fileID: 373226200}
+  m_Layer: 0
+  m_Name: Pickup map respawn
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &373226199
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 373226198}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: 0.70710576, z: -0, w: 0.70710784}
+  m_LocalPosition: {x: 34.67, y: 0.12505524, z: -77.42}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 282139062}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &373226200
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 373226198}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6caca38928f2ed3408778398c7de22d8, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::VehicleSpawnPoint
+  prefab: {fileID: 1427055911626559471, guid: a594b4f9018d53148b9a275c573ef7be, type: 3}
+  catalog: {fileID: 0}
+  combatPool: 0
+  groundOnly: 1
+  clearanceCenter: {x: -0.036810756, y: 1.9001379, z: -0.046792507}
+  clearanceSize: {x: 2.9736366, y: 2.500276, z: 5.322637}
+  respawnDelay: 15
+  abandonedDelay: 90
+  cleanupDelay: 7
 --- !u!1001 &373499339
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -81060,6 +81680,10 @@ PrefabInstance:
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 1401818464611980, guid: 528552aea0db0234db59ca8c4d1904a4, type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1617582806024772, guid: 528552aea0db0234db59ca8c4d1904a4, type: 3}
       propertyPath: m_IsActive
       value: 0
       objectReference: {fileID: 0}
@@ -96202,6 +96826,10 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 1339103976}
     m_Modifications:
+    - target: {fileID: 1094534558284452, guid: bcfef4959c2011943b4c31a84e071966, type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 4237501565883668, guid: bcfef4959c2011943b4c31a84e071966, type: 3}
       propertyPath: m_RootOrder
       value: 0
@@ -97686,6 +98314,59 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 4510580858398086, guid: 41a1ae3dc400b1245b0d58ae18c2fdc3, type: 3}
   m_PrefabInstance: {fileID: 508278787}
   m_PrefabAsset: {fileID: 0}
+--- !u!1 &508296310
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 508296311}
+  - component: {fileID: 508296312}
+  m_Layer: 0
+  m_Name: SUV map respawn
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &508296311
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 508296310}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: 0.9503864, z: -0, w: -0.3110718}
+  m_LocalPosition: {x: -41.33, y: 0.14, z: 36.86}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 282139062}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &508296312
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 508296310}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6caca38928f2ed3408778398c7de22d8, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::VehicleSpawnPoint
+  prefab: {fileID: 5726412018061002555, guid: 8eb6f224b41b67542bdc980c0ef4d909, type: 3}
+  catalog: {fileID: 0}
+  combatPool: 0
+  groundOnly: 1
+  clearanceCenter: {x: -0.030866861, y: 1.862432, z: -0.5491252}
+  clearanceSize: {x: 2.8755727, y: 2.4248643, z: 6.563564}
+  respawnDelay: 15
+  abandonedDelay: 90
+  cleanupDelay: 7
 --- !u!1001 &508385163
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -98529,6 +99210,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: SM_Veh_APC_Heavy_01 (1)
       objectReference: {fileID: 0}
+    - target: {fileID: 100000, guid: 82b7b9133c02a7a42bef7cd7baca19b7, type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 400000, guid: 82b7b9133c02a7a42bef7cd7baca19b7, type: 3}
       propertyPath: m_RootOrder
       value: 133
@@ -99361,6 +100046,10 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 1214209505}
     m_Modifications:
+    - target: {fileID: 100000, guid: 82b7b9133c02a7a42bef7cd7baca19b7, type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 400000, guid: 82b7b9133c02a7a42bef7cd7baca19b7, type: 3}
       propertyPath: m_RootOrder
       value: 91
@@ -101488,6 +102177,59 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 4710587640080556, guid: cc85bfe8febac73469fd9a2bb51aa118, type: 3}
   m_PrefabInstance: {fileID: 529327611}
   m_PrefabAsset: {fileID: 0}
+--- !u!1 &529888144
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 529888145}
+  - component: {fileID: 529888146}
+  m_Layer: 0
+  m_Name: SUV map respawn
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &529888145
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 529888144}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0.06319301, y: -0, z: -0, w: 0.99800134}
+  m_LocalPosition: {x: 57.873596, y: 1.27, z: -90.01642}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 282139062}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &529888146
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 529888144}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6caca38928f2ed3408778398c7de22d8, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::VehicleSpawnPoint
+  prefab: {fileID: 5726412018061002555, guid: 8eb6f224b41b67542bdc980c0ef4d909, type: 3}
+  catalog: {fileID: 0}
+  combatPool: 0
+  groundOnly: 1
+  clearanceCenter: {x: -0.030866861, y: 1.862432, z: -0.5491252}
+  clearanceSize: {x: 2.8755727, y: 2.4248643, z: 6.563564}
+  respawnDelay: 15
+  abandonedDelay: 90
+  cleanupDelay: 7
 --- !u!1001 &530510624
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -102950,6 +103692,10 @@ PrefabInstance:
     - target: {fileID: 1370191247749452, guid: 66abf940962608d42bbda0249e1e22e4, type: 3}
       propertyPath: m_Name
       value: SM_Veh_Motorbike_01 (3)
+      objectReference: {fileID: 0}
+    - target: {fileID: 1370191247749452, guid: 66abf940962608d42bbda0249e1e22e4, type: 3}
+      propertyPath: m_IsActive
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 4225829342249524, guid: 66abf940962608d42bbda0249e1e22e4, type: 3}
       propertyPath: m_RootOrder
@@ -113171,6 +113917,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: SM_Veh_Helicopter_Attack_01 (1)
       objectReference: {fileID: 0}
+    - target: {fileID: 1122909871716784, guid: b108d85799ddb2148973fd94b0d538d6, type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 4101627745746326, guid: b108d85799ddb2148973fd94b0d538d6, type: 3}
       propertyPath: m_RootOrder
       value: 4268
@@ -115034,6 +115784,59 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 4710587640080556, guid: cc85bfe8febac73469fd9a2bb51aa118, type: 3}
   m_PrefabInstance: {fileID: 608899181}
   m_PrefabAsset: {fileID: 0}
+--- !u!1 &609160219
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 609160220}
+  - component: {fileID: 609160221}
+  m_Layer: 0
+  m_Name: Sedan map respawn
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &609160220
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 609160219}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: -4.554901, y: 0.55, z: -28.187119}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 282139062}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &609160221
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 609160219}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6caca38928f2ed3408778398c7de22d8, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::VehicleSpawnPoint
+  prefab: {fileID: 5486282684178490259, guid: f2c68c866b6ed56419ce84d13d503053, type: 3}
+  catalog: {fileID: 0}
+  combatPool: 0
+  groundOnly: 1
+  clearanceCenter: {x: -0.0006661415, y: 1.2367504, z: 0.011836529}
+  clearanceSize: {x: 2.7716913, y: 1.1735007, z: 5.5809536}
+  respawnDelay: 15
+  abandonedDelay: 90
+  cleanupDelay: 7
 --- !u!1001 &609314459
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -124170,6 +124973,59 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 662246330}
   m_CullTransparentMesh: 1
+--- !u!1 &662280459
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 662280460}
+  - component: {fileID: 662280461}
+  m_Layer: 0
+  m_Name: Travel van map respawn
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &662280460
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 662280459}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: -0, z: 0.009436593, w: 0.9999555}
+  m_LocalPosition: {x: 74.03894, y: 0.28, z: -51.10194}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 282139062}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &662280461
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 662280459}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6caca38928f2ed3408778398c7de22d8, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::VehicleSpawnPoint
+  prefab: {fileID: 5992179245483929256, guid: 38fae687e5f77784d92bd7b87754f92b, type: 3}
+  catalog: {fileID: 0}
+  combatPool: 0
+  groundOnly: 1
+  clearanceCenter: {x: 0, y: 1.6995504, z: 0.068027735}
+  clearanceSize: {x: 2.8866568, y: 2.099101, z: 5.3607016}
+  respawnDelay: 15
+  abandonedDelay: 90
+  cleanupDelay: 7
 --- !u!1 &662557535
 GameObject:
   m_ObjectHideFlags: 0
@@ -134988,6 +135844,59 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 4513250793232330, guid: 107b8fa21f3850349aa940d0dc121a70, type: 3}
   m_PrefabInstance: {fileID: 701060960}
   m_PrefabAsset: {fileID: 0}
+--- !u!1 &702123801
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 702123802}
+  - component: {fileID: 702123803}
+  m_Layer: 0
+  m_Name: Tanker truck map respawn
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &702123802
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 702123801}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: -0.007323466, z: -0, w: 0.9999732}
+  m_LocalPosition: {x: 13.360001, y: 0.07999908, z: 249.65}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 282139062}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &702123803
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 702123801}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6caca38928f2ed3408778398c7de22d8, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::VehicleSpawnPoint
+  prefab: {fileID: 1733425727775692004, guid: e4f86ecf1d3c30346b169ee20c274f2d, type: 3}
+  catalog: {fileID: 0}
+  combatPool: 0
+  groundOnly: 1
+  clearanceCenter: {x: 0, y: 2.0782783, z: 0.46494532}
+  clearanceSize: {x: 3.652164, y: 2.856557, z: 7.908706}
+  respawnDelay: 15
+  abandonedDelay: 90
+  cleanupDelay: 7
 --- !u!1001 &702363397
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -140616,6 +141525,10 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 1339103976}
     m_Modifications:
+    - target: {fileID: 1358894448099598, guid: f32b232b9b5f1f04c8b1af1d83e459c7, type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 4125811741733682, guid: f32b232b9b5f1f04c8b1af1d83e459c7, type: 3}
       propertyPath: m_LocalRotation.y
       value: 0
@@ -144736,6 +145649,10 @@ PrefabInstance:
     - target: {fileID: 1192821333268524, guid: 368e0ba8a53b943428fc4dae621dcdc1, type: 3}
       propertyPath: m_Name
       value: SM_Veh_Car_Medium_01 (2)
+      objectReference: {fileID: 0}
+    - target: {fileID: 1192821333268524, guid: 368e0ba8a53b943428fc4dae621dcdc1, type: 3}
+      propertyPath: m_IsActive
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 4026745405844436, guid: 368e0ba8a53b943428fc4dae621dcdc1, type: 3}
       propertyPath: m_RootOrder
@@ -151043,6 +151960,10 @@ PrefabInstance:
     - target: {fileID: 1100312557152638, guid: 95f1d29e34dd7f945a42e7ed594bee5c, type: 3}
       propertyPath: m_Name
       value: SM_Veh_Helicopter_Attack_02 (2)
+      objectReference: {fileID: 0}
+    - target: {fileID: 1100312557152638, guid: 95f1d29e34dd7f945a42e7ed594bee5c, type: 3}
+      propertyPath: m_IsActive
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 4133612582025806, guid: 95f1d29e34dd7f945a42e7ed594bee5c, type: 3}
       propertyPath: m_RootOrder
@@ -157794,6 +158715,59 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 4983930442933392, guid: e13edef3479bce14eb77734f3e50ef5d, type: 3}
   m_PrefabInstance: {fileID: 834591085}
   m_PrefabAsset: {fileID: 0}
+--- !u!1 &835678648
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 835678649}
+  - component: {fileID: 835678650}
+  m_Layer: 0
+  m_Name: Pickup map respawn
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &835678649
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 835678648}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: -7.09, y: 0.536, z: 28.160492}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 282139062}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &835678650
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 835678648}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6caca38928f2ed3408778398c7de22d8, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::VehicleSpawnPoint
+  prefab: {fileID: 1427055911626559471, guid: a594b4f9018d53148b9a275c573ef7be, type: 3}
+  catalog: {fileID: 0}
+  combatPool: 0
+  groundOnly: 1
+  clearanceCenter: {x: -0.036810756, y: 1.9001379, z: -0.046792507}
+  clearanceSize: {x: 2.9736366, y: 2.500276, z: 5.322637}
+  respawnDelay: 15
+  abandonedDelay: 90
+  cleanupDelay: 7
 --- !u!1001 &835830102
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -160445,6 +161419,59 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 4405962538261196, guid: 547aca958ad284840837bbfc6f31c25b, type: 3}
   m_PrefabInstance: {fileID: 847392124}
   m_PrefabAsset: {fileID: 0}
+--- !u!1 &847412709
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 847412710}
+  - component: {fileID: 847412711}
+  m_Layer: 0
+  m_Name: Heavy wheeled APC map respawn
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &847412710
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 847412709}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: -0.70710576, z: -0, w: 0.70710784}
+  m_LocalPosition: {x: 48.378994, y: 1.1520015, z: 165.95}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 282139062}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &847412711
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 847412709}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6caca38928f2ed3408778398c7de22d8, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::VehicleSpawnPoint
+  prefab: {fileID: 9130765350476394884, guid: 0c9cd4a9af4a4d5468a0db78bdbeb4d7, type: 3}
+  catalog: {fileID: 0}
+  combatPool: 0
+  groundOnly: 1
+  clearanceCenter: {x: 0, y: 1.9482496, z: -0.15655088}
+  clearanceSize: {x: 3.6215758, y: 2.5964994, z: 8.209058}
+  respawnDelay: 15
+  abandonedDelay: 90
+  cleanupDelay: 7
 --- !u!1001 &847544551
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -167009,6 +168036,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: SM_Veh_Car_Small_01 (1)
       objectReference: {fileID: 0}
+    - target: {fileID: 1773351328975956, guid: d33e727bddeea1543a85c0cd42478ca0, type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 4047383901747822, guid: d33e727bddeea1543a85c0cd42478ca0, type: 3}
       propertyPath: m_RootOrder
       value: 172
@@ -171402,6 +172433,10 @@ PrefabInstance:
     - target: {fileID: 1819343274726436, guid: c898ff306e890eb4299487930ad6b347, type: 3}
       propertyPath: m_Name
       value: SM_Veh_Van_02 (1)
+      objectReference: {fileID: 0}
+    - target: {fileID: 1819343274726436, guid: c898ff306e890eb4299487930ad6b347, type: 3}
+      propertyPath: m_IsActive
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 4058303100478432, guid: c898ff306e890eb4299487930ad6b347, type: 3}
       propertyPath: m_LocalPosition.x
@@ -190456,6 +191491,12 @@ MonoBehaviour:
   - {fileID: 1348364836}
   - {fileID: 1941921637}
   - {fileID: 1981359572}
+  - {fileID: 1881450516}
+  - {fileID: 1031054459}
+  - {fileID: 1435195272}
+  - {fileID: 1882188339}
+  - {fileID: 359337666}
+  - {fileID: 1608969779}
 --- !u!114 &1015117813
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -193664,6 +194705,59 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 4023786118298960, guid: bb962d837079bea46b47f494c4e53c46, type: 3}
   m_PrefabInstance: {fileID: 1030266179}
   m_PrefabAsset: {fileID: 0}
+--- !u!1 &1031054458
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1031054459}
+  - component: {fileID: 1031054460}
+  m_Layer: 0
+  m_Name: Attack helicopter 2 map respawn
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1031054459
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1031054458}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 26.29, y: 0.61, z: 271.58}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 282139062}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1031054460
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1031054458}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6caca38928f2ed3408778398c7de22d8, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::VehicleSpawnPoint
+  prefab: {fileID: 1134868151786904976, guid: f3a7083ba4d1e46469b6b8465868cc33, type: 3}
+  catalog: {fileID: 0}
+  combatPool: 0
+  groundOnly: 0
+  clearanceCenter: {x: -0.01392293, y: 1.7329639, z: -1.0140619}
+  clearanceSize: {x: 8.535976, y: 3.0659277, z: 10.972702}
+  respawnDelay: 15
+  abandonedDelay: 90
+  cleanupDelay: 7
 --- !u!1001 &1031130814
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -195702,6 +196796,10 @@ PrefabInstance:
       propertyPath: m_IsActive
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 1882455488938568, guid: f5f7d39b045759c4792b5220fc3697ca, type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 1958567179842690, guid: f5f7d39b045759c4792b5220fc3697ca, type: 3}
       propertyPath: m_IsActive
       value: 1
@@ -195969,6 +197067,10 @@ PrefabInstance:
     - target: {fileID: 1192821333268524, guid: 368e0ba8a53b943428fc4dae621dcdc1, type: 3}
       propertyPath: m_Name
       value: SM_Veh_Car_Medium_01 (1)
+      objectReference: {fileID: 0}
+    - target: {fileID: 1192821333268524, guid: 368e0ba8a53b943428fc4dae621dcdc1, type: 3}
+      propertyPath: m_IsActive
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 4026745405844436, guid: 368e0ba8a53b943428fc4dae621dcdc1, type: 3}
       propertyPath: m_RootOrder
@@ -202219,6 +203321,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: SM_Veh_Van_02 (1)
       objectReference: {fileID: 0}
+    - target: {fileID: 1819343274726436, guid: c898ff306e890eb4299487930ad6b347, type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 4058303100478432, guid: c898ff306e890eb4299487930ad6b347, type: 3}
       propertyPath: m_LocalPosition.x
       value: 0
@@ -202792,6 +203898,112 @@ Transform:
   m_Children: []
   m_Father: {fileID: 2146277704}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &1082331941
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1082331942}
+  - component: {fileID: 1082331943}
+  m_Layer: 0
+  m_Name: Compact car map respawn
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1082331942
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1082331941}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: 0.82607234, z: -0, w: 0.56356406}
+  m_LocalPosition: {x: 44.934875, y: 0.256, z: -78.93158}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 282139062}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1082331943
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1082331941}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6caca38928f2ed3408778398c7de22d8, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::VehicleSpawnPoint
+  prefab: {fileID: 405028191907521026, guid: 892ebe7fbbfb88c4c86361df7a252c51, type: 3}
+  catalog: {fileID: 0}
+  combatPool: 0
+  groundOnly: 1
+  clearanceCenter: {x: 0, y: 1.2322922, z: 0.0036511421}
+  clearanceSize: {x: 2.6528435, y: 1.1645843, z: 4.448989}
+  respawnDelay: 15
+  abandonedDelay: 90
+  cleanupDelay: 7
+--- !u!1 &1082433115
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1082433116}
+  - component: {fileID: 1082433117}
+  m_Layer: 0
+  m_Name: Travel van map respawn
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1082433116
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1082433115}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: 0.074823655, z: -0, w: 0.9971968}
+  m_LocalPosition: {x: 14.749786, y: 0.18487637, z: -81.71562}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 282139062}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1082433117
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1082433115}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6caca38928f2ed3408778398c7de22d8, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::VehicleSpawnPoint
+  prefab: {fileID: 5992179245483929256, guid: 38fae687e5f77784d92bd7b87754f92b, type: 3}
+  catalog: {fileID: 0}
+  combatPool: 0
+  groundOnly: 1
+  clearanceCenter: {x: 0, y: 1.6995504, z: 0.068027735}
+  clearanceSize: {x: 2.8866568, y: 2.099101, z: 5.3607016}
+  respawnDelay: 15
+  abandonedDelay: 90
+  cleanupDelay: 7
 --- !u!1001 &1082541189
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -209133,6 +210345,59 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 4133193444134786, guid: 87f34f6fda934c743bede9cef5dd324a, type: 3}
   m_PrefabInstance: {fileID: 1122701383}
   m_PrefabAsset: {fileID: 0}
+--- !u!1 &1123331525
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1123331526}
+  - component: {fileID: 1123331527}
+  m_Layer: 0
+  m_Name: Military trike map respawn
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1123331526
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1123331525}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: -0.18249352, z: -0, w: 0.98320705}
+  m_LocalPosition: {x: -52.23, y: 0.21700001, z: -7.42}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 282139062}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1123331527
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1123331525}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6caca38928f2ed3408778398c7de22d8, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::VehicleSpawnPoint
+  prefab: {fileID: 2966079545542691319, guid: b5c05c906d555bc42b3498de401f6b96, type: 3}
+  catalog: {fileID: 0}
+  combatPool: 0
+  groundOnly: 1
+  clearanceCenter: {x: 0, y: 1.2552528, z: -0.65155005}
+  clearanceSize: {x: 2.5998755, y: 1.2105058, z: 5.1513734}
+  respawnDelay: 15
+  abandonedDelay: 90
+  cleanupDelay: 7
 --- !u!1001 &1123370159
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -209859,6 +211124,10 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 1339103976}
     m_Modifications:
+    - target: {fileID: 1384972605777546, guid: 57c13ff26fb2b7a4cabfb3b836198196, type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 4062513260947608, guid: 57c13ff26fb2b7a4cabfb3b836198196, type: 3}
       propertyPath: m_RootOrder
       value: 7
@@ -212096,6 +213365,10 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 1382959649}
     m_Modifications:
+    - target: {fileID: 1687769747992904, guid: 00b4f5865db351f45abed7b451c9a835, type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 4427470356404772, guid: 00b4f5865db351f45abed7b451c9a835, type: 3}
       propertyPath: m_RootOrder
       value: 4
@@ -217964,6 +219237,59 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 4966330087710378, guid: f4811c2e1c580c34a932a95988f3c38a, type: 3}
   m_PrefabInstance: {fileID: 1169171200}
   m_PrefabAsset: {fileID: 0}
+--- !u!1 &1169196385
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1169196386}
+  - component: {fileID: 1169196387}
+  m_Layer: 0
+  m_Name: Technical pickup map respawn
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1169196386
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1169196385}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: -0.2557605, z: -0, w: 0.9667402}
+  m_LocalPosition: {x: -16.11746, y: 0.542, z: -73.413124}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 282139062}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1169196387
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1169196385}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6caca38928f2ed3408778398c7de22d8, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::VehicleSpawnPoint
+  prefab: {fileID: 2823416304104733404, guid: df8e7ff4bbf63a043813ea66ad85d883, type: 3}
+  catalog: {fileID: 0}
+  combatPool: 0
+  groundOnly: 1
+  clearanceCenter: {x: 0, y: 1.6319804, z: -0.17686415}
+  clearanceSize: {x: 2.956791, y: 1.963961, z: 6.465011}
+  respawnDelay: 15
+  abandonedDelay: 90
+  cleanupDelay: 7
 --- !u!1001 &1169234566
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -221092,6 +222418,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: SM_Veh_Truck_01 (1)
       objectReference: {fileID: 0}
+    - target: {fileID: 1687769747992904, guid: 00b4f5865db351f45abed7b451c9a835, type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 4787448854796664, guid: 00b4f5865db351f45abed7b451c9a835, type: 3}
       propertyPath: m_RootOrder
       value: 2
@@ -222552,6 +223882,10 @@ PrefabInstance:
     - target: {fileID: 1687769747992904, guid: 00b4f5865db351f45abed7b451c9a835, type: 3}
       propertyPath: m_Name
       value: SM_Veh_Truck_01 (2)
+      objectReference: {fileID: 0}
+    - target: {fileID: 1687769747992904, guid: 00b4f5865db351f45abed7b451c9a835, type: 3}
+      propertyPath: m_IsActive
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 4787448854796664, guid: 00b4f5865db351f45abed7b451c9a835, type: 3}
       propertyPath: m_RootOrder
@@ -225819,6 +227153,10 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 1339103976}
     m_Modifications:
+    - target: {fileID: 1100312557152638, guid: 95f1d29e34dd7f945a42e7ed594bee5c, type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 4133612582025806, guid: 95f1d29e34dd7f945a42e7ed594bee5c, type: 3}
       propertyPath: m_RootOrder
       value: 1
@@ -237603,6 +238941,10 @@ PrefabInstance:
     - target: {fileID: 1882455488938568, guid: f5f7d39b045759c4792b5220fc3697ca, type: 3}
       propertyPath: m_Name
       value: SM_Veh_Light_Armored_Car_01 (1)
+      objectReference: {fileID: 0}
+    - target: {fileID: 1882455488938568, guid: f5f7d39b045759c4792b5220fc3697ca, type: 3}
+      propertyPath: m_IsActive
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 1958567179842690, guid: f5f7d39b045759c4792b5220fc3697ca, type: 3}
       propertyPath: m_IsActive
@@ -254369,6 +255711,10 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 1214209505}
     m_Modifications:
+    - target: {fileID: 1687769747992904, guid: 00b4f5865db351f45abed7b451c9a835, type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 4427470356404772, guid: 00b4f5865db351f45abed7b451c9a835, type: 3}
       propertyPath: m_LocalRotation.y
       value: 0
@@ -255652,6 +256998,59 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 4413323129234054, guid: 08d82685b2b71814f9241ed7ee2e8251, type: 3}
   m_PrefabInstance: {fileID: 1349438774}
   m_PrefabAsset: {fileID: 0}
+--- !u!1 &1349620295
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1349620296}
+  - component: {fileID: 1349620297}
+  m_Layer: 0
+  m_Name: Travel van map respawn
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1349620296
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1349620295}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: 0.748384, z: -0, w: -0.6632657}
+  m_LocalPosition: {x: 13.02, y: 0.173, z: -39.54}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 282139062}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1349620297
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1349620295}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6caca38928f2ed3408778398c7de22d8, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::VehicleSpawnPoint
+  prefab: {fileID: 5992179245483929256, guid: 38fae687e5f77784d92bd7b87754f92b, type: 3}
+  catalog: {fileID: 0}
+  combatPool: 0
+  groundOnly: 1
+  clearanceCenter: {x: 0, y: 1.6995504, z: 0.068027735}
+  clearanceSize: {x: 2.8866568, y: 2.099101, z: 5.3607016}
+  respawnDelay: 15
+  abandonedDelay: 90
+  cleanupDelay: 7
 --- !u!1001 &1350020350
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -257728,6 +259127,10 @@ PrefabInstance:
     - target: {fileID: 1687769747992904, guid: 00b4f5865db351f45abed7b451c9a835, type: 3}
       propertyPath: m_Name
       value: SM_Veh_Truck_01 (1)
+      objectReference: {fileID: 0}
+    - target: {fileID: 1687769747992904, guid: 00b4f5865db351f45abed7b451c9a835, type: 3}
+      propertyPath: m_IsActive
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 4787448854796664, guid: 00b4f5865db351f45abed7b451c9a835, type: 3}
       propertyPath: m_RootOrder
@@ -268607,6 +270010,10 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 1339103976}
     m_Modifications:
+    - target: {fileID: 1819343274726436, guid: c898ff306e890eb4299487930ad6b347, type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 4058303100478432, guid: c898ff306e890eb4299487930ad6b347, type: 3}
       propertyPath: m_LocalPosition.x
       value: 0
@@ -269802,6 +271209,59 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 4323984813881354, guid: 93703d34e6e693e4f9a3de20a4d5c1cb, type: 3}
   m_PrefabInstance: {fileID: 1405821865}
   m_PrefabAsset: {fileID: 0}
+--- !u!1 &1406666668
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1406666669}
+  - component: {fileID: 1406666670}
+  m_Layer: 0
+  m_Name: Technical pickup map respawn
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1406666669
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1406666668}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: 0.98038155, z: -0, w: -0.19710912}
+  m_LocalPosition: {x: -45.69, y: 0.15780088, z: 28.98}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 282139062}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1406666670
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1406666668}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6caca38928f2ed3408778398c7de22d8, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::VehicleSpawnPoint
+  prefab: {fileID: 2823416304104733404, guid: df8e7ff4bbf63a043813ea66ad85d883, type: 3}
+  catalog: {fileID: 0}
+  combatPool: 0
+  groundOnly: 1
+  clearanceCenter: {x: 0, y: 1.6319804, z: -0.17686415}
+  clearanceSize: {x: 2.956791, y: 1.963961, z: 6.465011}
+  respawnDelay: 15
+  abandonedDelay: 90
+  cleanupDelay: 7
 --- !u!1001 &1406712875
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -276584,6 +278044,59 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 4448978960209344, guid: e5a1aed05a31615449095ee2b82450d9, type: 3}
   m_PrefabInstance: {fileID: 1435002468}
   m_PrefabAsset: {fileID: 0}
+--- !u!1 &1435195271
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1435195272}
+  - component: {fileID: 1435195273}
+  m_Layer: 0
+  m_Name: Attack helicopter 1 map respawn
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1435195272
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1435195271}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: 0.716203, z: -0, w: 0.69789207}
+  m_LocalPosition: {x: 56.02, y: 0.61, z: 300.64}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 282139062}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1435195273
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1435195271}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6caca38928f2ed3408778398c7de22d8, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::VehicleSpawnPoint
+  prefab: {fileID: 8049097167698794191, guid: 42a29690029fb6b42ab2a6ed8bb06368, type: 3}
+  catalog: {fileID: 0}
+  combatPool: 0
+  groundOnly: 0
+  clearanceCenter: {x: 0, y: 2.4101138, z: -1.7168303}
+  clearanceSize: {x: 14.229078, y: 4.420228, z: 17.66274}
+  respawnDelay: 15
+  abandonedDelay: 90
+  cleanupDelay: 7
 --- !u!1001 &1435751560
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -282459,6 +283972,10 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 1339103976}
     m_Modifications:
+    - target: {fileID: 1370191247749452, guid: 66abf940962608d42bbda0249e1e22e4, type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 4225829342249524, guid: 66abf940962608d42bbda0249e1e22e4, type: 3}
       propertyPath: m_RootOrder
       value: 2
@@ -290826,6 +292343,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: SM_Veh_Helicopter_Attack_02 (1)
       objectReference: {fileID: 0}
+    - target: {fileID: 1100312557152638, guid: 95f1d29e34dd7f945a42e7ed594bee5c, type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 4133612582025806, guid: 95f1d29e34dd7f945a42e7ed594bee5c, type: 3}
       propertyPath: m_RootOrder
       value: 1
@@ -293949,6 +295470,59 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 4912642092416990, guid: e2318a7836d62ba458aab824cde0f49d, type: 3}
   m_PrefabInstance: {fileID: 1512115633}
   m_PrefabAsset: {fileID: 0}
+--- !u!1 &1512230068
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1512230069}
+  - component: {fileID: 1512230070}
+  m_Layer: 0
+  m_Name: Flatbed truck map respawn
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1512230069
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1512230068}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0.016549075, y: 0.9997872, z: -0.012028546, w: -0.002657821}
+  m_LocalPosition: {x: 60.81205, y: 0.68326235, z: 55.00999}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 282139062}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1512230070
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1512230068}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6caca38928f2ed3408778398c7de22d8, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::VehicleSpawnPoint
+  prefab: {fileID: 9054889492115685632, guid: a5c1bbd475487c94eb45896e236b3d3e, type: 3}
+  catalog: {fileID: 0}
+  combatPool: 0
+  groundOnly: 1
+  clearanceCenter: {x: 0, y: 2.0033352, z: 0.69079804}
+  clearanceSize: {x: 3.652164, y: 2.7066708, z: 7.4570007}
+  respawnDelay: 15
+  abandonedDelay: 90
+  cleanupDelay: 7
 --- !u!1001 &1512514406
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -294593,6 +296167,10 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 1339103976}
     m_Modifications:
+    - target: {fileID: 1451943412653814, guid: 125e71ada460d3548a96bb655d48f455, type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 4105091948659522, guid: 125e71ada460d3548a96bb655d48f455, type: 3}
       propertyPath: m_RootOrder
       value: 2
@@ -303666,6 +305244,59 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 4722162738592484, guid: de9206c6685824942af33662071e1032, type: 3}
   m_PrefabInstance: {fileID: 1561060888}
   m_PrefabAsset: {fileID: 0}
+--- !u!1 &1561290730
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1561290731}
+  - component: {fileID: 1561290732}
+  m_Layer: 0
+  m_Name: Military trike map respawn
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1561290731
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1561290730}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0.013775293, y: 0.92145854, z: -0.03281268, w: 0.38684323}
+  m_LocalPosition: {x: -66.481, y: 4.043, z: -46.619}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 282139062}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1561290732
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1561290730}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6caca38928f2ed3408778398c7de22d8, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::VehicleSpawnPoint
+  prefab: {fileID: 2966079545542691319, guid: b5c05c906d555bc42b3498de401f6b96, type: 3}
+  catalog: {fileID: 0}
+  combatPool: 0
+  groundOnly: 1
+  clearanceCenter: {x: 0, y: 1.2552528, z: -0.65155005}
+  clearanceSize: {x: 2.5998755, y: 1.2105058, z: 5.1513734}
+  respawnDelay: 15
+  abandonedDelay: 90
+  cleanupDelay: 7
 --- !u!1001 &1561334296
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -303952,6 +305583,59 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 4289425095002478, guid: ea12d27e4bc26ea4ab94380bdea8c89e, type: 3}
   m_PrefabInstance: {fileID: 1562393677}
   m_PrefabAsset: {fileID: 0}
+--- !u!1 &1563024592
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1563024593}
+  - component: {fileID: 1563024594}
+  m_Layer: 0
+  m_Name: Military trike map respawn
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1563024593
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1563024592}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: -0.6194659, z: -0, w: 0.78502357}
+  m_LocalPosition: {x: 38.055004, y: 0.33990642, z: -75.294}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 282139062}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1563024594
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1563024592}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6caca38928f2ed3408778398c7de22d8, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::VehicleSpawnPoint
+  prefab: {fileID: 2966079545542691319, guid: b5c05c906d555bc42b3498de401f6b96, type: 3}
+  catalog: {fileID: 0}
+  combatPool: 0
+  groundOnly: 1
+  clearanceCenter: {x: 0, y: 1.2552528, z: -0.65155005}
+  clearanceSize: {x: 2.5998755, y: 1.2105058, z: 5.1513734}
+  respawnDelay: 15
+  abandonedDelay: 90
+  cleanupDelay: 7
 --- !u!1001 &1563397866
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -305709,6 +307393,10 @@ PrefabInstance:
     - target: {fileID: 1358894448099598, guid: f32b232b9b5f1f04c8b1af1d83e459c7, type: 3}
       propertyPath: m_Name
       value: SM_Veh_SUV_01 (1)
+      objectReference: {fileID: 0}
+    - target: {fileID: 1358894448099598, guid: f32b232b9b5f1f04c8b1af1d83e459c7, type: 3}
+      propertyPath: m_IsActive
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 4375088623413442, guid: f32b232b9b5f1f04c8b1af1d83e459c7, type: 3}
       propertyPath: m_RootOrder
@@ -312295,6 +313983,59 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 4028717464497278, guid: 75631c8e76821f2479c1c06a4709a9b7, type: 3}
   m_PrefabInstance: {fileID: 1607697463}
   m_PrefabAsset: {fileID: 0}
+--- !u!1 &1608969778
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1608969779}
+  - component: {fileID: 1608969780}
+  m_Layer: 0
+  m_Name: Attack helicopter 2 map respawn
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1608969779
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1608969778}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: 1, z: -0, w: 0.000000104308114}
+  m_LocalPosition: {x: 26.29, y: 0.61, z: 281.19}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 282139062}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1608969780
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1608969778}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6caca38928f2ed3408778398c7de22d8, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::VehicleSpawnPoint
+  prefab: {fileID: 1134868151786904976, guid: f3a7083ba4d1e46469b6b8465868cc33, type: 3}
+  catalog: {fileID: 0}
+  combatPool: 0
+  groundOnly: 0
+  clearanceCenter: {x: -0.01392293, y: 1.7329639, z: -1.0140619}
+  clearanceSize: {x: 8.535976, y: 3.0659277, z: 10.972702}
+  respawnDelay: 15
+  abandonedDelay: 90
+  cleanupDelay: 7
 --- !u!1001 &1609075648
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -320657,6 +322398,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: SM_Veh_Helicopter_Attack_02 (3)
       objectReference: {fileID: 0}
+    - target: {fileID: 1100312557152638, guid: 95f1d29e34dd7f945a42e7ed594bee5c, type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 4133612582025806, guid: 95f1d29e34dd7f945a42e7ed594bee5c, type: 3}
       propertyPath: m_RootOrder
       value: 1
@@ -321546,6 +323291,59 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 4986718629974442, guid: 8326d39c1c61e4d4fb28e9039b9deda1, type: 3}
   m_PrefabInstance: {fileID: 1655196590}
   m_PrefabAsset: {fileID: 0}
+--- !u!1 &1656064071
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1656064072}
+  - component: {fileID: 1656064073}
+  m_Layer: 0
+  m_Name: Flatbed truck map respawn
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1656064072
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1656064071}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 51.542625, y: 0.317, z: 43.423237}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 282139062}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1656064073
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1656064071}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6caca38928f2ed3408778398c7de22d8, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::VehicleSpawnPoint
+  prefab: {fileID: 9054889492115685632, guid: a5c1bbd475487c94eb45896e236b3d3e, type: 3}
+  catalog: {fileID: 0}
+  combatPool: 0
+  groundOnly: 1
+  clearanceCenter: {x: 0, y: 2.0033352, z: 0.69079804}
+  clearanceSize: {x: 3.652164, y: 2.7066708, z: 7.4570007}
+  respawnDelay: 15
+  abandonedDelay: 90
+  cleanupDelay: 7
 --- !u!1001 &1656169699
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -327905,6 +329703,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: SM_Veh_SUV_01 (2)
       objectReference: {fileID: 0}
+    - target: {fileID: 1358894448099598, guid: f32b232b9b5f1f04c8b1af1d83e459c7, type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 4125811741733682, guid: f32b232b9b5f1f04c8b1af1d83e459c7, type: 3}
       propertyPath: m_LocalRotation.y
       value: 0
@@ -330416,6 +332218,59 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 4940409418986734, guid: 550223a9fab034940babd27aa277e1c1, type: 3}
   m_PrefabInstance: {fileID: 1710554333}
   m_PrefabAsset: {fileID: 0}
+--- !u!1 &1710943789
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1710943790}
+  - component: {fileID: 1710943791}
+  m_Layer: 0
+  m_Name: Compact car map respawn
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1710943790
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1710943789}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: -49.57136, y: 2.2789998, z: 65.47784}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 282139062}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1710943791
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1710943789}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6caca38928f2ed3408778398c7de22d8, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::VehicleSpawnPoint
+  prefab: {fileID: 405028191907521026, guid: 892ebe7fbbfb88c4c86361df7a252c51, type: 3}
+  catalog: {fileID: 0}
+  combatPool: 0
+  groundOnly: 1
+  clearanceCenter: {x: 0, y: 1.2322922, z: 0.0036511421}
+  clearanceSize: {x: 2.6528435, y: 1.1645843, z: 4.448989}
+  respawnDelay: 15
+  abandonedDelay: 90
+  cleanupDelay: 7
 --- !u!1001 &1711093313
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -330717,6 +332572,59 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 4134115705881168, guid: 9d6eca710b78e54458604cf7dd98ead5, type: 3}
   m_PrefabInstance: {fileID: 1712159177}
   m_PrefabAsset: {fileID: 0}
+--- !u!1 &1712351710
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1712351711}
+  - component: {fileID: 1712351712}
+  m_Layer: 0
+  m_Name: Van map respawn
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1712351711
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1712351710}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: -0.45502612, z: -0, w: 0.8904781}
+  m_LocalPosition: {x: 10.37, y: 0.4326619, z: -81.1}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 282139062}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1712351712
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1712351710}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6caca38928f2ed3408778398c7de22d8, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::VehicleSpawnPoint
+  prefab: {fileID: 879895575397563975, guid: a625d6ce532bf474b82b9cf37a68a1f7, type: 3}
+  catalog: {fileID: 0}
+  combatPool: 0
+  groundOnly: 1
+  clearanceCenter: {x: 0, y: 1.4773068, z: 0.0011014938}
+  clearanceSize: {x: 2.8866568, y: 1.6546139, z: 5.226849}
+  respawnDelay: 15
+  abandonedDelay: 90
+  cleanupDelay: 7
 --- !u!1001 &1712908456
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -331835,6 +333743,10 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 1339103976}
     m_Modifications:
+    - target: {fileID: 1469731982185898, guid: df56f1ffcab0ff445a205af9d1ad0239, type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 4070258020213798, guid: df56f1ffcab0ff445a205af9d1ad0239, type: 3}
       propertyPath: m_RootOrder
       value: 2
@@ -336816,6 +338728,10 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 1339103976}
     m_Modifications:
+    - target: {fileID: 1882455488938568, guid: f5f7d39b045759c4792b5220fc3697ca, type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 4011142367270340, guid: f5f7d39b045759c4792b5220fc3697ca, type: 3}
       propertyPath: m_RootOrder
       value: 5
@@ -339952,6 +341868,59 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 4263998026621084, guid: b4458c9b1a6435342bf779a8448e0b07, type: 3}
   m_PrefabInstance: {fileID: 1762247825}
   m_PrefabAsset: {fileID: 0}
+--- !u!1 &1762481823
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1762481824}
+  - component: {fileID: 1762481825}
+  m_Layer: 0
+  m_Name: Compact car map respawn
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1762481824
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1762481823}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: 1, z: -0, w: 0}
+  m_LocalPosition: {x: -16.386904, y: 0.55799997, z: 6.1401362}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 282139062}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1762481825
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1762481823}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6caca38928f2ed3408778398c7de22d8, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::VehicleSpawnPoint
+  prefab: {fileID: 405028191907521026, guid: 892ebe7fbbfb88c4c86361df7a252c51, type: 3}
+  catalog: {fileID: 0}
+  combatPool: 0
+  groundOnly: 1
+  clearanceCenter: {x: 0, y: 1.2322922, z: 0.0036511421}
+  clearanceSize: {x: 2.6528435, y: 1.1645843, z: 4.448989}
+  respawnDelay: 15
+  abandonedDelay: 90
+  cleanupDelay: 7
 --- !u!1001 &1762789713
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -343261,6 +345230,59 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 4092269847101678, guid: f9922a428396a254eb68d9ef9448a9de, type: 3}
   m_PrefabInstance: {fileID: 1778039921}
   m_PrefabAsset: {fileID: 0}
+--- !u!1 &1778854612
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1778854613}
+  - component: {fileID: 1778854614}
+  m_Layer: 0
+  m_Name: Travel van map respawn
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1778854613
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1778854612}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: -7.334015, y: 0.52, z: -107.94641}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 282139062}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1778854614
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1778854612}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6caca38928f2ed3408778398c7de22d8, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::VehicleSpawnPoint
+  prefab: {fileID: 5992179245483929256, guid: 38fae687e5f77784d92bd7b87754f92b, type: 3}
+  catalog: {fileID: 0}
+  combatPool: 0
+  groundOnly: 1
+  clearanceCenter: {x: 0, y: 1.6995504, z: 0.068027735}
+  clearanceSize: {x: 2.8866568, y: 2.099101, z: 5.3607016}
+  respawnDelay: 15
+  abandonedDelay: 90
+  cleanupDelay: 7
 --- !u!1001 &1778869635
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -344558,6 +346580,10 @@ PrefabInstance:
     - target: {fileID: 1469731982185898, guid: df56f1ffcab0ff445a205af9d1ad0239, type: 3}
       propertyPath: m_Name
       value: SM_Veh_Pickup_Technical_01 (1)
+      objectReference: {fileID: 0}
+    - target: {fileID: 1469731982185898, guid: df56f1ffcab0ff445a205af9d1ad0239, type: 3}
+      propertyPath: m_IsActive
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 4573876372250196, guid: df56f1ffcab0ff445a205af9d1ad0239, type: 3}
       propertyPath: m_RootOrder
@@ -354899,6 +356925,59 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 4897609359044428, guid: 01e22a7c54cc2a746ba962de146f620f, type: 3}
   m_PrefabInstance: {fileID: 1837041608}
   m_PrefabAsset: {fileID: 0}
+--- !u!1 &1837204464
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1837204465}
+  - component: {fileID: 1837204466}
+  m_Layer: 0
+  m_Name: Sedan map respawn
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1837204465
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1837204464}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: -0.70710576, z: -0, w: 0.70710784}
+  m_LocalPosition: {x: 17.704, y: 0.83100003, z: 19.65}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 282139062}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1837204466
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1837204464}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6caca38928f2ed3408778398c7de22d8, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::VehicleSpawnPoint
+  prefab: {fileID: 5486282684178490259, guid: f2c68c866b6ed56419ce84d13d503053, type: 3}
+  catalog: {fileID: 0}
+  combatPool: 0
+  groundOnly: 1
+  clearanceCenter: {x: -0.0006661415, y: 1.2367504, z: 0.011836529}
+  clearanceSize: {x: 2.7716913, y: 1.1735007, z: 5.5809536}
+  respawnDelay: 15
+  abandonedDelay: 90
+  cleanupDelay: 7
 --- !u!1001 &1837422339
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -356068,6 +358147,10 @@ PrefabInstance:
     - target: {fileID: 1370191247749452, guid: 66abf940962608d42bbda0249e1e22e4, type: 3}
       propertyPath: m_Name
       value: SM_Veh_Motorbike_01 (1)
+      objectReference: {fileID: 0}
+    - target: {fileID: 1370191247749452, guid: 66abf940962608d42bbda0249e1e22e4, type: 3}
+      propertyPath: m_IsActive
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 4331389476118684, guid: 66abf940962608d42bbda0249e1e22e4, type: 3}
       propertyPath: m_RootOrder
@@ -358397,6 +360480,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: SM_Veh_Light_Armored_Car_01 (1)
       objectReference: {fileID: 0}
+    - target: {fileID: 1882455488938568, guid: f5f7d39b045759c4792b5220fc3697ca, type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 4011142367270340, guid: f5f7d39b045759c4792b5220fc3697ca, type: 3}
       propertyPath: m_RootOrder
       value: 5
@@ -359535,6 +361622,10 @@ PrefabInstance:
     - target: {fileID: 1773351328975956, guid: d33e727bddeea1543a85c0cd42478ca0, type: 3}
       propertyPath: m_Name
       value: SM_Veh_Car_Small_01 (2)
+      objectReference: {fileID: 0}
+    - target: {fileID: 1773351328975956, guid: d33e727bddeea1543a85c0cd42478ca0, type: 3}
+      propertyPath: m_IsActive
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 4047383901747822, guid: d33e727bddeea1543a85c0cd42478ca0, type: 3}
       propertyPath: m_RootOrder
@@ -362673,6 +364764,59 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 4062336106596610, guid: cb6d5ed2ee54844498dc276723ae954b, type: 3}
   m_PrefabInstance: {fileID: 1881179686}
   m_PrefabAsset: {fileID: 0}
+--- !u!1 &1881450515
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1881450516}
+  - component: {fileID: 1881450517}
+  m_Layer: 0
+  m_Name: Transport helicopter map respawn
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1881450516
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1881450515}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 22.54, y: 0.8630514, z: 304.98}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 282139062}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1881450517
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1881450515}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6caca38928f2ed3408778398c7de22d8, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::VehicleSpawnPoint
+  prefab: {fileID: 3321397939561544239, guid: 77ea5d55514565f4f9d6b852cdc877b1, type: 3}
+  catalog: {fileID: 0}
+  combatPool: 0
+  groundOnly: 0
+  clearanceCenter: {x: 0, y: 2.942705, z: -1.8273096}
+  clearanceSize: {x: 17.020166, y: 5.48541, z: 20.67479}
+  respawnDelay: 15
+  abandonedDelay: 90
+  cleanupDelay: 7
 --- !u!1001 &1881759079
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -362762,6 +364906,59 @@ Transform:
   m_Children: []
   m_Father: {fileID: 802039642}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &1882188338
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1882188339}
+  - component: {fileID: 1882188340}
+  m_Layer: 0
+  m_Name: Attack helicopter 2 map respawn
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1882188339
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1882188338}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 15.64, y: 0.61, z: 271.58}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 282139062}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1882188340
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1882188338}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6caca38928f2ed3408778398c7de22d8, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::VehicleSpawnPoint
+  prefab: {fileID: 1134868151786904976, guid: f3a7083ba4d1e46469b6b8465868cc33, type: 3}
+  catalog: {fileID: 0}
+  combatPool: 0
+  groundOnly: 0
+  clearanceCenter: {x: -0.01392293, y: 1.7329639, z: -1.0140619}
+  clearanceSize: {x: 8.535976, y: 3.0659277, z: 10.972702}
+  respawnDelay: 15
+  abandonedDelay: 90
+  cleanupDelay: 7
 --- !u!1001 &1882410342
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -363567,6 +365764,59 @@ Transform:
   m_Children: []
   m_Father: {fileID: 1981841528}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &1886250317
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1886250318}
+  - component: {fileID: 1886250319}
+  m_Layer: 0
+  m_Name: Armored transport map respawn
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1886250318
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1886250317}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 9.427723, y: 1.3350011, z: 127.72802}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 282139062}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1886250319
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1886250317}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6caca38928f2ed3408778398c7de22d8, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::VehicleSpawnPoint
+  prefab: {fileID: 8005524415481048341, guid: 2d4673a8871b43548830c85f6652a64a, type: 3}
+  catalog: {fileID: 0}
+  combatPool: 0
+  groundOnly: 1
+  clearanceCenter: {x: -0.00000059604645, y: 1.804249, z: -0.021418571}
+  clearanceSize: {x: 3.232901, y: 2.3084984, z: 6.551064}
+  respawnDelay: 15
+  abandonedDelay: 90
+  cleanupDelay: 7
 --- !u!1001 &1886476159
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -368767,6 +371017,10 @@ PrefabInstance:
     - target: {fileID: 1617582806024772, guid: 528552aea0db0234db59ca8c4d1904a4, type: 3}
       propertyPath: m_Name
       value: SM_Veh_Pickup_Small_01 (1)
+      objectReference: {fileID: 0}
+    - target: {fileID: 1617582806024772, guid: 528552aea0db0234db59ca8c4d1904a4, type: 3}
+      propertyPath: m_IsActive
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 1643414362656330, guid: 528552aea0db0234db59ca8c4d1904a4, type: 3}
       propertyPath: m_IsActive
@@ -382749,6 +385003,59 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 4728340906294272, guid: edba86ee43819e842a3110915b50b2e8, type: 3}
   m_PrefabInstance: {fileID: 1969407463}
   m_PrefabAsset: {fileID: 0}
+--- !u!1 &1969678295
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1969678296}
+  - component: {fileID: 1969678297}
+  m_Layer: 0
+  m_Name: Compact car map respawn
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1969678296
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1969678295}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0.005459162, y: -0, z: -0, w: 0.9999851}
+  m_LocalPosition: {x: 54.339, y: 0.08499999, z: -18.083878}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 282139062}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1969678297
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1969678295}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6caca38928f2ed3408778398c7de22d8, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::VehicleSpawnPoint
+  prefab: {fileID: 405028191907521026, guid: 892ebe7fbbfb88c4c86361df7a252c51, type: 3}
+  catalog: {fileID: 0}
+  combatPool: 0
+  groundOnly: 1
+  clearanceCenter: {x: 0, y: 1.2322922, z: 0.0036511421}
+  clearanceSize: {x: 2.6528435, y: 1.1645843, z: 4.448989}
+  respawnDelay: 15
+  abandonedDelay: 90
+  cleanupDelay: 7
 --- !u!1001 &1970068597
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -384190,6 +386497,10 @@ PrefabInstance:
     - target: {fileID: 1882455488938568, guid: f5f7d39b045759c4792b5220fc3697ca, type: 3}
       propertyPath: m_Name
       value: SM_Veh_Light_Armored_Car_01 (2)
+      objectReference: {fileID: 0}
+    - target: {fileID: 1882455488938568, guid: f5f7d39b045759c4792b5220fc3697ca, type: 3}
+      propertyPath: m_IsActive
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 1958567179842690, guid: f5f7d39b045759c4792b5220fc3697ca, type: 3}
       propertyPath: m_IsActive
@@ -388576,6 +390887,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: SM_Veh_Car_Medium_01 (3)
       objectReference: {fileID: 0}
+    - target: {fileID: 1192821333268524, guid: 368e0ba8a53b943428fc4dae621dcdc1, type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 4026745405844436, guid: 368e0ba8a53b943428fc4dae621dcdc1, type: 3}
       propertyPath: m_LocalRotation.y
       value: 0
@@ -390377,6 +392692,10 @@ PrefabInstance:
     - target: {fileID: 1773351328975956, guid: d33e727bddeea1543a85c0cd42478ca0, type: 3}
       propertyPath: m_Name
       value: SM_Veh_Car_Small_01 (3)
+      objectReference: {fileID: 0}
+    - target: {fileID: 1773351328975956, guid: d33e727bddeea1543a85c0cd42478ca0, type: 3}
+      propertyPath: m_IsActive
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 4047383901747822, guid: d33e727bddeea1543a85c0cd42478ca0, type: 3}
       propertyPath: m_RootOrder
@@ -401675,6 +403994,59 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 4530385411346324, guid: 626be508eac09fd4e85cf8fc6649aa00, type: 3}
   m_PrefabInstance: {fileID: 2049369926}
   m_PrefabAsset: {fileID: 0}
+--- !u!1 &2049883026
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 2049883027}
+  - component: {fileID: 2049883028}
+  m_Layer: 0
+  m_Name: Sedan map respawn
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &2049883027
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2049883026}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: 0.7523846, z: -0, w: -0.65872407}
+  m_LocalPosition: {x: 13.26, y: 0.222, z: -74.35}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 282139062}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &2049883028
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2049883026}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6caca38928f2ed3408778398c7de22d8, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::VehicleSpawnPoint
+  prefab: {fileID: 5486282684178490259, guid: f2c68c866b6ed56419ce84d13d503053, type: 3}
+  catalog: {fileID: 0}
+  combatPool: 0
+  groundOnly: 1
+  clearanceCenter: {x: -0.0006661415, y: 1.2367504, z: 0.011836529}
+  clearanceSize: {x: 2.7716913, y: 1.1735007, z: 5.5809536}
+  respawnDelay: 15
+  abandonedDelay: 90
+  cleanupDelay: 7
 --- !u!1001 &2050727843
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -404893,6 +407265,59 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 400000, guid: 81dd3adc391870945ae64be723cec024, type: 3}
   m_PrefabInstance: {fileID: 2070164598}
   m_PrefabAsset: {fileID: 0}
+--- !u!1 &2070295587
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 2070295588}
+  - component: {fileID: 2070295589}
+  m_Layer: 0
+  m_Name: Heavy wheeled APC map respawn
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &2070295588
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2070295587}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: -0.70710576, z: -0, w: 0.70710784}
+  m_LocalPosition: {x: 48.379, y: 1.1520015, z: 171.57}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 282139062}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &2070295589
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2070295587}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6caca38928f2ed3408778398c7de22d8, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::VehicleSpawnPoint
+  prefab: {fileID: 9130765350476394884, guid: 0c9cd4a9af4a4d5468a0db78bdbeb4d7, type: 3}
+  catalog: {fileID: 0}
+  combatPool: 0
+  groundOnly: 1
+  clearanceCenter: {x: 0, y: 1.9482496, z: -0.15655088}
+  clearanceSize: {x: 3.6215758, y: 2.5964994, z: 8.209058}
+  respawnDelay: 15
+  abandonedDelay: 90
+  cleanupDelay: 7
 --- !u!1001 &2070387858
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -410011,6 +412436,59 @@ Transform:
   m_Children: []
   m_Father: {fileID: 1981841528}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &2078613775
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 2078613776}
+  - component: {fileID: 2078613777}
+  m_Layer: 0
+  m_Name: Canopy truck map respawn
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &2078613776
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2078613775}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: 0.89658433, z: -0, w: -0.44287303}
+  m_LocalPosition: {x: 21.749, y: 1.1159984, z: 137.682}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 282139062}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &2078613777
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2078613775}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6caca38928f2ed3408778398c7de22d8, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::VehicleSpawnPoint
+  prefab: {fileID: 1027586599313338564, guid: 831196c1e955c5841822783c13fcbf4d, type: 3}
+  catalog: {fileID: 0}
+  combatPool: 0
+  groundOnly: 1
+  clearanceCenter: {x: 0, y: 2.1185884, z: 0.6808622}
+  clearanceSize: {x: 3.652164, y: 2.9371772, z: 7.476873}
+  respawnDelay: 15
+  abandonedDelay: 90
+  cleanupDelay: 7
 --- !u!1001 &2078870652
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -421636,6 +424114,59 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 4448978960209344, guid: e5a1aed05a31615449095ee2b82450d9, type: 3}
   m_PrefabInstance: {fileID: 2144574044}
   m_PrefabAsset: {fileID: 0}
+--- !u!1 &2144711263
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 2144711264}
+  - component: {fileID: 2144711265}
+  m_Layer: 0
+  m_Name: Light armored car map respawn
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &2144711264
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2144711263}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0.0008990282, y: 0.0018092846, z: -0.0105051, w: 0.9999428}
+  m_LocalPosition: {x: 11.145009, y: 1.214, z: 115.97247}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 282139062}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &2144711265
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2144711263}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6caca38928f2ed3408778398c7de22d8, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::VehicleSpawnPoint
+  prefab: {fileID: 6631453624252038100, guid: 3dc87f9c24309de409890126dfd21533, type: 3}
+  catalog: {fileID: 0}
+  combatPool: 0
+  groundOnly: 1
+  clearanceCenter: {x: 0, y: 1.7761476, z: 0.0068769455}
+  clearanceSize: {x: 3.1060672, y: 2.2522955, z: 5.253719}
+  respawnDelay: 15
+  abandonedDelay: 90
+  cleanupDelay: 7
 --- !u!1001 &2144934089
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -422070,6 +424601,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: SM_Veh_Pickup_Small_01 (2)
       objectReference: {fileID: 0}
+    - target: {fileID: 1617582806024772, guid: 528552aea0db0234db59ca8c4d1904a4, type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 1906538061817114, guid: 528552aea0db0234db59ca8c4d1904a4, type: 3}
       propertyPath: m_IsActive
       value: 1
@@ -422263,6 +424798,10 @@ PrefabInstance:
     - target: {fileID: 1370191247749452, guid: 66abf940962608d42bbda0249e1e22e4, type: 3}
       propertyPath: m_Name
       value: SM_Veh_Motorbike_01 (2)
+      objectReference: {fileID: 0}
+    - target: {fileID: 1370191247749452, guid: 66abf940962608d42bbda0249e1e22e4, type: 3}
+      propertyPath: m_IsActive
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 4331389476118684, guid: 66abf940962608d42bbda0249e1e22e4, type: 3}
       propertyPath: m_RootOrder
@@ -422645,3 +425184,4 @@ SceneRoots:
   - {fileID: 203797140}
   - {fileID: 1815700256}
   - {fileID: 283857048}
+  - {fileID: 282139062}
