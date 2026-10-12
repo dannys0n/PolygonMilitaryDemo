@@ -67,7 +67,30 @@ public class SoldierLaunchers : MonoBehaviour
         life.loadout.SetStartingSlot(previousSlot);
         life.view.RefreshVisuals();
     }
-    void LateUpdate(){if(IsEquipped)UpdateVisibility();}
+    void LateUpdate()
+    {
+        if(!IsEquipped)return;
+        UpdateVisibility();
+        if(first&&life.view.firstPerson)AlignFirstPersonSight();
+    }
+    void AlignFirstPersonSight()
+    {
+        // Match the weapon sight architecture: rear/front markers are read in
+        // the launcher root frame, so editing their parent needs no recalibration.
+        var root=first.transform;
+        var parent=root.parent;
+        Vector3 hip=parent.position+parent.rotation*Equipped.holdPosition;
+        Quaternion hipRotation=parent.rotation*Quaternion.Euler(Equipped.holdRotation);
+        Vector3 rear=root.InverseTransformPoint(first.rearSight.position);
+        Vector3 front=root.InverseTransformPoint(first.frontSight.position);
+        Vector3 up=root.InverseTransformDirection(first.rearSight.up);
+        var camera=life.view.playerCamera.transform;
+        Quaternion aimRotation=camera.rotation*Quaternion.Inverse(Quaternion.LookRotation(front-rear,up));
+        Vector3 eye=camera.position+camera.forward*Equipped.sightEyeDistance;
+        Vector3 aimPosition=eye-aimRotation*Vector3.Scale(root.lossyScale,rear);
+        float blend=life.view.PlacementAimBlend;
+        root.SetPositionAndRotation(Vector3.Lerp(hip,aimPosition,blend),Quaternion.Slerp(hipRotation,aimRotation,blend));
+    }
     public void RefreshFirstPersonPresentation()
     {
         if(!IsEquipped)return;

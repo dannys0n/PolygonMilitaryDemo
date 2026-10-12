@@ -33,7 +33,7 @@ public class SoldierController : MonoBehaviour
         if (input.cycleSight && !utility) loadout.TryCycleSight();
         if(input.grenadeCycle)grenades.Cycle();
         if(input.grenadeThrow)grenades.TryThrow();
-        view.SetAimRequested(input.aim && !grenades.IsThrowing && !utility);
+        view.SetAimRequested(input.aim && !grenades.IsThrowing);
         look.ApplyLookDelta(input.lookDelta);
         if (input.jump) movement.RequestJump();
         movement.SimulateMovement(input.move, deltaTime, input.sprint && !grenades.IsThrowing);
