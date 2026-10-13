@@ -220,8 +220,11 @@ public class VehicleOccupant : MonoBehaviour
         if (!seatPose) seatPose = life.actions.animator.gameObject.AddComponent<VehicleSeatPose>();
         var seated = vehicle.seats[seat];
         if(seated.showCharacter) seatPose.Begin(life.actions.animator, seated, seated.leftGrip, seated.rightGrip);
+        var humanoidBones = new HashSet<Transform>();
+        foreach(HumanBodyBones bone in System.Enum.GetValues(typeof(HumanBodyBones)))
+            if(bone!=HumanBodyBones.LastBone){var t=life.actions.animator.GetBoneTransform(bone);if(t)humanoidBones.Add(t);}
         seatedBody = System.Array.FindAll(life.view.thirdPersonRoot.GetComponentsInChildren<SkinnedMeshRenderer>(true),
-            skin => skin.rootBone && skin.rootBone.IsChildOf(life.actions.animator.transform));
+            skin => System.Array.Exists(skin.bones,bone=>humanoidBones.Contains(bone)));
         UpdateSeatedVisibility();
         if (!IsLocal)
             return;
@@ -404,6 +407,7 @@ public class VehicleOccupant : MonoBehaviour
         seatPose.End();
         transform.SetParent(seat.anchor,false);transform.SetLocalPositionAndRotation(Vector3.zero,Quaternion.identity);
         if(seat.showCharacter) seatPose.Begin(life.actions.animator, seat, seat.leftGrip, seat.rightGrip);
+        else life.actions.animator.enabled=false;
         UpdateSeatedVisibility();
         if(IsLocal)ResetVehicleCameraShake();
         flightYaw=yaw=vehicle.transform.eulerAngles.y;flightPitch=pitch=0;Freelook=false;

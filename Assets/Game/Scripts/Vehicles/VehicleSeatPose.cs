@@ -9,6 +9,7 @@ public class VehicleSeatPose : MonoBehaviour
     AnimatorCullingMode infantryCulling;
     bool infantryRootMotion, mounted;
     Transform leftGrip, rightGrip, pelvisAnchor;
+    Vector3 bodyOffset, lastBodyPosition;
 
     public void Begin(Animator bodyAnimator, Vehicle.Seat seat, Transform leftTarget, Transform rightTarget)
     {
@@ -19,8 +20,8 @@ public class VehicleSeatPose : MonoBehaviour
             infantryRootMotion = animator.applyRootMotion;
             infantryCulling = animator.cullingMode;
         }
-        mounted = true;
-        pelvisAnchor = seat.anchor;
+        mounted = true; bodyOffset=Vector3.zero;
+        pelvisAnchor = seat.anchor; lastBodyPosition=pelvisAnchor.position;
         leftGrip = leftTarget;
         rightGrip = rightTarget;
         enabled = true;
@@ -30,6 +31,7 @@ public class VehicleSeatPose : MonoBehaviour
         animator.enabled = true;
         animator.Play(seat.role == Vehicle.SeatRole.Gunner ? "Turret" : seat.role == Vehicle.SeatRole.Driver ? "Driving" : "Sitting", 0, 0);
         animator.Update(0f);
+        bodyOffset=Quaternion.Inverse(pelvisAnchor.rotation)*(lastBodyPosition-animator.GetBoneTransform(HumanBodyBones.Hips).position);
     }
 
     public void End()
@@ -50,7 +52,8 @@ public class VehicleSeatPose : MonoBehaviour
     {
         if (!mounted || layer != 0) return;
         // Anchors represent the seat cushion/pelvis, independent of avatar height.
-        animator.bodyPosition = pelvisAnchor.position;
+        lastBodyPosition = pelvisAnchor.position + pelvisAnchor.rotation * bodyOffset;
+        animator.bodyPosition = lastBodyPosition;
         animator.bodyRotation = pelvisAnchor.rotation;
         PlaceHand(AvatarIKGoal.LeftHand, leftGrip);
         PlaceHand(AvatarIKGoal.RightHand, rightGrip);
