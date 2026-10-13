@@ -460,6 +460,37 @@ Transform:
   m_Children: []
   m_Father: {fileID: 8578079016602166605}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &1494033675129374104
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 4567095267285924118}
+  m_Layer: 0
+  m_Name: Dispenser 0
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &4567095267285924118
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1494033675129374104}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0.08174336, y: -0.2659716, z: -0.0226416, w: 0.9602419}
+  m_LocalPosition: {x: -1.2125677, y: 1.3958594, z: 4.286192}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 8313247736226492536}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1555781544511919185
 GameObject:
   m_ObjectHideFlags: 0
@@ -975,6 +1006,7 @@ GameObject:
   - component: {fileID: 8303480333359257671}
   - component: {fileID: 9143397373398703595}
   - component: {fileID: 7900715243414090548}
+  - component: {fileID: 3465842391375651741}
   m_Layer: 0
   m_Name: TankRussian
   m_TagString: Untagged
@@ -1011,6 +1043,7 @@ Transform:
   - {fileID: 8397750257114106478}
   - {fileID: 6054216676718420054}
   - {fileID: 8408593400892220181}
+  - {fileID: 8313247736226492536}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!54 &8097823751301355584
@@ -1079,6 +1112,7 @@ MonoBehaviour:
     showCharacter: 0
     weaponMountedView: 0
     externalView: 0
+    disembarkInside: 0
     eye: {fileID: 6810075948333118855}
     leftGrip: {fileID: 0}
     rightGrip: {fileID: 0}
@@ -1092,6 +1126,7 @@ MonoBehaviour:
     showCharacter: 0
     weaponMountedView: 0
     externalView: 0
+    disembarkInside: 0
     eye: {fileID: 454261327421370213}
     leftGrip: {fileID: 0}
     rightGrip: {fileID: 0}
@@ -1105,6 +1140,7 @@ MonoBehaviour:
     showCharacter: 0
     weaponMountedView: 0
     externalView: 1
+    disembarkInside: 0
     eye: {fileID: 2335572474074161159}
     leftGrip: {fileID: 3069933965562546977}
     rightGrip: {fileID: 8935324206630940836}
@@ -1340,6 +1376,32 @@ MonoBehaviour:
     explosive: 0
     ejectCasings: 0
     icon: {fileID: 21300000, guid: 32ccd526d433039448ef8019ef765eb8, type: 3}
+--- !u!114 &3465842391375651741
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2315570130380455751}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c9cbd31cf1ff10240b84be609e17dcad, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::VehicleCountermeasures
+  flares: 0
+  chaff: 0
+  smoke: 1
+  dispensers:
+  - {fileID: 4567095267285924118}
+  - {fileID: 172450458368465620}
+  flarePrefab: {fileID: 4817953780451813940, guid: 97b0ab4f80576474e90b301bc8714bb2, type: 3}
+  chaffPrefab: {fileID: 3421390963964410674, guid: 21fb41da57961224b8a0db559d86db5b, type: 3}
+  smokePrefab: {fileID: 1604516943231475684, guid: a6018400a17f2124b9d7a6aeb101127a, type: 3}
+  capacity: 2
+  cooldown: 20
+  rechargeSeconds: 35
+  smokeDuration: 10
+  automaticForAI: 1
 --- !u!1 &2569146625990465944
 GameObject:
   m_ObjectHideFlags: 0
@@ -5364,6 +5426,39 @@ WheelCollider:
   m_LayerOverridePriority: 0
   m_Enabled: 1
   m_ProvidesContacts: 0
+--- !u!1 &5836751065979339192
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 8313247736226492536}
+  m_Layer: 0
+  m_Name: Countermeasure dispensers
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &8313247736226492536
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5836751065979339192}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children:
+  - {fileID: 4567095267285924118}
+  - {fileID: 172450458368465620}
+  m_Father: {fileID: 248534790599472409}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &6186249526210348782
 GameObject:
   m_ObjectHideFlags: 0
@@ -6527,3 +6622,34 @@ MeshRenderer:
   m_SortingOrder: 0
   m_MaskInteraction: 0
   m_AdditionalVertexStreams: {fileID: 0}
+--- !u!1 &9186717004370898435
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 172450458368465620}
+  m_Layer: 0
+  m_Name: Dispenser 1
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &172450458368465620
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 9186717004370898435}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0.08174336, y: 0.2659716, z: 0.0226416, w: 0.9602419}
+  m_LocalPosition: {x: 1.2125677, y: 1.3958594, z: 4.286192}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 8313247736226492536}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}

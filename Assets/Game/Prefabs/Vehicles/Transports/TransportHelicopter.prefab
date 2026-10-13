@@ -750,6 +750,7 @@ GameObject:
   - component: {fileID: 5233662949061015220}
   - component: {fileID: 697834903200166141}
   - component: {fileID: 5555702598443817777}
+  - component: {fileID: 7931808040080304112}
   m_Layer: 0
   m_Name: TransportHelicopter
   m_TagString: Untagged
@@ -780,6 +781,7 @@ Transform:
   - {fileID: 162184679576912370}
   - {fileID: 6045301067096448212}
   - {fileID: 703630574659163607}
+  - {fileID: 7443460708391041645}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!54 &7883439017423682820
@@ -1165,6 +1167,32 @@ MonoBehaviour:
     duration: 1.35
     open: 0
   interactionRange: 3
+--- !u!114 &7931808040080304112
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2042152971167295315}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c9cbd31cf1ff10240b84be609e17dcad, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::VehicleCountermeasures
+  flares: 1
+  chaff: 1
+  smoke: 0
+  dispensers:
+  - {fileID: 8842773325373497492}
+  - {fileID: 9192055785474808367}
+  flarePrefab: {fileID: 4817953780451813940, guid: 97b0ab4f80576474e90b301bc8714bb2, type: 3}
+  chaffPrefab: {fileID: 3421390963964410674, guid: 21fb41da57961224b8a0db559d86db5b, type: 3}
+  smokePrefab: {fileID: 1604516943231475684, guid: a6018400a17f2124b9d7a6aeb101127a, type: 3}
+  capacity: 2
+  cooldown: 10
+  rechargeSeconds: 25
+  smokeDuration: 10
+  automaticForAI: 1
 --- !u!1 &2060533512515915458
 GameObject:
   m_ObjectHideFlags: 0
@@ -1915,6 +1943,37 @@ Transform:
   - {fileID: 5349321242957179949}
   - {fileID: 5348727553972927153}
   m_Father: {fileID: 3278231929526563697}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &4127505738293090848
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 9192055785474808367}
+  m_Layer: 0
+  m_Name: Dispenser 1
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &9192055785474808367
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4127505738293090848}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0.07281458, y: 0.87588394, z: -0.13985172, w: 0.45603383}
+  m_LocalPosition: {x: 0.9057694, y: 1.4, z: -5.4549994}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 7443460708391041645}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &4250043794154125628
 GameObject:
@@ -3001,6 +3060,37 @@ Transform:
   - {fileID: 7124203522865969388}
   m_Father: {fileID: 6526823299160414780}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &6942897408709726281
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 8842773325373497492}
+  m_Layer: 0
+  m_Name: Dispenser 0
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &8842773325373497492
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6942897408709726281}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0.07281458, y: 0.87588394, z: -0.13985172, w: -0.45603383}
+  m_LocalPosition: {x: -0.9057694, y: 1.4, z: -5.4549994}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 7443460708391041645}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &6944576668172500056
 GameObject:
   m_ObjectHideFlags: 0
@@ -3538,6 +3628,39 @@ MeshRenderer:
   m_SortingOrder: 0
   m_MaskInteraction: 0
   m_AdditionalVertexStreams: {fileID: 0}
+--- !u!1 &7959594830334631773
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 7443460708391041645}
+  m_Layer: 0
+  m_Name: Countermeasure dispensers
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &7443460708391041645
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7959594830334631773}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children:
+  - {fileID: 8842773325373497492}
+  - {fileID: 9192055785474808367}
+  m_Father: {fileID: 3212331356154487064}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &8015210690042380164
 GameObject:
   m_ObjectHideFlags: 0

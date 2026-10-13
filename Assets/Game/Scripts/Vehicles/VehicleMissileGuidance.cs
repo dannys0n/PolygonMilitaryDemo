@@ -3,6 +3,16 @@ using UnityEngine;
 // Prototype seekers: finite acquisition cone, line of sight, lead pursuit and bounded turning.
 public sealed class VehicleMissileGuidance : MonoBehaviour
 {
+    public enum Seeker { Infrared, Radar, Optical }
+    public Seeker seeker;
+    public static readonly System.Collections.Generic.List<VehicleMissileGuidance> Active = new System.Collections.Generic.List<VehicleMissileGuidance>();
+    public Vehicle Target => target;
+    public VehicleDecoy DecoyTarget => decoy;
+    public Seeker SeekerType => guidance==Guidance.LaserSpot || guidance==Guidance.CommandLineOfSight ? Seeker.Optical : seeker;
+    VehicleDecoy decoy;
+    void OnEnable()=>Active.Add(this);
+    void OnDisable()=>Active.Remove(this);
+    [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)] static void ResetRegistry()=>Active.Clear();
     public enum Guidance { AirToAir, LaserSpot, AirDefence, CommandLineOfSight }
     public Guidance guidance;
     public float acquisitionAngle = 20, acquisitionRange = 1600, degreesPerSecond = 100;
@@ -33,6 +43,7 @@ public sealed class VehicleMissileGuidance : MonoBehaviour
             Vector3 offset = candidate.cameraTarget.position - aim.origin;
             float angle = Vector3.Angle(aim.direction, offset);
             if (offset.magnitude > acquisitionRange || angle > acquisitionAngle || angle >= best) continue;
+            if(SeekerType==Seeker.Optical && GrenadeSmoke.BlocksLine(aim.origin,candidate.cameraTarget.position))continue;
             bool blocked = false;
             foreach (var hit in Physics.RaycastAll(aim.origin, offset.normalized, offset.magnitude, Physics.DefaultRaycastLayers, QueryTriggerInteraction.Ignore))
                 if (!hit.transform.IsChildOf(source.transform) && !hit.transform.IsChildOf(candidate.transform)
@@ -48,10 +59,36 @@ public sealed class VehicleMissileGuidance : MonoBehaviour
     void FixedUpdate()
     {
         if (!initialized || Time.time < launchTime + seekerDelay || !body) return;
-        if (!target && guidance != Guidance.LaserSpot && guidance != Guidance.CommandLineOfSight) return; // Unguided flight on seeker failure.
+        if(decoy && !decoy.Alive)decoy=null;
+        if(target && !decoy && SeekerType!=Seeker.Optical)
+        {
+            foreach(var candidate in VehicleDecoy.Active)
+            {
+                if(!candidate.Alive || (candidate.signature==VehicleDecoy.Signature.Infrared)!=(SeekerType==Seeker.Infrared))continue;
+                Vector3 offset=candidate.transform.position-body.position;
+                if(offset.magnitude>acquisitionRange || Vector3.Angle(body.rotation*Vector3.forward,offset)>acquisitionAngle)continue;
+                // A decoy must be near the tracked aircraft, not a global invulnerability switch.
+                if(Vector3.Distance(candidate.transform.position,target.cameraTarget.position)>80)continue;
+                bool obscured=false;
+                foreach(var hit in Physics.RaycastAll(body.position,offset.normalized,offset.magnitude,Physics.DefaultRaycastLayers,QueryTriggerInteraction.Ignore))
+                    if(!hit.transform.IsChildOf(transform) && !hit.transform.IsChildOf(candidate.transform)
+                        && !hit.transform.IsChildOf(target.transform) && !(hit.collider is CharacterController))
+                    {obscured=true;break;}
+                if(obscured)continue;
+                decoy=candidate;target=null;break;
+            }
+        }
+        if(SeekerType==Seeker.Optical && target && GrenadeSmoke.BlocksLine(body.position,target.cameraTarget.position))
+        {target=null;initialized=false;return;}
+        if(guidance==Guidance.CommandLineOfSight && director && GrenadeSmoke.BlocksLine(director.RequestedAimRay.origin,body.position))
+        {target=null;initialized=false;return;}
+        if(!target && SeekerType==Seeker.Optical && guidance==Guidance.LaserSpot && GrenadeSmoke.BlocksLine(body.position,aimPoint))
+        {initialized=false;return;}
+        if (!target && !decoy && guidance != Guidance.LaserSpot && guidance != Guidance.CommandLineOfSight) return; // Unguided flight on seeker failure.
         Vector3 point = aimPoint;
         float speed = body.linearVelocity.magnitude;
-        if (guidance == Guidance.CommandLineOfSight && director)
+        if(decoy)point=decoy.transform.position;
+        else if (guidance == Guidance.CommandLineOfSight && director)
         {
             Ray command = director.RequestedAimRay;
             // SACLOS approximation: correct toward the maintained sight line, not an autonomous seeker.

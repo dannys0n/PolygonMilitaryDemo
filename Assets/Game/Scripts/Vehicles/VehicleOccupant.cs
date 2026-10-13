@@ -170,6 +170,7 @@ public class VehicleOccupant : MonoBehaviour
         }
         var vehicle = MountedVehicle;
         var role = vehicle.seats[SeatIndex].role;
+        if(Input.GetKeyDown(KeyCode.X))vehicle.GetComponent<VehicleCountermeasures>()?.TryDeploy(this);
         bool aircraft = vehicle.IsAircraft;
         var weaponSystems = vehicle.GetComponent<VehicleWeaponSystems>();
         if (weaponSystems)

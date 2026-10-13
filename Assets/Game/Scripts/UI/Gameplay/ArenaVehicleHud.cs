@@ -110,6 +110,8 @@ public class ArenaVehicleHud : MonoBehaviour
         }
         status.text=v.displayName.ToUpperInvariant()+" / "+v.seats[player.SeatIndex].name.ToUpperInvariant()+"    "+Mathf.RoundToInt(v.Body.linearVelocity.magnitude*3.6f)+" KPH";
         if (player.HornFeedback>0) status.text+="  HORN";
+        var defenses=v.GetComponent<VehicleCountermeasures>();
+        if(defenses && defenses.Incoming>0)status.text+="  <color=#FF9637>MISSILE INCOMING</color>";
         controls.text=role==Vehicle.SeatRole.Driver?(air?"CLIMB  [SPACE]\nDESCEND  [CTRL]\nMOVE  [WASD]\nAIM ALIGN  [RMB]":"BRAKE / REV  [S]\nACCELERATE  [W]\nBOOST  [SHIFT]\nHANDBRAKE  [Z]\nHORN  [H]"):role==Vehicle.SeatRole.Gunner?"FIRE  [LMB]\nZOOM  [RMB]\nAMMO  INF":v.seats[player.SeatIndex].showVehicleInstruments?(air?"FLIGHT MONITOR":"VEHICLE MONITOR"):"PASSENGER";
         if (air && role == Vehicle.SeatRole.Driver) controls.text += "\n[T] ASSIST " + (v.FlightAssistEnabled ? "ON" : "OFF");
         if (v.motor is JetMotor && role == Vehicle.SeatRole.Driver)
@@ -120,6 +122,8 @@ public class ArenaVehicleHud : MonoBehaviour
             if(count>1)controls.text+="\n[1-"+count+"] WEAPONS / WHEEL";
         }
         if(!air && role==Vehicle.SeatRole.Driver && showAttack && attackSight.Operational) controls.text += "\nFIRE  [LMB]\nZOOM  [RMB]";
+        if(defenses && role!=Vehicle.SeatRole.Passenger)controls.text+="\n[X] "+defenses.SystemName+" "+defenses.Charges+"/"+defenses.capacity
+            +(defenses.ReadyIn>0?" / "+defenses.ReadyIn.ToString("0")+" S":defenses.Charges==0?" / +1 "+defenses.RechargeIn.ToString("0")+" S":"");
         int pageSeats=Mathf.Min(12,v.seats.Length-player.SeatPage*12);
         rightControls.text=(v.hasRenderedInterior&&!v.seats[player.SeatIndex].externalView?"[C]  CAMERA":"EXTERNAL VIEW")+"\n[V]  FREELOOK"+(player.Freelook?" ON":"")+"\nHOLD [E]  EXIT\n"+(pageSeats==1?"[F1]  STATION":"[F1-F"+pageSeats+"]  SEATS");
         if(v.GetComponent<VehicleDoors>())rightControls.text += "\nTAP [E]  " + (role==Vehicle.SeatRole.Driver ? "DOORS" : "NEARBY DOOR");

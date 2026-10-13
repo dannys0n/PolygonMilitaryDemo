@@ -159,6 +159,7 @@ GameObject:
   - component: {fileID: 2208678732626623527}
   - component: {fileID: 4567892505685801098}
   - component: {fileID: 8739804417620568902}
+  - component: {fileID: 4818264241584824340}
   m_Layer: 0
   m_Name: AttackHelicopter02
   m_TagString: Untagged
@@ -186,6 +187,7 @@ Transform:
   - {fileID: 193429426882884154}
   - {fileID: 3132527615718647842}
   - {fileID: 8647610998832222457}
+  - {fileID: 3392087231975946603}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!54 &1286640871238166219
@@ -252,6 +254,7 @@ MonoBehaviour:
     showCharacter: 1
     weaponMountedView: 0
     externalView: 0
+    disembarkInside: 0
     eye: {fileID: 5669225177981451939}
     leftGrip: {fileID: 7826392686211082360}
     rightGrip: {fileID: 3774253319605959161}
@@ -265,6 +268,7 @@ MonoBehaviour:
     showCharacter: 1
     weaponMountedView: 0
     externalView: 0
+    disembarkInside: 0
     eye: {fileID: 5913415830873229699}
     leftGrip: {fileID: 5804528069486010695}
     rightGrip: {fileID: 4545707930231354043}
@@ -278,6 +282,7 @@ MonoBehaviour:
     showCharacter: 1
     weaponMountedView: 0
     externalView: 0
+    disembarkInside: 0
     eye: {fileID: 901472562542776807}
     leftGrip: {fileID: 0}
     rightGrip: {fileID: 0}
@@ -291,6 +296,7 @@ MonoBehaviour:
     showCharacter: 1
     weaponMountedView: 0
     externalView: 0
+    disembarkInside: 0
     eye: {fileID: 685492096818221822}
     leftGrip: {fileID: 0}
     rightGrip: {fileID: 0}
@@ -477,6 +483,32 @@ MonoBehaviour:
     explosive: 0
     ejectCasings: 0
     icon: {fileID: 21300000, guid: bc998521b992689479af4ee353227a5b, type: 3}
+--- !u!114 &4818264241584824340
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 215953497425549892}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c9cbd31cf1ff10240b84be609e17dcad, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::VehicleCountermeasures
+  flares: 1
+  chaff: 0
+  smoke: 0
+  dispensers:
+  - {fileID: 5808339152207261174}
+  - {fileID: 6162640413121068694}
+  flarePrefab: {fileID: 4817953780451813940, guid: 97b0ab4f80576474e90b301bc8714bb2, type: 3}
+  chaffPrefab: {fileID: 3421390963964410674, guid: 21fb41da57961224b8a0db559d86db5b, type: 3}
+  smokePrefab: {fileID: 1604516943231475684, guid: a6018400a17f2124b9d7a6aeb101127a, type: 3}
+  capacity: 2
+  cooldown: 10
+  rechargeSeconds: 25
+  smokeDuration: 10
+  automaticForAI: 1
 --- !u!1 &393893734691505811
 GameObject:
   m_ObjectHideFlags: 0
@@ -646,6 +678,37 @@ SphereCollider:
   serializedVersion: 3
   m_Radius: 0.45
   m_Center: {x: 0, y: 0, z: 0}
+--- !u!1 &984077109910916605
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 5808339152207261174}
+  m_Layer: 0
+  m_Name: Dispenser 0
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &5808339152207261174
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 984077109910916605}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0.07281458, y: 0.87588394, z: -0.13985172, w: -0.45603383}
+  m_LocalPosition: {x: -0.89644575, y: 1.5268835, z: -3.2663515}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 3392087231975946603}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1201981841747595911
 GameObject:
   m_ObjectHideFlags: 0
@@ -699,6 +762,37 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 2.5531073, y: 2.0841644, z: 0.9970474}
   m_Center: {x: 0, y: 0, z: 0}
+--- !u!1 &1336827612071870632
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 6162640413121068694}
+  m_Layer: 0
+  m_Name: Dispenser 1
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &6162640413121068694
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1336827612071870632}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0.07281458, y: 0.87588394, z: -0.13985172, w: 0.45603383}
+  m_LocalPosition: {x: 0.89644575, y: 1.5268835, z: -3.2663515}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 3392087231975946603}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1377500284627255351
 GameObject:
   m_ObjectHideFlags: 0
@@ -2309,6 +2403,39 @@ MeshRenderer:
   m_SortingOrder: 0
   m_MaskInteraction: 0
   m_AdditionalVertexStreams: {fileID: 0}
+--- !u!1 &6222510511383975773
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 3392087231975946603}
+  m_Layer: 0
+  m_Name: Countermeasure dispensers
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &3392087231975946603
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6222510511383975773}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children:
+  - {fileID: 5808339152207261174}
+  - {fileID: 6162640413121068694}
+  m_Father: {fileID: 6443728801629955970}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &6232063514179590038
 GameObject:
   m_ObjectHideFlags: 0
