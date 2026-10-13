@@ -5,16 +5,17 @@ using TMPro;
 [RequireComponent(typeof(CanvasRenderer))]
 public class VehicleDiagramGraphic : MaskableGraphic
 {
-    public enum Drawing { Horizon = 2, Tape = 3, Heading = 4, AircraftReference = 5 }
+    public enum Drawing { Horizon = 2, Tape = 3, Heading = 4, AircraftReference = 5, Speed = 6, PitchLadder = 7, Bank = 8, VerticalSpeed = 9, FlightPath = 10 }
     public Drawing drawing;
-    public TMP_Text[] tickLabels;
+    public TMP_Text[] tickLabels = System.Array.Empty<TMP_Text>();
+    public float tickStep=20, pixelsPerUnit=2;
     float reading;
     public void SetReading(float value)
     {
         reading = value;
         SetVerticesDirty();
-        float step = drawing == Drawing.Heading ? 30 : 20;
-        float scale = drawing == Drawing.Heading ? 4 : 2;
+        float step = drawing == Drawing.Heading ? 30 : tickStep;
+        float scale = drawing == Drawing.Heading ? 4 : pixelsPerUnit;
         int center = Mathf.RoundToInt(value / step);
         for (int i=0;i<tickLabels.Length;i++)
         {
@@ -22,14 +23,23 @@ public class VehicleDiagramGraphic : MaskableGraphic
             float offset = (tick-value)*scale;
             bool heading = drawing == Drawing.Heading;
             tickLabels[i].text = (heading ? Mathf.Repeat(tick,360) : tick).ToString("0");
-            tickLabels[i].rectTransform.anchoredPosition = heading ? new Vector2(offset,-18) : new Vector2(28,offset);
+            tickLabels[i].rectTransform.anchoredPosition = heading ? new Vector2(offset,-18) : new Vector2(drawing==Drawing.Speed?-40:35,offset);
             tickLabels[i].gameObject.SetActive(heading ? Mathf.Abs(offset)<rectTransform.rect.width*.5f-16 : tick>=0 && Mathf.Abs(offset)<75);
         }
     }
     protected override void OnPopulateMesh(VertexHelper mesh)
     {
         mesh.Clear();
-        if (drawing == Drawing.Horizon)
+        if(drawing==Drawing.Bank)
+        {
+            float radius=120;foreach(float degree in new[]{-60f,-45f,-30f,-20f,-10f,0f,10f,20f,30f,45f,60f}){float a=(90-degree)*Mathf.Deg2Rad;Vector2 d=new Vector2(Mathf.Cos(a),Mathf.Sin(a));Line(mesh,d*(radius-8),d*radius);}
+            float angle=(90-reading)*Mathf.Deg2Rad;Vector2 marker=new Vector2(Mathf.Cos(angle),Mathf.Sin(angle))*(radius+12);Line(mesh,marker,marker.normalized*(radius+3));
+        }
+        else if(drawing==Drawing.VerticalSpeed)
+        {Line(mesh,new Vector2(0,-75),new Vector2(0,75));for(int i=-2;i<=2;i++)Line(mesh,new Vector2(0,i*35),new Vector2(8,i*35));float y=Mathf.Clamp(reading/2000,-1,1)*70;Line(mesh,new Vector2(-10,y),new Vector2(0,y));}
+        else if(drawing==Drawing.FlightPath)
+        {for(int i=0;i<24;i++){float a=i*Mathf.PI/12,b=(i+1)*Mathf.PI/12;Line(mesh,new Vector2(Mathf.Cos(a),Mathf.Sin(a))*7,new Vector2(Mathf.Cos(b),Mathf.Sin(b))*7);}Line(mesh,new Vector2(-16,0),new Vector2(-7,0));Line(mesh,new Vector2(7,0),new Vector2(16,0));Line(mesh,new Vector2(0,7),new Vector2(0,15));}
+        else if (drawing == Drawing.Horizon || drawing==Drawing.PitchLadder)
         {
             for(int y=-160;y<=160;y+=20)
             {
@@ -58,10 +68,11 @@ public class VehicleDiagramGraphic : MaskableGraphic
         else
         {
             Line(mesh,new Vector2(0,-75),new Vector2(0,75));
-            int center=Mathf.FloorToInt(reading/5);
+            float minor=tickStep/4;
+            int center=Mathf.FloorToInt(reading/minor);
             for(int i=center-8;i<=center+8;i++)
             {
-                float y=(i*5-reading)*2;
+                float y=(i*minor-reading)*pixelsPerUnit;
                 if(i<0||Mathf.Abs(y)>75)continue;
                 Line(mesh,new Vector2(0,y),new Vector2(i%4==0?16:8,y));
             }
