@@ -17,6 +17,7 @@ public class SoldierWeaponSights : MonoBehaviour
     public Vector3 neutralCameraPosition;
     public Quaternion neutralCameraRotation = Quaternion.identity;
     Transform replacementRear, replacementFront;
+    WeaponAttachmentDefinition replacementRearDefinition;
     public WeaponSightDefinition defaultSight;
     public WeaponSightDefinition[] compatibleSights;
     [Header("Neutral weapon pose, relative to FirstPersonView")]
@@ -31,6 +32,12 @@ public class SoldierWeaponSights : MonoBehaviour
         : replacementRear ? replacementRear : rearSight;
     public Transform ActiveFrontAimPoint => firstAttachment && firstAttachment.frontSight ? firstAttachment.frontSight
         : replacementFront ? replacementFront : frontSight;
+    public WeaponAttachmentDefinition ActiveRearIronDefinition => firstAttachment && firstAttachment.rearSight
+        ? null : replacementRear ? replacementRearDefinition : null;
+    public bool UsesOpticEyeDistance => firstAttachment && firstAttachment.rearSight;
+    public float EyeDistance => UsesOpticEyeDistance ? SelectedSight.eyeDistance
+        : ActiveRearIronDefinition ? ActiveRearIronDefinition.eyeDistance
+        : loadout.EquippedWeapon.definition.builtInIronEyeDistance;
     public int Revision { get; private set; }
     public WeaponSightAttachment FirstPersonAttachment => firstAttachment;
     SoldierFirstPersonView owner;
@@ -71,7 +78,7 @@ public class SoldierWeaponSights : MonoBehaviour
     {
         Remove(firstAttachment); Remove(thirdAttachment);
         firstAttachment=thirdAttachment=null; replacementRear=replacementFront=null;
-        SelectedSight=null; sightLift=0; Revision++;
+        SelectedSight=null; replacementRearDefinition=null; sightLift=0; Revision++;
     }
 
     public void Cycle()
@@ -104,9 +111,9 @@ public class SoldierWeaponSights : MonoBehaviour
         return attachment;
     }
 
-    public void SetIronReplacements(Transform rear, Transform front)
+    public void SetIronReplacements(Transform rear, Transform front, WeaponAttachmentDefinition rearDefinition)
     {
-        replacementRear = rear; replacementFront = front; Revision++;
+        replacementRear = rear; replacementFront = front; replacementRearDefinition = rearDefinition; Revision++;
     }
 
     public void SetRiser(float height)
@@ -169,7 +176,7 @@ public class SoldierWeaponSights : MonoBehaviour
         Vector3 referencePoint = referenceWeaponPosition + referenceWeaponRotation * Vector3.Scale(referenceWeaponScale, localPoint);
         Quaternion referenceRotation = referenceWeaponRotation * localRotation;
         rotation = referenceCameraRotation * Quaternion.Inverse(referenceRotation);
-        Vector3 target = referenceCameraPosition + referenceCameraRotation * Vector3.forward * SelectedSight.eyeDistance;
+        Vector3 target = referenceCameraPosition + referenceCameraRotation * Vector3.forward * EyeDistance;
         position = target - rotation * Vector3.Scale(rootScale, referencePoint);
     }
 }

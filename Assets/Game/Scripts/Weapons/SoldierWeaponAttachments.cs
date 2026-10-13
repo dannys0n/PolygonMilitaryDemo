@@ -18,6 +18,7 @@ public class SoldierWeaponAttachments : MonoBehaviour
         this.selections=selections;
         foreach(var go in visuals){go.SetActive(false);go.transform.SetParent(null);if(Application.isPlaying)Destroy(go);else DestroyImmediate(go);}visuals.Clear();
         Transform rear=null,front=null;
+        WeaponAttachmentDefinition rearDefinition=null;
         float sightLift=0;
         foreach(var mount in mounts)
         {
@@ -32,14 +33,14 @@ public class SoldierWeaponAttachments : MonoBehaviour
             if(first && first.TryGetComponent<WeaponSightAttachment>(out var iron))
             {
                 // An attachment may override either end, or both (for a complete iron pair).
-                if (iron.rearSight) rear = iron.rearSight;
+                if (iron.rearSight) { rear = iron.rearSight; rearDefinition = selected; }
                 if (iron.frontSight) front = iron.frontSight;
             }
             Add(selected,mount.thirdPerson,view.thirdPersonLayer,true);
         }
         if(TryGetComponent<SoldierWeaponSights>(out var sights))
         {
-            sights.SetIronReplacements(rear,front);
+            sights.SetIronReplacements(rear,front,rearDefinition);
             sights.SetRiser(sightLift);
         }
         RefreshIronVisibility();

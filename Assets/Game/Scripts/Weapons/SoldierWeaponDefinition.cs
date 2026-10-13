@@ -46,6 +46,8 @@ public class SoldierWeaponDefinition : ScriptableObject
     public Vector3 thirdPersonReloadPosition;
 
     [Header("First-person placement")]
+    [Tooltip("Camera distance behind this weapon's built-in rear sight. Optics and rear-iron attachments use their own eye distance.")]
+    [Min(.03f)] public float builtInIronEyeDistance = .25f;
     public Vector3 viewOffset;
     public Vector3 hipFireOffset;
     public Vector3 aimOffset;

@@ -19,7 +19,7 @@ public class WeaponViewPlacementWindow : EditorWindow
     [SerializeField] Vector2 previewCenter = new Vector2(.5f, .5f);
     double nextRepaint;
     readonly HashSet<SoldierWeaponDefinition> changed = new HashSet<SoldierWeaponDefinition>();
-    readonly HashSet<WeaponSightDefinition> changedSights = new HashSet<WeaponSightDefinition>();
+    readonly HashSet<Object> changedSights = new HashSet<Object>();
     readonly Dictionary<string, Dictionary<string, Pose>> sightPoints = new Dictionary<string, Dictionary<string, Pose>>();
 
     [MenuItem("Tools/Game/Weapon View Placement")]
@@ -175,7 +175,12 @@ public class WeaponViewPlacementWindow : EditorWindow
         EditorGUILayout.ObjectField("Rear reference",rear,typeof(Transform),true);
         EditorGUILayout.ObjectField("Front reference",front,typeof(Transform),true);
         EditorGUI.BeginChangeCheck();
-        float distance=EditorGUILayout.FloatField("Eye distance",sight.eyeDistance);
+        var rearDefinition=sights.ActiveRearIronDefinition;
+        var weapon=player.GetComponent<SoldierWeaponPresentation>().weapon.definition;
+        var weaponAsset=EditorUtility.IsPersistent(weapon)?weapon:AssetDatabase.LoadAssetAtPath<ArenaWeaponCatalog>("Assets/Game/Definitions/Weapons/Catalogs/WeaponCatalog.asset").FindWeapon(weapon.catalogId);
+        Object distanceAsset=sights.UsesOpticEyeDistance ? sight : rearDefinition ? rearDefinition : (Object)weaponAsset;
+        EditorGUILayout.ObjectField("Eye distance owner",distanceAsset,typeof(Object),false);
+        float distance=EditorGUILayout.FloatField("Eye distance",sights.EyeDistance);
         float fov=EditorGUILayout.Slider("ADS field of view",sight.fieldOfView,20f,90f);
         Vector3 rearPosition=EditorGUILayout.Vector3Field("Rear position",rear.localPosition);
         Vector3 frontPosition=EditorGUILayout.Vector3Field("Front position",front.localPosition);
@@ -184,7 +189,10 @@ public class WeaponViewPlacementWindow : EditorWindow
         {
             Undo.RecordObject(sight,"Calibrate weapon sight");
             Undo.RecordObjects(new Object[]{rear,front},"Calibrate sight references");
-            sight.eyeDistance=Mathf.Max(.03f,distance);sight.fieldOfView=fov;
+            if(rearDefinition){Undo.RecordObject(rearDefinition,"Calibrate rear iron distance");rearDefinition.eyeDistance=Mathf.Max(.03f,distance);EditorUtility.SetDirty(rearDefinition);changedSights.Add(rearDefinition);}
+            else if(sights.UsesOpticEyeDistance) sight.eyeDistance=Mathf.Max(.03f,distance);
+            else {Undo.RecordObject(weaponAsset,"Calibrate built-in iron distance");weapon.builtInIronEyeDistance=weaponAsset.builtInIronEyeDistance=Mathf.Max(.03f,distance);EditorUtility.SetDirty(weaponAsset);changedSights.Add(weaponAsset);}
+            sight.fieldOfView=fov;
             rear.SetLocalPositionAndRotation(rearPosition,Quaternion.Euler(rotation));
             front.localPosition=frontPosition;
             EditorUtility.SetDirty(sight);changedSights.Add(sight);

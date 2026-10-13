@@ -9,4 +9,6 @@ public class WeaponAttachmentDefinition : ScriptableObject
     public Vector3 positionOffset,rotationOffset;
     public Vector3 scale=Vector3.one;
     [Min(0)] public float sightLift;
+    [Tooltip("Camera distance behind this attachment when it supplies the rear iron reference.")]
+    [Min(.03f)] public float eyeDistance = .25f;
 }
