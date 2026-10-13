@@ -13,6 +13,8 @@ The Hummer has driver, roof gunner and three passenger seats. The helicopter has
 
 ## Assets and tuning
 
+PolygonMilitary vehicles are the preferred/polished gameplay fleet. The shared gameplay catalog contains its 30 vehicles; fixed gameplay spawns use LightArmoredCar and AttackHelicopter01 in place of the original ithappy Hummer and Helicopter. Those two remain available in the garage and dedicated vehicle tests as lower-priority prototypes. Spawn locations are preserved.
+
 Gameplay vehicles are `Assets/Game/Prefabs/Vehicles/Hummer.prefab` and `Helicopter.prefab`. They reference the original ithappy meshes/materials without modifying the imported pack. Muzzle points are measured from the machine-gun geometry. Vehicles, rockets and impact particles use URP materials.
 
 - **Vehicle**: health, seats, door exit points, camera target and motor reference. Seat reservations prevent two bots claiming the same seat. Occupants from opposing factions cannot share an occupied vehicle.
