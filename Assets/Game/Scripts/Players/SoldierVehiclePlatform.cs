@@ -46,9 +46,13 @@ public class SoldierVehiclePlatform : MonoBehaviour
         }
         if(!Support && momentum.sqrMagnitude>.001f)
         {
-            controller.Move(momentum*dt);
+            // A separate horizontal Move can clear isGrounded; inspect it before carrying momentum.
             if(controller.isGrounded && !jumping)momentum=Vector3.zero;
-            else momentum=Vector3.MoveTowards(momentum,Vector3.zero,dt*1.5f);
+            else
+            {
+                controller.Move(momentum*dt);
+                momentum=Vector3.MoveTowards(momentum,Vector3.zero,dt*1.5f);
+            }
         }
         AdjustCabinClearance(movement,dt);
     }
@@ -61,15 +65,18 @@ public class SoldierVehiclePlatform : MonoBehaviour
         Vector3 origin=feet+movement.normalized*(controller.radius+.2f)+Vector3.up*.35f;
         int count=Physics.RaycastNonAlloc(origin,Vector3.up,hits,standingHeight,~0,QueryTriggerInteraction.Ignore);
         bool low=false;
-        for(int i=0;i<count;i++)
+        // Cabin crouching is only available on a vehicle floor, never from underneath a chassis.
+        bool insideCabin=Support && Support.hasRenderedInterior && Support.GetComponent<VehicleDoors>();
+        for(int i=0;insideCabin && i<count;i++)
         {
             var hit=hits[i];
             if(hit.collider.transform.IsChildOf(transform))continue;
-            if(hit.collider.GetComponentInParent<Vehicle>() && hit.distance+.35f<standingHeight+.05f){low=true;break;}
+            if(hit.collider.GetComponentInParent<Vehicle>()==Support && hit.distance+.35f<standingHeight+.05f){low=true;break;}
         }
         // Check directly overhead before allowing a full-height capsule again.
         count=Physics.RaycastNonAlloc(feet+Vector3.up*.35f,Vector3.up,hits,standingHeight,~0,QueryTriggerInteraction.Ignore);
-        for(int i=0;i<count;i++)
+        bool alreadyCrouched=controller.height<standingHeight-.01f;
+        for(int i=0;alreadyCrouched && i<count;i++)
             if(!hits[i].collider.transform.IsChildOf(transform) && hits[i].distance+.35f<standingHeight+.05f)low=true;
         float height=low?Mathf.Max(controller.radius*2,crouchedHeight):standingHeight;
         controller.height=height;
@@ -91,11 +98,15 @@ public class SoldierVehiclePlatform : MonoBehaviour
             var hit=hits[i];
             if(hit.collider.transform.IsChildOf(transform) || hit.normal.y<.6f)continue;
             var vehicle=hit.collider.GetComponentInParent<Vehicle>();
-            if(vehicle && !vehicle.IsDestroyed && Vector3.Angle(vehicle.transform.up,Vector3.up)<=maximumTilt && hit.distance<nearest)
-            {next=vehicle;nearest=hit.distance;}
+            if(hit.distance>=nearest)continue;
+            nearest=hit.distance;
+            // Ground nearer than a vehicle wins, rather than reattaching to a nearby chassis.
+            next=vehicle && !vehicle.IsDestroyed && Vector3.Angle(vehicle.transform.up,Vector3.up)<=maximumTilt
+                ? vehicle : null;
         }
         if(Support && !next && Support.Body)momentum=Support.Body.GetPointVelocity(transform.position);
         Support=next;
+        if(!Support && controller.isGrounded)momentum=Vector3.zero;
         if(Support)
         {
             localPoint=Support.transform.InverseTransformPoint(transform.position);
