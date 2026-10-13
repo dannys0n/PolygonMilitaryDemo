@@ -19,11 +19,11 @@ public class VehicleAttackSight : MonoBehaviour
         style==SightStyle.Leopard?"Leopard 2 EMES-15 day channel, figure 5: https://www.kotsch88.de/f_leopard2.htm":
         style==SightStyle.T72?"T-72A TPD-K1, figure 10 (static reference scales): https://www.kotsch88.de/f_t-72m.htm":
         "Generic prototype director; no verified vehicle-specific sight plate";
-    public bool Operational=>vehicle.turret&&vehicle.turret.enabled&&!vehicle.IsDestroyed;
+    public bool Operational=>!vehicle.IsDestroyed && ((vehicle.turret&&vehicle.turret.enabled)||vehicle.GetComponent<VehicleLauncher>());
     public Ray WeaponRay=>vehicle.turret?new Ray(vehicle.turret.muzzle.position,vehicle.turret.muzzle.forward):new Ray(barrel.TransformPoint(muzzleLocalPosition),barrel.TransformDirection(forwardLocal).normalized);
     public bool DisplaysForSeat(int index)
     {
         var seat=vehicle.seats[index];
-        return vehicle.turret?seat.role==Vehicle.SeatRole.Gunner:seat.role==Vehicle.SeatRole.Driver||seat.showVehicleInstruments;
+        return vehicle.turret?seat.role==vehicle.turret.controlRole:seat.role==Vehicle.SeatRole.Driver||seat.showVehicleInstruments;
     }
 }

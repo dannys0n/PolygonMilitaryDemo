@@ -10,6 +10,9 @@ public class VehicleTurret : MonoBehaviour
     public Sprite weaponIcon;
     public string weaponName = "MINIGUN";
     public bool spinBarrels = true;
+    public Vehicle.SeatRole controlRole = Vehicle.SeatRole.Gunner;
+    public bool explosiveVehicleDamage;
+    public ParticleSystem impactEffect;
     public AnimationClip cameraShake;
     public Transform barrelAssembly;
     public float barrelSpinUp = 1200f, barrelSpinDown = 400f;
@@ -28,7 +31,7 @@ public class VehicleTurret : MonoBehaviour
     void Start()
     {
         aimDirection=vehicle.transform.forward;
-        barrelRest=barrelAssembly.localRotation;
+        if(barrelAssembly) barrelRest=barrelAssembly.localRotation;
     }
     public void AimAt(Ray view)
     {
@@ -60,15 +63,18 @@ public class VehicleTurret : MonoBehaviour
         bool firing=Time.time-lastBarrelShot < 60f/roundsPerMinute+.02f;
         barrelSpeed=Mathf.MoveTowards(barrelSpeed,firing ? roundsPerMinute/6f : 0,(firing?barrelSpinUp:barrelSpinDown)*Time.deltaTime);
         barrelAngle=(barrelAngle+barrelSpeed*6f*Time.deltaTime)%360;
-        if (spinBarrels) barrelAssembly.localRotation=barrelRest*Quaternion.AngleAxis(barrelAngle,Vector3.forward);
+        if (spinBarrels && barrelAssembly) barrelAssembly.localRotation=barrelRest*Quaternion.AngleAxis(barrelAngle,Vector3.forward);
         // Sample the final turret pose so effects follow the receiver during turns.
-        if (pendingFlashes > 0) muzzleFlash.Emit(4 * pendingFlashes);
+        if (pendingFlashes > 0 && muzzleFlash) muzzleFlash.Emit(4 * pendingFlashes);
         pendingFlashes = 0;
         while (pendingOwnerCasings > 0)
         {
             pendingOwnerCasings--;
-            var casing = Instantiate(shellCasing, shellEjection.position, shellEjection.rotation);
-            casing.Launch(shellEjection.rotation, vehicle.Body.GetPointVelocity(shellEjection.position), casingScale);
+            if(shellCasing && shellEjection)
+            {
+                var casing = Instantiate(shellCasing, shellEjection.position, shellEjection.rotation);
+                casing.Launch(shellEjection.rotation, vehicle.Body.GetPointVelocity(shellEjection.position), casingScale);
+            }
         }
     }
     void OnDisable()
@@ -76,12 +82,12 @@ public class VehicleTurret : MonoBehaviour
         pendingFlashes = pendingOwnerCasings = 0;
         barrelSpeed=0;
         lastBarrelShot=float.NegativeInfinity;
-        muzzleFlash.Stop(true, ParticleSystemStopBehavior.StopEmittingAndClear);
+        if(muzzleFlash) muzzleFlash.Stop(true, ParticleSystemStopBehavior.StopEmittingAndClear);
     }
     public bool TryFire(VehicleOccupant gunner)
     {
         if (vehicle.IsDestroyed || !gunner.IsMounted || gunner.MountedVehicle != vehicle
-            || vehicle.seats[gunner.SeatIndex].role != Vehicle.SeatRole.Gunner || Time.time < nextShot)
+            || vehicle.seats[gunner.SeatIndex].role != controlRole || Time.time < nextShot)
             return false;
         nextShot = Time.time + 60f / roundsPerMinute;
         RaycastHit nearest = default;
@@ -100,6 +106,18 @@ public class VehicleTurret : MonoBehaviour
         }
         if (found)
         {
+            if(impactEffect)
+            {
+                var effect=Instantiate(impactEffect,nearest.point+nearest.normal*.03f,Quaternion.FromToRotation(Vector3.forward,nearest.normal));
+                effect.Play(true);
+                float duration=0;
+                foreach(var particles in effect.GetComponentsInChildren<ParticleSystem>(true))
+                {
+                    var main=particles.main;
+                    duration=Mathf.Max(duration,main.startDelay.constantMax+main.duration+main.startLifetime.constantMax);
+                }
+                Destroy(effect.gameObject,duration+1f);
+            }
             var region = nearest.collider.GetComponent<SoldierHitRegion>();
             if (region)
                 region.health.ApplyDamage(damage, gunner.gameObject);
@@ -107,7 +125,10 @@ public class VehicleTurret : MonoBehaviour
             {
                 var other = nearest.collider.GetComponentInParent<Vehicle>();
                 if (other)
-                    other.ApplyBulletDamage(damage, gunner.gameObject);
+                {
+                    if(explosiveVehicleDamage) other.ApplyExplosiveDamage(damage, gunner.gameObject);
+                    else other.ApplyBulletDamage(damage, gunner.gameObject);
+                }
             }
         }
         // Infinite ammunition: fire cadence is the only ammunition-related gate.

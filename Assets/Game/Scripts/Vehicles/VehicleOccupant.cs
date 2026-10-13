@@ -135,7 +135,8 @@ public class VehicleOccupant : MonoBehaviour
         if (aircraft && role == Vehicle.SeatRole.Driver && !((HelicopterMotor)vehicle.motor).assistEnabled)
             mouse = Vector2.ClampMagnitude(mouse,1f);
         mouse *= local.sensitivity;
-        if (!aircraft && role == Vehicle.SeatRole.Driver) yaw += Mathf.DeltaAngle(lastVehicleYaw, vehicle.transform.eulerAngles.y);
+        bool driverWeapon = role==Vehicle.SeatRole.Driver && ((vehicle.turret && vehicle.turret.controlRole==Vehicle.SeatRole.Driver) || vehicle.GetComponent<VehicleLauncherMount>());
+        if (!aircraft && role == Vehicle.SeatRole.Driver && !driverWeapon) yaw += Mathf.DeltaAngle(lastVehicleYaw, vehicle.transform.eulerAngles.y);
         lastVehicleYaw = vehicle.transform.eulerAngles.y;
         yaw += mouse.x; pitch = Mathf.Clamp(pitch - mouse.y, -60, 60);
         if (role == Vehicle.SeatRole.Gunner)
@@ -168,6 +169,21 @@ public class VehicleOccupant : MonoBehaviour
             };
             if (!aircraft && Input.GetKeyDown(KeyCode.H)) hornUntil = Time.time + .35f;
             if (aircraft && Input.GetMouseButton(0) && vehicle.TryGetComponent<VehicleLauncher>(out var launcher)) launcher.TryFire(this);
+            if (!aircraft && !Freelook)
+            {
+                Quaternion view = Quaternion.Euler(pitch,yaw,0);
+                Ray aimRay = new Ray(CameraPosition(vehicle,view,false,false,true),view*Vector3.forward);
+                if(vehicle.turret && vehicle.turret.controlRole==Vehicle.SeatRole.Driver)
+                {
+                    vehicle.turret.AimAt(aimRay);
+                    if(Input.GetMouseButton(0)) vehicle.turret.TryFire(this);
+                }
+                if(vehicle.TryGetComponent<VehicleLauncherMount>(out var mount))
+                {
+                    mount.AimAt(aimRay);
+                    if(Input.GetMouseButton(0) && vehicle.TryGetComponent<VehicleLauncher>(out var groundLauncher)) groundLauncher.TryFire(this);
+                }
+            }
         }
         if (role == Vehicle.SeatRole.Gunner)
                 {
@@ -178,7 +194,7 @@ public class VehicleOccupant : MonoBehaviour
             }
             if(Input.GetMouseButton(0)) vehicle.turret.TryFire(this);
         }
-        if (vehicleCamera) vehicleCamera.fieldOfView = Input.GetMouseButton(1) && (aircraft || role==Vehicle.SeatRole.Gunner) ? 50 : 70;
+        if (vehicleCamera) vehicleCamera.fieldOfView = Input.GetMouseButton(1) && (aircraft || role==Vehicle.SeatRole.Gunner || driverWeapon) ? 50 : 70;
     }
 
     public void Mount(Vehicle vehicle, int seat)

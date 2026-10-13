@@ -547,6 +547,8 @@ GameObject:
   - component: {fileID: 1574671388890971782}
   - component: {fileID: 5878398722427174556}
   - component: {fileID: 8441623164916502182}
+  - component: {fileID: 3380204320956974524}
+  - component: {fileID: 6126971579285819594}
   m_Layer: 0
   m_Name: RadarTank
   m_TagString: Untagged
@@ -620,7 +622,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: de07bc139c6f8a34e9ffee3f1f711330, type: 3}
-  m_Name: 
+  m_Name:
   m_EditorClassIdentifier: Assembly-CSharp::Vehicle
   instruments: 1
   instrumentReference: 10
@@ -706,7 +708,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 7d1fbb5ec61faae40b921fbfc191efb6, type: 3}
-  m_Name: 
+  m_Name:
   m_EditorClassIdentifier: Assembly-CSharp::HummerMotor
   vehicle: {fileID: 2245875611223860633}
   wheels:
@@ -752,7 +754,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 3ef518424e140f94fae8a987cef7cb87, type: 3}
-  m_Name: 
+  m_Name:
   m_EditorClassIdentifier: Assembly-CSharp::VehicleDestructionEffects
   blackSmoke: {fileID: 6001782565966554119, guid: 43683e0b5831c7d4ead5064f2a129ac0, type: 3}
   secondaryExplosion: {fileID: 7772868914547752988, guid: 47f535017c67d4c4194b60441dabb8e4, type: 3}
@@ -769,6 +771,53 @@ MonoBehaviour:
   secondaryScale: 0.45
   finalScale: 1.5
   smokeScale: 1
+--- !u!114 &3380204320956974524
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1954906999793349080}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fff1dd4e59ccd5140913756ce5512675, type: 3}
+  m_Name:
+  m_EditorClassIdentifier: Assembly-CSharp::VehicleRoadWheels
+  vehicle: {fileID: 2245875611223860633}
+  left:
+  - {fileID: 1401393047380432060}
+  - {fileID: 3328203857681674291}
+  - {fileID: 19932770855576860}
+  - {fileID: 6600360864129813157}
+  - {fileID: 8826209604476641086}
+  - {fileID: 6840673699063043501}
+  - {fileID: 4672947700774041331}
+  - {fileID: 5656955896160208646}
+  right:
+  - {fileID: 1126558516840609992}
+  - {fileID: 1692220654364413552}
+  - {fileID: 1203563917938272788}
+  - {fileID: 447114185128673786}
+  - {fileID: 7674268827109394454}
+  - {fileID: 8874554222837887428}
+  - {fileID: 9121383864117322830}
+  - {fileID: 8483893743624338155}
+  radius: 0.43
+--- !u!114 &6126971579285819594
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1954906999793349080}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1021a7e902cd87a499e34e776e23e915, type: 3}
+  m_Name:
+  m_EditorClassIdentifier: Assembly-CSharp::VehicleRadarSweep
+  vehicle: {fileID: 2245875611223860633}
+  radar: {fileID: 8227033077863285580}
+  degreesPerSecond: 30
 --- !u!1 &2052227135855697488
 GameObject:
   m_ObjectHideFlags: 0

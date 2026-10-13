@@ -271,7 +271,14 @@ public class ArenaVehicleAI : MonoBehaviour
         State = TravelState.Driving;
         float distance = Vector3.ProjectOnPlane(Goal - v.transform.position, Vector3.up).magnitude;
         var enemy = v.turret ? FindVehicleTarget(v, v.turret.muzzle.position, v.turret.range, true) : null;
-        bool supportingGunner = enemy && HasGunner(v);
+        bool driverWeapon = v.turret && v.turret.controlRole == Vehicle.SeatRole.Driver;
+        if(driverWeapon) UseTurret(v);
+        if(v.TryGetComponent<VehicleLauncherMount>(out var launcherMount))
+        {
+            var rocketEnemy = FindVehicleTarget(v, launcherMount.muzzle.position, 150, false);
+            if(rocketEnemy) { launcherMount.Aim(EnemyPoint(rocketEnemy)); UseRockets(v); enemy=rocketEnemy; }
+        }
+        bool supportingGunner = enemy && (driverWeapon || HasGunner(v));
         if (enemy)
         {
             Goal = EnemyPoint(enemy) - Vector3.ProjectOnPlane(EnemyPoint(enemy) - v.transform.position, Vector3.up).normalized * groundEngagementDistance;

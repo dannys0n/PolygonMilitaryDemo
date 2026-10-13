@@ -6,6 +6,7 @@ public class VehicleLauncher : MonoBehaviour
     public VehicleRocket projectile;
     public Sprite weaponIcon;
     public Transform[] muzzles;
+    public GameObject[] tubeRounds = System.Array.Empty<GameObject>();
     public float interval = .2f;
     public int capacity = 8;
     public float rechargeInterval = .75f;
@@ -19,6 +20,11 @@ public class VehicleLauncher : MonoBehaviour
     {
         while(missiles<capacity && now>=nextRecharge)
         {
+            if(tubeRounds.Length>0)
+            {
+                int tube=((barrel-capacity+missiles)%tubeRounds.Length+tubeRounds.Length)%tubeRounds.Length;
+                tubeRounds[tube].SetActive(true);
+            }
             missiles++; nextRecharge += rechargeInterval;
         }
         if(missiles==capacity) nextRecharge=float.PositiveInfinity;
@@ -79,7 +85,9 @@ public class VehicleLauncher : MonoBehaviour
         nextShot = Time.time + interval;
         if(missiles==capacity) nextRecharge=Time.time+rechargeInterval;
         missiles--;
-        var muzzle = muzzles[barrel++ % muzzles.Length];
+        int tubeIndex=barrel++ % muzzles.Length;
+        var muzzle = muzzles[tubeIndex];
+        if(tubeRounds.Length>tubeIndex) tubeRounds[tubeIndex].SetActive(false);
         var rocket = Instantiate(projectile, muzzle.position + muzzle.forward * projectile.launchClearance, muzzle.rotation);
         rocket.Launch(vehicle, pilot.gameObject);
         return true;
