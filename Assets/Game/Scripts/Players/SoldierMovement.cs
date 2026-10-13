@@ -15,8 +15,14 @@ public class SoldierMovement : MonoBehaviour
 
     private float verticalSpeed;
     private bool jumpRequested;
+    private SoldierVehiclePlatform vehiclePlatform;
 
-    void Awake() => view = GetComponent<SoldierFirstPersonView>();
+    void Awake()
+    {
+        view = GetComponent<SoldierFirstPersonView>();
+        vehiclePlatform=GetComponent<SoldierVehiclePlatform>();
+        if(!vehiclePlatform)vehiclePlatform=gameObject.AddComponent<SoldierVehiclePlatform>();
+    }
 
     public void RequestJump()
     {
@@ -27,6 +33,7 @@ public class SoldierMovement : MonoBehaviour
     public void ResetMovement()
     {
         verticalSpeed = 0f;
+        vehiclePlatform?.ResetSupport();
         jumpRequested = false;
         IsRunning = false;
         firstPersonRunBlend = 0f;
@@ -47,6 +54,8 @@ public class SoldierMovement : MonoBehaviour
 
         Vector3 movement = transform.right * input.x
                          + transform.forward * input.y;
+        bool jumping=jumpRequested && controller.isGrounded && verticalSpeed<=0;
+        vehiclePlatform.BeginStep(movement,deltaTime,jumping);
 
         if (controller.isGrounded && verticalSpeed < 0f)
             verticalSpeed = -2f;
@@ -61,6 +70,7 @@ public class SoldierMovement : MonoBehaviour
         velocity.y = verticalSpeed;
 
         CollisionFlags collisions = controller.Move(velocity * deltaTime);
+        vehiclePlatform.EndStep(jumping || verticalSpeed>0);
         if ((collisions & CollisionFlags.Above) != 0 && verticalSpeed > 0f)
             verticalSpeed = 0f;
 
