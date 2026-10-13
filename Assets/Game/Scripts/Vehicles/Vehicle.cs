@@ -102,6 +102,9 @@ public class Vehicle : MonoBehaviour
         if (IsDestroyed || actor.IsMounted || actor.life.health.IsDead || index < 0 || index >= seats.Length)
             return false;
         var seat = seats[index];
+        // Seats being authored are unavailable until their placement and exit are assigned.
+        if (!seat.anchor || !seat.exit)
+            return false;
         if (seat.occupant || (!actor.IsLocal && seat.reservation && seat.reservation != actor && Time.time < seat.reservedUntil))
             return false;
         foreach (var s in seats)
@@ -116,9 +119,18 @@ public class Vehicle : MonoBehaviour
     }
     public Transform NearestEntryPoint(Vector3 position)
     {
-        Transform closest = seats[0].exit;
+        Transform closest = transform;
+        float closestDistance = float.PositiveInfinity;
         foreach (var seat in seats)
-            if ((seat.exit.position - position).sqrMagnitude < (closest.position - position).sqrMagnitude) closest = seat.exit;
+        {
+            if (!seat.exit) continue;
+            float distance = (seat.exit.position - position).sqrMagnitude;
+            if (distance < closestDistance)
+            {
+                closest = seat.exit;
+                closestDistance = distance;
+            }
+        }
         return closest;
     }
     public bool BoardFirstAvailable(VehicleOccupant actor) => Board(actor, FirstAvailableSeat(actor));

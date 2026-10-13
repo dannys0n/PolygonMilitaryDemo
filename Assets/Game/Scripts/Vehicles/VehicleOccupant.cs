@@ -172,7 +172,7 @@ public class VehicleOccupant : MonoBehaviour
             if (!aircraft && !Freelook)
             {
                 Quaternion view = Quaternion.Euler(pitch,yaw,0);
-                Ray aimRay = new Ray(CameraPosition(vehicle,view,false,false,true),view*Vector3.forward);
+                Ray aimRay = new Ray(CameraPosition(vehicle,view,false,false,false),view*Vector3.forward);
                 if(vehicle.turret && vehicle.turret.controlRole==Vehicle.SeatRole.Driver)
                 {
                     vehicle.turret.AimAt(aimRay);
