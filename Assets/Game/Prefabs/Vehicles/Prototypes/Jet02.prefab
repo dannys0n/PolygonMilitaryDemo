@@ -4077,6 +4077,18 @@ MonoBehaviour:
     headingToBank: 1.8
     assistedBankRate: 100
     aimResponse: 2
+  helicopterAssist:
+    assistEnabled: 1
+    attitudeSpring: 60
+    attitudeDamping: 16
+    verticalResponse: 2.8
+    positionHoldSpring: 0.6
+    positionHoldDamping: 1.5
+    maxHoldAcceleration: 18
+    reversalTilt: 38
+    reversalSpeedRange: {x: 4, y: 20}
+    movementVelocityResponse: 0.8
+    cyclicResponseTime: 0.1
   turret: {fileID: 7634841533879744441}
   destructionEffect: {fileID: 695410771644243590, guid: c07b2e8d0c65dad44bf5eaca660002fc, type: 3}
   cameraTarget: {fileID: 2021522745963790203}
@@ -4929,7 +4941,7 @@ Transform:
   m_GameObject: {fileID: 5315691665835993925}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -1.8589964, y: 0.45, z: -2.8533015}
+  m_LocalPosition: {x: -1.8589964, y: -2.4, z: -3.97}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -5681,7 +5693,7 @@ Transform:
   m_GameObject: {fileID: 6511045867987304778}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 1.8589964, y: 0.45, z: -2.8533015}
+  m_LocalPosition: {x: 1.8589964, y: -2.4, z: -3.97}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -6052,7 +6064,7 @@ Transform:
   m_GameObject: {fileID: 7909166739483829130}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0.45, z: 5.1359425}
+  m_LocalPosition: {x: 0, y: -2.4, z: 2.164}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
