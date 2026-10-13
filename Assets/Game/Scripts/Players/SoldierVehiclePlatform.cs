@@ -16,6 +16,11 @@ public class SoldierVehiclePlatform : MonoBehaviour
     void Awake()
     {
         controller=GetComponent<CharacterController>();
+        // Wheel suspension must never use a soldier as a supporting road surface.
+        int characterLayer=LayerMask.NameToLayer("Characters");
+        if(characterLayer>=0)
+            foreach(var collider in GetComponentsInChildren<Collider>(true))
+                collider.gameObject.layer=characterLayer;
         look=GetComponent<SoldierLook>();
         standingHeight=controller.height;
         standingCenter=controller.center;

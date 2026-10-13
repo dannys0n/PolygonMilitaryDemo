@@ -26,8 +26,13 @@ public class HummerMotor : VehicleMotor
     void Start()
     {
         vehicle.Body.centerOfMass = centerOfMass;
+        int characterLayer=LayerMask.NameToLayer("Characters");
         foreach (var w in wheels)
+        {
+            // Keep chassis contacts walkable; only suspension ignores characters/ragdolls.
+            if(characterLayer>=0)w.collider.excludeLayers |= 1 << characterLayer;
             w.collider.ConfigureVehicleSubsteps(5f, 5, 8);
+        }
     }
     public override void Simulate(VehicleInput input, bool powered)
     {
