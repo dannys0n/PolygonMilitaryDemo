@@ -50,7 +50,7 @@ public class ArenaVehicleAttackHud : MonoBehaviour
         opticalLayer.SetActive(tank&&occupant.CockpitView);
         string rangeDigits=range<sight.minimumLaserRange||range>=sight.range-.1f?"----":Mathf.RoundToInt(range).ToString("0000");
         rangeText.rectTransform.anchoredPosition=sight.style==VehicleAttackSight.SightStyle.T72?new Vector2(370,190):new Vector2(0,-135);
-        rangeText.color=sight.style==VehicleAttackSight.SightStyle.Abrams?new Color(1,.32f,.25f):Color.white;
+        rangeText.color=Color.white;
         // GPS: range below reticle, hollow readiness box on its left; F is a
         // malfunction lamp, so it must not be shown as a permanent decoration.
         // EMES: range, KE ammunition selection and 0 (not released) below view.

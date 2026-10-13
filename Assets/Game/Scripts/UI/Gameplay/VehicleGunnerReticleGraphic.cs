@@ -52,7 +52,7 @@ public class VehicleGunnerReticleGraphic : MaskableGraphic
     void Western(VertexHelper mesh,bool abrams)
     {
         // The central ring and four short arms are shared, not a continuous cross.
-        Color tint = abrams ? new Color(1,.32f,.25f) : Color.white;
+        Color tint = Color.white;
         Circle(mesh,Vector2.zero,abrams?8:4,tint);
         Mark(mesh,-18,0,-8,0,tint); Mark(mesh,8,0,18,0,tint);
         Mark(mesh,0,-18,0,-8,tint); Mark(mesh,0,8,0,18,tint);
@@ -76,7 +76,7 @@ public class VehicleGunnerReticleGraphic : MaskableGraphic
         // Separate laser ring, pointed lead marks, vertical MG ladder and
         // right-side 2.7 m target-height range estimator on the photographed plate.
         const float x=-15, y=70;
-        Circle(mesh,Vector2.zero,4,new Color(1,.22f,.12f));
+        Circle(mesh,Vector2.zero,4,Color.white);
         Line(mesh,x-9,y-13,x,y); Line(mesh,x,y,x+9,y-13);
         for(int i=-8;i<=8;i++)
         {
