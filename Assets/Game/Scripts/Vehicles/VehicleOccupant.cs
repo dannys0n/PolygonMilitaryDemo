@@ -131,6 +131,13 @@ public class VehicleOccupant : MonoBehaviour
         var vehicle = MountedVehicle;
         var role = vehicle.seats[SeatIndex].role;
         bool aircraft = vehicle.IsAircraft;
+        var weaponSystems = vehicle.GetComponent<VehicleWeaponSystems>();
+        if (weaponSystems)
+        {
+            for (int i=0;i<9;i++) if(Input.GetKeyDown((KeyCode)((int)KeyCode.Alpha1+i))) weaponSystems.Select(this,i);
+            float scroll=Input.GetAxisRaw("Mouse ScrollWheel");
+            if(Mathf.Abs(scroll)>.01f)weaponSystems.Cycle(this,scroll>0?1:-1);
+        }
         if (aircraft && role == Vehicle.SeatRole.Driver && Input.GetKeyDown(KeyCode.T))
         {
             vehicle.FlightAssistEnabled = !vehicle.FlightAssistEnabled;
@@ -150,6 +157,13 @@ public class VehicleOccupant : MonoBehaviour
         pitch = Mathf.Clamp(pitch - mouse.y, -lookPitchLimit, lookPitchLimit);
         if (role == Vehicle.SeatRole.Gunner)
             pitch = Mathf.Clamp(pitch, -vehicle.turret.pitchLimits.y, -vehicle.turret.pitchLimits.x);
+        if (weaponSystems)
+        {
+            Quaternion weaponView = aircraft && role==Vehicle.SeatRole.Driver && !vehicle.FlightAssistEnabled && !Freelook
+                ? vehicle.Body.rotation : Quaternion.Euler(pitch,yaw,0);
+            if(!Freelook) weaponSystems.AimAt(this,new Ray(CameraPosition(vehicle,weaponView,role==Vehicle.SeatRole.Gunner,aircraft,aircraft&&role==Vehicle.SeatRole.Driver),weaponView*Vector3.forward));
+            if(Input.GetMouseButton(0))weaponSystems.TryFire(this);
+        }
         if (role == Vehicle.SeatRole.Driver)
         {
             if (!aircraft) { flightYaw = vehicle.transform.eulerAngles.y; flightPitch = CockpitView ? 0 : 14; }
@@ -187,8 +201,8 @@ public class VehicleOccupant : MonoBehaviour
                 vehicle.DriverInput = jetInput;
             }
             if (!aircraft && Input.GetKeyDown(KeyCode.H)) hornUntil = Time.time + .35f;
-            if (aircraft && Input.GetMouseButton(0) && vehicle.TryGetComponent<VehicleLauncher>(out var launcher)) launcher.TryFire(this);
-            if (!aircraft && !Freelook)
+            if (!weaponSystems && aircraft && Input.GetMouseButton(0) && vehicle.TryGetComponent<VehicleLauncher>(out var launcher)) launcher.TryFire(this);
+            if (!weaponSystems && !aircraft && !Freelook)
             {
                 Quaternion view = Quaternion.Euler(pitch,yaw,0);
                 Ray aimRay = new Ray(CameraPosition(vehicle,view,false,false,false),view*Vector3.forward);
@@ -204,7 +218,7 @@ public class VehicleOccupant : MonoBehaviour
                 }
             }
         }
-        if (role == Vehicle.SeatRole.Gunner)
+        if (!weaponSystems && role == Vehicle.SeatRole.Gunner)
                 {
             if (!Freelook)
             {

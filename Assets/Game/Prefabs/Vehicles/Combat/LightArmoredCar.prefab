@@ -2492,6 +2492,7 @@ GameObject:
   - component: {fileID: 2655257634870315988}
   - component: {fileID: 1432593500547559855}
   - component: {fileID: 4461618367440449094}
+  - component: {fileID: 7445123365765491283}
   m_Layer: 0
   m_Name: LightArmoredCar
   m_TagString: Untagged
@@ -2572,6 +2573,7 @@ MonoBehaviour:
   destructionEffect: {fileID: 695410771644243590, guid: c07b2e8d0c65dad44bf5eaca660002fc, type: 3}
   cameraTarget: {fileID: 4169558518417320302}
   hasRenderedInterior: 1
+  cockpitExternalMonitor: 0
   entryPadding: {x: 1.5, y: 1, z: 1.5}
   seats:
   - name: Driver
@@ -2720,19 +2722,22 @@ MonoBehaviour:
   shellEjection: {fileID: 2068245318410879002}
   shellCasing: {fileID: 114121961160874846, guid: c638dfae3f3edf843b2614dae230a771, type: 3}
   weaponIcon: {fileID: -1946906459697223259, guid: 0706075cd4b23f14196c0de8b3df5a51, type: 3}
-  weaponName: HEAVY MACHINE GUN
+  weaponName: 12.7 MM HMG
   spinBarrels: 0
   controlRole: 1
   explosiveVehicleDamage: 0
   impactEffect: {fileID: 0}
+  projectile: {fileID: 0}
+  fixedMount: 0
+  ejectCasings: 1
   cameraShake: {fileID: 7400000, guid: b06213c2ef802284f97df928d44be0c6, type: 2}
   barrelAssembly: {fileID: 5310721630860094445}
   barrelSpinUp: 1200
   barrelSpinDown: 400
   casingScale: 1.7
-  damage: 34
-  range: 130
-  roundsPerMinute: 650
+  damage: 52
+  range: 700
+  roundsPerMinute: 500
   turnRate: 100
   pitchLimits: {x: -20, y: 45}
 --- !u!114 &4461618367440449094
@@ -2762,6 +2767,33 @@ MonoBehaviour:
   secondaryScale: 0.45
   finalScale: 1.5
   smokeScale: 1
+--- !u!114 &7445123365765491283
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7317746253632338291}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e1a02cacdc6fa6548a570c16be320ba0, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::VehicleWeaponSystems
+  vehicle: {fileID: 6631453624252038100}
+  weapons:
+  - name: 12.7 MM HMG
+    system: 0
+    role: 1
+    gun: {fileID: 1432593500547559855}
+    launcher: {fileID: 0}
+    projectile: {fileID: 0}
+    muzzle: {fileID: 7395863734855341211}
+    damage: 52
+    range: 700
+    roundsPerMinute: 500
+    explosive: 0
+    ejectCasings: 1
+    icon: {fileID: -1946906459697223259, guid: 0706075cd4b23f14196c0de8b3df5a51, type: 3}
 --- !u!1 &7818074881013625963
 GameObject:
   m_ObjectHideFlags: 0

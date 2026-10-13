@@ -495,6 +495,7 @@ Transform:
   m_Children:
   - {fileID: 2714852907855574562}
   - {fileID: 1852555827910675294}
+  - {fileID: 5958159483820707905}
   m_Father: {fileID: 4182659791636728289}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!33 &3680685630727395184
@@ -4212,6 +4213,7 @@ GameObject:
   - component: {fileID: 5458846285146850502}
   - component: {fileID: 7970961020135253167}
   - component: {fileID: 1866510254375132796}
+  - component: {fileID: 3539931538340195172}
   m_Layer: 0
   m_Name: TankUSA
   m_TagString: Untagged
@@ -4301,6 +4303,8 @@ MonoBehaviour:
   destructionEffect: {fileID: 695410771644243590, guid: c07b2e8d0c65dad44bf5eaca660002fc, type: 3}
   cameraTarget: {fileID: 5045858136849819108}
   hasRenderedInterior: 0
+  cockpitExternalMonitor: 0
+  entryPadding: {x: 1.5, y: 1, z: 1.5}
   seats:
   - name: Driver
     role: 0
@@ -4308,17 +4312,19 @@ MonoBehaviour:
     anchor: {fileID: 4411213632637409450}
     exit: {fileID: 5586352961534112628}
     showCharacter: 0
+    weaponMountedView: 0
     eye: {fileID: 5992331123731970159}
     leftGrip: {fileID: 0}
     rightGrip: {fileID: 0}
     diagramPosition: {x: 0, y: 20}
     showVehicleInstruments: 1
   - name: Commander
-    role: 2
+    role: 1
     pose: 0
     anchor: {fileID: 1783491758803715761}
     exit: {fileID: 2897441276186921359}
     showCharacter: 0
+    weaponMountedView: 0
     eye: {fileID: 6866298457223990215}
     leftGrip: {fileID: 0}
     rightGrip: {fileID: 0}
@@ -4485,19 +4491,22 @@ MonoBehaviour:
   weaponIcon: {fileID: 21300000, guid: ad031b359a8f6544bb2652fcfc845cd0, type: 3}
   weaponName: 120 MM MAIN GUN
   spinBarrels: 0
-  controlRole: 0
+  controlRole: 1
   explosiveVehicleDamage: 1
   impactEffect: {fileID: 695410771644243590, guid: c07b2e8d0c65dad44bf5eaca660002fc, type: 3}
+  projectile: {fileID: 5294574436891810865, guid: 6996b4a3b48f16b4e8348919fca4d88d, type: 3}
+  fixedMount: 0
+  ejectCasings: 0
   cameraShake: {fileID: 7400000, guid: b06213c2ef802284f97df928d44be0c6, type: 2}
   barrelAssembly: {fileID: 0}
   barrelSpinUp: 1200
   barrelSpinDown: 400
   casingScale: 1.7
   damage: 650
-  range: 600
-  roundsPerMinute: 12
-  turnRate: 55
-  pitchLimits: {x: -8, y: 25}
+  range: 1800
+  roundsPerMinute: 10
+  turnRate: 35
+  pitchLimits: {x: -10, y: 20}
 --- !u!114 &1866510254375132796
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -4532,6 +4541,46 @@ MonoBehaviour:
   - {fileID: 3715612820573825287}
   - {fileID: 345391291476685999}
   radius: 0.43
+--- !u!114 &3539931538340195172
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5416334223319766583}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e1a02cacdc6fa6548a570c16be320ba0, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::VehicleWeaponSystems
+  vehicle: {fileID: 5174917174514700154}
+  weapons:
+  - name: 120 MM MAIN GUN
+    system: 0
+    role: 1
+    gun: {fileID: 7970961020135253167}
+    launcher: {fileID: 0}
+    projectile: {fileID: 5294574436891810865, guid: 6996b4a3b48f16b4e8348919fca4d88d, type: 3}
+    muzzle: {fileID: 2714852907855574562}
+    damage: 650
+    range: 1800
+    roundsPerMinute: 10
+    explosive: 1
+    ejectCasings: 0
+    icon: {fileID: 21300000, guid: ad031b359a8f6544bb2652fcfc845cd0, type: 3}
+  - name: 7.62 MM COAX
+    system: 0
+    role: 1
+    gun: {fileID: 7970961020135253167}
+    launcher: {fileID: 0}
+    projectile: {fileID: 0}
+    muzzle: {fileID: 5958159483820707905}
+    damage: 34
+    range: 500
+    roundsPerMinute: 650
+    explosive: 0
+    ejectCasings: 0
+    icon: {fileID: 21300000, guid: ad031b359a8f6544bb2652fcfc845cd0, type: 3}
 --- !u!1 &5496200820025048392
 GameObject:
   m_ObjectHideFlags: 0
@@ -5890,6 +5939,37 @@ Transform:
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 1032096006861828706}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &8630334213513278758
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 5958159483820707905}
+  m_Layer: 0
+  m_Name: Coaxial muzzle
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &5958159483820707905
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8630334213513278758}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: -0.23556648, y: -0.000000059604645, z: 1.5064101}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 3705457893121322424}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &8840423586417770869
 GameObject:

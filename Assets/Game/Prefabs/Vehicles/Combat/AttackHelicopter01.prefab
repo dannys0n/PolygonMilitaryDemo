@@ -91,6 +91,37 @@ MeshRenderer:
   m_SortingOrder: 0
   m_MaskInteraction: 0
   m_AdditionalVertexStreams: {fileID: 0}
+--- !u!1 &740596959162751699
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 9148085652849687778}
+  m_Layer: 0
+  m_Name: ATGM rail 0
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &9148085652849687778
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 740596959162751699}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: -0.3514994, y: -0.25880504, z: 1.0138922}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 8084895790418428146}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &968943460980194617
 GameObject:
   m_ObjectHideFlags: 0
@@ -3786,6 +3817,7 @@ Transform:
   - {fileID: 4010141068265206314}
   - {fileID: 1410714815864542623}
   - {fileID: 741526293582756945}
+  - {fileID: 9148085652849687778}
   m_Father: {fileID: 402170588806338529}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!33 &9000569156508581802
@@ -3845,6 +3877,61 @@ MeshRenderer:
   m_SortingOrder: 0
   m_MaskInteraction: 0
   m_AdditionalVertexStreams: {fileID: 0}
+--- !u!1 &4884937559162865355
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 3504190141403304202}
+  - component: {fileID: 1071002178107380288}
+  m_Layer: 0
+  m_Name: Anti armor station
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &3504190141403304202
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4884937559162865355}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 7619334724672324297}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1071002178107380288
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4884937559162865355}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 15758ee054fe4464a80e41fe97e37f97, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::VehicleLauncher
+  vehicle: {fileID: 8049097167698794191}
+  controlRole: 0
+  projectile: {fileID: 346408138320371918, guid: 2c7915211fdcd7a44ac61887dd6bc854, type: 3}
+  weaponIcon: {fileID: 21300000, guid: bc998521b992689479af4ee353227a5b, type: 3}
+  muzzles:
+  - {fileID: 9148085652849687778}
+  - {fileID: 1393582741967923834}
+  tubeRounds: []
+  interval: 0.6
+  capacity: 8
+  rechargeInterval: 7
 --- !u!1 &4907976101933539678
 GameObject:
   m_ObjectHideFlags: 0
@@ -4515,6 +4602,7 @@ GameObject:
   - component: {fileID: 9213301134390961611}
   - component: {fileID: 4996005683806821502}
   - component: {fileID: 1271692654388258745}
+  - component: {fileID: 1069631822541956367}
   m_Layer: 0
   m_Name: AttackHelicopter01
   m_TagString: Untagged
@@ -4541,6 +4629,7 @@ Transform:
   - {fileID: 4322020156112993481}
   - {fileID: 5315681065841201169}
   - {fileID: 8516587107166107367}
+  - {fileID: 3504190141403304202}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!54 &4084209713553524715
@@ -4596,6 +4685,7 @@ MonoBehaviour:
   destructionEffect: {fileID: 695410771644243590, guid: c07b2e8d0c65dad44bf5eaca660002fc, type: 3}
   cameraTarget: {fileID: 4516094286313466096}
   hasRenderedInterior: 1
+  cockpitExternalMonitor: 0
   entryPadding: {x: 1.5, y: 1, z: 1.5}
   seats:
   - name: Pilot
@@ -4604,6 +4694,7 @@ MonoBehaviour:
     anchor: {fileID: 8210058197891639372}
     exit: {fileID: 5771509649791141941}
     showCharacter: 1
+    weaponMountedView: 0
     eye: {fileID: 7264002481257534298}
     leftGrip: {fileID: 4371372199037492374}
     rightGrip: {fileID: 6337602214069831846}
@@ -4615,6 +4706,7 @@ MonoBehaviour:
     anchor: {fileID: 8030385733530656636}
     exit: {fileID: 8895930655699263393}
     showCharacter: 1
+    weaponMountedView: 0
     eye: {fileID: 3969678795891197386}
     leftGrip: {fileID: 7107537678756328409}
     rightGrip: {fileID: 3673241728591786782}
@@ -4693,19 +4785,22 @@ MonoBehaviour:
   shellEjection: {fileID: 6130845326561963178}
   shellCasing: {fileID: 114121961160874846, guid: c638dfae3f3edf843b2614dae230a771, type: 3}
   weaponIcon: {fileID: 7764617160884748634, guid: bb2c23333b92e904693126ecae342ddd, type: 3}
-  weaponName: CHIN GUN
-  spinBarrels: 0
+  weaponName: 20 MM M197
+  spinBarrels: 1
   controlRole: 1
   explosiveVehicleDamage: 0
   impactEffect: {fileID: 0}
+  projectile: {fileID: 7697725252315039087, guid: 1b044f0a05ec57b498e615bb9a162205, type: 3}
+  fixedMount: 0
+  ejectCasings: 0
   cameraShake: {fileID: 7400000, guid: b06213c2ef802284f97df928d44be0c6, type: 2}
   barrelAssembly: {fileID: 7195407594671779283}
   barrelSpinUp: 1200
   barrelSpinDown: 400
   casingScale: 1.7
-  damage: 34
-  range: 130
-  roundsPerMinute: 650
+  damage: 100
+  range: 1000
+  roundsPerMinute: 750
   turnRate: 100
   pitchLimits: {x: -20, y: 45}
 --- !u!114 &4996005683806821502
@@ -4721,14 +4816,15 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::VehicleLauncher
   vehicle: {fileID: 8049097167698794191}
-  projectile: {fileID: 6926061580476085574, guid: 94b468e700b83f04e81bb67298554930, type: 3}
+  controlRole: 0
+  projectile: {fileID: 6827500713763453298, guid: 46eb67ba2a7893b4ebd39d0dc2dd0658, type: 3}
   weaponIcon: {fileID: 21300000, guid: bc998521b992689479af4ee353227a5b, type: 3}
   muzzles:
   - {fileID: 741526293582756945}
   - {fileID: 8245661954510007201}
   tubeRounds: []
-  interval: 0.2
-  capacity: 8
+  interval: 0.16
+  capacity: 38
   rechargeInterval: 0.75
 --- !u!114 &1271692654388258745
 MonoBehaviour:
@@ -4757,6 +4853,59 @@ MonoBehaviour:
   secondaryScale: 0.45
   finalScale: 1.5
   smokeScale: 1
+--- !u!114 &1069631822541956367
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7480165171502648261}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e1a02cacdc6fa6548a570c16be320ba0, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::VehicleWeaponSystems
+  vehicle: {fileID: 8049097167698794191}
+  weapons:
+  - name: 20 MM M197
+    system: 0
+    role: 1
+    gun: {fileID: 9213301134390961611}
+    launcher: {fileID: 0}
+    projectile: {fileID: 7697725252315039087, guid: 1b044f0a05ec57b498e615bb9a162205, type: 3}
+    muzzle: {fileID: 468629054443397906}
+    damage: 100
+    range: 1000
+    roundsPerMinute: 750
+    explosive: 1
+    ejectCasings: 0
+    icon: {fileID: 7764617160884748634, guid: bb2c23333b92e904693126ecae342ddd, type: 3}
+  - name: 70 MM ROCKETS
+    system: 1
+    role: 0
+    gun: {fileID: 0}
+    launcher: {fileID: 4996005683806821502}
+    projectile: {fileID: 0}
+    muzzle: {fileID: 0}
+    damage: 35
+    range: 300
+    roundsPerMinute: 600
+    explosive: 0
+    ejectCasings: 0
+    icon: {fileID: 21300000, guid: bc998521b992689479af4ee353227a5b, type: 3}
+  - name: HELLFIRE
+    system: 1
+    role: 0
+    gun: {fileID: 0}
+    launcher: {fileID: 1071002178107380288}
+    projectile: {fileID: 0}
+    muzzle: {fileID: 0}
+    damage: 35
+    range: 300
+    roundsPerMinute: 600
+    explosive: 0
+    ejectCasings: 0
+    icon: {fileID: 21300000, guid: bc998521b992689479af4ee353227a5b, type: 3}
 --- !u!1 &7689559572323079651
 GameObject:
   m_ObjectHideFlags: 0
@@ -5074,6 +5223,37 @@ MeshRenderer:
   m_SortingOrder: 0
   m_MaskInteraction: 0
   m_AdditionalVertexStreams: {fileID: 0}
+--- !u!1 &8291015656246223295
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1393582741967923834}
+  m_Layer: 0
+  m_Name: ATGM rail 1
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1393582741967923834
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8291015656246223295}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0.34850058, y: -0.25880504, z: 1.0138922}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 5381396679264947444}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &8305415422250592287
 GameObject:
   m_ObjectHideFlags: 0
@@ -5108,6 +5288,7 @@ Transform:
   - {fileID: 9081342320122886203}
   - {fileID: 4519320488630531039}
   - {fileID: 8245661954510007201}
+  - {fileID: 1393582741967923834}
   m_Father: {fileID: 402170588806338529}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!33 &8228310801095464861

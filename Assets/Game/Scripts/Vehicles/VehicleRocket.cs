@@ -6,6 +6,7 @@ public class VehicleRocket : MonoBehaviour
 {
     public ParticleSystem impactEffect, exhaust;
     public float launchClearance = .4f;
+    public bool useGravity;
     public float speed = 65, radius = 4, infantryDamage = 140, vehicleDamage = 350, lifetime = 5;
     Rigidbody body;
     Transform owner;
@@ -21,16 +22,18 @@ public class VehicleRocket : MonoBehaviour
         owner = ignoredOwner;
         source = shooter;
         body = GetComponent<Rigidbody>();
+        body.useGravity = useGravity;
         previous = transform.position;
         body.linearVelocity = transform.forward * speed + inheritedVelocity;
         var collider = GetComponent<Collider>();
         foreach (var c in owner.GetComponentsInChildren<Collider>())
             Physics.IgnoreCollision(collider, c);
-        exhaust.Play(true);
+        if (exhaust) exhaust.Play(true);
         Invoke(nameof(Expire),lifetime);
     }
     void StopExhaust()
     {
+        if (!exhaust) return;
         exhaust.transform.SetParent(null,true);
         exhaust.Stop(true,ParticleSystemStopBehavior.StopEmitting);
         Destroy(exhaust.gameObject,exhaust.main.startLifetime.constantMax+1f);

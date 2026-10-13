@@ -3,6 +3,7 @@ using UnityEngine;
 public class VehicleLauncher : MonoBehaviour
 {
     public Vehicle vehicle;
+    public Vehicle.SeatRole controlRole = Vehicle.SeatRole.Driver;
     public VehicleRocket projectile;
     public Sprite weaponIcon;
     public Transform[] muzzles;
@@ -31,6 +32,9 @@ public class VehicleLauncher : MonoBehaviour
     }
     float nextShot;
     int barrel;
+    Ray requestedAimRay;
+    public Ray RequestedAimRay => requestedAimRay.direction.sqrMagnitude > .001f ? requestedAimRay : AimRay;
+    public void SetAim(Ray view) => requestedAimRay = view;
     public Transform NextMuzzle => muzzles[barrel % muzzles.Length];
     // The sight represents the launcher system, independently of the alternating firing tube.
     public Ray AimRay
@@ -58,6 +62,26 @@ public class VehicleLauncher : MonoBehaviour
     {
         get
         {
+            if (projectile.useGravity)
+            {
+                Vector3 origin=NextShotRay.origin;
+                Vector3 velocity=NextMuzzle.forward*projectile.speed+vehicle.Body.linearVelocity;
+                Vector3 previous=origin;
+                const int steps=32;
+                for(int i=1;i<=steps;i++)
+                {
+                    float time=projectile.lifetime*i/steps;
+                    Vector3 point=origin+velocity*time+Physics.gravity*(.5f*time*time);
+                    Vector3 segment=point-previous;
+                    float segmentDistance=segment.magnitude;bool found=false;
+                    foreach(var hit in Physics.RaycastAll(previous,segment.normalized,segmentDistance,Physics.DefaultRaycastLayers,QueryTriggerInteraction.Ignore))
+                        if(!hit.transform.IsChildOf(vehicle.transform)&&!hit.collider.GetComponentInParent<VehicleRocket>()&&hit.distance<segmentDistance)
+                        {segmentDistance=hit.distance;found=true;}
+                    if(found)return previous+segment.normalized*segmentDistance;
+                    previous=point;
+                }
+                return previous;
+            }
             Ray ray=NextShotRay;
             float nearest=NextShotRange;
             foreach(var hit in Physics.RaycastAll(ray,nearest,Physics.DefaultRaycastLayers,QueryTriggerInteraction.Ignore))
@@ -80,7 +104,7 @@ public class VehicleLauncher : MonoBehaviour
     public bool TryFire(VehicleOccupant pilot)
     {
         Recharge(Time.time);
-        if (missiles==0 || vehicle.IsDestroyed || pilot.MountedVehicle != vehicle || vehicle.seats[pilot.SeatIndex].role != Vehicle.SeatRole.Driver || Time.time < nextShot)
+        if (missiles==0 || vehicle.IsDestroyed || pilot.MountedVehicle != vehicle || vehicle.seats[pilot.SeatIndex].role != controlRole || Time.time < nextShot)
             return false;
         nextShot = Time.time + interval;
         if(missiles==capacity) nextRecharge=Time.time+rechargeInterval;
@@ -90,6 +114,7 @@ public class VehicleLauncher : MonoBehaviour
         if(tubeRounds.Length>tubeIndex) tubeRounds[tubeIndex].SetActive(false);
         var rocket = Instantiate(projectile, muzzle.position + muzzle.forward * projectile.launchClearance, muzzle.rotation);
         rocket.Launch(vehicle, pilot.gameObject);
+        if (rocket.TryGetComponent<VehicleMissileGuidance>(out var guidance)) guidance.Initialize(vehicle, RequestedAimRay, this);
         return true;
     }
 }

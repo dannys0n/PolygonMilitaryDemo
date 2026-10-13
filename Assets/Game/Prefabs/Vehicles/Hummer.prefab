@@ -3894,6 +3894,7 @@ GameObject:
   - component: {fileID: 1627803472940609030}
   - component: {fileID: 5865844867554388362}
   - component: {fileID: 8851345084744749807}
+  - component: {fileID: 4030896234301366794}
   m_Layer: 0
   m_Name: Hummer
   m_TagString: Untagged
@@ -3987,12 +3988,16 @@ MonoBehaviour:
   destructionEffect: {fileID: 695410771644243590, guid: c07b2e8d0c65dad44bf5eaca660002fc, type: 3}
   cameraTarget: {fileID: 63068711675286005}
   hasRenderedInterior: 0
+  cockpitExternalMonitor: 0
+  entryPadding: {x: 1.5, y: 1, z: 1.5}
   seats:
   - name: Driver
     role: 0
+    pose: 0
     anchor: {fileID: 8508221160049698399}
     exit: {fileID: 8516733420892195051}
     showCharacter: 0
+    weaponMountedView: 0
     eye: {fileID: 7282305671009475043}
     leftGrip: {fileID: 5456814952908194524}
     rightGrip: {fileID: 8360498766962998763}
@@ -4000,9 +4005,11 @@ MonoBehaviour:
     showVehicleInstruments: 1
   - name: Roof gunner
     role: 1
+    pose: 0
     anchor: {fileID: 6911892878317854645}
     exit: {fileID: 3812979046147326114}
     showCharacter: 0
+    weaponMountedView: 0
     eye: {fileID: 4512435661786533341}
     leftGrip: {fileID: 8272369524724413935}
     rightGrip: {fileID: 4072146754824907095}
@@ -4010,9 +4017,11 @@ MonoBehaviour:
     showVehicleInstruments: 0
   - name: Front passenger
     role: 2
+    pose: 0
     anchor: {fileID: 4324808422855201514}
     exit: {fileID: 1149512150917648803}
     showCharacter: 0
+    weaponMountedView: 0
     eye: {fileID: 4021426138700717619}
     leftGrip: {fileID: 0}
     rightGrip: {fileID: 0}
@@ -4020,9 +4029,11 @@ MonoBehaviour:
     showVehicleInstruments: 0
   - name: Rear left
     role: 2
+    pose: 0
     anchor: {fileID: 9007821415273648080}
     exit: {fileID: 5375957635729235504}
     showCharacter: 0
+    weaponMountedView: 0
     eye: {fileID: 6868898737663503709}
     leftGrip: {fileID: 0}
     rightGrip: {fileID: 0}
@@ -4030,9 +4041,11 @@ MonoBehaviour:
     showVehicleInstruments: 0
   - name: Rear right
     role: 2
+    pose: 0
     anchor: {fileID: 6927058776003512427}
     exit: {fileID: 1286838060516910181}
     showCharacter: 0
+    weaponMountedView: 0
     eye: {fileID: 595642706526917810}
     leftGrip: {fileID: 0}
     rightGrip: {fileID: 0}
@@ -4108,19 +4121,22 @@ MonoBehaviour:
   shellEjection: {fileID: 2655072361024188006}
   shellCasing: {fileID: 114121961160874846, guid: c638dfae3f3edf843b2614dae230a771, type: 3}
   weaponIcon: {fileID: 21300000, guid: af5ddbfdd53f9c64cb4e5830fee82296, type: 3}
-  weaponName: MINIGUN
+  weaponName: 7.62 MM MINIGUN
   spinBarrels: 1
   controlRole: 1
   explosiveVehicleDamage: 0
   impactEffect: {fileID: 0}
+  projectile: {fileID: 0}
+  fixedMount: 0
+  ejectCasings: 1
   cameraShake: {fileID: 7400000, guid: b06213c2ef802284f97df928d44be0c6, type: 2}
   barrelAssembly: {fileID: 1022503967279490446}
   barrelSpinUp: 1200
   barrelSpinDown: 400
   casingScale: 1.7
-  damage: 34
-  range: 120
-  roundsPerMinute: 650
+  damage: 32
+  range: 700
+  roundsPerMinute: 2000
   turnRate: 100
   pitchLimits: {x: -20, y: 45}
 --- !u!208 &5865844867554388362
@@ -4168,6 +4184,33 @@ MonoBehaviour:
   secondaryScale: 0.45
   finalScale: 1.5
   smokeScale: 1
+--- !u!114 &4030896234301366794
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8334796173799810011}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e1a02cacdc6fa6548a570c16be320ba0, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::VehicleWeaponSystems
+  vehicle: {fileID: 8145823736842321480}
+  weapons:
+  - name: 7.62 MM MINIGUN
+    system: 0
+    role: 1
+    gun: {fileID: 1627803472940609030}
+    launcher: {fileID: 0}
+    projectile: {fileID: 0}
+    muzzle: {fileID: 1563162351024147807}
+    damage: 32
+    range: 700
+    roundsPerMinute: 2000
+    explosive: 0
+    ejectCasings: 1
+    icon: {fileID: 21300000, guid: af5ddbfdd53f9c64cb4e5830fee82296, type: 3}
 --- !u!1 &8344174666489544199
 GameObject:
   m_ObjectHideFlags: 0

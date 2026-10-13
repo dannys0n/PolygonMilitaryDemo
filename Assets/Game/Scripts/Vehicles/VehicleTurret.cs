@@ -13,6 +13,9 @@ public class VehicleTurret : MonoBehaviour
     public Vehicle.SeatRole controlRole = Vehicle.SeatRole.Gunner;
     public bool explosiveVehicleDamage;
     public ParticleSystem impactEffect;
+    public VehicleRocket projectile;
+    public bool fixedMount;
+    public bool ejectCasings = true;
     public AnimationClip cameraShake;
     public Transform barrelAssembly;
     public float barrelSpinUp = 1200f, barrelSpinDown = 400f;
@@ -28,6 +31,7 @@ public class VehicleTurret : MonoBehaviour
     bool aimAtPoint;
     public Vector3 RequestedAimDirection => aimDirection;
     public event System.Action<VehicleOccupant, Vector3> ShotFired;
+    public void ResetCadence() => nextShot = 0;
     void Start()
     {
         aimDirection=vehicle.transform.forward;
@@ -58,8 +62,11 @@ public class VehicleTurret : MonoBehaviour
         Vector3 local = yawPivot.parent.InverseTransformDirection(direction);
         float yaw = Mathf.Atan2(local.x, local.z) * Mathf.Rad2Deg;
         float up = Mathf.Clamp(Mathf.Atan2(local.y, new Vector2(local.x, local.z).magnitude) * Mathf.Rad2Deg, pitchLimits.x, pitchLimits.y);
-        yawPivot.localRotation = Quaternion.RotateTowards(yawPivot.localRotation, Quaternion.Euler(0, yaw, 0), turnRate * Time.deltaTime);
-        pitchPivot.localRotation = Quaternion.RotateTowards(pitchPivot.localRotation, Quaternion.Euler(-up, 0, 0), turnRate * Time.deltaTime);
+        if (!fixedMount)
+        {
+            yawPivot.localRotation = Quaternion.RotateTowards(yawPivot.localRotation, Quaternion.Euler(0, yaw, 0), turnRate * Time.deltaTime);
+            pitchPivot.localRotation = Quaternion.RotateTowards(pitchPivot.localRotation, Quaternion.Euler(-up, 0, 0), turnRate * Time.deltaTime);
+        }
         bool firing=Time.time-lastBarrelShot < 60f/roundsPerMinute+.02f;
         barrelSpeed=Mathf.MoveTowards(barrelSpeed,firing ? roundsPerMinute/6f : 0,(firing?barrelSpinUp:barrelSpinDown)*Time.deltaTime);
         barrelAngle=(barrelAngle+barrelSpeed*6f*Time.deltaTime)%360;
@@ -92,7 +99,7 @@ public class VehicleTurret : MonoBehaviour
         nextShot = Time.time + 60f / roundsPerMinute;
         RaycastHit nearest = default;
         bool found = false;
-        foreach (var hit in Physics.RaycastAll(muzzle.position, muzzle.forward, range, Physics.DefaultRaycastLayers, QueryTriggerInteraction.Collide))
+        foreach (var hit in projectile ? System.Array.Empty<RaycastHit>() : Physics.RaycastAll(muzzle.position, muzzle.forward, range, Physics.DefaultRaycastLayers, QueryTriggerInteraction.Collide))
         {
             if (hit.transform.IsChildOf(vehicle.transform) || hit.collider is CharacterController)
                 continue;
@@ -131,10 +138,15 @@ public class VehicleTurret : MonoBehaviour
                 }
             }
         }
-        // Infinite ammunition: fire cadence is the only ammunition-related gate.
+        if (projectile)
+        {
+            var round = Instantiate(projectile, muzzle.position + muzzle.forward * projectile.launchClearance, muzzle.rotation);
+            round.Launch(vehicle, gunner.gameObject);
+        }
+        // Fire cadence is the gate for this prototype weapon; launcher reserves are managed separately.
         lastBarrelShot=Time.time;
         pendingFlashes++;
-        if (gunner.IsLocal && gunner.soldier.inputSource.isActiveAndEnabled) pendingOwnerCasings++;
+        if (ejectCasings && gunner.IsLocal && gunner.soldier.inputSource.isActiveAndEnabled) pendingOwnerCasings++;
         if(gunner.IsLocal)gunner.PlayVehicleCameraShake();
         ShotFired?.Invoke(gunner, muzzle.position);
         return true;

@@ -1041,6 +1041,7 @@ GameObject:
   - component: {fileID: 239444765632696351}
   - component: {fileID: 1889989780189448004}
   - component: {fileID: 2152031159990771986}
+  - component: {fileID: 3439268962163405642}
   m_Layer: 0
   m_Name: HeavyAPC
   m_TagString: Untagged
@@ -1112,7 +1113,9 @@ MonoBehaviour:
   instrumentReference: 3
   instrumentReferenceNotes: 'Tentative silhouette-based identification, not a confirmed licensed vehicle. Display adapts available game telemetry; no fuel, oil, turbine or engine simulation is implied.
 
-    Stryker/LAV III family, medium confidence. Driver digital display and remote weapon-station adaptation. https://www.army.mil/article-amp/2881/new_simulators_get_stryker_drivers_up_to_speed'
+    Stryker/LAV III family, medium confidence. Driver digital display and remote weapon-station adaptation. https://www.army.mil/article-amp/2881/new_simulators_get_stryker_drivers_up_to_speed
+
+    Weapon model follows the exposed LAV-III 25 mm turret; base Stryker ICV .50/Mk19 fit is not assumed. Exact variant remains tentative.'
   displayName: Heavy wheeled APC
   seatDiagram: {fileID: 21300000, guid: 7df3dea783f31c443bbb96872a025693, type: 3}
   seatDiagramCenter: {x: 0, y: -0.15655088}
@@ -1122,6 +1125,8 @@ MonoBehaviour:
   destructionEffect: {fileID: 695410771644243590, guid: c07b2e8d0c65dad44bf5eaca660002fc, type: 3}
   cameraTarget: {fileID: 9072149401740804637}
   hasRenderedInterior: 0
+  cockpitExternalMonitor: 0
+  entryPadding: {x: 1.5, y: 1, z: 1.5}
   seats:
   - name: Driver
     role: 0
@@ -1129,6 +1134,7 @@ MonoBehaviour:
     anchor: {fileID: 2373635998900916957}
     exit: {fileID: 622678594329726546}
     showCharacter: 0
+    weaponMountedView: 0
     eye: {fileID: 7512529369134584614}
     leftGrip: {fileID: 6803412315734152828}
     rightGrip: {fileID: 6048532731355865485}
@@ -1140,6 +1146,7 @@ MonoBehaviour:
     anchor: {fileID: 3784049987785088118}
     exit: {fileID: 2986402655235383248}
     showCharacter: 0
+    weaponMountedView: 0
     eye: {fileID: 2962268424174508252}
     leftGrip: {fileID: 6997630436127767951}
     rightGrip: {fileID: 6865574929888531815}
@@ -1151,6 +1158,7 @@ MonoBehaviour:
     anchor: {fileID: 1486703809124147303}
     exit: {fileID: 5737697697632872355}
     showCharacter: 0
+    weaponMountedView: 0
     eye: {fileID: 5991916577718535617}
     leftGrip: {fileID: 0}
     rightGrip: {fileID: 0}
@@ -1162,6 +1170,7 @@ MonoBehaviour:
     anchor: {fileID: 7548704101439919654}
     exit: {fileID: 2512578929733236258}
     showCharacter: 0
+    weaponMountedView: 0
     eye: {fileID: 7214784072403161259}
     leftGrip: {fileID: 0}
     rightGrip: {fileID: 0}
@@ -1173,6 +1182,7 @@ MonoBehaviour:
     anchor: {fileID: 5572330232620239676}
     exit: {fileID: 4309783088275220108}
     showCharacter: 0
+    weaponMountedView: 0
     eye: {fileID: 8159447747675017530}
     leftGrip: {fileID: 0}
     rightGrip: {fileID: 0}
@@ -1184,6 +1194,7 @@ MonoBehaviour:
     anchor: {fileID: 2986040614792796858}
     exit: {fileID: 7251489768995023202}
     showCharacter: 0
+    weaponMountedView: 0
     eye: {fileID: 7396910639175960806}
     leftGrip: {fileID: 0}
     rightGrip: {fileID: 0}
@@ -1195,6 +1206,7 @@ MonoBehaviour:
     anchor: {fileID: 8527995340497058244}
     exit: {fileID: 8806761267136429421}
     showCharacter: 0
+    weaponMountedView: 0
     eye: {fileID: 1975793827411355319}
     leftGrip: {fileID: 0}
     rightGrip: {fileID: 0}
@@ -1206,6 +1218,7 @@ MonoBehaviour:
     anchor: {fileID: 8295588506845838416}
     exit: {fileID: 3224060440230357336}
     showCharacter: 0
+    weaponMountedView: 0
     eye: {fileID: 3244001800188641210}
     leftGrip: {fileID: 0}
     rightGrip: {fileID: 0}
@@ -1313,19 +1326,22 @@ MonoBehaviour:
   shellEjection: {fileID: 5189918505144625990}
   shellCasing: {fileID: 114121961160874846, guid: c638dfae3f3edf843b2614dae230a771, type: 3}
   weaponIcon: {fileID: 572006580493702492, guid: a1f34646048f44c40ae64cc725a83f02, type: 3}
-  weaponName: AUTOCANNON
+  weaponName: 25 MM M242
   spinBarrels: 0
   controlRole: 1
   explosiveVehicleDamage: 1
   impactEffect: {fileID: 695410771644243590, guid: c07b2e8d0c65dad44bf5eaca660002fc, type: 3}
+  projectile: {fileID: 8058209151446678822, guid: acc6d9cb0f39dbe438acb9b7af652876, type: 3}
+  fixedMount: 0
+  ejectCasings: 1
   cameraShake: {fileID: 7400000, guid: b06213c2ef802284f97df928d44be0c6, type: 2}
   barrelAssembly: {fileID: 2713950607181238299}
   barrelSpinUp: 1200
   barrelSpinDown: 400
   casingScale: 1.7
-  damage: 90
-  range: 180
-  roundsPerMinute: 220
+  damage: 110
+  range: 1200
+  roundsPerMinute: 200
   turnRate: 100
   pitchLimits: {x: -20, y: 45}
 --- !u!114 &1889989780189448004
@@ -1380,6 +1396,46 @@ MonoBehaviour:
   referenceNotes: 'Generic prototype director; no verified vehicle-specific sight plate
 
     Presentation only. No turret authority or ballistic solution is implemented by this component.'
+--- !u!114 &3439268962163405642
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3154030866521880946}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e1a02cacdc6fa6548a570c16be320ba0, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::VehicleWeaponSystems
+  vehicle: {fileID: 9130765350476394884}
+  weapons:
+  - name: 25 MM M242
+    system: 0
+    role: 1
+    gun: {fileID: 239444765632696351}
+    launcher: {fileID: 0}
+    projectile: {fileID: 8058209151446678822, guid: acc6d9cb0f39dbe438acb9b7af652876, type: 3}
+    muzzle: {fileID: 7350356442676419694}
+    damage: 110
+    range: 1200
+    roundsPerMinute: 200
+    explosive: 1
+    ejectCasings: 1
+    icon: {fileID: 572006580493702492, guid: a1f34646048f44c40ae64cc725a83f02, type: 3}
+  - name: 7.62 MM COAX
+    system: 0
+    role: 1
+    gun: {fileID: 239444765632696351}
+    launcher: {fileID: 0}
+    projectile: {fileID: 0}
+    muzzle: {fileID: 7350356442676419694}
+    damage: 34
+    range: 500
+    roundsPerMinute: 650
+    explosive: 0
+    ejectCasings: 0
+    icon: {fileID: 572006580493702492, guid: a1f34646048f44c40ae64cc725a83f02, type: 3}
 --- !u!1 &3369670643029365182
 GameObject:
   m_ObjectHideFlags: 0

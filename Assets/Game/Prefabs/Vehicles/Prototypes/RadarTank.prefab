@@ -549,6 +549,7 @@ GameObject:
   - component: {fileID: 8441623164916502182}
   - component: {fileID: 3380204320956974524}
   - component: {fileID: 6126971579285819594}
+  - component: {fileID: 2751747585279897845}
   m_Layer: 0
   m_Name: RadarTank
   m_TagString: Untagged
@@ -583,6 +584,9 @@ Transform:
   - {fileID: 8215087797634874909}
   - {fileID: 3889513435974590376}
   - {fileID: 4083837839091349567}
+  - {fileID: 4124112575170377539}
+  - {fileID: 2336554639999376689}
+  - {fileID: 7830125506460918936}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!54 &750791818512100362
@@ -628,7 +632,9 @@ MonoBehaviour:
   instrumentReference: 10
   instrumentReferenceNotes: 'Tentative silhouette-based identification, not a confirmed licensed vehicle. Display adapts available game telemetry; no fuel, oil, turbine or engine simulation is implied.
 
-    Tor family reference is approximate. Exact driver''s instrument panel was not established from a verified manual; gauge style and units are a provisional adaptation.'
+    Tor family reference is approximate. Exact driver''s instrument panel was not established from a verified manual; gauge style and units are a provisional adaptation.
+
+    Tor reference: vertical guided SAM station, no invented autocannon. Seeker requires an occupied hostile aircraft inside its acquisition cone.'
   displayName: Radar vehicle (prototype)
   seatDiagram: {fileID: 21300000, guid: eadee39d81cf90d43884919b4a0a1c85, type: 3}
   seatDiagramCenter: {x: 0.15774262, y: 0}
@@ -638,6 +644,8 @@ MonoBehaviour:
   destructionEffect: {fileID: 695410771644243590, guid: c07b2e8d0c65dad44bf5eaca660002fc, type: 3}
   cameraTarget: {fileID: 7087982068540315778}
   hasRenderedInterior: 0
+  cockpitExternalMonitor: 0
+  entryPadding: {x: 1.5, y: 1, z: 1.5}
   seats:
   - name: Driver
     role: 0
@@ -645,6 +653,7 @@ MonoBehaviour:
     anchor: {fileID: 2374178762328154261}
     exit: {fileID: 8215087797634874909}
     showCharacter: 0
+    weaponMountedView: 0
     eye: {fileID: 4293732323786929443}
     leftGrip: {fileID: 0}
     rightGrip: {fileID: 0}
@@ -656,6 +665,7 @@ MonoBehaviour:
     anchor: {fileID: 3889513435974590376}
     exit: {fileID: 4083837839091349567}
     showCharacter: 0
+    weaponMountedView: 0
     eye: {fileID: 1118144998669573684}
     leftGrip: {fileID: 0}
     rightGrip: {fileID: 0}
@@ -821,6 +831,33 @@ MonoBehaviour:
   vehicle: {fileID: 2245875611223860633}
   radar: {fileID: 8227033077863285580}
   degreesPerSecond: 30
+--- !u!114 &2751747585279897845
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1954906999793349080}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e1a02cacdc6fa6548a570c16be320ba0, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::VehicleWeaponSystems
+  vehicle: {fileID: 2245875611223860633}
+  weapons:
+  - name: VERTICAL SAM
+    system: 1
+    role: 0
+    gun: {fileID: 0}
+    launcher: {fileID: 3308798721033768198}
+    projectile: {fileID: 0}
+    muzzle: {fileID: 0}
+    damage: 35
+    range: 300
+    roundsPerMinute: 600
+    explosive: 0
+    ejectCasings: 0
+    icon: {fileID: 21300000, guid: bc998521b992689479af4ee353227a5b, type: 3}
 --- !u!1 &2052227135855697488
 GameObject:
   m_ObjectHideFlags: 0
@@ -2191,6 +2228,92 @@ MeshRenderer:
   m_SortingOrder: 0
   m_MaskInteraction: 0
   m_AdditionalVertexStreams: {fileID: 0}
+--- !u!1 &5456284402019858919
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 2336554639999376689}
+  m_Layer: 0
+  m_Name: Right SAM cell
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &2336554639999376689
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5456284402019858919}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0.7071068, y: 0, z: 0, w: 0.7071068}
+  m_LocalPosition: {x: 0.75, y: 2.7, z: -0.8}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1723266165911119602}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &5525290069020058808
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 7830125506460918936}
+  - component: {fileID: 3308798721033768198}
+  m_Layer: 0
+  m_Name: SAM station
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &7830125506460918936
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5525290069020058808}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1723266165911119602}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &3308798721033768198
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5525290069020058808}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 15758ee054fe4464a80e41fe97e37f97, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::VehicleLauncher
+  vehicle: {fileID: 2245875611223860633}
+  controlRole: 0
+  projectile: {fileID: 1153709252507629842, guid: 69974c07fa2f9094f8ef520c5b9e7698, type: 3}
+  weaponIcon: {fileID: 21300000, guid: bc998521b992689479af4ee353227a5b, type: 3}
+  muzzles:
+  - {fileID: 4124112575170377539}
+  - {fileID: 2336554639999376689}
+  tubeRounds: []
+  interval: 1
+  capacity: 8
+  rechargeInterval: 5
 --- !u!1 &5756426531245566717
 GameObject:
   m_ObjectHideFlags: 0
@@ -2735,6 +2858,37 @@ Transform:
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 1118144998669573684}
+  m_Father: {fileID: 1723266165911119602}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &9023750407804048493
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 4124112575170377539}
+  m_Layer: 0
+  m_Name: Left SAM cell
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &4124112575170377539
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 9023750407804048493}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0.7071068, y: 0, z: 0, w: 0.7071068}
+  m_LocalPosition: {x: -0.75, y: 2.7, z: -0.8}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
   m_Father: {fileID: 1723266165911119602}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &9103391890185624258

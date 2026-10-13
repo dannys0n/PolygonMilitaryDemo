@@ -68,9 +68,23 @@ public class ArenaVehicleHud : MonoBehaviour
         diagram.sprite = v.seatDiagram ? v.seatDiagram : air ? helicopterDiagram : humveeDiagram;
         seatDiagramLinks.SetVehicle(v,player.SeatIndex);
         var attackSight=v.GetComponent<VehicleAttackSight>();bool showAttack=attackSight&&attackSight.DisplaysForSeat(player.SeatIndex);
-        bool armed = showAttack || (role == Vehicle.SeatRole.Gunner && v.turret) || (air && role == Vehicle.SeatRole.Driver && v.GetComponent<VehicleLauncher>());
+        var weaponSystems=v.GetComponent<VehicleWeaponSystems>();
+        var selectedWeapon=weaponSystems?weaponSystems.Current(player):null;
+        bool armed = weaponSystems?selectedWeapon!=null:showAttack || (role == Vehicle.SeatRole.Gunner && v.turret) || (air && role == Vehicle.SeatRole.Driver && v.GetComponent<VehicleLauncher>());
         vehicleEquipment.SetActive(armed);
-        if(showAttack)
+        if(selectedWeapon!=null)
+        {
+            equippedIcon.sprite=slotIcon.sprite=selectedWeapon.icon;
+            equippedIcon.color=slotIcon.color=Color.white;
+            if(selectedIconGlow)equippedIcon.material=slotIcon.material=selectedIconGlow;
+            equippedName.text=selectedWeapon.name;
+            var rack=selectedWeapon.launcher;
+            ammunition.text=selectedWeapon.system==VehicleWeaponSystems.FireSystem.Launcher?rack.Missiles+" / "+rack.capacity:"INF";
+            float delay=rack?rack.ReadyIn:Mathf.Max(0,selectedWeapon.nextShot-Time.time);
+            fireMode.text=delay>0?delay.ToString("F1")+" S":"READY";
+            slotKey.text="LMB";equipmentLabel.text="VEHICLE WEAPON";
+        }
+        else if(showAttack)
         {
             equippedIcon.sprite=slotIcon.sprite=attackSight.weaponIcon;equippedIcon.color=slotIcon.color=Color.white;
             if(selectedIconGlow)equippedIcon.material=slotIcon.material=selectedIconGlow;
@@ -95,6 +109,11 @@ public class ArenaVehicleHud : MonoBehaviour
         if (air && role == Vehicle.SeatRole.Driver) controls.text += "\n[T] ASSIST " + (v.FlightAssistEnabled ? "ON" : "OFF");
         if (v.motor is JetMotor && role == Vehicle.SeatRole.Driver)
             controls.text = "THROTTLE  [W/S]\nRUDDER  [A/D]\nPITCH / ROLL  [MOUSE]\nAFTERBURNER  [SHIFT]\nAIRBRAKE  [SPACE]\n[T] ASSIST " + (v.FlightAssistEnabled ? "ON" : "OFF");
+        if(weaponSystems && selectedWeapon!=null)
+        {
+            int count=System.Array.FindAll(weaponSystems.weapons,w=>w.role==role).Length;
+            if(count>1)controls.text+="\n[1-"+count+"] WEAPONS / WHEEL";
+        }
         if(!air && role==Vehicle.SeatRole.Driver && showAttack && attackSight.Operational) controls.text += "\nFIRE  [LMB]\nZOOM  [RMB]";
         rightControls.text=(v.hasRenderedInterior?"[C]  CAMERA":"EXTERNAL VIEW")+"\n[V]  FREELOOK"+(player.Freelook?" ON":"")+"\nHOLD [E]  EXIT\n"+(v.seats.Length==1?"[F1]  STATION":"[F1-F"+v.seats.Length+"]  SEATS");
         EnsureSeatMarkers(v.seats.Length);
@@ -177,20 +196,24 @@ public class ArenaVehicleHud : MonoBehaviour
         if (!armed) return;
         var vehicle = player.MountedVehicle; Camera camera = player.ActiveVehicleCamera ? player.ActiveVehicleCamera : Camera.main;
         if(!camera){desiredAim.gameObject.SetActive(false);actualAim.gameObject.SetActive(false);return;}
-        bool gunner = vehicle.seats[player.SeatIndex].role == Vehicle.SeatRole.Gunner;
-        actualAim.GetComponent<Graphic>().canvasRenderer.SetAlpha(gunner || vehicle.GetComponent<VehicleLauncher>().Missiles > 0 ? 1f : .2f);
+        var systems=vehicle.GetComponent<VehicleWeaponSystems>();
+        var current=systems?systems.Current(player):null;
+        bool gunner = current!=null?current.system==VehicleWeaponSystems.FireSystem.Gun:vehicle.seats[player.SeatIndex].role == Vehicle.SeatRole.Gunner;
+        var activeLauncher=current!=null?current.launcher:vehicle.GetComponent<VehicleLauncher>();
+        var activeGun=current!=null?current.gun:vehicle.turret;
+        if(!gunner&&!activeLauncher){desiredAim.gameObject.SetActive(false);actualAim.gameObject.SetActive(false);return;}
+        actualAim.GetComponent<Graphic>().canvasRenderer.SetAlpha(gunner || activeLauncher.Missiles > 0 ? 1f : .2f);
 
         Vector3 requested; Ray actual; float range;
         if (gunner)
         {
-            requested = vehicle.turret.RequestedAimDirection;
-            actual = new Ray(vehicle.turret.muzzle.position,vehicle.turret.muzzle.forward); range = vehicle.turret.range;
+            requested = activeGun.RequestedAimDirection;
+            actual = new Ray(activeGun.muzzle.position,activeGun.muzzle.forward); range = activeGun.range;
         }
         else
         {
-            var launcher = vehicle.GetComponent<VehicleLauncher>();
-            requested = vehicle.RequestedFlightAttitude * Vector3.forward;
-            actual = launcher.NextShotRay; range = 180;
+            requested = vehicle.IsAircraft?vehicle.RequestedFlightAttitude * Vector3.forward:camera.transform.forward;
+            actual = activeLauncher.NextShotRay; range = activeLauncher.NextShotRange;
         }
         if (!player.Freelook) requested = camera.transform.forward;
         Vector3 desiredPoint=ResolvePoint(new Ray(camera.transform.position,requested),range,vehicle);
@@ -198,7 +221,7 @@ public class ArenaVehicleHud : MonoBehaviour
         // Rockets predict their own impact over their lifetime, independently of the camera target distance.
         Vector3 impact=gunner
             ? ResolvePoint(actual,Mathf.Min(range,Vector3.Distance(actual.origin,desiredPoint)),vehicle)
-            : vehicle.GetComponent<VehicleLauncher>().PredictedImpactPoint;
+            : activeLauncher.PredictedImpactPoint;
         PlaceMarker(actualAim,camera,impact);
         if(gunner){var direction=vehicle.turret.muzzle.forward;float azimuth=Mathf.Repeat(Mathf.Atan2(direction.x,direction.z)*Mathf.Rad2Deg,360);float elevation=Mathf.Asin(Mathf.Clamp(direction.y,-1,1))*Mathf.Rad2Deg;float zoom=Mathf.Tan(35*Mathf.Deg2Rad)/Mathf.Tan(camera.fieldOfView*.5f*Mathf.Deg2Rad);float relativeYaw=Mathf.DeltaAngle(vehicle.transform.eulerAngles.y,azimuth);float distance=Vector3.Distance(actual.origin,ResolvePoint(actual,range,vehicle));string station=vehicle.instruments==Vehicle.InstrumentLayout.Armored?"WEAPON STATION":"GUN SIGHT";gunnerReadout.text=station+"   RNG "+(distance>=range-.1f?">":"")+Mathf.RoundToInt(distance).ToString("0000")+" M   AZ "+relativeYaw.ToString("+000;-000;000")+"°   EL "+elevation.ToString("+00;-00;00")+"°   "+zoom.ToString("F1")+"X";}
     }

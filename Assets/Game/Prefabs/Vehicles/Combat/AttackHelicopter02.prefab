@@ -105,6 +105,7 @@ GameObject:
   - component: {fileID: 470926342569773407}
   - component: {fileID: 2208678732626623527}
   - component: {fileID: 4567892505685801098}
+  - component: {fileID: 8739804417620568902}
   m_Layer: 0
   m_Name: AttackHelicopter02
   m_TagString: Untagged
@@ -186,6 +187,7 @@ MonoBehaviour:
   destructionEffect: {fileID: 695410771644243590, guid: c07b2e8d0c65dad44bf5eaca660002fc, type: 3}
   cameraTarget: {fileID: 3097006301021105797}
   hasRenderedInterior: 1
+  cockpitExternalMonitor: 0
   entryPadding: {x: 1.5, y: 1, z: 1.5}
   seats:
   - name: Pilot
@@ -194,6 +196,7 @@ MonoBehaviour:
     anchor: {fileID: 5530949876936919399}
     exit: {fileID: 2167478596679276312}
     showCharacter: 1
+    weaponMountedView: 0
     eye: {fileID: 5669225177981451939}
     leftGrip: {fileID: 7826392686211082360}
     rightGrip: {fileID: 3774253319605959161}
@@ -205,6 +208,7 @@ MonoBehaviour:
     anchor: {fileID: 9085382975911655203}
     exit: {fileID: 980895760686090368}
     showCharacter: 1
+    weaponMountedView: 0
     eye: {fileID: 5913415830873229699}
     leftGrip: {fileID: 5804528069486010695}
     rightGrip: {fileID: 4545707930231354043}
@@ -216,6 +220,7 @@ MonoBehaviour:
     anchor: {fileID: 350832787022769319}
     exit: {fileID: 8074081297709519206}
     showCharacter: 1
+    weaponMountedView: 0
     eye: {fileID: 901472562542776807}
     leftGrip: {fileID: 0}
     rightGrip: {fileID: 0}
@@ -227,6 +232,7 @@ MonoBehaviour:
     anchor: {fileID: 5847480937432974669}
     exit: {fileID: 2969070835619070475}
     showCharacter: 1
+    weaponMountedView: 0
     eye: {fileID: 685492096818221822}
     leftGrip: {fileID: 0}
     rightGrip: {fileID: 0}
@@ -305,19 +311,22 @@ MonoBehaviour:
   shellEjection: {fileID: 7259986413355821287}
   shellCasing: {fileID: 114121961160874846, guid: c638dfae3f3edf843b2614dae230a771, type: 3}
   weaponIcon: {fileID: -5948544802483944527, guid: b42deefd30f3b9449a793c3ff7479b69, type: 3}
-  weaponName: CHIN GUN
-  spinBarrels: 0
+  weaponName: 7.62 MM MINIGUN
+  spinBarrels: 1
   controlRole: 1
   explosiveVehicleDamage: 0
   impactEffect: {fileID: 0}
+  projectile: {fileID: 0}
+  fixedMount: 0
+  ejectCasings: 1
   cameraShake: {fileID: 7400000, guid: b06213c2ef802284f97df928d44be0c6, type: 2}
   barrelAssembly: {fileID: 5863292946089217707}
   barrelSpinUp: 1200
   barrelSpinDown: 400
   casingScale: 1.7
-  damage: 34
-  range: 130
-  roundsPerMinute: 650
+  damage: 32
+  range: 1000
+  roundsPerMinute: 2000
   turnRate: 100
   pitchLimits: {x: -20, y: 45}
 --- !u!114 &2208678732626623527
@@ -333,14 +342,15 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::VehicleLauncher
   vehicle: {fileID: 1134868151786904976}
-  projectile: {fileID: 6926061580476085574, guid: 94b468e700b83f04e81bb67298554930, type: 3}
+  controlRole: 0
+  projectile: {fileID: 6827500713763453298, guid: 46eb67ba2a7893b4ebd39d0dc2dd0658, type: 3}
   weaponIcon: {fileID: 21300000, guid: bc998521b992689479af4ee353227a5b, type: 3}
   muzzles:
   - {fileID: 8531529702166382429}
   - {fileID: 7292443201319311571}
   tubeRounds: []
-  interval: 0.2
-  capacity: 8
+  interval: 0.16
+  capacity: 14
   rechargeInterval: 0.75
 --- !u!114 &4567892505685801098
 MonoBehaviour:
@@ -369,6 +379,46 @@ MonoBehaviour:
   secondaryScale: 0.45
   finalScale: 1.5
   smokeScale: 1
+--- !u!114 &8739804417620568902
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 215953497425549892}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e1a02cacdc6fa6548a570c16be320ba0, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::VehicleWeaponSystems
+  vehicle: {fileID: 1134868151786904976}
+  weapons:
+  - name: 7.62 MM MINIGUN
+    system: 0
+    role: 1
+    gun: {fileID: 470926342569773407}
+    launcher: {fileID: 0}
+    projectile: {fileID: 0}
+    muzzle: {fileID: 2144978950043958584}
+    damage: 32
+    range: 1000
+    roundsPerMinute: 2000
+    explosive: 0
+    ejectCasings: 1
+    icon: {fileID: -5948544802483944527, guid: b42deefd30f3b9449a793c3ff7479b69, type: 3}
+  - name: 70 MM ROCKETS
+    system: 1
+    role: 0
+    gun: {fileID: 0}
+    launcher: {fileID: 2208678732626623527}
+    projectile: {fileID: 0}
+    muzzle: {fileID: 0}
+    damage: 35
+    range: 300
+    roundsPerMinute: 600
+    explosive: 0
+    ejectCasings: 0
+    icon: {fileID: 21300000, guid: bc998521b992689479af4ee353227a5b, type: 3}
 --- !u!1 &393893734691505811
 GameObject:
   m_ObjectHideFlags: 0

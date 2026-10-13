@@ -526,6 +526,32 @@ public class ArenaVehicleAI : MonoBehaviour
     }
     void UseTurret(Vehicle v)
     {
+        if(v.TryGetComponent<VehicleWeaponSystems>(out var systems))
+        {
+            var role=v.seats[occupant.SeatIndex].role;
+            var profiles=System.Array.FindAll(systems.weapons,w=>w.role==role);
+            if(profiles.Length==0)return;
+            float range=0;foreach(var profile in profiles)range=Mathf.Max(range,profile.range);
+            var target=FindVehicleTarget(v,v.cameraTarget.position,range,true);if(!target)return;
+            var enemyOccupant=target.GetComponent<VehicleOccupant>();
+            bool armored=enemyOccupant&&enemyOccupant.IsMounted;
+            int choice=0;
+            if(!armored)
+            {
+                for(int i=0;i<profiles.Length;i++)if(profiles[i].name.Contains("COAX")){choice=i;break;}
+            }
+            else
+            {
+                for(int i=0;i<profiles.Length;i++)if(profiles[i].system==VehicleWeaponSystems.FireSystem.Launcher){choice=i;break;}
+            }
+            if(systems.Current(occupant)!=profiles[choice])systems.Select(occupant,choice);
+            Vector3 weaponPoint=EnemyPoint(target),origin=profiles[choice].launcher?profiles[choice].launcher.NextMuzzle.position:v.turret.muzzle.position;
+            Vector3 weaponDirection=weaponPoint-origin;systems.AimAt(occupant,new Ray(origin,weaponDirection.normalized));
+            float allowance=profiles[choice].system==VehicleWeaponSystems.FireSystem.Launcher?20:4;
+            Vector3 forward=profiles[choice].launcher?profiles[choice].launcher.NextMuzzle.forward:v.turret.muzzle.forward;
+            if(Vector3.Angle(forward,weaponDirection)<allowance&&HasLineOfFire(v,target,origin,weaponPoint))systems.TryFire(occupant);
+            return;
+        }
         var enemy=FindVehicleTarget(v,v.turret.muzzle.position,v.turret.range,true);
         if(!enemy)return;
         Vector3 point=EnemyPoint(enemy),direction=point-v.turret.muzzle.position;
@@ -535,6 +561,7 @@ public class ArenaVehicleAI : MonoBehaviour
     }
     void UseRockets(Vehicle v)
     {
+        if(v.GetComponent<VehicleWeaponSystems>()){UseTurret(v);return;}
         var launcher=v.GetComponent<VehicleLauncher>();
         if (!launcher || launcher.ReadyIn > 0) return;
         var enemy=FindVehicleTarget(v,launcher.NextShotRay.origin,150,false);

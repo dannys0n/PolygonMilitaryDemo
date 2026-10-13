@@ -351,6 +351,7 @@ GameObject:
   - component: {fileID: 5598535153285950260}
   - component: {fileID: 412871685692491077}
   - component: {fileID: 7871474480248209877}
+  - component: {fileID: 1046598624411072226}
   m_Layer: 0
   m_Name: LightTank
   m_TagString: Untagged
@@ -385,6 +386,7 @@ Transform:
   - {fileID: 217367850325118452}
   - {fileID: 514666183529831575}
   - {fileID: 1082959746446833587}
+  - {fileID: 5796839429691073959}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!54 &3385357485101101569
@@ -440,6 +442,8 @@ MonoBehaviour:
   destructionEffect: {fileID: 695410771644243590, guid: c07b2e8d0c65dad44bf5eaca660002fc, type: 3}
   cameraTarget: {fileID: 4234112904434023793}
   hasRenderedInterior: 0
+  cockpitExternalMonitor: 0
+  entryPadding: {x: 1.5, y: 1, z: 1.5}
   seats:
   - name: Driver
     role: 0
@@ -447,17 +451,19 @@ MonoBehaviour:
     anchor: {fileID: 2069369412218765846}
     exit: {fileID: 217367850325118452}
     showCharacter: 0
+    weaponMountedView: 0
     eye: {fileID: 2988455816406240496}
     leftGrip: {fileID: 0}
     rightGrip: {fileID: 0}
     diagramPosition: {x: -20, y: 40}
     showVehicleInstruments: 1
   - name: Commander
-    role: 2
+    role: 1
     pose: 0
     anchor: {fileID: 514666183529831575}
     exit: {fileID: 1082959746446833587}
     showCharacter: 0
+    weaponMountedView: 0
     eye: {fileID: 516977434640273258}
     leftGrip: {fileID: 0}
     rightGrip: {fileID: 0}
@@ -622,20 +628,23 @@ MonoBehaviour:
   shellEjection: {fileID: 8695816356542258533}
   shellCasing: {fileID: 114121961160874846, guid: c638dfae3f3edf843b2614dae230a771, type: 3}
   weaponIcon: {fileID: 21300000, guid: 2c96c802e944f77419702839605741d6, type: 3}
-  weaponName: IFV CANNON
+  weaponName: 25 MM M242
   spinBarrels: 0
-  controlRole: 0
+  controlRole: 1
   explosiveVehicleDamage: 1
   impactEffect: {fileID: 695410771644243590, guid: c07b2e8d0c65dad44bf5eaca660002fc, type: 3}
+  projectile: {fileID: 8058209151446678822, guid: acc6d9cb0f39dbe438acb9b7af652876, type: 3}
+  fixedMount: 0
+  ejectCasings: 1
   cameraShake: {fileID: 7400000, guid: b06213c2ef802284f97df928d44be0c6, type: 2}
   barrelAssembly: {fileID: 0}
   barrelSpinUp: 1200
   barrelSpinDown: 400
   casingScale: 2.8
-  damage: 130
-  range: 250
-  roundsPerMinute: 180
-  turnRate: 85
+  damage: 110
+  range: 1200
+  roundsPerMinute: 200
+  turnRate: 50
   pitchLimits: {x: -10, y: 45}
 --- !u!114 &7871474480248209877
 MonoBehaviour:
@@ -669,6 +678,59 @@ MonoBehaviour:
   - {fileID: 5540767693834544166}
   - {fileID: 2077089269051581851}
   radius: 0.43
+--- !u!114 &1046598624411072226
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2146322321438096962}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e1a02cacdc6fa6548a570c16be320ba0, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::VehicleWeaponSystems
+  vehicle: {fileID: 4638209563810107676}
+  weapons:
+  - name: 25 MM M242
+    system: 0
+    role: 1
+    gun: {fileID: 412871685692491077}
+    launcher: {fileID: 0}
+    projectile: {fileID: 8058209151446678822, guid: acc6d9cb0f39dbe438acb9b7af652876, type: 3}
+    muzzle: {fileID: 2085476933944431002}
+    damage: 110
+    range: 1200
+    roundsPerMinute: 200
+    explosive: 1
+    ejectCasings: 1
+    icon: {fileID: 21300000, guid: 2c96c802e944f77419702839605741d6, type: 3}
+  - name: 7.62 MM COAX
+    system: 0
+    role: 1
+    gun: {fileID: 412871685692491077}
+    launcher: {fileID: 0}
+    projectile: {fileID: 0}
+    muzzle: {fileID: 2085476933944431002}
+    damage: 34
+    range: 500
+    roundsPerMinute: 650
+    explosive: 0
+    ejectCasings: 0
+    icon: {fileID: 21300000, guid: 2c96c802e944f77419702839605741d6, type: 3}
+  - name: TOW ATGM
+    system: 1
+    role: 1
+    gun: {fileID: 412871685692491077}
+    launcher: {fileID: 8800242840064942910}
+    projectile: {fileID: 0}
+    muzzle: {fileID: 0}
+    damage: 35
+    range: 300
+    roundsPerMinute: 600
+    explosive: 0
+    ejectCasings: 0
+    icon: {fileID: 21300000, guid: bc998521b992689479af4ee353227a5b, type: 3}
 --- !u!1 &2155077309122243850
 GameObject:
   m_ObjectHideFlags: 0
@@ -4782,6 +4844,60 @@ MeshRenderer:
   m_SortingOrder: 0
   m_MaskInteraction: 0
   m_AdditionalVertexStreams: {fileID: 0}
+--- !u!1 &4883423145891888419
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 5796839429691073959}
+  - component: {fileID: 8800242840064942910}
+  m_Layer: 0
+  m_Name: TOW station
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &5796839429691073959
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4883423145891888419}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 7461584240854149169}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &8800242840064942910
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4883423145891888419}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 15758ee054fe4464a80e41fe97e37f97, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::VehicleLauncher
+  vehicle: {fileID: 4638209563810107676}
+  controlRole: 1
+  projectile: {fileID: 937323468888893390, guid: 4e035ca4be733c14e9d841aedfb23a85, type: 3}
+  weaponIcon: {fileID: 21300000, guid: bc998521b992689479af4ee353227a5b, type: 3}
+  muzzles:
+  - {fileID: 3019232634172183533}
+  tubeRounds: []
+  interval: 3
+  capacity: 2
+  rechargeInterval: 10
 --- !u!1 &4967631380190447756
 GameObject:
   m_ObjectHideFlags: 0
@@ -5187,6 +5303,7 @@ Transform:
   m_Children:
   - {fileID: 2085476933944431002}
   - {fileID: 8695816356542258533}
+  - {fileID: 3019232634172183533}
   m_Father: {fileID: 1447578692474234196}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!33 &417472103722378645
@@ -5492,6 +5609,37 @@ Transform:
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 7461584240854149169}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &7689039432225364017
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 3019232634172183533}
+  m_Layer: 0
+  m_Name: TOW muzzle
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &3019232634172183533
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7689039432225364017}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: -0.9, y: 0.269771, z: 1.2964952}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 2186096514274842312}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &7863202564384837813
 GameObject:
