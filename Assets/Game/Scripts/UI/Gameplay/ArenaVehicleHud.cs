@@ -54,6 +54,9 @@ public class ArenaVehicleHud : MonoBehaviour
         ArenaHudTheme.StyleLines(transform, filamentLine, accentLineGlow);
         // Ammunition and weapon identity belong to the shared bottom-right equipment card.
         weapon.gameObject.SetActive(false);
+        // Keep the lower equipment row clear even when the centered seat hints reach it.
+        controls.rectTransform.anchoredPosition+=new Vector2(0,16);
+        rightControls.rectTransform.anchoredPosition+=new Vector2(0,16);
         diagram.rectTransform.sizeDelta=new Vector2(160,160);diagram.preserveAspect=true;
         var links=new GameObject("Seat diagram callouts",typeof(RectTransform),typeof(CanvasRenderer),typeof(VehicleSeatDiagramGraphic));links.transform.SetParent(diagram.transform,false);links.transform.SetAsFirstSibling();seatDiagramLinks=links.GetComponent<VehicleSeatDiagramGraphic>();seatDiagramLinks.rectTransform.sizeDelta=new Vector2(160,160);seatDiagramLinks.raycastTarget=false;
         BuildRoadDashboard();
@@ -244,12 +247,12 @@ public class ArenaVehicleHud : MonoBehaviour
             for(int i=0;i<systemTiles.Count;i++)
             {
                 var tile=systemTiles[i];tile.gameObject.SetActive(i<count);
-                // Weapon slots stay below the active card; utility occupies the infantry grenade row.
+                // Weapon slots stay below the active card; utility sits beside it like infantry launchers.
                 bool defense=defenses && role!=Vehicle.SeatRole.Passenger && i==seatSystems.Count;
                 int weaponCount=Mathf.Max(1,seatSystems.Count);
                 float width=(350f-8f*(weaponCount-1))/weaponCount;
-                tile.sizeDelta=new Vector2(defense?170:width,48);
-                tile.anchoredPosition=defense?new Vector2(89,190):new Vector2(-175+width*.5f+i*(width+8),0);
+                tile.sizeDelta=new Vector2(defense?86:width,48);
+                tile.anchoredPosition=defense?new Vector2(-226,0):new Vector2(-175+width*.5f+i*(width+8),0);
                 var key=systemKeys[i].rectTransform;
                 key.anchoredPosition=new Vector2(-tile.sizeDelta.x*.5f+20,0);
                 systemIcons[i].rectTransform.sizeDelta=new Vector2(Mathf.Max(32,width-42),44);
@@ -268,6 +271,7 @@ public class ArenaVehicleHud : MonoBehaviour
             bool chosen=entry!=null && entry==selected;
             var icon=systemIcons[i];var key=systemKeys[i];var caption=systemCaptions[i];
             icon.gameObject.SetActive(!defense);
+            key.gameObject.SetActive(!defense);
             if(!defense)
             {
                 caption.rectTransform.sizeDelta=new Vector2(142,20);
@@ -282,10 +286,12 @@ public class ArenaVehicleHud : MonoBehaviour
             else if(defense)
             {
                 key.text="X";
-                caption.text=defenses.SystemName+"\n"+defenses.Charges+" / "+defenses.capacity;
+                caption.text=(defenses.SystemName.Contains("FLARE")?"FLARES":defenses.SystemName)+"\n"+defenses.Charges+" / "+defenses.capacity+"  [X]";
                 if(defenses.ReadyIn>0)caption.text+="  "+defenses.ReadyIn.ToString("0")+"s";
                 else if(defenses.Charges<defenses.capacity)caption.text+="  +1 "+defenses.RechargeIn.ToString("0")+"s";
-                caption.rectTransform.sizeDelta=new Vector2(122,44);caption.rectTransform.anchoredPosition=new Vector2(18,0);
+                caption.rectTransform.sizeDelta=new Vector2(78,44);caption.rectTransform.anchoredPosition=Vector2.zero;
+                caption.alignment=TextAlignmentOptions.Center;
+
             }
             else
             {
@@ -364,7 +370,7 @@ public class ArenaVehicleHud : MonoBehaviour
         var rect=(RectTransform)roadPanel.transform;
         rect.SetParent(transform,false);
         rect.anchorMin=rect.anchorMax=new Vector2(1f,0f);rect.pivot=new Vector2(1f,0f);
-        rect.anchoredPosition=new Vector2(-50,55);rect.sizeDelta=new Vector2(330,150);
+        rect.anchoredPosition=new Vector2(-50,75);rect.sizeDelta=new Vector2(330,150);
         var gauge=new GameObject("Speedometer",typeof(RectTransform),typeof(CanvasRenderer),typeof(VehicleSpeedometerGraphic));
         gauge.transform.SetParent(rect,false);roadGauge=gauge.GetComponent<VehicleSpeedometerGraphic>();
         roadGauge.rectTransform.sizeDelta=new Vector2(200,115);roadGauge.rectTransform.anchoredPosition=new Vector2(-62,62);
@@ -401,7 +407,7 @@ public class ArenaVehicleHud : MonoBehaviour
     }
     void BuildSpecializedInstruments()
     {
-        armoredPanel=InstrumentCard("Armored driver instruments",new Vector2(-50,65),new Vector2(340,200));
+        armoredPanel=InstrumentCard("Armored driver instruments",new Vector2(-50,85),new Vector2(340,200));
         armoredHeading=DashboardLabel("Hull heading",armoredPanel.transform,new Vector2(0,72),new Vector2(310,28),16);
         armoredSpeed=DashboardLabel("Digital speed",armoredPanel.transform,new Vector2(-85,18),new Vector2(140,65),38);
         armoredState=DashboardLabel("Drive state",armoredPanel.transform,new Vector2(-85,-42),new Vector2(155,35),14);
@@ -409,7 +415,7 @@ public class ArenaVehicleHud : MonoBehaviour
         var level=new GameObject("Hull level",typeof(RectTransform),typeof(CanvasRenderer),typeof(VehicleDiagramGraphic));
         level.transform.SetParent(armoredPanel.transform,false);armoredLevel=level.GetComponent<VehicleDiagramGraphic>();
         armoredLevel.drawing=VehicleDiagramGraphic.Drawing.HullLevel;armoredLevel.rectTransform.anchoredPosition=new Vector2(85,22);armoredLevel.rectTransform.sizeDelta=new Vector2(105,65);armoredLevel.raycastTarget=false;
-        dronePanel=InstrumentCard("Unmanned aircraft telemetry",new Vector2(-50,65),new Vector2(350,210));
+        dronePanel=InstrumentCard("Unmanned aircraft telemetry",new Vector2(-50,85),new Vector2(350,210));
         droneHeading=DashboardLabel("UAS heading",dronePanel.transform,new Vector2(0,72),new Vector2(325,35),17);
         droneTelemetry=DashboardLabel("UAS telemetry",dronePanel.transform,new Vector2(0,-5),new Vector2(315,120),18);
         droneTelemetry.alignment=TextAlignmentOptions.MidlineLeft;
