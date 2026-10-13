@@ -154,8 +154,21 @@ public class ArenaVehicleHud : MonoBehaviour
         if(attackHud.Visible){gunnerReadout.gameObject.SetActive(false);desiredAim.gameObject.SetActive(false);actualAim.gameObject.SetActive(false);flightPathMarker.gameObject.SetActive(false);return;}
         if (player.IsMounted && player.MountedVehicle.motor is HelicopterMotor && ShowVehicleInstruments(player.MountedVehicle))
             if(flightPanel.activeSelf) UpdateFlightInstruments(player.MountedVehicle, groundAltitude);
-        flightPathMarker.gameObject.SetActive(player.IsMounted && flightPanel.activeSelf && player.MountedVehicle.Body.linearVelocity.sqrMagnitude>1);
-        if(flightPathMarker.gameObject.activeSelf){var cam=player.ActiveVehicleCamera ? player.ActiveVehicleCamera : Camera.main;if(cam)PlaceMarker(flightPathMarker,cam,cam.transform.position+player.MountedVehicle.Body.linearVelocity.normalized*100,true);else flightPathMarker.gameObject.SetActive(false);}
+        flightPathMarker.gameObject.SetActive(player.IsMounted && flightPanel.activeSelf);
+        if(flightPathMarker.gameObject.activeSelf)
+        {
+            var cam=player.ActiveVehicleCamera ? player.ActiveVehicleCamera : Camera.main;
+            if(cam)
+            {
+                Vector3 velocity=player.MountedVehicle.Body.linearVelocity;
+                float speed=velocity.magnitude;
+                float travelWeight=Mathf.SmoothStep(0,1,Mathf.InverseLerp(1,5,speed));
+                Vector3 direction=speed>1?Vector3.Slerp(cam.transform.forward,velocity.normalized,travelWeight):cam.transform.forward;
+                PlaceMarker(flightPathMarker,cam,cam.transform.position+direction*100,true);
+                if(speed<=1)flightPathMarker.GetComponent<Graphic>().canvasRenderer.SetAlpha(.4f);
+            }
+            else flightPathMarker.gameObject.SetActive(false);
+        }
         bool armed = player.IsMounted && vehicleEquipment.activeSelf;
         gunnerReadout.gameObject.SetActive(armed && player.MountedVehicle.seats[player.SeatIndex].role==Vehicle.SeatRole.Gunner);
         desiredAim.gameObject.SetActive(armed); actualAim.gameObject.SetActive(armed);
@@ -309,8 +322,8 @@ public class ArenaVehicleHud : MonoBehaviour
         telemetry.rectTransform.anchoredPosition=metric?new Vector2(0,-150):new Vector2(280,-125);
         horizon.GetComponent<VehicleDiagramGraphic>().drawing=metric?VehicleDiagramGraphic.Drawing.LevelHorizon:VehicleDiagramGraphic.Drawing.PitchLadder;
         foreach(Transform label in horizon)label.gameObject.SetActive(!metric);
-        horizon.gameObject.SetActive(!apache || vehicle.Body.linearVelocity.magnitude>20);
-        hoverCue.gameObject.SetActive(apache && vehicle.Body.linearVelocity.magnitude<=20);
+        horizon.gameObject.SetActive(!apache);
+        hoverCue.gameObject.SetActive(apache);
         if(hoverCue.gameObject.activeSelf)hoverCue.SetHoverVelocity(new Vector2(Vector3.Dot(vehicle.Body.linearVelocity,vehicle.transform.right),Vector3.Dot(vehicle.Body.linearVelocity,vehicle.transform.forward)));
         panel.anchoredPosition=new Vector2(0,35);
         Transform view = vehicle.transform;
@@ -361,8 +374,9 @@ public class ArenaVehicleHud : MonoBehaviour
         }
         bool visible=clampToView||screen.z>0;
         marker.gameObject.SetActive(visible);if(!visible)return;
-        RectTransformUtility.ScreenPointToLocalPointInRectangle((RectTransform)marker.parent,screen,null,out var local);
-        marker.anchoredPosition=local;
+        // World placement accounts for the parent's pivot and the marker's anchors.
+        if(RectTransformUtility.ScreenPointToWorldPointInRectangle((RectTransform)marker.parent,screen,null,out var world))
+            marker.position=world;
         if(clampToView)marker.GetComponent<Graphic>().canvasRenderer.SetAlpha(screen.z>0?.9f:.35f);
     }
     bool ShowVehicleInstruments(Vehicle v)=>v.seats[player.SeatIndex].role==Vehicle.SeatRole.Driver||v.seats[player.SeatIndex].showVehicleInstruments;

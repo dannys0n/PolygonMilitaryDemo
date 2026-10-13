@@ -20,27 +20,31 @@ public class VehicleExternalViewMonitor : MonoBehaviour
         panel = new GameObject("External vehicle monitor", typeof(RectTransform)).GetComponent<RectTransform>();
         panel.SetParent(transform, false);
         panel.SetAsFirstSibling();
-        panel.anchorMin = new Vector2(.22f, .30f);
-        panel.anchorMax = new Vector2(.78f, .75f);
-        panel.offsetMin = panel.offsetMax = Vector2.zero;
-        var image = new GameObject("TPS camera feed", typeof(RectTransform), typeof(CanvasRenderer), typeof(RawImage), typeof(AspectRatioFitter));
+        panel.anchorMin = panel.anchorMax = new Vector2(0, 1);
+        panel.pivot = new Vector2(0, 1);
+        panel.anchoredPosition = new Vector2(32, -48);
+        panel.sizeDelta = new Vector2(420, 452);
+        var image = new GameObject("TPS camera feed", typeof(RectTransform), typeof(CanvasRenderer), typeof(RawImage));
         image.transform.SetParent(panel, false);
         display = image.GetComponent<RawImage>();
         display.raycastTarget = false;
         display.material = displayMaterial;
-        var fit = image.GetComponent<AspectRatioFitter>();
-        fit.aspectMode = AspectRatioFitter.AspectMode.FitInParent;
-        fit.aspectRatio = 16f / 9f;
+        var imageRect = display.rectTransform;
+        imageRect.anchorMin = new Vector2(0, 1);
+        imageRect.anchorMax = new Vector2(1, 1);
+        imageRect.pivot = new Vector2(.5f, 1);
+        imageRect.anchoredPosition = Vector2.zero;
+        imageRect.sizeDelta = new Vector2(0, 420);
         var label = Instantiate(labelTemplate, panel);
         label.name = "External view label";
-        label.text = "EXTERNAL VIEW";
+        label.text = "THIRD PERSON";
         label.fontSize = 15;
         label.alignment = TextAlignmentOptions.TopLeft;
         label.color = new Color(1, .55f, .12f);
         label.raycastTarget = false;
         label.rectTransform.anchorMin = label.rectTransform.anchorMax = new Vector2(0, 1);
         label.rectTransform.pivot = new Vector2(0, 1);
-        label.rectTransform.anchoredPosition = new Vector2(10, -8);
+        label.rectTransform.anchoredPosition = new Vector2(10, -426);
         label.rectTransform.sizeDelta = new Vector2(220, 25);
         label.gameObject.SetActive(true);
         panel.gameObject.SetActive(false);
@@ -60,7 +64,7 @@ public class VehicleExternalViewMonitor : MonoBehaviour
         }
         if (!texture)
         {
-            texture = new RenderTexture(960, 540, 24) { name = "Cockpit external view" };
+            texture = new RenderTexture(640, 640, 24) { name = "Cockpit external view" };
             texture.Create();
             display.texture = texture;
         }
@@ -69,7 +73,8 @@ public class VehicleExternalViewMonitor : MonoBehaviour
         monitorCamera.GetUniversalAdditionalCameraData().renderPostProcessing = source.GetUniversalAdditionalCameraData().renderPostProcessing;
         monitorCamera.targetTexture = texture;
         monitorCamera.depth = source.depth - 1;
-        monitorCamera.aspect = 16f / 9f;
+        monitorCamera.aspect = 1f;
+        monitorCamera.fieldOfView = 85f;
         monitorCamera.nearClipPlane = .2f;
         occupant.GetSpectatorCameraPose(false, out var position, out var rotation);
         monitorCamera.transform.SetPositionAndRotation(position, rotation);
