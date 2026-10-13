@@ -84,7 +84,15 @@ public static class ClassMenuPreviewBuilder
                 foreach(var c in t.GetComponents<Component>().Reverse())
                     if(c&&!(c is Transform)&&!(c is MeshFilter)&&!(c is MeshRenderer)&&!(c is SkinnedMeshRenderer))Object.DestroyImmediate(c);
             var directory=id.StartsWith("weapon-")?Output:Output+"/Attachments";Folder(directory);
-            var path=directory+"/"+string.Concat(id.Select(c=>char.IsLetterOrDigit(c)||c=='-'||c=='_'?c:'_'))+".prefab";
+            // Keep the existing GUID/address when a preview is renamed for authoring clarity.
+            var existing=group.entries.FirstOrDefault(e=>e.address==address);
+            var path=existing==null?null:AssetDatabase.GUIDToAssetPath(existing.guid);
+            if(string.IsNullOrEmpty(path))
+            {
+                var label=id.StartsWith("weapon-")?source.name.Replace("_Scaled_Base","").Replace("_Base","")+"_Preview":id;
+                path=directory+"/"+string.Concat(label.Select(c=>char.IsLetterOrDigit(c)||c=='-'||c=='_'?c:'_'))+".prefab";
+            }
+            clone.name=System.IO.Path.GetFileNameWithoutExtension(path);
             PrefabUtility.SaveAsPrefabAsset(clone,path);
             var asset=settings.CreateOrMoveEntry(AssetDatabase.AssetPathToGUID(path),group);asset.address=address;previews[address]=path;return address;
         }
