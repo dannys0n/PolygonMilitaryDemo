@@ -20,7 +20,6 @@ public class JetMotor : VehicleMotor
     [Min(0)] public float lateralFlowResponse = 5;
     public float maxLoadFactor = 7;
 
-
     public Vector3 FlightControlInput { get; private set; }
     [System.Serializable]
     public class ControlSurface
@@ -47,8 +46,6 @@ public class JetMotor : VehicleMotor
 
     public override bool CanDisembark => Grounded;
     readonly RaycastHit[] groundHits = new RaycastHit[16];
-
-
 
     void Start()
     {

@@ -333,6 +333,48 @@ public class VehicleDefenseTests
         Assert.Less(maximum,3,"Hold the requested aim after settling");
         Assert.Less(maximum-minimum,1,"Do not keep bouncing around the target");
     }
+    [UnityTest] public IEnumerator HelicopterAssistReplaysThroughManualMotorIdentically()
+    {
+        var prefab=AssetDatabase.LoadAssetAtPath<GameObject>("Assets/Game/Prefabs/Vehicles/Transports/TransportHelicopter.prefab");
+        var roots=new GameObject[2];var motors=new Component[2];
+        for(int i=0;i<2;i++)
+        {
+            roots[i]=Object.Instantiate(prefab,new Vector3(i*500,1000,0),Quaternion.identity);objects.Add(roots[i]);
+            ((Behaviour)roots[i].GetComponent(T("Vehicle"))).enabled=false;
+            motors[i]=roots[i].GetComponent(T("HelicopterMotor"));
+            Set(Get(Get(motors[i],"vehicle"),"helicopterAssist"),"assistEnabled",i==0);
+            roots[i].GetComponent<Rigidbody>().linearVelocity=new Vector3(0,0,10);
+        }
+        var source=Activator.CreateInstance(T("VehicleInput"));Set(source,"directionalFlight",true);
+        Set(source,"heading",45f);Set(source,"movementHeading",45f);Set(source,"move",new Vector2(.3f,.7f));
+        yield return null;
+        for(int step=0;step<200;step++)
+        {
+            var controls=Call(Get(motors[0],"vehicle"),"PrepareDriverInput",source,true);
+            Call(motors[0],"Simulate",controls,true);Call(motors[1],"Simulate",controls,true);
+            yield return new WaitForFixedUpdate();
+            Assert.Less(Quaternion.Angle(roots[0].transform.rotation,roots[1].transform.rotation),.02f);
+            Assert.Less((roots[0].GetComponent<Rigidbody>().linearVelocity-roots[1].GetComponent<Rigidbody>().linearVelocity).magnitude,.01f);
+        }
+    }
+    [UnityTest] public IEnumerator HelicopterGuidanceToggleAndCollectiveRemainBounded()
+    {
+        var prefab=AssetDatabase.LoadAssetAtPath<GameObject>("Assets/Game/Prefabs/Vehicles/Transports/TransportHelicopter.prefab");
+        var root=Object.Instantiate(prefab,new Vector3(0,1000,0),Quaternion.identity);objects.Add(root);
+        var vehicle=root.GetComponent(T("Vehicle"));((Behaviour)vehicle).enabled=false;
+        var motor=root.GetComponent(T("HelicopterMotor"));var guide=Get(vehicle,"helicopterAssist");
+        var source=Activator.CreateInstance(T("VehicleInput"));Set(source,"directionalFlight",true);Set(source,"heading",30f);
+        yield return null;
+        for(int step=0;step<150;step++)
+        {
+            Set(guide,"assistEnabled",step%50<25);
+            var controls=Call(vehicle,"PrepareDriverInput",source,true);
+            Assert.LessOrEqual(Mathf.Abs((float)Get(controls,"pitchRate")),1);
+            Assert.LessOrEqual(Mathf.Abs((float)Get(controls,"yaw")),1);
+            Call(motor,"Simulate",controls,true);yield return new WaitForFixedUpdate();
+            Assert.IsFalse(float.IsNaN(root.GetComponent<Rigidbody>().linearVelocity.y));
+        }
+    }
     [UnityTest] public IEnumerator RearDoorOpensAndClosesItsColliderWithTheMesh()
     {
         var prefab=AssetDatabase.LoadAssetAtPath<GameObject>("Assets/Game/Prefabs/Vehicles/Transports/Van.prefab");var root=Object.Instantiate(prefab,new Vector3(0,1000,0),Quaternion.identity);objects.Add(root);

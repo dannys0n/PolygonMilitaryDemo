@@ -53,13 +53,14 @@ public class Vehicle : MonoBehaviour
     [HideInInspector] public float seatDiagramHalfExtent=1;
     public VehicleMotor motor;
     public JetFlightAssist jetAssist = new JetFlightAssist();
+    public HelicopterFlightAssist helicopterAssist = new HelicopterFlightAssist();
     public bool IsAircraft => motor is HelicopterMotor || motor is JetMotor;
     public bool FlightAssistEnabled
     {
-        get => motor is JetMotor ? jetAssist.assistEnabled : ((HelicopterMotor)motor).assistEnabled;
-        set { if (motor is JetMotor) jetAssist.assistEnabled = value; else ((HelicopterMotor)motor).assistEnabled = value; }
+        get => motor is JetMotor ? jetAssist.assistEnabled : helicopterAssist.assistEnabled;
+        set { if (motor is JetMotor) jetAssist.assistEnabled = value; else helicopterAssist.assistEnabled = value; }
     }
-    public Quaternion RequestedFlightAttitude => motor is JetMotor ? jetAssist.RequestedAttitude : ((HelicopterMotor)motor).RequestedAttitude;
+    public Quaternion RequestedFlightAttitude => motor is JetMotor ? jetAssist.RequestedAttitude : helicopterAssist.RequestedAttitude;
     public VehicleTurret turret;
     public ParticleSystem destructionEffect;
     public Transform cameraTarget;
@@ -149,7 +150,8 @@ public class Vehicle : MonoBehaviour
             obstacle.enabled = !Driver && Body.linearVelocity.sqrMagnitude < .1f;
     }
     public VehicleInput PrepareDriverInput(VehicleInput input, bool powered)
-        => motor is JetMotor jet ? jetAssist.ProvideInput(input, jet, powered) : input;
+        => motor is JetMotor jet ? jetAssist.ProvideInput(input, jet, powered)
+            : motor is HelicopterMotor helicopter ? helicopterAssist.ProvideInput(input, helicopter, powered) : input;
     public bool CanBoard(VehicleOccupant actor, int index)
     {
         if (IsDestroyed || actor.IsMounted || actor.life.health.IsDead || index < 0 || index >= seats.Length)

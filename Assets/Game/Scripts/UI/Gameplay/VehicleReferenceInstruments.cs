@@ -66,6 +66,6 @@ public class VehicleReferenceInstruments : MonoBehaviour
         speedText.text="GS\n"+knots.ToString("0")+" KT";altitudeText.text="ALT\n"+feet.ToString("0")+" FT";rotorText.text="NR\n"+nr.ToString("0")+"%";verticalText.text="V/S\n"+climb.ToString("+0;-0;0")+" FPM";
         clearance.text="AGL "+(groundHeight*3.28084f).ToString("0")+" FT    /    ROTOR "+(motor.rotorRpm*motor.RotorPower).ToString("0")+" RPM";
         int hdg=Mathf.RoundToInt(Mathf.Repeat(vehicle.transform.eulerAngles.y,360))%360;
-        heading.text="HDG "+hdg.ToString("000")+"°   /   "+(motor.assistEnabled?"ASSIST":"MANUAL");
+        heading.text="HDG "+hdg.ToString("000")+"°   /   "+(vehicle.FlightAssistEnabled?"ASSIST":"MANUAL");
     }
 }

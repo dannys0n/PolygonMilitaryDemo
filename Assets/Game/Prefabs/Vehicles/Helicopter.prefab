@@ -247,6 +247,24 @@ MonoBehaviour:
   seatDiagramCenter: {x: -0.000014781952, y: 0.4960122}
   seatDiagramHalfExtent: 8.557807
   motor: {fileID: 3531695694254071810}
+  jetAssist:
+    assistEnabled: 1
+    maximumBank: 75
+    headingToBank: 1.8
+    assistedBankRate: 100
+    aimResponse: 2
+  helicopterAssist:
+    assistEnabled: 1
+    attitudeSpring: 60
+    attitudeDamping: 16
+    verticalResponse: 2.8
+    positionHoldSpring: 0.6
+    positionHoldDamping: 1.5
+    maxHoldAcceleration: 18
+    reversalTilt: 38
+    reversalSpeedRange: {x: 4, y: 20}
+    movementVelocityResponse: 0.8
+    cyclicResponseTime: 0.1
   turret: {fileID: 2684248542658391728}
   destructionEffect: {fileID: 695410771644243590, guid: c07b2e8d0c65dad44bf5eaca660002fc, type: 3}
   cameraTarget: {fileID: 9190760816090246636}
@@ -313,18 +331,7 @@ MonoBehaviour:
   climbSpeed: 5
   maxSpeed: 32
   flightForceMultiplier: 1.75
-  attitudeSpring: 60
-  attitudeDamping: 16
-  maxAngularAcceleration: 16
-  verticalResponse: 2.8
   maxThrustMultiplier: 2.2
-  assistEnabled: 1
-  positionHoldSpring: 0.6
-  positionHoldDamping: 1.5
-  maxHoldAcceleration: 18
-  reversalTilt: 38
-  reversalTorqueMultiplier: 1.35
-  reversalSpeedRange: {x: 4, y: 20}
   manualPitchRate: 70
   manualRollRate: 70
   manualResponse: 16
@@ -332,8 +339,6 @@ MonoBehaviour:
   forwardDrag: 0.025
   sidewaysDrag: 0.05
   quadraticDrag: 0.0015
-  movementVelocityResponse: 0.8
-  cyclicResponseTime: 0.1
 --- !u!114 &2684248542658391728
 MonoBehaviour:
   m_ObjectHideFlags: 0
