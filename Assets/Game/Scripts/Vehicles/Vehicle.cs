@@ -52,13 +52,14 @@ public class Vehicle : MonoBehaviour
     [HideInInspector] public Vector2 seatDiagramCenter;
     [HideInInspector] public float seatDiagramHalfExtent=1;
     public VehicleMotor motor;
+    public JetFlightAssist jetAssist = new JetFlightAssist();
     public bool IsAircraft => motor is HelicopterMotor || motor is JetMotor;
     public bool FlightAssistEnabled
     {
-        get => motor is JetMotor jet ? jet.assistEnabled : ((HelicopterMotor)motor).assistEnabled;
-        set { if (motor is JetMotor jet) jet.assistEnabled = value; else ((HelicopterMotor)motor).assistEnabled = value; }
+        get => motor is JetMotor ? jetAssist.assistEnabled : ((HelicopterMotor)motor).assistEnabled;
+        set { if (motor is JetMotor) jetAssist.assistEnabled = value; else ((HelicopterMotor)motor).assistEnabled = value; }
     }
-    public Quaternion RequestedFlightAttitude => motor is JetMotor jet ? jet.RequestedAttitude : ((HelicopterMotor)motor).RequestedAttitude;
+    public Quaternion RequestedFlightAttitude => motor is JetMotor ? jetAssist.RequestedAttitude : ((HelicopterMotor)motor).RequestedAttitude;
     public VehicleTurret turret;
     public ParticleSystem destructionEffect;
     public Transform cameraTarget;
@@ -142,11 +143,13 @@ public class Vehicle : MonoBehaviour
     }
     void FixedUpdate()
     {
-        if (!IsDestroyed) motor.Simulate(DriverInput, Driver);
+        if (!IsDestroyed) motor.Simulate(PrepareDriverInput(DriverInput, Driver), Driver);
         // Carving is only useful while parked; a dynamic body never also owns a NavMeshAgent.
         if (obstacle)
             obstacle.enabled = !Driver && Body.linearVelocity.sqrMagnitude < .1f;
     }
+    public VehicleInput PrepareDriverInput(VehicleInput input, bool powered)
+        => motor is JetMotor jet ? jetAssist.ProvideInput(input, jet, powered) : input;
     public bool CanBoard(VehicleOccupant actor, int index)
     {
         if (IsDestroyed || actor.IsMounted || actor.life.health.IsDead || index < 0 || index >= seats.Length)

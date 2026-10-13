@@ -283,7 +283,7 @@ public class ArenaVehicleAI : MonoBehaviour
         float pitch = -Mathf.Atan2(direction.y, Mathf.Max(1, horizontal)) * Mathf.Rad2Deg;
         if (jet.Grounded || v.transform.position.y < ground + 30) pitch = -12;
         v.DriverInput = new VehicleInput { directionalFlight = true, heading = heading,
-            viewPitch = Mathf.Clamp(pitch, -25, 15), move = new Vector2(0, jet.Airspeed < 100 ? 1 : -.3f),
+            viewPitch = Mathf.Clamp(pitch, -25, 15), move = new Vector2(0, jet.Airspeed < jet.maxSpeed * .85f ? 1 : -.3f),
             boost = jet.Grounded };
         if (v.turret) UseTurret(v);
         if (v.GetComponent<VehicleLauncher>()) UseRockets(v);

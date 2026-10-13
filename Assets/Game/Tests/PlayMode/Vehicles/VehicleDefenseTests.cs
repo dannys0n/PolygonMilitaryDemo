@@ -18,9 +18,22 @@ public class VehicleDefenseTests
     const BindingFlags flags=BindingFlags.Public|BindingFlags.NonPublic|BindingFlags.Instance;
     static Type T(string name)=>AppDomain.CurrentDomain.GetAssemblies().Select(a=>a.GetType(name)).First(t=>t!=null);
     static object Get(object o,string name){var p=o.GetType().GetProperty(name,flags);return p!=null?p.GetValue(o):o.GetType().GetField(name,flags).GetValue(o);}
-    static void Set(object o,string name,object value)=>o.GetType().GetField(name,flags).SetValue(o,value);
+    static void Set(object o,string name,object value)
+    {
+        var field=o.GetType().GetField(name,flags);
+        if(field==null && o.GetType().Name=="JetMotor")
+        {
+            o=Get(Get(o,"vehicle"),"jetAssist");field=o.GetType().GetField(name,flags);
+        }
+        field.SetValue(o,value);
+    }
     static void EnumField(object o,string name,string value)=>Set(o,name,Enum.Parse(o.GetType().GetField(name,flags).FieldType,value));
     static object Call(object o,string name,params object[] args)=>o.GetType().GetMethod(name,flags).Invoke(o,args);
+    static void SimulateFlight(Component motor,object input,bool powered)
+    {
+        input=Call(Get(motor,"vehicle"),"PrepareDriverInput",input,powered);
+        Call(motor,"Simulate",input,powered);
+    }
     GameObject Root(string name){var g=new GameObject(name);objects.Add(g);return g;}
     Component Vehicle(string name,int faction,Vector3 position)
     {
@@ -95,7 +108,7 @@ public class VehicleDefenseTests
     {
         var prefab=AssetDatabase.LoadAssetAtPath<GameObject>("Assets/Game/Prefabs/Vehicles/Prototypes/Jet01.prefab");var root=Object.Instantiate(prefab,new Vector3(0,1000,0),Quaternion.identity);objects.Add(root);
         ((Behaviour)root.GetComponent(T("Vehicle"))).enabled=false;var motor=root.GetComponent(T("JetMotor"));var input=Activator.CreateInstance(T("VehicleInput"));
-        yield return null;for(int i=0;i<10;i++){Call(motor,"Simulate",input,true);yield return new WaitForFixedUpdate();}
+        yield return null;for(int i=0;i<10;i++){SimulateFlight(motor,input,true);yield return new WaitForFixedUpdate();}
         Assert.Greater(root.GetComponent<Rigidbody>().linearVelocity.z,.1f);Assert.Greater((float)Get(motor,"EnginePower"),0);Assert.Less(root.GetComponent<Rigidbody>().linearVelocity.y,-.2f);
     }
     [UnityTest] public IEnumerator JetsRespondFasterWithoutBypassingRigidBodyFlight()
@@ -120,7 +133,7 @@ public class VehicleDefenseTests
             Set(input,"heading",60f);Set(input,"viewPitch",-15f);Set(input,"pitchRate",-.5f);Set(input,"move",new Vector2(.5f,0));
             yield return null;
             for(int step=0;step<25;step++)
-            {for(int i=0;i<2;i++)Call(motors[i],"Simulate",input,true);yield return new WaitForFixedUpdate();}
+            {for(int i=0;i<2;i++)SimulateFlight(motors[i],input,true);yield return new WaitForFixedUpdate();}
             float previous=Quaternion.Angle(Quaternion.identity,roots[0].transform.rotation);
             float tuned=Quaternion.Angle(Quaternion.identity,roots[1].transform.rotation);
             Assert.Greater(tuned,previous*1.1f,name+" must respond sooner in "+(assisted?"assisted":"manual")+" flight");
@@ -146,7 +159,7 @@ public class VehicleDefenseTests
             }
             yield return null;
             for(int step=0;step<150;step++)
-            {for(int i=0;i<2;i++)Call(motors[i],"Simulate",inputs[i],true);yield return new WaitForFixedUpdate();}
+            {for(int i=0;i<2;i++)SimulateFlight(motors[i],inputs[i],true);yield return new WaitForFixedUpdate();}
             for(int i=0;i<2;i++)
             {
                 var body=roots[i].GetComponent<Rigidbody>();
@@ -154,7 +167,7 @@ public class VehicleDefenseTests
                 float noseHeading=roots[i].transform.eulerAngles.y;
                 Assert.Greater(pathHeading,20,"The flight path must turn, not just the rendered nose");
                 Assert.Less(Mathf.Abs(Mathf.DeltaAngle(noseHeading,pathHeading)),15,"Nose and actual trajectory must remain coordinated");
-                Assert.Less(Mathf.Abs(roots[i].transform.position.y-1000),20,"Assist should support the banked turn");
+                Assert.Less(Vector3.Angle(roots[i].transform.forward,Quaternion.Euler(0,60,0)*Vector3.forward),8,"Assist must directly align the nose to the aim direction");
                 TestContext.WriteLine(name+" ADS="+(i==1)+": path="+pathHeading.ToString("F1")+", nose="+noseHeading.ToString("F1"));
             }
             Assert.Less(Quaternion.Angle(roots[0].transform.rotation,roots[1].transform.rotation),.5f,"ADS must not enable or change jet steering");
@@ -174,7 +187,7 @@ public class VehicleDefenseTests
         {
             // Mouse jitter around directly behind must not repeatedly reverse the physical bank.
             Set(input,"heading",root.transform.eulerAngles.y+(step%2==0?179f:181f));
-            Call(motor,"Simulate",input,true);yield return new WaitForFixedUpdate();
+            SimulateFlight(motor,input,true);yield return new WaitForFixedUpdate();
             if(step>15)
             {
                 Vector3 right=Quaternion.Euler(0,root.transform.eulerAngles.y,0)*Vector3.right;
@@ -193,16 +206,132 @@ public class VehicleDefenseTests
             roots[i]=Object.Instantiate(prefab,new Vector3(i*500,1000,0),Quaternion.identity);objects.Add(roots[i]);
             ((Behaviour)roots[i].GetComponent(T("Vehicle"))).enabled=false;
             motors[i]=roots[i].GetComponent(T("JetMotor"));Set(motors[i],"assistEnabled",true);
-            roots[i].GetComponent<Rigidbody>().linearVelocity=Vector3.forward*60;
+            roots[i].GetComponent<Rigidbody>().linearVelocity=Vector3.forward*25;
         }
         Set(motors[0],"maximumThrust",180000f);Set(motors[0],"engineResponse",1.5f);Set(motors[0],"throttleChangeRate",.55f);Set(motors[0],"maxSpeed",180f);
         var input=Activator.CreateInstance(T("VehicleInput"));Set(input,"directionalFlight",true);Set(input,"move",Vector2.up);Set(input,"boost",true);
         yield return null;
-        for(int step=0;step<100;step++)
-        {for(int i=0;i<2;i++)Call(motors[i],"Simulate",input,true);yield return new WaitForFixedUpdate();}
+        for(int step=0;step<50;step++)
+        {for(int i=0;i<2;i++)SimulateFlight(motors[i],input,true);yield return new WaitForFixedUpdate();}
         Assert.Greater(roots[1].GetComponent<Rigidbody>().linearVelocity.magnitude,roots[0].GetComponent<Rigidbody>().linearVelocity.magnitude+10,"Faster acceleration from flight speed");
-        for(int step=0;step<400;step++){Call(motors[1],"Simulate",input,true);yield return new WaitForFixedUpdate();}
+        for(int step=0;step<400;step++){SimulateFlight(motors[1],input,true);yield return new WaitForFixedUpdate();}
         Assert.Less(roots[1].GetComponent<Rigidbody>().linearVelocity.magnitude,(float)Get(motors[1],"maxSpeed")*1.05f,"Afterburner must respect the lower speed envelope");
+    }
+    [UnityTest] public IEnumerator JetsBankThroughReversalWithVisibleControlSurfaces()
+    {
+        foreach(string name in new[]{"Jet01","Jet02"})
+        {
+            var prefab=AssetDatabase.LoadAssetAtPath<GameObject>("Assets/Game/Prefabs/Vehicles/Prototypes/"+name+".prefab");
+            var root=Object.Instantiate(prefab,new Vector3(0,1000,0),Quaternion.identity);objects.Add(root);
+            ((Behaviour)root.GetComponent(T("Vehicle"))).enabled=false;
+            var motor=root.GetComponent(T("JetMotor"));Set(motor,"assistEnabled",true);
+            var surfaces=(Array)Get(motor,"controlSurfaces");Assert.GreaterOrEqual(surfaces.Length,4);
+            root.GetComponent<Rigidbody>().linearVelocity=Vector3.forward*55;
+            var input=Activator.CreateInstance(T("VehicleInput"));Set(input,"directionalFlight",true);Set(input,"heading",180f);
+            float visibleMovement=0,maximumBank=0;
+            yield return null;
+            for(int step=0;step<350;step++)
+            {
+                SimulateFlight(motor,input,true);yield return new WaitForFixedUpdate();
+                foreach(var surface in surfaces)
+                {
+                    var part=(Transform)Get(surface,"part");
+                    visibleMovement=Mathf.Max(visibleMovement,Quaternion.Angle((Quaternion)Get(surface,"restRotation"),part.localRotation));
+                }
+                maximumBank=Mathf.Max(maximumBank,Mathf.Abs(Mathf.DeltaAngle(0,root.transform.eulerAngles.z)));
+            }
+            var body=root.GetComponent<Rigidbody>();float pathHeading=Mathf.Atan2(body.linearVelocity.x,body.linearVelocity.z)*Mathf.Rad2Deg;
+            Assert.Less(Mathf.Abs(Mathf.DeltaAngle(pathHeading,180)),45,"Complete most of a physical reversal within seven seconds");
+            Assert.Greater(maximumBank,45,"A reversal must visibly bank the aircraft");
+            Assert.Greater(visibleMovement,5,"Control surfaces must visibly articulate");
+            Assert.Less(Mathf.Abs(Mathf.DeltaAngle(root.transform.eulerAngles.y,pathHeading)),15,"Rendered direction follows flight path");
+            Object.Destroy(root);yield return null;
+        }
+    }
+    [UnityTest] public IEnumerator JetFinTravelDrivesSteeringAndNeedsAirflow()
+    {
+        var prefab=AssetDatabase.LoadAssetAtPath<GameObject>("Assets/Game/Prefabs/Vehicles/Prototypes/Jet01.prefab");
+        var root=Object.Instantiate(prefab,new Vector3(0,1000,0),Quaternion.identity);objects.Add(root);
+        ((Behaviour)root.GetComponent(T("Vehicle"))).enabled=false;
+        var motor=root.GetComponent(T("JetMotor"));Set(motor,"assistEnabled",false);
+        var body=root.GetComponent<Rigidbody>();body.useGravity=false;
+        var input=Activator.CreateInstance(T("VehicleInput"));Set(input,"move",Vector2.right);
+        yield return null;
+        SimulateFlight(motor,input,true);
+        Vector3 first=(Vector3)Get(motor,"ControlDeflection");
+        Assert.Less(first.magnitude,.25f,"Fin actuator must travel rather than jump to full steering");
+        foreach(var surface in (Array)Get(motor,"controlSurfaces"))
+        {
+            if(Mathf.Abs((float)Get(surface,"roll"))<.01f)continue;
+            float expected=Mathf.Clamp(-(float)Get(surface,"roll")*first.z*(float)Get(motor,"aileronTravel"),-30,30);
+            Assert.AreEqual(expected,(float)Get(surface,"angle"),.001f,"Visual fin angle comes from the physical actuator state");
+        }
+        yield return new WaitForFixedUpdate();
+        Assert.Less(body.angularVelocity.magnitude,.001f,"Deflected fins cannot turn a jet without airflow");
+        body.linearVelocity=Vector3.forward*55;
+        for(int step=0;step<8;step++){SimulateFlight(motor,input,true);yield return new WaitForFixedUpdate();}
+        Assert.Less(body.angularVelocity.z,-.1f,"Aileron deflection must physically roll the Rigidbody with airflow");
+        Set(input,"move",Vector2.left);Vector3 before=(Vector3)Get(motor,"ControlDeflection");SimulateFlight(motor,input,true);
+        Assert.Less(((Vector3)Get(motor,"ControlDeflection")-before).magnitude,.25f,"Reversing controls must respect fin travel speed");
+    }
+    [UnityTest] public IEnumerator JetAssistDirectlyTracksElevatedAndLoweredAim()
+    {
+        foreach(float pitch in new[]{-25f,25f})
+        {
+            var prefab=AssetDatabase.LoadAssetAtPath<GameObject>("Assets/Game/Prefabs/Vehicles/Prototypes/Jet01.prefab");
+            var root=Object.Instantiate(prefab,new Vector3(0,1000,0),Quaternion.identity);objects.Add(root);
+            ((Behaviour)root.GetComponent(T("Vehicle"))).enabled=false;
+            var motor=root.GetComponent(T("JetMotor"));Set(motor,"assistEnabled",true);
+            root.GetComponent<Rigidbody>().linearVelocity=Vector3.forward*55;
+            var input=Activator.CreateInstance(T("VehicleInput"));Set(input,"directionalFlight",true);
+            Set(input,"heading",45f);Set(input,"viewPitch",pitch);
+            yield return null;
+            for(int step=0;step<200;step++){SimulateFlight(motor,input,true);yield return new WaitForFixedUpdate();}
+            Vector3 desired=Quaternion.Euler(pitch,45,0)*Vector3.forward;
+            Assert.Less(Vector3.Angle(root.transform.forward,desired),8,"Direct aim tracking must work above and below the horizon");
+            Assert.Less(root.GetComponent<Rigidbody>().angularVelocity.magnitude,4.01f);
+            Object.Destroy(root);yield return null;
+        }
+    }
+    [UnityTest] public IEnumerator AssistedControlsReplayThroughManualMotorIdentically()
+    {
+        var prefab=AssetDatabase.LoadAssetAtPath<GameObject>("Assets/Game/Prefabs/Vehicles/Prototypes/Jet01.prefab");
+        var roots=new GameObject[2];var motors=new Component[2];
+        for(int i=0;i<2;i++)
+        {
+            roots[i]=Object.Instantiate(prefab,new Vector3(i*500,1000,0),Quaternion.identity);objects.Add(roots[i]);
+            ((Behaviour)roots[i].GetComponent(T("Vehicle"))).enabled=false;
+            motors[i]=roots[i].GetComponent(T("JetMotor"));Set(motors[i],"assistEnabled",i==0);
+            roots[i].GetComponent<Rigidbody>().linearVelocity=Vector3.forward*55;
+        }
+        var assisted=Activator.CreateInstance(T("VehicleInput"));Set(assisted,"directionalFlight",true);Set(assisted,"heading",60f);Set(assisted,"viewPitch",-15f);
+        var manual=Activator.CreateInstance(T("VehicleInput"));yield return null;
+        for(int step=0;step<150;step++)
+        {
+            SimulateFlight(motors[0],assisted,true);var controls=(Vector3)Get(motors[0],"FlightControlInput");
+            Set(manual,"pitchRate",controls.x);Set(manual,"yaw",controls.y);Set(manual,"move",new Vector2(-controls.z,0));
+            Call(motors[1],"Simulate",manual,true);yield return new WaitForFixedUpdate();
+            Assert.Less(Quaternion.Angle(roots[0].transform.rotation,roots[1].transform.rotation),.02f,"Assist must only supply ordinary manual controls");
+            Assert.Less((roots[0].GetComponent<Rigidbody>().linearVelocity-roots[1].GetComponent<Rigidbody>().linearVelocity).magnitude,.01f,"Same controls must produce same flight forces");
+        }
+    }
+    [UnityTest] public IEnumerator JetAssistSettlesWithoutRepeatedAimBounce()
+    {
+        var prefab=AssetDatabase.LoadAssetAtPath<GameObject>("Assets/Game/Prefabs/Vehicles/Prototypes/Jet01.prefab");
+        var root=Object.Instantiate(prefab,new Vector3(0,1000,0),Quaternion.identity);objects.Add(root);
+        ((Behaviour)root.GetComponent(T("Vehicle"))).enabled=false;
+        var motor=root.GetComponent(T("JetMotor"));Set(motor,"assistEnabled",true);
+        root.GetComponent<Rigidbody>().linearVelocity=Vector3.forward*55;
+        var input=Activator.CreateInstance(T("VehicleInput"));Set(input,"directionalFlight",true);Set(input,"heading",60f);Set(input,"viewPitch",-10f);
+        Vector3 desired=Quaternion.Euler(-10,60,0)*Vector3.forward;float minimum=180,maximum=0;
+        yield return null;
+        for(int step=0;step<350;step++)
+        {
+            SimulateFlight(motor,input,true);yield return new WaitForFixedUpdate();
+            if(step>=250){float error=Vector3.Angle(root.transform.forward,desired);minimum=Mathf.Min(minimum,error);maximum=Mathf.Max(maximum,error);}
+        }
+        Assert.Less(maximum,3,"Hold the requested aim after settling");
+        Assert.Less(maximum-minimum,1,"Do not keep bouncing around the target");
     }
     [UnityTest] public IEnumerator RearDoorOpensAndClosesItsColliderWithTheMesh()
     {

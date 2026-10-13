@@ -4071,6 +4071,12 @@ MonoBehaviour:
   seatDiagramCenter: {x: 0, y: -0.4843769}
   seatDiagramHalfExtent: 12.782791
   motor: {fileID: 9206730737903799206}
+  jetAssist:
+    assistEnabled: 1
+    maximumBank: 75
+    headingToBank: 1.8
+    assistedBankRate: 100
+    aimResponse: 2
   turret: {fileID: 7634841533879744441}
   destructionEffect: {fileID: 695410771644243590, guid: c07b2e8d0c65dad44bf5eaca660002fc, type: 3}
   cameraTarget: {fileID: 2021522745963790203}
@@ -4155,13 +4161,13 @@ MonoBehaviour:
   - {fileID: 4483205254313536876}
   - {fileID: 1993407054529782217}
   - {fileID: 2271257327686420488}
-  wingArea: 72
+  wingArea: 160
   airDensity: 1.225
-  wingIncidence: 4
-  liftBias: 0.18
-  liftSlope: 5.5
-  stallAngle: 18
-  maximumLiftCoefficient: 1.65
+  wingIncidence: 2
+  liftBias: 0.1
+  liftSlope: 8
+  stallAngle: 22
+  maximumLiftCoefficient: 2.4
   parasiteDrag: 0.035
   inducedDrag: 0.075
   sideslipDrag: 0.6
@@ -4170,24 +4176,43 @@ MonoBehaviour:
   engineResponse: 4
   throttleChangeRate: 1.2
   startingThrottle: 0.65
-  maxSpeed: 120
-  assistEnabled: 1
-  pitchRate: 110
-  rollRate: 190
+  maxSpeed: 65
+  pitchRate: 100
+  rollRate: 145
   yawRate: 65
-  controlResponse: 10
-  maximumAngularAcceleration: 24
-  referenceControlSpeed: 45
-  aerodynamicStability: 1.4
-  sideslipStability: 2
-  maximumBank: 75
-  headingToBank: 2.2
+  controlResponse: 8
+  maximumAngularAcceleration: 16
+  referenceControlSpeed: 30
+  lateralFlowResponse: 5
   maxLoadFactor: 7
-  assistedClimbResponse: 2
-  assistedBankRate: 140
+  controlSurfaces:
+  - part: {fileID: 7125924158002212403}
+    hingeAxis: {x: 0, y: 1, z: 0}
+    pitch: 0
+    roll: 0
+    yaw: -1
+  - part: {fileID: 4353340277260959658}
+    hingeAxis: {x: 0, y: 1, z: 0}
+    pitch: 0
+    roll: 0
+    yaw: -1
+  - part: {fileID: 8912450485218696189}
+    hingeAxis: {x: 1, y: 0, z: 0}
+    pitch: 0
+    roll: -1
+    yaw: 0
+  - part: {fileID: 8932314084865381123}
+    hingeAxis: {x: 1, y: 0, z: 0}
+    pitch: 0
+    roll: 1
+    yaw: 0
+  aileronTravel: 22
+  elevatorTravel: 22
+  rudderTravel: 20
+  surfaceResponse: 120
   wheelBrakeAcceleration: 8
   groundSteeringRate: 28
-  rotationSpeed: 60
+  rotationSpeed: 35
 --- !u!114 &7634841533879744441
 MonoBehaviour:
   m_ObjectHideFlags: 0

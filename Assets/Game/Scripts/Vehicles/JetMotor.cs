@@ -1,7 +1,7 @@
 using UnityEngine;
 
-// A single wing/fuselage model: NASA dynamic pressure and lift equation, MSFS drag polar,
-// and FAA banked/ coordinated turns. Coefficients and rates are tuned for an arena prototype.
+// Game flight model: thrust, speed/AoA-dependent lift, directional drag, and rate-limited
+// steering torque. Receives only pilot controls; aim guidance belongs to JetFlightAssist.
 public class JetMotor : VehicleMotor
 {
     public SphereCollider[] landingGear;
@@ -14,13 +14,27 @@ public class JetMotor : VehicleMotor
     public float maximumThrust = 180000, afterburnerMultiplier = 1.6f, engineResponse = 1.5f;
     public float throttleChangeRate = .55f, startingThrottle = .65f, maxSpeed = 180;
     [Header("Flight controls")]
-    public bool assistEnabled = true;
+
     public float pitchRate = 65, rollRate = 120, yawRate = 28;
     public float controlResponse = 5, maximumAngularAcceleration = 12, referenceControlSpeed = 65;
-    public float aerodynamicStability = 1.4f, sideslipStability = 2;
-    public float maximumBank = 60, headingToBank = 1.4f, maxLoadFactor = 7;
-    [Min(.1f)] public float assistedClimbResponse = 2;
-    [Min(1)] public float assistedBankRate = 140;
+    [Min(0)] public float lateralFlowResponse = 5;
+    public float maxLoadFactor = 7;
+
+
+    public Vector3 FlightControlInput { get; private set; }
+    [System.Serializable]
+    public class ControlSurface
+    {
+        public Transform part;
+        public Vector3 hingeAxis = Vector3.right;
+        public float pitch, roll, yaw;
+        [System.NonSerialized] public Quaternion restRotation;
+        [System.NonSerialized] public float angle;
+    }
+    [Header("Animated flight controls")]
+    public ControlSurface[] controlSurfaces = System.Array.Empty<ControlSurface>();
+    public float aileronTravel = 22, elevatorTravel = 22, rudderTravel = 20, surfaceResponse = 120;
+    public Vector3 ControlDeflection { get; private set; }
     [Header("Ground handling")]
     public float wheelBrakeAcceleration = 8, groundSteeringRate = 28, rotationSpeed = 60;
     public float Throttle { get; private set; }
@@ -30,17 +44,44 @@ public class JetMotor : VehicleMotor
     public float LoadFactor { get; private set; }
     public bool Stalled { get; private set; }
     public bool Grounded { get; private set; }
-    public Quaternion RequestedAttitude { get; private set; }
+
     public override bool CanDisembark => Grounded;
     readonly RaycastHit[] groundHits = new RaycastHit[16];
-    float assistedTurnDirection, assistedBank;
-    bool wasAssisted;
+
+
 
     void Start()
     {
         Throttle = startingThrottle;
-        RequestedAttitude = vehicle.Body.rotation;
+
         vehicle.Body.maxAngularVelocity = 4;
+        foreach (var surface in controlSurfaces)
+            if (surface.part) surface.restRotation = surface.part.localRotation;
+    }
+
+    void LateUpdate()
+    {
+        // Render the actuator state simulated in FixedUpdate. No separate visual steering delay.
+        foreach (var surface in controlSurfaces)
+            if (surface.part) surface.part.localRotation = surface.restRotation * Quaternion.AngleAxis(surface.angle, surface.hingeAxis);
+    }
+
+    void SimulateControlSurfaces(Vector3 requestedDeflection, float dt)
+    {
+        // Fin travel, not an instantaneous rotation command, determines the steering torque.
+        Vector3 current = ControlDeflection;
+        current.x = Mathf.MoveTowards(current.x, requestedDeflection.x, surfaceResponse * dt / Mathf.Max(1, elevatorTravel));
+        current.y = Mathf.MoveTowards(current.y, requestedDeflection.y, surfaceResponse * dt / Mathf.Max(1, rudderTravel));
+        current.z = Mathf.MoveTowards(current.z, requestedDeflection.z, surfaceResponse * dt / Mathf.Max(1, aileronTravel));
+        ControlDeflection = Vector3.ClampMagnitude(current, 1);
+        float roll = -ControlDeflection.z * aileronTravel;
+        float pitch = -ControlDeflection.x * elevatorTravel;
+        float yaw = ControlDeflection.y * rudderTravel;
+        foreach (var surface in controlSurfaces)
+        {
+            if (!surface.part) continue;
+            surface.angle = Mathf.Clamp(surface.pitch * pitch + surface.roll * roll + surface.yaw * yaw, -30, 30);
+        }
     }
 
     public override void Simulate(VehicleInput input, bool powered)
@@ -58,22 +99,9 @@ public class JetMotor : VehicleMotor
         float pressure = .5f * airDensity * Airspeed * Airspeed;
         float liftCoefficient = LiftCoefficient(wingAngle);
         float lift = pressure * wingArea * liftCoefficient;
-        bool assisted = assistEnabled || (vehicle.Driver && !vehicle.Driver.IsLocal);
+
         Vector3 travelDirection = Airspeed > .1f ? body.linearVelocity / Airspeed : frame * Vector3.forward;
         Vector3 liftDirection = Vector3.ProjectOnPlane(frame * Vector3.up, travelDirection).normalized;
-        if (powered && assisted && input.directionalFlight && !Grounded)
-        {
-            // Fly-by-wire load compensation acts through the banked wings, not a sideways steering force.
-            // It remains bounded by dynamic pressure, stall loss and the airframe's load limit.
-            float desiredClimb = -Mathf.Sin(input.viewPitch * Mathf.Deg2Rad) * forwardSpeed;
-            float verticalAcceleration = (desiredClimb - body.linearVelocity.y) * assistedClimbResponse;
-            float demand = body.mass * (Physics.gravity.magnitude + verticalAcceleration)
-                / Mathf.Max(.2f, Vector3.Dot(liftDirection, Vector3.up));
-            float stallLoss = Mathf.Lerp(1, .3f, Mathf.SmoothStep(0, 1, Mathf.InverseLerp(stallAngle, stallAngle + 22, Mathf.Abs(wingAngle))));
-            float available = pressure * wingArea * maximumLiftCoefficient * stallLoss;
-            lift = Mathf.Clamp(demand, -available, available);
-            liftCoefficient = lift / Mathf.Max(1, pressure * wingArea);
-        }
         lift = Mathf.Clamp(lift, -body.mass * Physics.gravity.magnitude * maxLoadFactor,
             body.mass * Physics.gravity.magnitude * maxLoadFactor);
         LoadFactor = lift / (body.mass * Mathf.Max(.01f, Physics.gravity.magnitude));
@@ -86,8 +114,10 @@ public class JetMotor : VehicleMotor
             cd += Mathf.Abs(wingAngle) > stallAngle ? .3f * Mathf.InverseLerp(stallAngle, 65, Mathf.Abs(wingAngle)) : 0;
             if (localVelocity.z < 0) cd += .8f;
             body.AddForce(liftDirection * lift - travel * (pressure * wingArea * cd));
-            // The vertical tail resists lateral flow; it does not replace banked wing lift with strafing.
-            body.AddForce(-(frame * Vector3.right) * localVelocity.x * pressure * wingArea * .0015f);
+            // Directional drag resists sideways flow and brings travel into alignment with the nose.
+            // Apply a bounded force; never assign velocity or rotate the Rigidbody directly.
+            float flowAuthority = Mathf.Clamp01(Airspeed / Mathf.Max(1, referenceControlSpeed));
+            body.AddForce(-(frame * Vector3.right) * localVelocity.x * lateralFlowResponse * flowAuthority, ForceMode.Acceleration);
             if (Airspeed > maxSpeed)
                 body.AddForce(-travel * (Airspeed - maxSpeed) * 1.5f, ForceMode.Acceleration);
         }
@@ -101,82 +131,28 @@ public class JetMotor : VehicleMotor
         body.AddForce(frame * Vector3.forward * maximumThrust * EnginePower * speedHeadroom);
 
         float authority = Mathf.Clamp01(forwardSpeed * forwardSpeed / (referenceControlSpeed * referenceControlSpeed));
-        Vector3 localRates = Vector3.zero;
-        if (powered)
-        {
-            if (assisted && input.directionalFlight)
-            {
-                if (!wasAssisted)
-                {
-                    assistedBank = -Mathf.DeltaAngle(0, frame.eulerAngles.z);
-                    assistedTurnDirection = 0;
-                }
-                localRates = AssistedRates(input, body, pressure, liftDirection * (lift / body.mass));
-            }
-            else
-            {
-                localRates = new Vector3(input.pitchRate * pitchRate, input.yaw * yawRate, -input.move.x * rollRate) * Mathf.Deg2Rad;
-                RequestedAttitude = frame * Quaternion.Euler(localRates * Mathf.Rad2Deg * .4f);
-            }
-        }
-        wasAssisted = powered && assisted && input.directionalFlight;
+        FlightControlInput = powered ? new Vector3(Mathf.Clamp(input.pitchRate, -1, 1),
+            Mathf.Clamp(input.yaw, -1, 1), -Mathf.Clamp(input.move.x, -1, 1)) : Vector3.zero;
+        Vector3 localRates = Vector3.Scale(FlightControlInput, new Vector3(pitchRate, yawRate, rollRate)) * Mathf.Deg2Rad;
         Vector3 localAngular = Quaternion.Inverse(frame) * body.angularVelocity;
-        Vector3 acceleration = (localRates - localAngular) * controlResponse;
-        // Conventional tail stability points the nose back toward the actual airflow.
-        // At low speed aerodynamic surfaces have little authority; no hover thrust is applied.
-        acceleration.x += AngleOfAttack * Mathf.Deg2Rad * aerodynamicStability;
-        acceleration.y += Mathf.Atan2(localVelocity.x, Mathf.Max(1, forwardSpeed)) * sideslipStability;
+        float controlLimit = Mathf.Max(.01f, maximumAngularAcceleration);
+        Vector3 requestedControl = Vector3.ClampMagnitude((localRates - localAngular) * controlResponse, controlLimit);
+        SimulateControlSurfaces(powered ? requestedControl / controlLimit : Vector3.zero, dt);
+        // Airflow determines how much authority a deflected surface has. Visible travel can
+        // still occur on the runway, but cannot roll or pitch a stationary aircraft into flight.
+        Vector3 acceleration = ControlDeflection * controlLimit;
         acceleration *= authority;
         if (Grounded)
         {
-            float steering = powered && assisted && input.directionalFlight
-                ? Mathf.Clamp(Mathf.DeltaAngle(body.rotation.eulerAngles.y, input.heading) / 30, -1, 1) : input.yaw;
+            float steering = FlightControlInput.y;
             acceleration.y = (steering * groundSteeringRate * Mathf.Deg2Rad - localAngular.y) * 3;
             // Keep wheels level until there is enough airflow for takeoff rotation.
             if (forwardSpeed < rotationSpeed) { acceleration.x = -localAngular.x * 3; acceleration.z = -localAngular.z * 3; }
             if (input.brake || input.move.y < -.5f)
                 body.AddForce(-Vector3.ProjectOnPlane(body.linearVelocity, Vector3.up).normalized * wheelBrakeAcceleration, ForceMode.Acceleration);
         }
-        body.AddTorque(frame * Vector3.ClampMagnitude(acceleration, maximumAngularAcceleration), ForceMode.Acceleration);
-    }
-
-    Vector3 AssistedRates(VehicleInput input, Rigidbody body, float pressure, Vector3 liftAcceleration)
-    {
-        float heading = body.rotation.eulerAngles.y;
-        float headingError = Mathf.DeltaAngle(heading, input.heading);
-        // Directly behind, tiny input changes cross +/-180. Keep the chosen turn side until
-        // the target leaves the rear sector, rather than commanding an opposite bank every frame.
-        if (Mathf.Abs(headingError) > 150)
-        {
-            if (assistedTurnDirection == 0) assistedTurnDirection = Mathf.Sign(headingError);
-            headingError = Mathf.Abs(headingError) * assistedTurnDirection;
-        }
-        else assistedTurnDirection = Mathf.Abs(headingError) > 2 ? Mathf.Sign(headingError) : 0;
-        float desiredBank = Grounded ? 0 : Mathf.Clamp(headingError * headingToBank, -maximumBank, maximumBank);
-        assistedBank = Mathf.MoveTowards(assistedBank, desiredBank, assistedBankRate * Time.fixedDeltaTime);
-        float bank = assistedBank;
-        float supportedWeight = body.mass * Physics.gravity.magnitude / Mathf.Max(.2f, Mathf.Cos(bank * Mathf.Deg2Rad));
-        float trimCl = Mathf.Clamp(supportedWeight / Mathf.Max(1, pressure * wingArea), 0, maximumLiftCoefficient * .95f);
-        float trimAngle = Mathf.Clamp((trimCl - liftBias) / liftSlope * Mathf.Rad2Deg - wingIncidence, -5, 12);
-        float pitch = Mathf.Clamp(input.viewPitch - trimAngle, -75, 75);
-        if (Grounded && Airspeed < rotationSpeed) pitch = body.rotation.eulerAngles.x;
-        RequestedAttitude = Quaternion.Euler(pitch, heading, -bank);
-        Quaternion error = Quaternion.Inverse(body.rotation) * RequestedAttitude;
-        error.ToAngleAxis(out float angle, out Vector3 axis);
-        if (angle > 180) angle -= 360;
-        Vector3 rates = axis.normalized * angle * Mathf.Deg2Rad * controlResponse;
-        // Coordinate the nose with the path curvature produced by the actual bank and lift.
-        // Using the requested bank here would yaw the model before its trajectory could turn.
-        Vector3 horizontalTravel = Vector3.ProjectOnPlane(body.linearVelocity, Vector3.up);
-        Vector3 turnRight = Vector3.Cross(Vector3.up, horizontalTravel.normalized);
-        float coordinatedYaw = Grounded ? 0 : Vector3.Dot(liftAcceleration, turnRight) / Mathf.Max(25, horizontalTravel.magnitude);
-        rates.y = 0;
-        rates += Quaternion.Inverse(body.rotation) * Vector3.up * coordinatedYaw;
-        rates.x = Mathf.Clamp(rates.x, -pitchRate * Mathf.Deg2Rad, pitchRate * Mathf.Deg2Rad);
-        rates.y = Mathf.Clamp(rates.y, -yawRate * Mathf.Deg2Rad, yawRate * Mathf.Deg2Rad);
-        rates.z = Mathf.Clamp(rates.z, -rollRate * Mathf.Deg2Rad, rollRate * Mathf.Deg2Rad);
-        if (wingIncidence + AngleOfAttack > stallAngle - 2) rates.x = Mathf.Max(rates.x, .25f);
-        return rates;
+        Vector3 appliedControl = Vector3.ClampMagnitude(acceleration, maximumAngularAcceleration);
+        body.AddTorque(frame * appliedControl, ForceMode.Acceleration);
     }
 
     float LiftCoefficient(float degrees)
