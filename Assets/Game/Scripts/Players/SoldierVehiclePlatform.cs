@@ -134,6 +134,12 @@ public class SoldierVehiclePlatform : MonoBehaviour
         }
     }
 
+    public void DetachFromSupport()
+    {
+        Support=null;
+        momentum=Vector3.zero;
+    }
+
     public void ResetSupport()
     {
         Support=null;momentum=Vector3.zero;

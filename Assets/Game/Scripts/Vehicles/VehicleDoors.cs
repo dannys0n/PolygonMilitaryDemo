@@ -59,8 +59,13 @@ public class VehicleDoors : MonoBehaviour
                 Time.fixedDeltaTime / Mathf.Max(.1f, first.duration));
             if (Mathf.Approximately(next, previous)) return;
             foreach (var door in doors) { door.progress = next; door.open = first.open; Apply(door); }
-            if (!first.open && Array.Exists(doors, TouchesCharacter))
-                foreach (var door in doors) { door.progress = previous; door.open = true; Apply(door); }
+            bool blocked=false;
+            foreach(var door in doors)if(!ClearCharacterContacts(door))blocked=true;
+            if(blocked)
+            {
+                bool reopening=!first.open;
+                foreach (var door in doors) { door.progress = previous; if(reopening)door.open = true; Apply(door); }
+            }
             return;
         }
         foreach (var door in doors)
@@ -71,30 +76,53 @@ public class VehicleDoors : MonoBehaviour
             float previous = door.progress;
             door.progress = next;
             Apply(door);
-            // Reopen when a walk-in occupant is in the closing leaf's path.
-            if (!door.open && TouchesCharacter(door))
+            // Displace controllers before PhysX solves the articulated chassis contact.
+            // If scenery traps the player, stop the door instead of levering the vehicle upward.
+            if (!ClearCharacterContacts(door))
             {
                 door.progress = previous;
-                door.open = true;
+                if(!door.open)door.open = true;
                 Apply(door);
             }
         }
     }
 
-    bool TouchesCharacter(Door door)
+    bool ClearCharacterContacts(Door door)
     {
+        bool clear=true;
         foreach (var leaf in door.leaves)
         {
-            var box = leaf.part.GetComponentInChildren<BoxCollider>();
-            if (!box) continue;
-            Vector3 half = Vector3.Scale(box.size * .5f, box.transform.lossyScale);
-            int count = Physics.OverlapBoxNonAlloc(box.transform.TransformPoint(box.center),
-                half + Vector3.one * .06f, overlaps, box.transform.rotation, ~0,
-                QueryTriggerInteraction.Ignore);
-            for (int i = 0; i < count; i++)
-                if (overlaps[i].GetComponentInParent<CharacterController>()) return true;
+            foreach(var box in leaf.part.GetComponentsInChildren<BoxCollider>())
+            {
+                if(!box.enabled || box.isTrigger)continue;
+                Vector3 half=Vector3.Scale(box.size*.5f,box.transform.lossyScale);
+                int count=Physics.OverlapBoxNonAlloc(box.transform.TransformPoint(box.center),
+                    half+Vector3.one*.06f,overlaps,box.transform.rotation,~0,QueryTriggerInteraction.Ignore);
+                if(count==overlaps.Length)clear=false;
+                for(int i=0;i<count;i++)
+                {
+                    var controller=overlaps[i] as CharacterController;
+                    if(!controller || !controller.enabled)continue;
+                    for(int attempt=0;attempt<4;attempt++)
+                    {
+                        if(!Physics.ComputePenetration(controller,controller.transform.position,controller.transform.rotation,
+                            box,box.transform.position,box.transform.rotation,out var direction,out var depth))break;
+                        if(direction.y<-.25f)
+                        {
+                            // A lowered cargo ramp should push a grounded player away, never into the ground.
+                            var outward=Vector3.ProjectOnPlane(controller.transform.position-
+                                transform.TransformPoint(vehicle.NavigationBounds.center),Vector3.up);
+                            if(outward.sqrMagnitude>.001f)direction=outward.normalized;
+                        }
+                        controller.GetComponent<SoldierVehiclePlatform>()?.DetachFromSupport();
+                        controller.Move(direction*Mathf.Min(.5f,depth+.03f));
+                    }
+                    if(Physics.ComputePenetration(controller,controller.transform.position,controller.transform.rotation,
+                        box,box.transform.position,box.transform.rotation,out _,out float remaining) && remaining>.005f)clear=false;
+                }
+            }
         }
-        return false;
+        return clear;
     }
 
     static void Apply(Door door)
