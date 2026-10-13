@@ -17,6 +17,8 @@ public class Vehicle : MonoBehaviour
         public string name;
         public SeatRole role;
         public Transform anchor, exit;
+        [Tooltip("Disable for remote stations or functional seats without a modeled chair.")]
+        public bool showCharacter = true;
         [Tooltip("Authored first-person eye point, relative to the vehicle seat.")]
         public Transform eye;
         public Transform leftGrip, rightGrip;

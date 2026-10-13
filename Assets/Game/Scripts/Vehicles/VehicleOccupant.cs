@@ -22,6 +22,8 @@ public class VehicleOccupant : MonoBehaviour
     readonly Dictionary<Renderer, bool> renderers = new Dictionary<Renderer, bool>();
     readonly Dictionary<Renderer, UnityEngine.Rendering.ShadowCastingMode> shadowModes = new Dictionary<Renderer, UnityEngine.Rendering.ShadowCastingMode>();
     readonly Dictionary<Collider, bool> colliders = new Dictionary<Collider, bool>();
+    readonly Dictionary<Renderer, bool> forcedVisibility = new Dictionary<Renderer, bool>();
+    SkinnedMeshRenderer[] seatedBody;
     Transform originalParent;
     VehicleSeatPose seatPose;
     Camera vehicleCamera;
@@ -190,7 +192,7 @@ public class VehicleOccupant : MonoBehaviour
         life.actions.CancelActions();
         life.movement.ResetMovement();
         behaviours.Clear();
-        renderers.Clear();
+        renderers.Clear(); forcedVisibility.Clear();
         shadowModes.Clear();
         colliders.Clear();
         foreach (var b in new Behaviour[] { soldier, life.actions, life.movement, life.look, life.loadout, life.view, GetComponent<SoldierWeaponPresentation>() })
@@ -200,7 +202,7 @@ public class VehicleOccupant : MonoBehaviour
                 SaveDisable(b);
         foreach (var r in GetComponentsInChildren<Renderer>(true))
         {
-            renderers[r] = r.enabled;
+            renderers[r] = r.enabled; forcedVisibility[r] = r.forceRenderingOff;
             shadowModes[r] = r.shadowCastingMode;
             r.enabled = false;
         }
@@ -217,11 +219,10 @@ public class VehicleOccupant : MonoBehaviour
         seatPose = life.actions.animator.GetComponent<VehicleSeatPose>();
         if (!seatPose) seatPose = life.actions.animator.gameObject.AddComponent<VehicleSeatPose>();
         var seated = vehicle.seats[seat];
-        seatPose.Begin(life.actions.animator, seated, seated.leftGrip, seated.rightGrip);
-        // Show the body skeleton, keeping infantry weapons and first-person arms hidden.
-        foreach (var skin in life.view.thirdPersonRoot.GetComponentsInChildren<SkinnedMeshRenderer>(true))
-            if (skin.rootBone && skin.rootBone.IsChildOf(life.actions.animator.transform))
-                { skin.enabled = true; skin.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.On; }
+        if(seated.showCharacter) seatPose.Begin(life.actions.animator, seated, seated.leftGrip, seated.rightGrip);
+        seatedBody = System.Array.FindAll(life.view.thirdPersonRoot.GetComponentsInChildren<SkinnedMeshRenderer>(true),
+            skin => skin.rootBone && skin.rootBone.IsChildOf(life.actions.animator.transform));
+        UpdateSeatedVisibility();
         if (!IsLocal)
             return;
         previousCameraEnabled = life.view.playerCamera.enabled;
@@ -298,6 +299,7 @@ public class VehicleOccupant : MonoBehaviour
         foreach (var pair in renderers)
         if (pair.Key)
             pair.Key.enabled = pair.Value;
+        foreach (var pair in forcedVisibility) if(pair.Key) pair.Key.forceRenderingOff=pair.Value;
         foreach (var pair in shadowModes)
             if (pair.Key) pair.Key.shadowCastingMode = pair.Value;
         foreach (var pair in behaviours)
@@ -401,13 +403,21 @@ public class VehicleOccupant : MonoBehaviour
         var seat=vehicle.seats[index];
         seatPose.End();
         transform.SetParent(seat.anchor,false);transform.SetLocalPositionAndRotation(Vector3.zero,Quaternion.identity);
-        seatPose.Begin(life.actions.animator, seat, seat.leftGrip, seat.rightGrip);
+        if(seat.showCharacter) seatPose.Begin(life.actions.animator, seat, seat.leftGrip, seat.rightGrip);
+        UpdateSeatedVisibility();
         if(IsLocal)ResetVehicleCameraShake();
         flightYaw=yaw=vehicle.transform.eulerAngles.y;flightPitch=pitch=0;Freelook=false;
         lastVehicleYaw=vehicle.transform.eulerAngles.y;
     }
+    void UpdateSeatedVisibility()
+    {
+        var seat=MountedVehicle.seats[SeatIndex];
+        bool visible=seat.showCharacter && !(IsLocal && CockpitView && seat.role==Vehicle.SeatRole.Gunner);
+        foreach(var skin in seatedBody) if(skin){skin.enabled=visible;skin.forceRenderingOff=!visible;skin.shadowCastingMode=UnityEngine.Rendering.ShadowCastingMode.On;}
+    }
     void LateUpdate()
     {
+        if(IsMounted) UpdateSeatedVisibility();
         if (!IsMounted || !IsLocal)
             return;
         var v = MountedVehicle;

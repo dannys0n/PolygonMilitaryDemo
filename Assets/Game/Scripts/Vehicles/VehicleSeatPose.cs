@@ -51,6 +51,7 @@ public class VehicleSeatPose : MonoBehaviour
         if (!mounted || layer != 0) return;
         // Anchors represent the seat cushion/pelvis, independent of avatar height.
         animator.bodyPosition = pelvisAnchor.position;
+        animator.bodyRotation = pelvisAnchor.rotation;
         PlaceHand(AvatarIKGoal.LeftHand, leftGrip);
         PlaceHand(AvatarIKGoal.RightHand, rightGrip);
     }
