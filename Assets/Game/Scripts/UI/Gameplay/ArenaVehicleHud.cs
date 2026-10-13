@@ -58,6 +58,14 @@ public class ArenaVehicleHud : MonoBehaviour
         // Keep the lower equipment row clear even when the centered seat hints reach it.
         controls.rectTransform.anchoredPosition+=new Vector2(0,16);
         rightControls.rectTransform.anchoredPosition+=new Vector2(0,16);
+        crew.gameObject.SetActive(false);
+        controls.rectTransform.anchoredPosition=new Vector2(-230,16);
+        controls.rectTransform.sizeDelta=new Vector2(260,150);
+        controls.fontSize=14;
+        rightControls.rectTransform.anchoredPosition=new Vector2(210,16);
+        rightControls.rectTransform.sizeDelta=new Vector2(210,140);
+        rightControls.fontSize=14;
+        status.rectTransform.anchoredPosition=new Vector2(0,110);
         diagram.rectTransform.sizeDelta=new Vector2(160,160);diagram.preserveAspect=true;
         var links=new GameObject("Seat diagram callouts",typeof(RectTransform),typeof(CanvasRenderer),typeof(VehicleSeatDiagramGraphic));links.transform.SetParent(diagram.transform,false);links.transform.SetAsFirstSibling();seatDiagramLinks=links.GetComponent<VehicleSeatDiagramGraphic>();seatDiagramLinks.rectTransform.sizeDelta=new Vector2(160,160);seatDiagramLinks.raycastTarget=false;
         BuildRoadDashboard();
@@ -146,8 +154,6 @@ public class ArenaVehicleHud : MonoBehaviour
             if(count>1)controls.text+="\n[1-"+count+"] WEAPONS / WHEEL";
         }
         if(!air && role==Vehicle.SeatRole.Driver && showAttack && attackSight.Operational) controls.text += "\nFIRE  [LMB]\nZOOM  [RMB]";
-        if(defenses && role!=Vehicle.SeatRole.Passenger)controls.text+="\n[X] "+defenses.SystemName+" "+defenses.Charges+"/"+defenses.capacity
-            +(defenses.ReadyIn>0?" / "+defenses.ReadyIn.ToString("0")+" S":defenses.Charges==0?" / +1 "+defenses.RechargeIn.ToString("0")+" S":"");
         UpdateEquipmentSystems(v,role,weaponSystems,selectedWeapon,defenses,armed);
         int pageSeats=Mathf.Min(12,v.seats.Length-player.SeatPage*12);
         rightControls.text=(v.hasRenderedInterior&&!v.seats[player.SeatIndex].externalView?"[V]  CAMERA":"EXTERNAL VIEW")+"\n[C]  FREELOOK"+(player.Freelook?" ON":"")+"\nHOLD [E]  EXIT\n"+(pageSeats==1?"[F1]  STATION":"[F1-F"+pageSeats+"]  SEATS");
