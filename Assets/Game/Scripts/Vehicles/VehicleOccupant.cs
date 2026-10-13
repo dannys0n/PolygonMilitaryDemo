@@ -114,7 +114,7 @@ public class VehicleOccupant : MonoBehaviour
                 if(d<doorDistance){doorDistance=d;doorControl=doors;}
             }
             Prompt = best ? "HOLD [E] ENTER " + best.displayName + " / " + best.seats[seat].name : "";
-            if(doorControl)Prompt += "   TAP [E] DOOR";
+            if(doorControl)Prompt += doorControl.operateTogether ? "   TAP [E] DOORS" : "   TAP [E] DOOR";
             if(Cursor.lockState == CursorLockMode.Locked)
             {
                 if(Input.GetKeyDown(KeyCode.E)){exitHeld=0;interactionConsumed=false;}

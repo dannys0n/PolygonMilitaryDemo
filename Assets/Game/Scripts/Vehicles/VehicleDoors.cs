@@ -27,6 +27,7 @@ public class VehicleDoors : MonoBehaviour
     }
 
     public Door[] doors = Array.Empty<Door>();
+    public bool operateTogether;
     [Min(.5f)] public float interactionRange = 3f;
     Vehicle vehicle;
     readonly Collider[] overlaps = new Collider[24];
@@ -36,6 +37,7 @@ public class VehicleDoors : MonoBehaviour
         vehicle = GetComponent<Vehicle>();
         foreach (var door in doors)
         {
+            if (operateTogether && doors.Length > 0) door.open = doors[0].open;
             door.progress = door.open ? 1 : 0;
             foreach (var leaf in door.leaves)
             {
@@ -49,6 +51,18 @@ public class VehicleDoors : MonoBehaviour
     void FixedUpdate()
     {
         if (vehicle.IsDestroyed) return;
+        if (operateTogether && doors.Length > 0)
+        {
+            var first = doors[0];
+            float previous = first.progress;
+            float next = Mathf.MoveTowards(previous, first.open ? 1 : 0,
+                Time.fixedDeltaTime / Mathf.Max(.1f, first.duration));
+            if (Mathf.Approximately(next, previous)) return;
+            foreach (var door in doors) { door.progress = next; door.open = first.open; Apply(door); }
+            if (!first.open && Array.Exists(doors, TouchesCharacter))
+                foreach (var door in doors) { door.progress = previous; door.open = true; Apply(door); }
+            return;
+        }
         foreach (var door in doors)
         {
             float next = Mathf.MoveTowards(door.progress, door.open ? 1 : 0,
@@ -116,6 +130,7 @@ public class VehicleDoors : MonoBehaviour
     public bool Toggle(int index)
     {
         if (vehicle.IsDestroyed || index < 0 || index >= doors.Length) return false;
+        if (operateTogether) return ToggleAll();
         doors[index].open = !doors[index].open;
         vehicle.Body.WakeUp();
         return true;
