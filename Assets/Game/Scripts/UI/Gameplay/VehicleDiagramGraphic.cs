@@ -5,11 +5,13 @@ using TMPro;
 [RequireComponent(typeof(CanvasRenderer))]
 public class VehicleDiagramGraphic : MaskableGraphic
 {
-    public enum Drawing { Horizon = 2, Tape = 3, Heading = 4, AircraftReference = 5, Speed = 6, PitchLadder = 7, Bank = 8, VerticalSpeed = 9, FlightPath = 10 }
+    public enum Drawing { Horizon = 2, Tape = 3, Heading = 4, AircraftReference = 5, Speed = 6, PitchLadder = 7, Bank = 8, VerticalSpeed = 9, FlightPath = 10, HullLevel = 11, HoverCue = 12, LevelHorizon = 13, PitchScale = 14 }
     public Drawing drawing;
     public TMP_Text[] tickLabels = System.Array.Empty<TMP_Text>();
     public float tickStep=20, pixelsPerUnit=2;
     float reading;
+    Vector2 hoverVelocity;
+    public void SetHoverVelocity(Vector2 velocity){hoverVelocity=Vector2.ClampMagnitude(velocity*4,45);SetVerticesDirty();}
     public void SetReading(float value)
     {
         reading = value;
@@ -24,13 +26,36 @@ public class VehicleDiagramGraphic : MaskableGraphic
             bool heading = drawing == Drawing.Heading;
             tickLabels[i].text = (heading ? Mathf.Repeat(tick,360) : tick).ToString("0");
             tickLabels[i].rectTransform.anchoredPosition = heading ? new Vector2(offset,-18) : new Vector2(drawing==Drawing.Speed?-40:35,offset);
-            tickLabels[i].gameObject.SetActive(heading ? Mathf.Abs(offset)<rectTransform.rect.width*.5f-16 : tick>=0 && Mathf.Abs(offset)<75);
+            tickLabels[i].gameObject.SetActive(heading ? Mathf.Abs(offset)<rectTransform.rect.width*.5f-16 : (drawing==Drawing.PitchScale || tick>=0) && Mathf.Abs(offset)<75);
         }
     }
     protected override void OnPopulateMesh(VertexHelper mesh)
     {
         mesh.Clear();
-        if(drawing==Drawing.Bank)
+        if(drawing==Drawing.LevelHorizon)
+        {
+            Line(mesh,new Vector2(-130,0),new Vector2(-35,0));Line(mesh,new Vector2(35,0),new Vector2(130,0));
+        }
+        else if(drawing==Drawing.PitchScale)
+        {
+            Line(mesh,new Vector2(0,-75),new Vector2(0,75));
+            for(int degree=-90;degree<=90;degree+=5){float y=(degree-reading)*2;if(Mathf.Abs(y)>75)continue;Line(mesh,new Vector2(0,y),new Vector2(degree%10==0?12:6,y));}
+            Line(mesh,new Vector2(-8,-4),Vector2.zero);Line(mesh,Vector2.zero,new Vector2(-8,4));
+        }
+        else if(drawing==Drawing.HoverCue)
+        {
+            foreach(float side in new[]{-1f,1f}){Line(mesh,new Vector2(side*45,-45),new Vector2(side*45,45));Line(mesh,new Vector2(-45,side*45),new Vector2(45,side*45));}
+            Line(mesh,new Vector2(-6,0),new Vector2(6,0));Line(mesh,new Vector2(0,-6),new Vector2(0,6));
+            Line(mesh,Vector2.zero,hoverVelocity);
+            for(int i=0;i<16;i++){float a=i*Mathf.PI/8,b=(i+1)*Mathf.PI/8;Line(mesh,hoverVelocity+new Vector2(Mathf.Cos(a),Mathf.Sin(a))*4,hoverVelocity+new Vector2(Mathf.Cos(b),Mathf.Sin(b))*4);}
+        }
+        else if(drawing==Drawing.HullLevel)
+        {
+            Line(mesh,new Vector2(-48,0),new Vector2(-32,0));Line(mesh,new Vector2(32,0),new Vector2(48,0));
+            Vector2 axis=Quaternion.Euler(0,0,-reading)*Vector2.right;
+            Line(mesh,-axis*27,axis*27);Line(mesh,new Vector2(0,-22),new Vector2(0,-15));
+        }
+        else if(drawing==Drawing.Bank)
         {
             float radius=120;foreach(float degree in new[]{-60f,-45f,-30f,-20f,-10f,0f,10f,20f,30f,45f,60f}){float a=(90-degree)*Mathf.Deg2Rad;Vector2 d=new Vector2(Mathf.Cos(a),Mathf.Sin(a));Line(mesh,d*(radius-8),d*radius);}
             float angle=(90-reading)*Mathf.Deg2Rad;Vector2 marker=new Vector2(Mathf.Cos(angle),Mathf.Sin(angle))*(radius+12);Line(mesh,marker,marker.normalized*(radius+3));
@@ -39,7 +64,18 @@ public class VehicleDiagramGraphic : MaskableGraphic
         {Line(mesh,new Vector2(0,-75),new Vector2(0,75));for(int i=-2;i<=2;i++)Line(mesh,new Vector2(0,i*35),new Vector2(8,i*35));float y=Mathf.Clamp(reading/2000,-1,1)*70;Line(mesh,new Vector2(-10,y),new Vector2(0,y));}
         else if(drawing==Drawing.FlightPath)
         {for(int i=0;i<24;i++){float a=i*Mathf.PI/12,b=(i+1)*Mathf.PI/12;Line(mesh,new Vector2(Mathf.Cos(a),Mathf.Sin(a))*7,new Vector2(Mathf.Cos(b),Mathf.Sin(b))*7);}Line(mesh,new Vector2(-16,0),new Vector2(-7,0));Line(mesh,new Vector2(7,0),new Vector2(16,0));Line(mesh,new Vector2(0,7),new Vector2(0,15));}
-        else if (drawing == Drawing.Horizon || drawing==Drawing.PitchLadder)
+        else if(drawing==Drawing.PitchLadder)
+        {
+            // Positive pitch is solid; negative pitch is dashed, as on aviation HUDs.
+            for(int y=-160;y<=160;y+=20)
+            {
+                float span=y==0?130:70;
+                if(y<0){for(float x=35;x<span;x+=12){float end=Mathf.Min(x+7,span);Line(mesh,new Vector2(x,y),new Vector2(end,y));Line(mesh,new Vector2(-x,y),new Vector2(-end,y));}}
+                else{Line(mesh,new Vector2(-span,y),new Vector2(-35,y));Line(mesh,new Vector2(35,y),new Vector2(span,y));}
+                if(y!=0){float hook=y>0?-5:5;Line(mesh,new Vector2(-span,y),new Vector2(-span,y+hook));Line(mesh,new Vector2(span,y),new Vector2(span,y+hook));}
+            }
+        }
+        else if (drawing == Drawing.Horizon)
         {
             for(int y=-160;y<=160;y+=20)
             {

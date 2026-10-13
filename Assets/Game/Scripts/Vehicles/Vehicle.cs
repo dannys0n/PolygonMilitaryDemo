@@ -7,6 +7,13 @@ using UnityEngine.AI;
 [RequireComponent(typeof(Rigidbody))]
 public class Vehicle : MonoBehaviour
 {
+    public enum InstrumentLayout { Road, Armored, Helicopter, FixedWing, Drone }
+    [Header("Driver / pilot instruments")]
+    public InstrumentLayout instruments;
+    public enum InstrumentReference { Generic, HMMWV, M113, Stryker, MRAP, Bradley, Abrams, Leopard2, T72, HIMARS, Tor, FMTV, Technical, Apache, Cobra, BlackHawk, LittleBird, F15, Su27, Reaper, C17 }
+    [Tooltip("Tentative real-world reference inferred from the model; this selects the adapted instrument layout.")]
+    public InstrumentReference instrumentReference;
+    [TextArea] public string instrumentReferenceNotes;
     public enum SeatRole
     {
         Driver, Gunner, Passenger

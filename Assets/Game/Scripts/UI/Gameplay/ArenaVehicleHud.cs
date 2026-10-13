@@ -26,24 +26,34 @@ public class ArenaVehicleHud : MonoBehaviour
     float groundAltitude;
     CanvasGroup mountedFade;
     float presentationBlend;
-    GameObject roadPanel;
+    GameObject roadPanel, armoredPanel, dronePanel;
+    TMP_Text armoredSpeed, armoredState, armoredHeading, armoredAttitude, droneTelemetry, droneHeading;
+    VehicleDiagramGraphic armoredLevel;
     VehicleSpeedometerGraphic roadGauge;
+    VehicleDialGraphic roadDial;
+    TMP_Text[] roadTicks;
+    VehicleReferenceInstruments referenceInstruments;
+    VehicleDiagramGraphic hoverCue, metricPitchScale;
+    TMP_Text metricPitchReadout;
     TMP_Text roadSpeed, roadDetails;
     readonly Color accent=new Color(1,.55f,.12f);
     void Awake()
     {
         ArenaHudTheme.StyleLines(transform, filamentLine, accentLineGlow);
         BuildRoadDashboard();
+        BuildSpecializedInstruments();
+        referenceInstruments=gameObject.AddComponent<VehicleReferenceInstruments>();referenceInstruments.Build(telemetry);
+        var hover=new GameObject("Apache hover velocity cue",typeof(RectTransform),typeof(CanvasRenderer),typeof(VehicleDiagramGraphic));hover.transform.SetParent(flightPanel.transform,false);hoverCue=hover.GetComponent<VehicleDiagramGraphic>();hoverCue.drawing=VehicleDiagramGraphic.Drawing.HoverCue;hoverCue.rectTransform.sizeDelta=new Vector2(110,110);hoverCue.raycastTarget=false;hover.SetActive(false);
+        var pitchScale=new GameObject("Su27 right pitch scale",typeof(RectTransform),typeof(CanvasRenderer),typeof(VehicleDiagramGraphic));pitchScale.transform.SetParent(flightPanel.transform,false);metricPitchScale=pitchScale.GetComponent<VehicleDiagramGraphic>();metricPitchScale.drawing=VehicleDiagramGraphic.Drawing.PitchScale;metricPitchScale.rectTransform.anchoredPosition=new Vector2(150,0);metricPitchScale.rectTransform.sizeDelta=new Vector2(25,170);metricPitchScale.tickStep=10;metricPitchScale.pixelsPerUnit=2;metricPitchScale.raycastTarget=false;metricPitchScale.tickLabels=new TMP_Text[5];for(int i=0;i<5;i++)metricPitchScale.tickLabels[i]=DashboardLabel("Pitch tick "+i,metricPitchScale.transform,Vector2.zero,new Vector2(35,20),12);metricPitchReadout=DashboardLabel("Metric pitch",flightPanel.transform,new Vector2(160,-100),new Vector2(140,25),14);pitchScale.SetActive(false);metricPitchReadout.gameObject.SetActive(false);
         mountedFade=mountedPanel.GetComponent<CanvasGroup>();
     }
     void Update()
     {
+        if(!player.IsMounted || !VehicleReferenceInstruments.UsesDials(player.MountedVehicle) || player.MountedVehicle.seats[player.SeatIndex].role!=Vehicle.SeatRole.Driver)referenceInstruments.Present(null,0,false,false);
         bool mounted=player.IsMounted;prompt.text=mounted?"":player.Prompt;
-        mountedPanel.SetActive(mounted);flightPanel.SetActive(false);
+        mountedPanel.SetActive(mounted);
         infantryEquipment.SetActive(!mounted);infantryCrosshair.SetActive(!mounted);
-        vehicleEquipment.SetActive(false);
-        roadPanel.SetActive(false);
-        if(!mounted){presentationBlend=0;return;}
+        if(!mounted){flightPanel.SetActive(false);vehicleEquipment.SetActive(false);roadPanel.SetActive(false);armoredPanel.SetActive(false);dronePanel.SetActive(false);presentationBlend=0;return;}
         presentationBlend=Mathf.MoveTowards(presentationBlend,1,Time.deltaTime/.18f);
         if(mountedFade)mountedFade.alpha=1-Mathf.Pow(1-presentationBlend,3);
         var v=player.MountedVehicle;bool air=v.motor is HelicopterMotor;var role=v.seats[player.SeatIndex].role;
@@ -82,27 +92,45 @@ public class ArenaVehicleHud : MonoBehaviour
         float health=v.Health/v.maxHealth;for(int i=0;i<hullSegments.Length;i++)hullSegments[i].color=i<hullSegments.Length*health?Color.white:new Color(1,1,1,.15f);
         if(!air)
         {
-            roadPanel.SetActive(role == Vehicle.SeatRole.Driver);
+            flightPanel.SetActive(false);dronePanel.SetActive(false);
+            bool driver=role==Vehicle.SeatRole.Driver;
+            roadPanel.SetActive(driver && UsesAnalogGround(v));
+            armoredPanel.SetActive(driver && !UsesAnalogGround(v));
             if (roadPanel.activeSelf) UpdateRoadDashboard(v);
+            if (armoredPanel.activeSelf) UpdateArmoredInstruments(v);
             return;
         }
-        flightPanel.SetActive(role==Vehicle.SeatRole.Driver);
+        roadPanel.SetActive(false);armoredPanel.SetActive(false);
+        bool pilot=role==Vehicle.SeatRole.Driver;
+        bool drone=v.instruments==Vehicle.InstrumentLayout.Drone;
+        bool dials=VehicleReferenceInstruments.UsesDials(v);
+        flightPanel.SetActive(pilot && !drone && !dials);
+        dronePanel.SetActive(pilot && drone);
+        if(!pilot)return;
         float altitude=0, nearest=float.PositiveInfinity;
         foreach(var hit in Physics.RaycastAll(v.transform.position,Vector3.down,1000,Physics.DefaultRaycastLayers,QueryTriggerInteraction.Ignore))
             if(!hit.transform.IsChildOf(v.transform)&&!hit.collider.GetComponentInParent<SoldierLife>()&&hit.distance<nearest){nearest=hit.distance;altitude=hit.distance;}
-        float knots=Vector3.ProjectOnPlane(v.Body.linearVelocity,Vector3.up).magnitude*1.943844f;
+        if(dials)referenceInstruments.Present(v,altitude,true,player.CockpitView);
+        if(dronePanel.activeSelf) UpdateDroneInstruments(v,altitude);
+        bool metric=v.instrumentReference==Vehicle.InstrumentReference.Su27;
+        float horizontalSpeed=Vector3.ProjectOnPlane(v.Body.linearVelocity,Vector3.up).magnitude;
+        float knots=horizontalSpeed*1.943844f;
         telemetry.text="V/S "+(v.Body.linearVelocity.y*196.8504f).ToString("+0;-0;0")+" FPM";
-        speedReadout.text="GS <size=26>"+Mathf.RoundToInt(knots).ToString("000")+"</size> KT";
-        altitudeReadout.text="RAD ALT <size=26>"+Mathf.RoundToInt(altitude*3.28084f).ToString("0000")+"</size> FT";
-        systemsReadout.text="NR "+Mathf.RoundToInt(((HelicopterMotor)v.motor).RotorPower*100)+"%   "+(((HelicopterMotor)v.motor).assistEnabled?"ASSIST":"MANUAL")+"   HULL "+Mathf.RoundToInt(v.Health/v.maxHealth*100)+"%";
+        speedReadout.text="GS <size=26>"+Mathf.RoundToInt(metric?horizontalSpeed*3.6f:knots).ToString("000")+"</size> "+(metric?"KM/H":"KT");
+        altitudeReadout.text="AGL <size=26>"+Mathf.RoundToInt(metric?altitude:altitude*3.28084f).ToString("0000")+"</size> "+(metric?"M":"FT");
+        if(metric)telemetry.text="V/S "+v.Body.linearVelocity.y.ToString("+0.0;-0.0;0.0")+" M/S";
+        string assist=((HelicopterMotor)v.motor).assistEnabled?"ASSIST":"MANUAL";
+        systemsReadout.text=v.instruments==Vehicle.InstrumentLayout.Helicopter
+            ? "ROTOR "+Mathf.RoundToInt(((HelicopterMotor)v.motor).RotorPower*100)+"%   "+assist
+            : "FLIGHT CONTROL  /  "+assist;
         groundAltitude = altitude;
         var rockets=v.GetComponent<VehicleLauncher>();
-        weapon.text=rockets?"RKT  [LMB]  "+rockets.Missiles+" / "+rockets.capacity+(rockets.Missiles<rockets.capacity ? "   +1 IN "+rockets.RechargeRemaining.ToString("F1")+" S" : ""):"TRANSPORT / NO PILOT WEAPON";
+        weapon.text=rockets?"RKT  [LMB]  "+rockets.Missiles+" / "+rockets.capacity+(rockets.Missiles<rockets.capacity ? "   +1 IN "+rockets.RechargeRemaining.ToString("F1")+" S" : ""):"NO PILOT WEAPON";
     }
     void LateUpdate()
     {
         if (player.IsMounted && player.MountedVehicle.motor is HelicopterMotor && player.MountedVehicle.seats[player.SeatIndex].role == Vehicle.SeatRole.Driver)
-            UpdateFlightInstruments(player.MountedVehicle, groundAltitude);
+            if(flightPanel.activeSelf) UpdateFlightInstruments(player.MountedVehicle, groundAltitude);
         flightPathMarker.gameObject.SetActive(player.IsMounted && flightPanel.activeSelf && player.MountedVehicle.Body.linearVelocity.sqrMagnitude>1);
         if(flightPathMarker.gameObject.activeSelf){var cam=player.ActiveVehicleCamera ? player.ActiveVehicleCamera : Camera.main;if(cam)PlaceMarker(flightPathMarker,cam,cam.transform.position+player.MountedVehicle.Body.linearVelocity.normalized*100);else flightPathMarker.gameObject.SetActive(false);}
         bool armed = player.IsMounted && vehicleEquipment.activeSelf;
@@ -134,12 +162,12 @@ public class ArenaVehicleHud : MonoBehaviour
             ? ResolvePoint(actual,Mathf.Min(range,Vector3.Distance(actual.origin,desiredPoint)),vehicle)
             : vehicle.GetComponent<VehicleLauncher>().PredictedImpactPoint;
         PlaceMarker(actualAim,camera,impact);
-        if(gunner){var direction=vehicle.turret.muzzle.forward;float azimuth=Mathf.Repeat(Mathf.Atan2(direction.x,direction.z)*Mathf.Rad2Deg,360);float elevation=Mathf.Asin(Mathf.Clamp(direction.y,-1,1))*Mathf.Rad2Deg;float zoom=Mathf.Tan(35*Mathf.Deg2Rad)/Mathf.Tan(camera.fieldOfView*.5f*Mathf.Deg2Rad);gunnerReadout.text="DAY / WIDE   RNG "+Mathf.RoundToInt(Vector3.Distance(actual.origin,impact)).ToString("0000")+" M   AZ "+Mathf.RoundToInt(azimuth).ToString("000")+"   EL "+elevation.ToString("+00;-00;00")+"   "+zoom.ToString("F1")+"X";}
+        if(gunner){var direction=vehicle.turret.muzzle.forward;float azimuth=Mathf.Repeat(Mathf.Atan2(direction.x,direction.z)*Mathf.Rad2Deg,360);float elevation=Mathf.Asin(Mathf.Clamp(direction.y,-1,1))*Mathf.Rad2Deg;float zoom=Mathf.Tan(35*Mathf.Deg2Rad)/Mathf.Tan(camera.fieldOfView*.5f*Mathf.Deg2Rad);float relativeYaw=Mathf.DeltaAngle(vehicle.transform.eulerAngles.y,azimuth);float distance=Vector3.Distance(actual.origin,ResolvePoint(actual,range,vehicle));string station=vehicle.instruments==Vehicle.InstrumentLayout.Armored?"WEAPON STATION":"GUN SIGHT";gunnerReadout.text=station+"   RNG "+(distance>=range-.1f?">":"")+Mathf.RoundToInt(distance).ToString("0000")+" M   AZ "+relativeYaw.ToString("+000;-000;000")+"°   EL "+elevation.ToString("+00;-00;00")+"°   "+zoom.ToString("F1")+"X";}
     }
     void BuildRoadDashboard()
     {
         roadPanel = new GameObject("Road cockpit instruments", typeof(RectTransform), typeof(UnityEngine.UI.Image));
-        roadPanel.GetComponent<UnityEngine.UI.Image>().color=new Color(0,0,0,.32f);
+        roadPanel.GetComponent<UnityEngine.UI.Image>().color=Color.clear;
         roadPanel.GetComponent<UnityEngine.UI.Image>().raycastTarget=false;
         var rect=(RectTransform)roadPanel.transform;
         rect.SetParent(transform,false);
@@ -149,6 +177,8 @@ public class ArenaVehicleHud : MonoBehaviour
         gauge.transform.SetParent(rect,false);roadGauge=gauge.GetComponent<VehicleSpeedometerGraphic>();
         roadGauge.rectTransform.sizeDelta=new Vector2(200,115);roadGauge.rectTransform.anchoredPosition=new Vector2(-62,62);
         roadGauge.raycastTarget=false;
+        var dial=new GameObject("Referenced military speed dial",typeof(RectTransform),typeof(CanvasRenderer),typeof(VehicleDialGraphic));dial.transform.SetParent(rect,false);roadDial=dial.GetComponent<VehicleDialGraphic>();roadDial.rectTransform.sizeDelta=new Vector2(125,125);roadDial.rectTransform.anchoredPosition=new Vector2(-62,75);roadDial.raycastTarget=false;
+        roadTicks=new TMP_Text[5];for(int i=0;i<roadTicks.Length;i++){float angle=Mathf.Lerp(225,-45,i/4f)*Mathf.Deg2Rad;roadTicks[i]=DashboardLabel("Speed scale "+i,roadDial.transform,new Vector2(Mathf.Cos(angle),Mathf.Sin(angle))*40,new Vector2(25,18),10);}
         roadSpeed=DashboardLabel("Speed",rect,new Vector2(-62,26),new Vector2(140,48),30);
         roadDetails=DashboardLabel("Drivetrain",rect,new Vector2(95,66),new Vector2(175,105),16);
         roadDetails.alignment=TextAlignmentOptions.MidlineLeft;
@@ -166,12 +196,65 @@ public class ArenaVehicleHud : MonoBehaviour
     {
         float speed=vehicle.Body.linearVelocity.magnitude*3.6f;
         var motor=(HummerMotor)vehicle.motor;
-        roadGauge.SetSpeed(speed,Mathf.Ceil(motor.maxSpeed*3.6f/20f)*20f);
-        roadSpeed.text=Mathf.RoundToInt(speed)+" <size=12>KM/H</size>";
+        bool imperial=ImperialGround(vehicle);float reading=imperial?speed*.621371f:speed;
+        bool referenced=vehicle.instrumentReference!=Vehicle.InstrumentReference.Generic;roadGauge.gameObject.SetActive(!referenced);roadDial.gameObject.SetActive(referenced);
+        roadGauge.SetSpeed(reading,Mathf.Ceil(motor.maxSpeed*(imperial?2.236936f:3.6f)/20f)*20f);
+        roadDial.maximum=imperial?60:80;roadDial.SetValue(reading);
+        for(int i=0;i<roadTicks.Length;i++)roadTicks[i].text=(roadDial.maximum*i/4).ToString("0");
+        roadSpeed.text=Mathf.RoundToInt(reading)+" <size=12>"+(imperial?"MPH":"KM/H")+"</size>";
         var input=vehicle.DriverInput;
-        string drive=input.handbrake?"PARK BRAKE":input.move.y<-.05f?"REVERSE":input.move.y>.05f?"DRIVE":"COAST";
-        roadDetails.text="<color=#FF9637>"+drive+"</color>\nHDG "+Mathf.RoundToInt(Mathf.Repeat(vehicle.transform.eulerAngles.y,360)).ToString("000")+"\nHULL "+Mathf.RoundToInt(vehicle.Health/vehicle.maxHealth*100)+"%";
+        string drive=DriveState(vehicle);
+        roadDetails.text="<color=#FF9637>"+drive+"</color>\nHDG "+HeadingNumber(vehicle.transform.eulerAngles.y).ToString("000")+"\nHULL "+Mathf.RoundToInt(vehicle.Health/vehicle.maxHealth*100)+"%";
         if(input.boost)roadDetails.text+="\n<color=#FF9637>BOOST</color>";
+    }
+    void BuildSpecializedInstruments()
+    {
+        armoredPanel=InstrumentCard("Armored driver instruments",new Vector2(-50,65),new Vector2(340,200));
+        armoredHeading=DashboardLabel("Hull heading",armoredPanel.transform,new Vector2(0,72),new Vector2(310,28),16);
+        armoredSpeed=DashboardLabel("Digital speed",armoredPanel.transform,new Vector2(-85,18),new Vector2(140,65),38);
+        armoredState=DashboardLabel("Drive state",armoredPanel.transform,new Vector2(-85,-42),new Vector2(155,35),14);
+        armoredAttitude=DashboardLabel("Hull inclination",armoredPanel.transform,new Vector2(85,-42),new Vector2(160,40),14);
+        var level=new GameObject("Hull level",typeof(RectTransform),typeof(CanvasRenderer),typeof(VehicleDiagramGraphic));
+        level.transform.SetParent(armoredPanel.transform,false);armoredLevel=level.GetComponent<VehicleDiagramGraphic>();
+        armoredLevel.drawing=VehicleDiagramGraphic.Drawing.HullLevel;armoredLevel.rectTransform.anchoredPosition=new Vector2(85,22);armoredLevel.rectTransform.sizeDelta=new Vector2(105,65);armoredLevel.raycastTarget=false;
+        dronePanel=InstrumentCard("Unmanned aircraft telemetry",new Vector2(-50,65),new Vector2(350,210));
+        droneHeading=DashboardLabel("UAS heading",dronePanel.transform,new Vector2(0,72),new Vector2(325,35),17);
+        droneTelemetry=DashboardLabel("UAS telemetry",dronePanel.transform,new Vector2(0,-5),new Vector2(315,120),18);
+        droneTelemetry.alignment=TextAlignmentOptions.MidlineLeft;
+        armoredPanel.SetActive(false);dronePanel.SetActive(false);
+    }
+    GameObject InstrumentCard(string name,Vector2 position,Vector2 size)
+    {
+        var card=new GameObject(name,typeof(RectTransform),typeof(UnityEngine.UI.Image));
+        var rect=(RectTransform)card.transform;rect.SetParent(transform,false);
+        rect.anchorMin=rect.anchorMax=Vector2.right;rect.pivot=Vector2.right;rect.anchoredPosition=position;rect.sizeDelta=size;
+        var image=card.GetComponent<UnityEngine.UI.Image>();image.color=name=="Armored driver instruments"?Color.clear:new Color(0,0,0,.32f);image.raycastTarget=false;return card;
+    }
+    static string DriveState(Vehicle vehicle)
+    {
+        if(vehicle.DriverInput.handbrake)return "PARK BRAKE";
+        if(vehicle.DriverInput.brake)return "BRAKING";
+        float longitudinal=Vector3.Dot(vehicle.Body.linearVelocity,vehicle.transform.forward);
+        return longitudinal<-.3f?"REVERSE":longitudinal>.3f?"FORWARD":"STOPPED";
+    }
+    void UpdateArmoredInstruments(Vehicle v)
+    {
+        float heading=Mathf.Repeat(v.transform.eulerAngles.y,360);
+        armoredHeading.text="HULL HDG  "+HeadingNumber(heading).ToString("000")+"°  "+Cardinal(heading);
+        bool imperial=ImperialGround(v);
+        armoredSpeed.text=Mathf.RoundToInt(v.Body.linearVelocity.magnitude*(imperial?2.236936f:3.6f))+"<size=14> "+(imperial?"MPH":"KM/H")+"</size>";
+        armoredState.text="<color=#FF9637>"+DriveState(v)+"</color>";
+        Vector3 up=v.transform.InverseTransformDirection(Vector3.up);
+        float roll=Mathf.Atan2(up.x,up.y)*Mathf.Rad2Deg;
+        float pitch=Mathf.Asin(Mathf.Clamp(v.transform.forward.y,-1,1))*Mathf.Rad2Deg;
+        armoredLevel.SetReading(roll);
+        armoredAttitude.text="ROLL "+roll.ToString("+0;-0;0")+"°\nPITCH "+pitch.ToString("+0;-0;0")+"°";
+    }
+    void UpdateDroneInstruments(Vehicle v,float altitude)
+    {
+        float heading=Mathf.Repeat(v.transform.eulerAngles.y,360);
+        droneHeading.text="UAS  /  HDG "+HeadingNumber(heading).ToString("000")+"°";
+        droneTelemetry.text="AGL     "+altitude.ToString("0.0")+" M\nGS       "+Vector3.ProjectOnPlane(v.Body.linearVelocity,Vector3.up).magnitude.ToString("0.0")+" M/S\nV/S      "+v.Body.linearVelocity.y.ToString("+0.0;-0.0;0.0")+" M/S\n<color=#FF9637>"+(((HelicopterMotor)v.motor).assistEnabled?"POSITION ASSIST":"MANUAL CONTROL")+"</color>";
     }
     void EnsureSeatMarkers(int count)
     {
@@ -191,19 +274,36 @@ public class ArenaVehicleHud : MonoBehaviour
     {
         // Flight instruments describe aircraft attitude, independent of the pilot camera.
         var panel=(RectTransform)flightPanel.transform;
-        panel.localScale=Vector3.one*(player.CockpitView?1f:.82f);
+        bool fixedWing=vehicle.instruments==Vehicle.InstrumentLayout.FixedWing;
+        bool apache=vehicle.instrumentReference==Vehicle.InstrumentReference.Apache;
+        bool metric=vehicle.instrumentReference==Vehicle.InstrumentReference.Su27;
+        panel.localScale=Vector3.one*(player.CockpitView?(fixedWing?1.1f:1f):.82f);
+        bankScale.gameObject.SetActive(!fixedWing && !apache);
+        verticalSpeedIndicator.gameObject.SetActive(!fixedWing && !apache);
+        speedTape.gameObject.SetActive(!apache && !metric);
+        altitudeTape.gameObject.SetActive(!metric);
+        metricPitchScale.gameObject.SetActive(metric);metricPitchReadout.gameObject.SetActive(metric);
+        telemetry.rectTransform.anchoredPosition=metric?new Vector2(0,-150):new Vector2(280,-125);
+        horizon.GetComponent<VehicleDiagramGraphic>().drawing=metric?VehicleDiagramGraphic.Drawing.LevelHorizon:VehicleDiagramGraphic.Drawing.PitchLadder;
+        foreach(Transform label in horizon)label.gameObject.SetActive(!metric);
+        horizon.gameObject.SetActive(!apache || vehicle.Body.linearVelocity.magnitude>20);
+        hoverCue.gameObject.SetActive(apache && vehicle.Body.linearVelocity.magnitude<=20);
+        if(hoverCue.gameObject.activeSelf)hoverCue.SetHoverVelocity(new Vector2(Vector3.Dot(vehicle.Body.linearVelocity,vehicle.transform.right),Vector3.Dot(vehicle.Body.linearVelocity,vehicle.transform.forward)));
         panel.anchoredPosition=player.CockpitView?new Vector2(0,35):new Vector2(0,135);
         Transform view = vehicle.transform;
         float heading = Mathf.Repeat(view.eulerAngles.y,360);
-        compass.text = "HDG " + Mathf.RoundToInt(heading).ToString("000") + "  " + Cardinal(heading);
+        compass.text = "HDG " + HeadingNumber(heading).ToString("000") + "  " + Cardinal(heading);
         float elevation = Mathf.Asin(Mathf.Clamp(view.forward.y,-1,1)) * Mathf.Rad2Deg;
+        if(metric){metricPitchScale.SetReading(elevation);metricPitchReadout.text="PITCH "+elevation.ToString("+00;-00;00")+"°";}
         Vector3 up = view.InverseTransformDirection(Vector3.up);
         float bank = Mathf.Atan2(up.x,up.y) * Mathf.Rad2Deg;
         horizon.localEulerAngles = new Vector3(0,0,-bank);
         horizon.anchoredPosition = (Quaternion.Euler(0,0,-bank)*new Vector3(0,-elevation*2f,0));
         headingTape.SetReading(heading);
-        altitudeTape.SetReading(altitude*3.28084f);
-        speedTape.SetReading(Vector3.ProjectOnPlane(vehicle.Body.linearVelocity,Vector3.up).magnitude*1.943844f);
+        altitudeTape.tickStep=metric?20:50;altitudeTape.pixelsPerUnit=metric?2:.8f;
+        speedTape.tickStep=metric?50:10;speedTape.pixelsPerUnit=metric?.8f:4;
+        altitudeTape.SetReading(altitude*(metric?1:3.28084f));
+        speedTape.SetReading(Vector3.ProjectOnPlane(vehicle.Body.linearVelocity,Vector3.up).magnitude*(metric?3.6f:1.943844f));
         bankScale.SetReading(bank);
         verticalSpeedIndicator.SetReading(vehicle.Body.linearVelocity.y*196.8504f);
     }
@@ -225,5 +325,8 @@ public class ArenaVehicleHud : MonoBehaviour
         RectTransformUtility.ScreenPointToLocalPointInRectangle((RectTransform)marker.parent,screen,null,out var local);
         marker.anchoredPosition=local;
     }
+    static bool UsesAnalogGround(Vehicle v)=>v.instruments==Vehicle.InstrumentLayout.Road || v.instrumentReference==Vehicle.InstrumentReference.HMMWV || v.instrumentReference==Vehicle.InstrumentReference.M113 || v.instrumentReference==Vehicle.InstrumentReference.Leopard2 || v.instrumentReference==Vehicle.InstrumentReference.T72 || v.instrumentReference==Vehicle.InstrumentReference.FMTV || v.instrumentReference==Vehicle.InstrumentReference.MRAP || v.instrumentReference==Vehicle.InstrumentReference.Bradley;
+    static bool ImperialGround(Vehicle v)=>v.instrumentReference==Vehicle.InstrumentReference.HMMWV || v.instrumentReference==Vehicle.InstrumentReference.M113 || v.instrumentReference==Vehicle.InstrumentReference.Abrams || v.instrumentReference==Vehicle.InstrumentReference.FMTV || v.instrumentReference==Vehicle.InstrumentReference.HIMARS || v.instrumentReference==Vehicle.InstrumentReference.MRAP || v.instrumentReference==Vehicle.InstrumentReference.Bradley;
+    static int HeadingNumber(float heading)=>Mathf.RoundToInt(Mathf.Repeat(heading,360))%360;
     static string Cardinal(float a){string[] directions={"N","NE","E","SE","S","SW","W","NW"};return directions[Mathf.RoundToInt(a/45)%8];}
 }
