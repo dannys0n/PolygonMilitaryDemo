@@ -11,7 +11,7 @@ public sealed class VehicleCountermeasures : MonoBehaviour
     public float cooldown=10, rechargeSeconds=25, smokeDuration=10;
     public bool automaticForAI=true;
     [Header("Flare release program")]
-    [Min(1)] public int flareSalvos=3;
+    [Min(1)] public int flareSalvos=5;
     [Min(.02f)] public float flareInterval=.16f;
     public Vector2 flareEjectionSpeed=new Vector2(20,26);
     [Range(0,20)] public float flareDispersion=5;
