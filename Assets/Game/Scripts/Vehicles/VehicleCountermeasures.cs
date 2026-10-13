@@ -10,6 +10,13 @@ public sealed class VehicleCountermeasures : MonoBehaviour
     [Min(1)] public int capacity=2;
     public float cooldown=10, rechargeSeconds=25, smokeDuration=10;
     public bool automaticForAI=true;
+    [Header("Flare release program")]
+    [Min(1)] public int flareSalvos=3;
+    [Min(.02f)] public float flareInterval=.16f;
+    public Vector2 flareEjectionSpeed=new Vector2(20,26);
+    [Range(0,20)] public float flareDispersion=5;
+    int remainingFlareSalvos;
+    float nextFlare;
     public int Charges { get; private set; }
     public int Incoming { get; private set; }
     public float ReadyIn => Mathf.Max(0,nextDeploy-Time.time);
@@ -21,6 +28,8 @@ public sealed class VehicleCountermeasures : MonoBehaviour
     void Update()
     {
         Refill();
+        if(vehicle.IsDestroyed)remainingFlareSalvos=0;
+        else if(remainingFlareSalvos>0 && Time.time>=nextFlare)ReleaseFlareSalvo();
         Incoming=0;
         bool relevant=false;
         foreach(var missile in VehicleMissileGuidance.Active)
@@ -57,10 +66,15 @@ public sealed class VehicleCountermeasures : MonoBehaviour
         if(vehicle.IsDestroyed || Charges<=0 || Time.time<nextDeploy || !(flares||chaff||smoke))return false;
         if(Charges==capacity)nextRecharge=Time.time+Mathf.Max(.1f,rechargeSeconds);
         Charges--;nextDeploy=Time.time+Mathf.Max(.1f,cooldown);
+        if(flares&&flarePrefab)
+        {
+            remainingFlareSalvos=Mathf.Max(1,flareSalvos);
+            ReleaseFlareSalvo();
+        }
         foreach(var socket in dispensers)
         {
             if(!socket)continue;
-            if(flares&&flarePrefab)Release(flarePrefab,socket);
+
             if(chaff&&chaffPrefab)Release(chaffPrefab,socket);
             if(smoke&&smokePrefab)
             {
@@ -75,9 +89,25 @@ public sealed class VehicleCountermeasures : MonoBehaviour
         }
         return true;
     }
-    void Release(VehicleDecoy prefab,Transform socket)
+    void ReleaseFlareSalvo()
+    {
+        foreach(var socket in dispensers)
+            if(socket)Release(flarePrefab,socket,true);
+        remainingFlareSalvos--;
+        nextFlare=Time.time+Mathf.Max(.02f,flareInterval);
+    }
+    void OnDisable()=>remainingFlareSalvos=0;
+    void Release(VehicleDecoy prefab,Transform socket,bool flare=false)
     {
         var decoy=Instantiate(prefab,socket.position,socket.rotation);
-        decoy.velocity=vehicle.Body.GetPointVelocity(socket.position)+socket.forward*12;
+        Vector3 direction=socket.forward;
+        float speed=12;
+        if(flare)
+        {
+            var cone=Random.insideUnitCircle*Mathf.Tan(flareDispersion*Mathf.Deg2Rad);
+            direction=(socket.forward+socket.right*cone.x+socket.up*cone.y).normalized;
+            speed=Random.Range(Mathf.Max(0,flareEjectionSpeed.x),Mathf.Max(flareEjectionSpeed.x,flareEjectionSpeed.y));
+        }
+        decoy.velocity=vehicle.Body.GetPointVelocity(socket.position)+direction*speed;
     }
 }
