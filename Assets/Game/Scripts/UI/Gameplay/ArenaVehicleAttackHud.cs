@@ -5,7 +5,9 @@ using TMPro;
 public class ArenaVehicleAttackHud : MonoBehaviour
 {
     GameObject panel;
-    VehicleGunnerReticleGraphic reticle,orientation;
+    GameObject opticalLayer;
+    VehicleGunnerReticleGraphic reticle,orientation,aperture;
+    TMP_Text[] scaleLabels;
     RectTransform actualDirection;
     TMP_Text heading,rangeText,sightText,weaponText,orientationText;
     readonly RaycastHit[] hits=new RaycastHit[64];
@@ -13,13 +15,19 @@ public class ArenaVehicleAttackHud : MonoBehaviour
     public void Build(TMP_Text template)
     {
         panel=new GameObject("Armored weapon sight",typeof(RectTransform));var rect=(RectTransform)panel.transform;rect.SetParent(transform,false);rect.anchorMin=rect.anchorMax=new Vector2(.5f,.5f);rect.sizeDelta=new Vector2(640,470);
-        reticle=Graphic(panel.transform,"Gunner aiming reticle",Vector2.zero,new Vector2(300,260));
-        orientation=Graphic(panel.transform,"Hull and turret orientation",new Vector2(-230,-180),new Vector2(100,100));orientation.orientation=true;
-        heading=Label(template,"Sight heading",new Vector2(0,220),new Vector2(570,32),18);
+        opticalLayer=new GameObject("Optical mask behind HUD",typeof(RectTransform),typeof(Canvas));
+        opticalLayer.transform.SetParent(transform,false);
+        var opticalCanvas=opticalLayer.GetComponent<Canvas>();opticalCanvas.overrideSorting=true;opticalCanvas.sortingOrder=19;
+        aperture=Graphic(opticalLayer.transform,"Optical eyepiece boundary",Vector2.zero,new Vector2(6000,6000));aperture.aperture=true;
+        opticalLayer.SetActive(false);
+        reticle=Graphic(panel.transform,"Gunner aiming reticle",Vector2.zero,new Vector2(460,440));
+        orientation=Graphic(panel.transform,"Hull and turret orientation",new Vector2(-370,-190),new Vector2(100,100));orientation.orientation=true;
+        heading=Label(template,"Sight heading",new Vector2(0,330),new Vector2(570,32),18);
         rangeText=Label(template,"Sight range",new Vector2(0,-130),new Vector2(300,30),22);
-        sightText=Label(template,"Optical channel",new Vector2(-200,145),new Vector2(220,30),15);
-        weaponText=Label(template,"Ammunition and readiness",new Vector2(190,-180),new Vector2(240,60),16);
-        orientationText=Label(template,"Gun traverse and elevation",new Vector2(-230,-247),new Vector2(260,35),14);
+        sightText=Label(template,"Optical channel",new Vector2(0,300),new Vector2(440,30),15);
+        weaponText=Label(template,"Ammunition and readiness",new Vector2(370,-190),new Vector2(240,60),16);
+        orientationText=Label(template,"Gun traverse and elevation",new Vector2(-370,-257),new Vector2(260,35),14);
+        scaleLabels=new TMP_Text[18];for(int i=0;i<scaleLabels.Length;i++)scaleLabels[i]=Label(template,"TPD scale "+i,Vector2.zero,new Vector2(34,20),11);
         var actual=Graphic(panel.transform,"Actual barrel direction",Vector2.zero,new Vector2(30,30));actual.barrelMarker=true;actualDirection=actual.rectTransform;
         panel.SetActive(false);
     }
@@ -33,13 +41,30 @@ public class ArenaVehicleAttackHud : MonoBehaviour
     }
     public void Present(VehicleOccupant occupant,VehicleAttackSight sight,Camera camera)
     {
-        bool show=sight&&camera&&sight.DisplaysForSeat(occupant.SeatIndex);panel.SetActive(show);if(!show)return;
+        bool show=sight&&camera&&sight.DisplaysForSeat(occupant.SeatIndex);panel.SetActive(show);if(!show){opticalLayer.SetActive(false);return;}
         var vehicle=sight.vehicle;reticle.style=sight.style;reticle.SetVerticesDirty();
         float sightHeading=Mathf.Repeat(camera.transform.eulerAngles.y,360);heading.text="HDG "+(Mathf.RoundToInt(sightHeading)%360).ToString("000")+"°";
         Ray view=new Ray(camera.transform.position,camera.transform.forward);float range=Range(view,sight.range,vehicle);
         rangeText.text=(range>=sight.range-.1f?">":"")+Mathf.RoundToInt(range).ToString("0000")+" M";
-        float zoom=Mathf.Tan(35*Mathf.Deg2Rad)/Mathf.Tan(camera.fieldOfView*.5f*Mathf.Deg2Rad);
-        sightText.text=(sight.style==VehicleAttackSight.SightStyle.Abrams?"GPS":sight.style==VehicleAttackSight.SightStyle.Leopard?"EMES":sight.style==VehicleAttackSight.SightStyle.T72?"TPD-K1":"DIRECTOR")+"  /  DAY  "+zoom.ToString("F1")+"X";
+        bool tank=sight.IsDocumentedTankSight;
+        opticalLayer.SetActive(tank&&occupant.CockpitView);
+        string rangeDigits=range<sight.minimumLaserRange||range>=sight.range-.1f?"----":Mathf.RoundToInt(range).ToString("0000");
+        rangeText.rectTransform.anchoredPosition=sight.style==VehicleAttackSight.SightStyle.T72?new Vector2(370,190):new Vector2(0,-135);
+        rangeText.color=sight.style==VehicleAttackSight.SightStyle.Abrams?new Color(1,.32f,.25f):Color.white;
+        // GPS: range below reticle, hollow readiness box on its left; F is a
+        // malfunction lamp, so it must not be shown as a permanent decoration.
+        // EMES: range, KE ammunition selection and 0 (not released) below view.
+        rangeText.text=sight.style==VehicleAttackSight.SightStyle.Abrams?rangeDigits:
+            sight.style==VehicleAttackSight.SightStyle.Leopard?rangeDigits+"   KE   "+(sight.Operational?"F":"0"):
+            sight.style==VehicleAttackSight.SightStyle.T72?"LRF  "+rangeDigits:rangeDigits+" M";
+        sightText.text=(sight.style==VehicleAttackSight.SightStyle.Abrams?"M1A1  /  GPS":sight.style==VehicleAttackSight.SightStyle.Leopard?"LEOPARD 2  /  EMES-15":sight.style==VehicleAttackSight.SightStyle.T72?"T-72A  /  TPD-K1":"DIRECTOR")+"  /  DAY";
+        for(int i=0;i<scaleLabels.Length;i++)
+        {
+            bool tpd=sight.style==VehicleAttackSight.SightStyle.T72;scaleLabels[i].gameObject.SetActive(tpd);if(!tpd)continue;
+            if(i<9){scaleLabels[i].text=(i*2+2).ToString();scaleLabels[i].rectTransform.anchoredPosition=new Vector2(-31,45-i*24);}
+            else if(i<16){scaleLabels[i].text=(40-(i-9)*5).ToString();scaleLabels[i].rectTransform.anchoredPosition=new Vector2(110+(i-9)*15,-75);}
+            else {scaleLabels[i].text=i==16?"0.5":"2.7";scaleLabels[i].rectTransform.anchoredPosition=i==16?new Vector2(36,42):new Vector2(202,-105);}
+        }
         weaponText.text=sight.ammunitionType+"\n<color=#FF9637>"+(sight.Operational?"READY":"SAFE")+"</color>";
         var ray=sight.WeaponRay;Vector3 local=vehicle.transform.InverseTransformDirection(ray.direction);float traverse=Mathf.Atan2(local.x,local.z)*Mathf.Rad2Deg;float elevation=Mathf.Asin(Mathf.Clamp(local.y,-1,1))*Mathf.Rad2Deg;orientation.SetTraverse(traverse);
         orientationText.text="TRV "+traverse.ToString("+000;-000;000")+"°   EL "+elevation.ToString("+00;-00;00")+"°";
