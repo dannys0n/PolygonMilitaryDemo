@@ -41,6 +41,14 @@ public class ArenaVehicleHud : MonoBehaviour
     TMP_Text metricPitchReadout;
     TMP_Text roadSpeed, roadDetails;
     readonly Color accent=new Color(1,.55f,.12f);
+    readonly System.Collections.Generic.List<RectTransform> systemTiles=new System.Collections.Generic.List<RectTransform>();
+    readonly System.Collections.Generic.List<Image> systemIcons=new System.Collections.Generic.List<Image>();
+    readonly System.Collections.Generic.List<TMP_Text> systemKeys=new System.Collections.Generic.List<TMP_Text>();
+    readonly System.Collections.Generic.List<TMP_Text> systemCaptions=new System.Collections.Generic.List<TMP_Text>();
+    Vehicle displayedSystemsVehicle;
+    Vehicle.SeatRole displayedSystemsRole;
+    VehicleCountermeasures displayedDefenses;
+    readonly System.Collections.Generic.List<VehicleWeaponSystems.Weapon> seatSystems=new System.Collections.Generic.List<VehicleWeaponSystems.Weapon>();
     void Awake()
     {
         ArenaHudTheme.StyleLines(transform, filamentLine, accentLineGlow);
@@ -66,7 +74,7 @@ public class ArenaVehicleHud : MonoBehaviour
         telemetry.gameObject.SetActive(!jetInstruments);systemsReadout.gameObject.SetActive(!jetInstruments);
         mountedPanel.SetActive(mounted);
         infantryEquipment.SetActive(!mounted);infantryCrosshair.SetActive(!mounted);
-        if(!mounted){flightPanel.SetActive(false);vehicleEquipment.SetActive(false);roadPanel.SetActive(false);armoredPanel.SetActive(false);dronePanel.SetActive(false);presentationBlend=0;return;}
+        if(!mounted){flightPanel.SetActive(false);vehicleEquipment.SetActive(false);roadPanel.SetActive(false);armoredPanel.SetActive(false);dronePanel.SetActive(false);presentationBlend=0;displayedSystemsVehicle=null;return;}
         presentationBlend=Mathf.MoveTowards(presentationBlend,1,Time.deltaTime/.18f);
         if(mountedFade)mountedFade.alpha=1-Mathf.Pow(1-presentationBlend,3);
         var v=player.MountedVehicle;bool air=v.IsAircraft;var role=v.seats[player.SeatIndex].role;
@@ -124,6 +132,7 @@ public class ArenaVehicleHud : MonoBehaviour
         if(!air && role==Vehicle.SeatRole.Driver && showAttack && attackSight.Operational) controls.text += "\nFIRE  [LMB]\nZOOM  [RMB]";
         if(defenses && role!=Vehicle.SeatRole.Passenger)controls.text+="\n[X] "+defenses.SystemName+" "+defenses.Charges+"/"+defenses.capacity
             +(defenses.ReadyIn>0?" / "+defenses.ReadyIn.ToString("0")+" S":defenses.Charges==0?" / +1 "+defenses.RechargeIn.ToString("0")+" S":"");
+        UpdateEquipmentSystems(v,role,weaponSystems,selectedWeapon,defenses,armed);
         int pageSeats=Mathf.Min(12,v.seats.Length-player.SeatPage*12);
         rightControls.text=(v.hasRenderedInterior&&!v.seats[player.SeatIndex].externalView?"[C]  CAMERA":"EXTERNAL VIEW")+"\n[V]  FREELOOK"+(player.Freelook?" ON":"")+"\nHOLD [E]  EXIT\n"+(pageSeats==1?"[F1]  STATION":"[F1-F"+pageSeats+"]  SEATS");
         if(v.GetComponent<VehicleDoors>())rightControls.text += "\nTAP [E]  " + (role==Vehicle.SeatRole.Driver ? "DOORS" : "NEARBY DOOR");
@@ -184,6 +193,85 @@ public class ArenaVehicleHud : MonoBehaviour
         var rockets=v.GetComponent<VehicleLauncher>();
         weapon.text=selectedWeapon!=null?selectedWeapon.name+"  [LMB]  "+ammunition.text
             :rockets?"RKT  [LMB]  "+rockets.Missiles+" / "+rockets.capacity+(rockets.Missiles<rockets.capacity ? "   +1 IN "+rockets.RechargeRemaining.ToString("F1")+" S" : ""):"NO PILOT WEAPON";
+    }
+    void UpdateEquipmentSystems(Vehicle vehicle,Vehicle.SeatRole role,VehicleWeaponSystems systems,
+        VehicleWeaponSystems.Weapon selected,VehicleCountermeasures defenses,bool armed)
+    {
+        if(displayedSystemsVehicle!=vehicle || displayedSystemsRole!=role)
+        {
+            displayedSystemsVehicle=vehicle;displayedSystemsRole=role;displayedDefenses=defenses;
+            seatSystems.Clear();
+            if(systems)foreach(var entry in systems.weapons)if(entry.role==role)seatSystems.Add(entry);
+            if(systemTiles.Count==0)
+            {
+                var template=(RectTransform)slotIcon.transform.parent;
+                foreach(Transform child in template.parent)
+                    if(child.name.StartsWith("Weapon Tile"))child.gameObject.SetActive(false);
+            }
+            int count=seatSystems.Count+(defenses && role!=Vehicle.SeatRole.Passenger?1:0);
+            if(count==0 && armed)count=1;
+            var activeWeapon=(RectTransform)equippedIcon.transform.parent;
+            var activePosition=activeWeapon.anchoredPosition;
+            activePosition.y=100+Mathf.Max(0,(count+1)/2-1)*68;
+            activeWeapon.anchoredPosition=activePosition;
+            while(systemTiles.Count<count)
+            {
+                var tile=Instantiate((RectTransform)slotIcon.transform.parent,slotIcon.transform.parent.parent);
+                tile.name="Vehicle system "+systemTiles.Count;
+                var icon=tile.Find("Weapon Icon").GetComponent<Image>();
+                var key=tile.Find("Key").GetComponent<TMP_Text>();
+                var caption=Instantiate(equippedName,tile);caption.name="System name and ammunition";
+                caption.fontSize=10;caption.alignment=TextAlignmentOptions.BottomLeft;caption.raycastTarget=false;
+                caption.rectTransform.anchorMin=caption.rectTransform.anchorMax=new Vector2(.5f,.5f);
+                caption.rectTransform.anchoredPosition=new Vector2(8,-22);caption.rectTransform.sizeDelta=new Vector2(142,20);
+                icon.rectTransform.sizeDelta=new Vector2(120,32);icon.rectTransform.anchoredPosition=new Vector2(18,8);
+                icon.preserveAspect=true;icon.raycastTarget=false;
+                systemTiles.Add(tile);systemIcons.Add(icon);systemKeys.Add(key);systemCaptions.Add(caption);
+            }
+            for(int i=0;i<systemTiles.Count;i++)
+            {
+                var tile=systemTiles[i];tile.gameObject.SetActive(i<count);
+                tile.sizeDelta=new Vector2(170,62);tile.anchoredPosition=new Vector2(i%2==0?-89:89,(i/2)*68);
+            }
+        }
+        bool utility=displayedDefenses && role!=Vehicle.SeatRole.Passenger;
+        vehicleEquipment.SetActive(armed || utility);
+        equippedIcon.transform.parent.gameObject.SetActive(armed);
+        for(int i=0;i<systemTiles.Count;i++)
+        {
+            if(!systemTiles[i].gameObject.activeSelf)continue;
+            var entry=i<seatSystems.Count?seatSystems[i]:null;
+            bool defense=utility && i==seatSystems.Count;
+            bool chosen=entry!=null && entry==selected;
+            var icon=systemIcons[i];var key=systemKeys[i];var caption=systemCaptions[i];
+            icon.gameObject.SetActive(!defense);
+            if(!defense)
+            {
+                caption.rectTransform.sizeDelta=new Vector2(142,20);
+                caption.rectTransform.anchoredPosition=new Vector2(8,-22);
+            }
+            if(entry!=null)
+            {
+                icon.sprite=entry.icon;key.text=(i+1).ToString();
+                caption.text=entry.name+"  "+(entry.launcher?entry.launcher.Missiles+"/"+entry.launcher.capacity:"INF");
+            }
+            else if(defense)
+            {
+                key.text="X";
+                caption.text=defenses.SystemName+"  "+defenses.Charges+"/"+defenses.capacity;
+                if(defenses.ReadyIn>0)caption.text+="  "+defenses.ReadyIn.ToString("0")+"s";
+                else if(defenses.Charges<defenses.capacity)caption.text+="  +1 "+defenses.RechargeIn.ToString("0")+"s";
+                caption.rectTransform.sizeDelta=new Vector2(142,44);caption.rectTransform.anchoredPosition=new Vector2(10,4);
+            }
+            else
+            {
+                icon.sprite=equippedIcon.sprite;key.text="LMB";caption.text=equippedName.text;chosen=true;
+            }
+            icon.color=new Color(1,1,1,chosen?1:.6f);icon.material=chosen?selectedIconGlow:null;
+            key.color=chosen?accent:Color.white;caption.color=Color.white;
+            var background=systemTiles[i].GetComponent<Image>();
+            if(background)background.color=chosen?new Color(accent.r,accent.g,accent.b,.12f):new Color(1,1,1,.035f);
+        }
     }
     void LateUpdate()
     {
