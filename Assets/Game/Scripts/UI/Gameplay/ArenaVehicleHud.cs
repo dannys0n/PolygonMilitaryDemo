@@ -35,6 +35,7 @@ public class ArenaVehicleHud : MonoBehaviour
     TMP_Text[] roadTicks;
     VehicleSeatDiagramGraphic seatDiagramLinks;
     ArenaVehicleAttackHud attackHud;
+    ArenaVehicleLockHud lockHud;
     VehicleReferenceInstruments referenceInstruments;
     VehicleFixedWingReadout fixedWingReadout;
     VehicleDiagramGraphic hoverCue, metricPitchScale;
@@ -66,6 +67,7 @@ public class ArenaVehicleHud : MonoBehaviour
         var hover=new GameObject("Apache hover velocity cue",typeof(RectTransform),typeof(CanvasRenderer),typeof(VehicleDiagramGraphic));hover.transform.SetParent(flightPanel.transform,false);hoverCue=hover.GetComponent<VehicleDiagramGraphic>();hoverCue.drawing=VehicleDiagramGraphic.Drawing.HoverCue;hoverCue.rectTransform.sizeDelta=new Vector2(110,110);hoverCue.raycastTarget=false;hover.SetActive(false);
         var pitchScale=new GameObject("Su27 right pitch scale",typeof(RectTransform),typeof(CanvasRenderer),typeof(VehicleDiagramGraphic));pitchScale.transform.SetParent(flightPanel.transform,false);metricPitchScale=pitchScale.GetComponent<VehicleDiagramGraphic>();metricPitchScale.drawing=VehicleDiagramGraphic.Drawing.PitchScale;metricPitchScale.rectTransform.anchoredPosition=new Vector2(150,0);metricPitchScale.rectTransform.sizeDelta=new Vector2(25,170);metricPitchScale.tickStep=10;metricPitchScale.pixelsPerUnit=2;metricPitchScale.raycastTarget=false;metricPitchScale.tickLabels=new TMP_Text[5];for(int i=0;i<5;i++)metricPitchScale.tickLabels[i]=DashboardLabel("Pitch tick "+i,metricPitchScale.transform,Vector2.zero,new Vector2(35,20),12);metricPitchReadout=DashboardLabel("Metric pitch",flightPanel.transform,new Vector2(160,-100),new Vector2(140,25),14);pitchScale.SetActive(false);metricPitchReadout.gameObject.SetActive(false);
         attackHud=gameObject.AddComponent<ArenaVehicleAttackHud>();attackHud.Build(telemetry);
+        lockHud=gameObject.AddComponent<ArenaVehicleLockHud>();lockHud.Build(telemetry);
         mountedFade=mountedPanel.GetComponent<CanvasGroup>();
         var externalMonitor=gameObject.AddComponent<VehicleExternalViewMonitor>();
         externalMonitor.Build(this,telemetry,externalMonitorMaterial);
@@ -308,6 +310,7 @@ public class ArenaVehicleHud : MonoBehaviour
         var attackSight=player.IsMounted?player.MountedVehicle.GetComponent<VehicleAttackSight>():null;
         var sightCamera=player.ActiveVehicleCamera?player.ActiveVehicleCamera:Camera.main;
         attackHud.Present(player,attackSight,sightCamera);
+        lockHud.Present(player,sightCamera);
         if(attackHud.Visible){gunnerReadout.gameObject.SetActive(false);desiredAim.gameObject.SetActive(false);actualAim.gameObject.SetActive(false);flightPathMarker.gameObject.SetActive(false);return;}
         if (player.IsMounted && player.MountedVehicle.IsAircraft && ShowVehicleInstruments(player.MountedVehicle))
             if(flightPanel.activeSelf) UpdateFlightInstruments(player.MountedVehicle, groundAltitude);

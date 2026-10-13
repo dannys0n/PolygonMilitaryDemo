@@ -13,12 +13,69 @@ public class VehicleLauncher : MonoBehaviour
     public float rechargeInterval = .75f;
     [Tooltip("Restore the entire missile load after the delay from the last shot, rather than one missile per interval.")]
     public bool rechargeFullMagazine;
+    [Tooltip("Require an uninterrupted seeker lock before firing. Prototype launchers can leave this off.")]
+    public bool requiresLock;
+    [Min(.05f)] public float lockDuration = 1.25f;
+    public enum TargetLockState { Searching, Acquiring, Locked }
+    public TargetLockState LockState { get; private set; }
+    public Vehicle LockTarget { get; private set; }
+    public float LockProgress { get; private set; }
+    public bool IsLocked => LockState == TargetLockState.Locked;
+    public float LastLockLostTime { get; private set; } = float.NegativeInfinity;
+    public float LastRejectedFireTime { get; private set; } = float.NegativeInfinity;
+    VehicleMissileGuidance seeker;
+    VehicleWeaponSystems selectedSystems;
     int missiles;
     float nextRecharge;
     public int Missiles => missiles;
     public float RechargeRemaining => missiles < capacity ? Mathf.Max(0,nextRecharge-Time.time) : 0;
     void Awake() { missiles=capacity; nextRecharge=float.PositiveInfinity; }
-    void Update() { if(!vehicle.IsDestroyed) Recharge(Time.time); }
+    void Update()
+    {
+        if (!vehicle || vehicle.IsDestroyed) { ClearLock(); return; }
+        Recharge(Time.time);
+        UpdateLock(Time.deltaTime);
+    }
+    void OnEnable()
+    {
+        if (vehicle) selectedSystems = vehicle.GetComponent<VehicleWeaponSystems>();
+        if (selectedSystems) selectedSystems.Changed += OnWeaponChanged;
+    }
+    void OnDisable()
+    {
+        if (selectedSystems) selectedSystems.Changed -= OnWeaponChanged;
+        ClearLock();
+    }
+    void OnWeaponChanged() { if (!IsSelected()) ClearLock(); }
+    bool IsSelected()
+    {
+        bool occupied = false;
+        foreach (var seat in vehicle.seats) if (seat.role == controlRole && seat.occupant) { occupied = true; break; }
+        if (!occupied) return false;
+        var systems = vehicle.GetComponent<VehicleWeaponSystems>();
+        return !systems || systems.Current(controlRole)?.launcher == this;
+    }
+    void ClearLock()
+    {
+        if (LockState != TargetLockState.Searching) LastLockLostTime = Time.time;
+        LockTarget = null; LockProgress = 0; LockState = TargetLockState.Searching;
+    }
+    void UpdateLock(float deltaTime)
+    {
+        if (!requiresLock || !IsSelected() || !projectile || muzzles.Length == 0) { ClearLock(); return; }
+        if (!seeker) seeker = projectile.GetComponent<VehicleMissileGuidance>();
+        if (!seeker) { ClearLock(); return; }
+        Ray launchRay = NextShotRay;
+        if (LockState != TargetLockState.Searching && (!LockTarget || !seeker.CanAcquire(vehicle, LockTarget, RequestedAimRay, launchRay))) ClearLock();
+        if (!LockTarget)
+        {
+            LockTarget = seeker.FindTarget(vehicle, RequestedAimRay, launchRay);
+            LockProgress = 0;
+        }
+        if (!LockTarget) { LockState = TargetLockState.Searching; return; }
+        LockProgress = Mathf.Clamp01(LockProgress + deltaTime / Mathf.Max(.05f, lockDuration));
+        LockState = LockProgress >= 1 ? TargetLockState.Locked : TargetLockState.Acquiring;
+    }
     void Recharge(float now)
     {
         while(missiles<capacity && now>=nextRecharge)
@@ -113,6 +170,18 @@ public class VehicleLauncher : MonoBehaviour
         Recharge(Time.time);
         if (missiles==0 || vehicle.IsDestroyed || pilot.MountedVehicle != vehicle || vehicle.seats[pilot.SeatIndex].role != controlRole || Time.time < nextShot)
             return false;
+        if (requiresLock)
+        {
+            // Revalidate immediately: a lost target or an unselected weapon cannot fire a stale lock.
+            if (!seeker) seeker = projectile.GetComponent<VehicleMissileGuidance>();
+            if (!IsSelected() || !IsLocked || !seeker || !seeker.CanAcquire(vehicle, LockTarget, RequestedAimRay, NextShotRay))
+            {
+                if (IsLocked) ClearLock();
+                LastRejectedFireTime = Time.time;
+                return false;
+            }
+        }
+        var validatedTarget = requiresLock ? LockTarget : null;
         nextShot = Time.time + interval;
         if(rechargeFullMagazine || missiles==capacity) nextRecharge=Time.time+Mathf.Max(.01f,rechargeInterval);
         missiles--;
@@ -121,7 +190,7 @@ public class VehicleLauncher : MonoBehaviour
         if(tubeRounds.Length>tubeIndex) tubeRounds[tubeIndex].SetActive(false);
         var rocket = Instantiate(projectile, muzzle.position + muzzle.forward * projectile.launchClearance, muzzle.rotation);
         rocket.Launch(vehicle, pilot.gameObject);
-        if (rocket.TryGetComponent<VehicleMissileGuidance>(out var guidance)) guidance.Initialize(vehicle, RequestedAimRay, this);
+        if (rocket.TryGetComponent<VehicleMissileGuidance>(out var guidance)) guidance.Initialize(vehicle, RequestedAimRay, this, validatedTarget);
         return true;
     }
 }

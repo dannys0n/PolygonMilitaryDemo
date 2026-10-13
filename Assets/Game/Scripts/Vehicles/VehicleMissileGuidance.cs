@@ -23,38 +23,58 @@ public sealed class VehicleMissileGuidance : MonoBehaviour
     float launchTime;
     bool initialized;
     VehicleLauncher director;
-    public void Initialize(Vehicle source, Ray aim, VehicleLauncher launcher = null)
+    public void Initialize(Vehicle source, Ray aim, VehicleLauncher launcher = null, Vehicle validatedTarget = null)
     {
         body = GetComponent<Rigidbody>(); launchTime = Time.time; initialized = true;
         director = launcher;
         aimPoint = aim.GetPoint(acquisitionRange);
-        int faction = -1;
-        foreach (var seat in source.seats) if (seat.occupant) { faction = seat.occupant.faction; break; }
-        float best = float.PositiveInfinity;
-        foreach (var candidate in Vehicle.Active)
-        {
-            if (candidate == source || candidate.IsDestroyed || !candidate.IsOccupied) continue;
-            bool flying = candidate.instruments == Vehicle.InstrumentLayout.FixedWing || candidate.instruments == Vehicle.InstrumentLayout.Helicopter;
-            if ((guidance == Guidance.AirToAir || guidance == Guidance.AirDefence) && !flying) continue;
-            bool hostile = false;
-            foreach (var seat in candidate.seats)
-                if (seat.occupant && seat.occupant.faction >= 0 && seat.occupant.faction != faction) hostile = true;
-            if (!hostile) continue;
-            Vector3 offset = candidate.cameraTarget.position - aim.origin;
-            float angle = Vector3.Angle(aim.direction, offset);
-            if (offset.magnitude > acquisitionRange || angle > acquisitionAngle || angle >= best) continue;
-            if(SeekerType==Seeker.Optical && GrenadeSmoke.BlocksLine(aim.origin,candidate.cameraTarget.position))continue;
-            bool blocked = false;
-            foreach (var hit in Physics.RaycastAll(aim.origin, offset.normalized, offset.magnitude, Physics.DefaultRaycastLayers, QueryTriggerInteraction.Ignore))
-                if (!hit.transform.IsChildOf(source.transform) && !hit.transform.IsChildOf(candidate.transform)
-                    && !hit.transform.IsChildOf(transform) && !(hit.collider is CharacterController)) { blocked = true; break; }
-            if (!blocked) { target = candidate; best = angle; }
-        }
+        target = launcher && launcher.requiresLock ? validatedTarget : FindTarget(source, aim);
         // Laser designation strikes the selected visible surface when no vehicle was acquired.
         if (guidance == Guidance.LaserSpot || guidance == Guidance.CommandLineOfSight)
             foreach (var hit in Physics.RaycastAll(aim, acquisitionRange, Physics.DefaultRaycastLayers, QueryTriggerInteraction.Ignore))
                 if (!hit.transform.IsChildOf(source.transform) && !hit.transform.IsChildOf(transform)
                     && !(hit.collider is CharacterController) && hit.distance < Vector3.Distance(aim.origin, aimPoint)) aimPoint = hit.point;
+    }
+    // Acquisition and launch share these checks; the lock variant never chooses a new target on launch.
+    public Vehicle FindTarget(Vehicle source, Ray aim, Ray? launchRay = null)
+    {
+        Vehicle bestTarget = null;
+        float bestAngle = float.PositiveInfinity;
+        foreach (var candidate in Vehicle.Active)
+        {
+            if (!CanAcquire(source, candidate, aim, launchRay)) continue;
+            float angle = Vector3.Angle(aim.direction, TargetPoint(candidate) - aim.origin);
+            if (angle < bestAngle) { bestAngle = angle; bestTarget = candidate; }
+        }
+        return bestTarget;
+    }
+    public static Vector3 TargetPoint(Vehicle candidate) => candidate.cameraTarget ? candidate.cameraTarget.position : candidate.transform.position;
+    public bool CanAcquire(Vehicle source, Vehicle candidate, Ray aim, Ray? launchRay = null)
+    {
+        if (!source || !candidate || candidate == source || candidate.IsDestroyed || !candidate.IsOccupied) return false;
+        bool flying = candidate.instruments == Vehicle.InstrumentLayout.FixedWing || candidate.instruments == Vehicle.InstrumentLayout.Helicopter;
+        if ((guidance == Guidance.AirToAir || guidance == Guidance.AirDefence) && !flying) return false;
+        int faction = -1;
+        foreach (var seat in source.seats) if (seat.occupant) { faction = seat.occupant.faction; break; }
+        if (faction < 0) return false;
+        bool hostile = false;
+        foreach (var seat in candidate.seats)
+            if (seat.occupant && seat.occupant.faction >= 0 && seat.occupant.faction != faction) hostile = true;
+        if (!hostile) return false;
+        Vector3 point = TargetPoint(candidate), offset = point - aim.origin;
+        if (offset.sqrMagnitude > acquisitionRange * acquisitionRange || Vector3.Angle(aim.direction, offset) > acquisitionAngle) return false;
+        if (launchRay.HasValue && Vector3.Angle(launchRay.Value.direction, point - launchRay.Value.origin) > acquisitionAngle) return false;
+        if (SeekerType == Seeker.Optical && GrenadeSmoke.BlocksLine(aim.origin, point)) return false;
+        if (!HasLineOfSight(source, candidate, aim.origin, point)) return false;
+        return !launchRay.HasValue || HasLineOfSight(source, candidate, launchRay.Value.origin, point);
+    }
+    static bool HasLineOfSight(Vehicle source, Vehicle candidate, Vector3 origin, Vector3 point)
+    {
+        Vector3 offset = point - origin;
+        foreach (var hit in Physics.RaycastAll(origin, offset.normalized, offset.magnitude, Physics.DefaultRaycastLayers, QueryTriggerInteraction.Ignore))
+            if (!hit.transform.IsChildOf(source.transform) && !hit.transform.IsChildOf(candidate.transform)
+                && !hit.collider.GetComponentInParent<VehicleRocket>() && !(hit.collider is CharacterController)) return false;
+        return true;
     }
     void FixedUpdate()
     {
