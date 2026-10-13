@@ -61,17 +61,19 @@ public class SoldierVehiclePlatform : MonoBehaviour
     {
         float bottom=standingCenter.y-standingHeight*.5f;
         Vector3 feet=transform.position+Vector3.up*bottom;
-        // Probe ahead too, so the capsule lowers before crossing a low van doorway.
-        Vector3 origin=feet+movement.normalized*(controller.radius+.2f)+Vector3.up*.35f;
+        // Check the floor beyond the threshold before lowering for a doorway.
+        Vector3 ahead=feet+movement.normalized*(controller.radius+.2f);
+        Vehicle cabin=Support ? Support : CabinFloorAhead(ahead);
+        Vector3 origin=ahead+Vector3.up*.35f;
         int count=Physics.RaycastNonAlloc(origin,Vector3.up,hits,standingHeight,~0,QueryTriggerInteraction.Ignore);
         bool low=false;
         // Cabin crouching is only available on a vehicle floor, never from underneath a chassis.
-        bool insideCabin=Support && Support.hasRenderedInterior && Support.GetComponent<VehicleDoors>();
+        bool insideCabin=cabin && cabin.hasRenderedInterior && cabin.GetComponent<VehicleDoors>();
         for(int i=0;insideCabin && i<count;i++)
         {
             var hit=hits[i];
             if(hit.collider.transform.IsChildOf(transform))continue;
-            if(hit.collider.GetComponentInParent<Vehicle>()==Support && hit.distance+.35f<standingHeight+.05f){low=true;break;}
+            if(hit.collider.GetComponentInParent<Vehicle>()==cabin && hit.distance+.35f<standingHeight+.05f){low=true;break;}
         }
         // Check directly overhead before allowing a full-height capsule again.
         count=Physics.RaycastNonAlloc(feet+Vector3.up*.35f,Vector3.up,hits,standingHeight,~0,QueryTriggerInteraction.Ignore);
@@ -83,6 +85,23 @@ public class SoldierVehiclePlatform : MonoBehaviour
         controller.center=new Vector3(standingCenter.x,bottom+height*.5f,standingCenter.z);
         if(look)look.playerCamera.localPosition=Vector3.Lerp(look.playerCamera.localPosition,
             eyePosition+Vector3.down*(standingHeight-height),1-Mathf.Exp(-12*dt));
+    }
+
+    Vehicle CabinFloorAhead(Vector3 feet)
+    {
+        float rise=controller.stepOffset+.15f;
+        int count=Physics.RaycastNonAlloc(feet+Vector3.up*rise,Vector3.down,hits,
+            rise+.3f,~0,QueryTriggerInteraction.Ignore);
+        Vehicle floor=null;
+        float nearest=float.PositiveInfinity;
+        for(int i=0;i<count;i++)
+        {
+            var hit=hits[i];
+            if(hit.collider.transform.IsChildOf(transform) || hit.normal.y<.6f || hit.distance>=nearest)continue;
+            nearest=hit.distance;
+            floor=hit.collider is WheelCollider ? null : hit.collider.GetComponentInParent<Vehicle>();
+        }
+        return floor;
     }
 
     public void EndStep(bool jumping)

@@ -126,6 +126,24 @@ MonoBehaviour:
   seatDiagramCenter: {x: 0, y: 0.068027735}
   seatDiagramHalfExtent: 2.665993
   motor: {fileID: 1180662967326689201}
+  jetAssist:
+    assistEnabled: 1
+    maximumBank: 75
+    headingToBank: 1.8
+    assistedBankRate: 100
+    aimResponse: 2
+  helicopterAssist:
+    assistEnabled: 1
+    attitudeSpring: 60
+    attitudeDamping: 16
+    verticalResponse: 2.8
+    positionHoldSpring: 0.6
+    positionHoldDamping: 1.5
+    maxHoldAcceleration: 18
+    reversalTilt: 38
+    reversalSpeedRange: {x: 4, y: 20}
+    movementVelocityResponse: 0.8
+    cyclicResponseTime: 0.1
   turret: {fileID: 0}
   destructionEffect: {fileID: 695410771644243590, guid: c07b2e8d0c65dad44bf5eaca660002fc, type: 3}
   cameraTarget: {fileID: 1111083698933647499}
@@ -300,11 +318,9 @@ MonoBehaviour:
     - part: {fileID: 4142704051588558502}
       openTranslation: {x: 0, y: 0, z: 0}
       openEuler: {x: 95, y: 0, z: 0}
-    - part: {fileID: 1485690893213934464}
-      openTranslation: {x: 0, y: 0, z: 0}
-      openEuler: {x: 95, y: 0, z: 0}
     duration: 1.35
     open: 0
+  operateTogether: 0
   interactionRange: 3
 --- !u!1 &160096946105142817
 GameObject:
