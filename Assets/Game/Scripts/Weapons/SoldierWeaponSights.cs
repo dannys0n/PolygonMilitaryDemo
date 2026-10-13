@@ -61,6 +61,8 @@ public class SoldierWeaponSights : MonoBehaviour
         if (SelectedSight == sight) return;
         Remove(firstAttachment); Remove(thirdAttachment);
         SelectedSight = sight;
+        if(firstPersonMount && firstPersonMount.TryGetComponent<WeaponAttachmentSocket>(out var firstSocket))firstSocket.SetBuiltInSightVisible(sight);
+        if(thirdPersonMount && thirdPersonMount.TryGetComponent<WeaponAttachmentSocket>(out var thirdSocket))thirdSocket.SetBuiltInSightVisible(sight);
         if (sight.prefab)
         {
             if (firstPersonMount) firstAttachment = Create(sight.prefab, firstPersonMount, owner.firstPersonLayer, owner.firstPerson, true);
@@ -137,7 +139,10 @@ public class SoldierWeaponSights : MonoBehaviour
             ? socket.SupportFor(SelectedSight) : default;
         var required = placement.riser;
         float lift = Mathf.Max(sightLift, required ? required.sightLift : 0f);
-        attachment.transform.localPosition = Vector3.up * lift;
+        attachment.transform.SetLocalPositionAndRotation(Vector3.zero,Quaternion.identity);
+        attachment.transform.localScale=SelectedSight.prefab.transform.localScale;
+        if(socket)socket.Place(SelectedSight,attachment.transform);
+        attachment.transform.localPosition += Vector3.up * lift;
         if (required) attachment.transform.localPosition -= new Vector3(placement.contactPoint.x, placement.contactPoint.y, 0f);
         var old = attachment.transform.Find("RequiredSightRiser");
         if (old)

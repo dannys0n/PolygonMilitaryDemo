@@ -78,7 +78,7 @@ public class ArenaWeaponPreview : MonoBehaviour, IDragHandler
             foreach(var renderer in builtInVisibility.Keys)if(renderer)renderer.enabled=builtInVisibility[renderer];
             bool hasOptic=desired.ContainsKey("optic");
             foreach(var builtIn in weapon.builtIns)
-                if(attachmentIds.Any(id=>catalog.FindPart(id)?.mount==builtIn.mount)||(hasOptic&&(builtIn.mount==WeaponAttachmentDefinition.MountKind.FrontIron||builtIn.mount==WeaponAttachmentDefinition.MountKind.RearIron)))
+                if((!string.IsNullOrEmpty(builtIn.sight)&&opticId!=builtIn.sight)||attachmentIds.Any(id=>catalog.FindPart(id)?.mount==builtIn.mount)||(hasOptic&&(builtIn.mount==WeaponAttachmentDefinition.MountKind.FrontIron||builtIn.mount==WeaponAttachmentDefinition.MountKind.RearIron)))
                     foreach(var renderer in builtInVisibility.Keys.Where(r=>r&&builtIn.rendererNames.Contains(r.name)))renderer.enabled=false;
             Frame(changed);dirty=true;
         }
@@ -105,9 +105,10 @@ public class ArenaWeaponPreview : MonoBehaviour, IDragHandler
                 var supplied=ids.Select(catalog.FindPart).FirstOrDefault(p=>p!=null&&p.mount==WeaponAttachmentDefinition.MountKind.SightRiser);
                 var required=support!=null?catalog.FindPart(support.riser):null;
                 var lift=Mathf.Max(supplied!=null?supplied.sightLift:0,required!=null?required.sightLift:0);
-                var position=Vector3.up*lift;
+                var calibration=opticSocket.placements.FirstOrDefault(p=>p.part==optic.id);
+                var position=(calibration!=null?calibration.position:Vector3.zero)+Vector3.up*lift;
                 if(required!=null)position-=new Vector3(support.contactPoint.x,support.contactPoint.y,0);
-                desired["optic"]=new DesiredPart{part=optic,parent=parent,position=position,rotation=Quaternion.identity,scale=Vector3.one};
+                desired["optic"]=new DesiredPart{part=optic,parent=parent,position=position,rotation=calibration!=null?calibration.rotation:Quaternion.identity,scale=calibration!=null?calibration.scale:Vector3.one};
                 if(required!=null&&supplied==null)desired["support"]=new DesiredPart{part=required,parent=parent,position=required.position+Vector3.forward*support.contactPoint.z,rotation=Quaternion.Euler(required.rotation),scale=Vector3.Scale(required.scale,support.scale)};
             }
         }

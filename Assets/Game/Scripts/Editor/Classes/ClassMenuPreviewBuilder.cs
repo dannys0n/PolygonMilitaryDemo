@@ -23,6 +23,7 @@ public static class ClassMenuPreviewBuilder
     public static object Generate()
     {
         if(EditorApplication.isPlaying)throw new InvalidOperationException("Edit Mode required");
+        WeaponAttachmentAuthoring.Sync();
         previews.Clear();
         Folder(Output);Folder(System.IO.Path.GetDirectoryName(CatalogAsset).Replace('\\','/'));
         settings=AddressableAssetSettingsDefaultObject.Settings;if(!settings)settings=AddressableAssetSettings.Create("Assets/AddressableAssetsData","AddressableAssetSettings",true,true);
@@ -56,13 +57,14 @@ public static class ClassMenuPreviewBuilder
                     var socket=new ArenaClassMenuCatalog.Socket{path=AnimationUtility.CalculateTransformPath(transform,entry.basePrefab.transform),mount=mapping.Item2};
                     if(transform.TryGetComponent<WeaponAttachmentSocket>(out var calibration))
                     {
-                        socket.placements=calibration.placements.Where(p=>p.attachment).Select(p=>new ArenaClassMenuCatalog.Placement{part=p.attachment.id,position=p.position,rotation=p.rotation,scale=p.scale}).ToArray();
+                        socket.placements=calibration.placements.Where(p=>p.attachment||p.sight).Select(p=>new ArenaClassMenuCatalog.Placement{part=p.sight?p.sight.id:p.attachment.id,position=p.position,rotation=p.rotation,scale=p.scale}).ToArray();
                         socket.supports=calibration.requiredSightSupports.Where(s=>s.sight).Select(s=>new ArenaClassMenuCatalog.Support{sight=s.sight.id,riser=s.riser?s.riser.id:null,contactPoint=s.contactPoint,scale=s.supportScale}).ToArray();
                     }
                     sockets.Add(socket);
                 }
                 views.TryGetValue(weapon,out var view);var source=view?view.GetComponent<SoldierWeaponAttachments>():null;
                 var built=source?source.mounts.Select(m=>new ArenaClassMenuCatalog.BuiltIn{mount=m.kind,rendererNames=m.builtInThirdPerson.Where(r=>r).Select(r=>r.name).ToArray()}).ToArray():Array.Empty<ArenaClassMenuCatalog.BuiltIn>();
+                built=built.Concat(entry.basePrefab.GetComponentsInChildren<WeaponAttachmentSocket>(true).Where(s=>s.builtInSight&&s.builtInSightRenderers.Length>0).Select(s=>new ArenaClassMenuCatalog.BuiltIn{mount=WeaponAttachmentDefinition.MountKind.SightRiser,sight=s.builtInSight.id,rendererNames=s.builtInSightRenderers.Where(r=>r).Select(r=>r.name).ToArray()})).ToArray();
                 weapons.Add(new ArenaClassMenuCatalog.Weapon{id=weapon.catalogId,name=weapon.displayName,category=weapon.category,damage=weapon.damage,rpm=weapon.roundsPerMinute,rounds=weapon.magazineCapacity,icon=weapon.icon,previewAddress=Preview(entry.basePrefab,"weapon-"+weapon.catalogId),defaultSight=entry.defaultSight?entry.defaultSight.id:null,sights=entry.sights.Where(s=>s).Select(s=>s.id).ToArray(),attachments=entry.attachments.Where(a=>a).Select(a=>a.id).ToArray(),sockets=sockets.ToArray(),builtIns=built});
             }
             foreach(var entry in group.entries.ToArray())

@@ -7,6 +7,8 @@ public class WeaponAttachmentSocket : MonoBehaviour
     [System.Serializable] public struct Placement
     {
         public WeaponAttachmentDefinition attachment;
+        [Tooltip("Optional optic target. Set either attachment or sight for this placement.")]
+        public WeaponSightDefinition sight;
         public Vector3 position;
         public Quaternion rotation;
         public Vector3 scale;
@@ -35,6 +37,14 @@ public class WeaponAttachmentSocket : MonoBehaviour
     }
 
     public Placement[] placements = System.Array.Empty<Placement>();
+    [Header("Built-in optic housing")]
+    public WeaponSightDefinition builtInSight;
+    public Renderer[] builtInSightRenderers = System.Array.Empty<Renderer>();
+    public void SetBuiltInSightVisible(WeaponSightDefinition selected)
+    {
+        foreach(var renderer in builtInSightRenderers)
+            if(renderer)renderer.forceRenderingOff=selected!=builtInSight;
+    }
 
     public void Place(WeaponAttachmentDefinition attachment, Transform instance)
     {
@@ -43,6 +53,16 @@ public class WeaponAttachmentSocket : MonoBehaviour
             if (placement.attachment != attachment) continue;
             instance.SetLocalPositionAndRotation(placement.position, placement.rotation);
             instance.localScale = placement.scale;
+            return;
+        }
+    }
+    public void Place(WeaponSightDefinition sight, Transform instance)
+    {
+        foreach(var placement in placements)
+        {
+            if(!placement.sight || placement.sight!=sight)continue;
+            instance.SetLocalPositionAndRotation(placement.position,placement.rotation);
+            instance.localScale=placement.scale;
             return;
         }
     }
