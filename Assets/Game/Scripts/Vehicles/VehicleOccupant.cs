@@ -136,7 +136,8 @@ public class VehicleOccupant : MonoBehaviour
             mouse = Vector2.ClampMagnitude(mouse,1f);
         mouse *= local.sensitivity;
         bool driverWeapon = role==Vehicle.SeatRole.Driver && ((vehicle.turret && vehicle.turret.controlRole==Vehicle.SeatRole.Driver) || vehicle.GetComponent<VehicleLauncherMount>());
-        if (!aircraft && role == Vehicle.SeatRole.Driver && !driverWeapon) yaw += Mathf.DeltaAngle(lastVehicleYaw, vehicle.transform.eulerAngles.y);
+        if ((!aircraft && role == Vehicle.SeatRole.Driver && !driverWeapon) || role == Vehicle.SeatRole.Passenger)
+            yaw += Mathf.DeltaAngle(lastVehicleYaw, vehicle.transform.eulerAngles.y);
         lastVehicleYaw = vehicle.transform.eulerAngles.y;
         yaw += mouse.x; pitch = Mathf.Clamp(pitch - mouse.y, -60, 60);
         if (role == Vehicle.SeatRole.Gunner)
@@ -270,7 +271,8 @@ public class VehicleOccupant : MonoBehaviour
         vehicleCamera.fieldOfView = 70;
         vehicleCamera.nearClipPlane = .1f;
         vehicleCamera.enabled = vehicleListener.enabled = true;
-        lastVehicleYaw = yaw = flightYaw = vehicle.transform.eulerAngles.y;
+        lastVehicleYaw = vehicle.transform.eulerAngles.y;
+        yaw = flightYaw = seated.role == Vehicle.SeatRole.Passenger ? seated.anchor.eulerAngles.y : lastVehicleYaw;
         pitch = flightPitch = vehicle.motor is HelicopterMotor ? 0 : 14; CockpitView = Freelook = false; exitHeld = 0; departureVelocity = Vector3.zero;
     }
     void SaveDisable(Behaviour b)
@@ -394,6 +396,7 @@ public class VehicleOccupant : MonoBehaviour
     {
         if (!IsMounted || index<0 || index>=MountedVehicle.seats.Length || index==SeatIndex) return false;
         var vehicle=MountedVehicle; var seat=vehicle.seats[index];
+        if (!seat.anchor || !seat.exit) return false;
         if (vehicle.IsDestroyed || life.health.IsDead) return false;
         var previousSeat=vehicle.seats[SeatIndex];
         var displaced=seat.occupant;
@@ -426,7 +429,7 @@ public class VehicleOccupant : MonoBehaviour
         else life.actions.animator.enabled=false;
         UpdateSeatedVisibility();
         if(IsLocal)ResetVehicleCameraShake();
-        flightYaw=yaw=vehicle.transform.eulerAngles.y;flightPitch=pitch=0;Freelook=false;
+        flightYaw=yaw=seat.role==Vehicle.SeatRole.Passenger?seat.anchor.eulerAngles.y:vehicle.transform.eulerAngles.y;flightPitch=pitch=0;Freelook=false;
         lastVehicleYaw=vehicle.transform.eulerAngles.y;
     }
     void UpdateSeatedVisibility()
@@ -480,6 +483,7 @@ public class VehicleOccupant : MonoBehaviour
         // Local occupants already own the live view; AI view comes from its control intent.
         rotation = IsLocal ? Quaternion.Euler(pitch, yaw, 0)
             : gunner ? Quaternion.LookRotation(v.turret.RequestedAimDirection, Vector3.up)
+            : v.seats[SeatIndex].role == Vehicle.SeatRole.Passenger && cockpit ? v.seats[SeatIndex].anchor.rotation
             : aircraft ? Quaternion.Euler(v.DriverInput.viewPitch, v.DriverInput.heading, 0)
             : Quaternion.Euler(cockpit ? 0 : 14, v.transform.eulerAngles.y, 0);
         if (pilot && !((HelicopterMotor)v.motor).assistEnabled && (!IsLocal || !Freelook))

@@ -93,7 +93,7 @@ public class ArenaVehicleHud : MonoBehaviour
         if(!air && role==Vehicle.SeatRole.Driver && showAttack && attackSight.Operational) controls.text += "\nFIRE  [LMB]\nZOOM  [RMB]";
         rightControls.text="[C]  CAMERA\n[V]  FREELOOK"+(player.Freelook?" ON":"")+"\nHOLD [E]  EXIT\n"+(v.seats.Length==1?"[F1]  STATION":"[F1-F"+v.seats.Length+"]  SEATS");
         EnsureSeatMarkers(v.seats.Length);
-        crew.fontSize = v.seats.Length > 5 ? 12 : 14;
+        crew.fontSize = v.seats.Length > 8 ? 10 : v.seats.Length > 5 ? 12 : 14;
         crew.text="";
         for(int i=0;i<seatMarkers.Length;i++)
         {
@@ -103,7 +103,7 @@ public class ArenaVehicleHud : MonoBehaviour
             seatMarkers[i].color=i==player.SeatIndex?accent:occupied?Color.white:new Color(1,1,1,.18f);
             seatNumbers[i].color=i==player.SeatIndex||occupied?Color.black:Color.white;
             string name=occupied?(seat.occupant==player?"YOU":seat.occupant.name):"EMPTY";
-            crew.text+="<color="+(i==player.SeatIndex?"#FF8C1F":"#FFFFFF")+">"+(i+1)+"  "+name+"</color>  <size=12>"+seat.name.ToUpperInvariant()+"</size>\n";
+            crew.text+="<color="+(i==player.SeatIndex?"#FF8C1F":"#FFFFFF")+">"+(i+1)+"  "+name+"</color>  <size="+(v.seats.Length>8?10:12)+">"+seat.name.ToUpperInvariant()+"</size>\n";
         }
         float health=v.Health/v.maxHealth;for(int i=0;i<hullSegments.Length;i++)hullSegments[i].color=i<hullSegments.Length*health?Color.white:new Color(1,1,1,.15f);
         if(!air)

@@ -121,6 +121,37 @@ MeshRenderer:
   m_SortingOrder: 0
   m_MaskInteraction: 0
   m_AdditionalVertexStreams: {fileID: 0}
+--- !u!1 &724351494109787023
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 2054667728604805481}
+  m_Layer: 0
+  m_Name: Exit 10
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &2054667728604805481
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 724351494109787023}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: -2.6, y: 0.15, z: -0.509}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 6526823299160414780}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &792275962798650862
 GameObject:
   m_ObjectHideFlags: 0
@@ -560,7 +591,7 @@ MonoBehaviour:
     eye: {fileID: 1242289192592205925}
     leftGrip: {fileID: 4254304785278506093}
     rightGrip: {fileID: 11550764184044367}
-    diagramPosition: {x: -18, y: 45}
+    diagramPosition: {x: -60, y: 60}
     showVehicleInstruments: 1
   - name: Co-pilot
     role: 2
@@ -570,9 +601,9 @@ MonoBehaviour:
     eye: {fileID: 4647745234632798606}
     leftGrip: {fileID: 0}
     rightGrip: {fileID: 0}
-    diagramPosition: {x: 18, y: 45}
+    diagramPosition: {x: 60, y: 60}
     showVehicleInstruments: 1
-  - name: Passenger 2
+  - name: Passenger 1
     role: 2
     anchor: {fileID: 6419143057373034926}
     exit: {fileID: 860366585373476096}
@@ -580,9 +611,9 @@ MonoBehaviour:
     eye: {fileID: 3580925503547917948}
     leftGrip: {fileID: 0}
     rightGrip: {fileID: 0}
-    diagramPosition: {x: -48, y: 12}
+    diagramPosition: {x: -60, y: 30}
     showVehicleInstruments: 0
-  - name: Passenger 3
+  - name: Passenger 2
     role: 2
     anchor: {fileID: 8296789230302180345}
     exit: {fileID: 6191734605366032878}
@@ -590,9 +621,9 @@ MonoBehaviour:
     eye: {fileID: 6155814378294627320}
     leftGrip: {fileID: 0}
     rightGrip: {fileID: 0}
-    diagramPosition: {x: 48, y: 12}
+    diagramPosition: {x: 60, y: 30}
     showVehicleInstruments: 0
-  - name: Passenger 4
+  - name: Passenger 3
     role: 2
     anchor: {fileID: 4229542237773979248}
     exit: {fileID: 1348175125558499034}
@@ -600,9 +631,9 @@ MonoBehaviour:
     eye: {fileID: 7545159375855254812}
     leftGrip: {fileID: 0}
     rightGrip: {fileID: 0}
-    diagramPosition: {x: -48, y: -21}
+    diagramPosition: {x: -60, y: 0}
     showVehicleInstruments: 0
-  - name: Passenger 5
+  - name: Passenger 4
     role: 2
     anchor: {fileID: 7223789627869564016}
     exit: {fileID: 2144620625901425756}
@@ -610,9 +641,9 @@ MonoBehaviour:
     eye: {fileID: 5423400062156548726}
     leftGrip: {fileID: 0}
     rightGrip: {fileID: 0}
-    diagramPosition: {x: 48, y: -21}
+    diagramPosition: {x: 60, y: 0}
     showVehicleInstruments: 0
-  - name: Passenger 6
+  - name: Passenger 5
     role: 2
     anchor: {fileID: 171031061431950779}
     exit: {fileID: 568289427597063483}
@@ -620,9 +651,9 @@ MonoBehaviour:
     eye: {fileID: 7124203522865969388}
     leftGrip: {fileID: 0}
     rightGrip: {fileID: 0}
-    diagramPosition: {x: -48, y: -54}
+    diagramPosition: {x: -60, y: -30}
     showVehicleInstruments: 0
-  - name: Passenger 7
+  - name: Passenger 6
     role: 2
     anchor: {fileID: 8250037460154288005}
     exit: {fileID: 1368782095658474597}
@@ -630,7 +661,27 @@ MonoBehaviour:
     eye: {fileID: 7721400920356580586}
     leftGrip: {fileID: 0}
     rightGrip: {fileID: 0}
-    diagramPosition: {x: 48, y: -54}
+    diagramPosition: {x: 60, y: -30}
+    showVehicleInstruments: 0
+  - name: Passenger 7
+    role: 2
+    anchor: {fileID: 8421013422914994692}
+    exit: {fileID: 1626378994740964444}
+    showCharacter: 1
+    eye: {fileID: 271747916545254932}
+    leftGrip: {fileID: 0}
+    rightGrip: {fileID: 0}
+    diagramPosition: {x: 60, y: -60}
+    showVehicleInstruments: 0
+  - name: Passenger 8
+    role: 2
+    anchor: {fileID: 3147794232382741446}
+    exit: {fileID: 2054667728604805481}
+    showCharacter: 1
+    eye: {fileID: 5887203498843046392}
+    leftGrip: {fileID: 0}
+    rightGrip: {fileID: 0}
+    diagramPosition: {x: -60, y: -60}
     showVehicleInstruments: 0
   maxHealth: 1500
   bulletDamageMultiplier: 0.325
@@ -769,6 +820,37 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 3.035508, y: 0.15, z: 1.55}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 6526823299160414780}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &2319395245285507439
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1626378994740964444}
+  m_Layer: 0
+  m_Name: Exit 9
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1626378994740964444
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2319395245285507439}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 2.6, y: 0.15, z: -0.509}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -1509,6 +1591,8 @@ Transform:
   - {fileID: 2499331451742488183}
   - {fileID: 3147794232382741446}
   - {fileID: 3273456249652162679}
+  - {fileID: 1626378994740964444}
+  - {fileID: 2054667728604805481}
   m_Father: {fileID: 3212331356154487064}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &5425231344899640569

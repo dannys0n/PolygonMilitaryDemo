@@ -11,12 +11,17 @@ public class VehicleSeatDiagramGraphic : UnityEngine.UI.MaskableGraphic
         mesh.Clear();if(!vehicle)return;
         for(int seatIndex=0;seatIndex<vehicle.seats.Length;seatIndex++)
         {
-            var seat=vehicle.seats[seatIndex];Vector3 local=vehicle.transform.InverseTransformPoint(seat.anchor.position);
+            var seat=vehicle.seats[seatIndex];if(!seat.anchor)continue;Vector3 local=vehicle.transform.InverseTransformPoint(seat.anchor.position);
             Vector2 target=(new Vector2(local.x,local.z)-vehicle.seatDiagramCenter)*(80f/Mathf.Max(.01f,vehicle.seatDiagramHalfExtent));
             Vector2 marker=seat.diagramPosition;float distance=Vector2.Distance(marker,target);
+            Color tint=seatIndex==selectedSeat?new Color(1,.55f,.12f,.7f):new Color(1,1,1,.4f);
+            Vector3 facing=vehicle.transform.InverseTransformDirection(seat.anchor.forward);
+            Vector2 forward=new Vector2(facing.x,facing.z).normalized;
+            Vector2 side=new Vector2(-forward.y,forward.x);
+            Line(mesh,target+forward*5,target-forward*2+side*3,tint);
+            Line(mesh,target+forward*5,target-forward*2-side*3,tint);
             if(distance<15)continue;
             Vector2 start=marker+(target-marker).normalized*13;
-            Color tint=seatIndex==selectedSeat?new Color(1,.55f,.12f,.7f):new Color(1,1,1,.4f);
             Line(mesh,start,target,tint);
             Line(mesh,target+Vector2.left*2,target+Vector2.right*2,tint);Line(mesh,target+Vector2.down*2,target+Vector2.up*2,tint);
         }
