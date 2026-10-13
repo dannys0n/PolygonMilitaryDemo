@@ -109,7 +109,7 @@ Transform:
   m_GameObject: {fileID: 875906118546852112}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0.65, z: 0.08}
+  m_LocalPosition: {x: 0, y: 0.8, z: 0.13}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -145,6 +145,37 @@ Transform:
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 7849474334004280658}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &953615786516294129
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 197919667971898987}
+  m_Layer: 0
+  m_Name: Troop exit 5
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &197919667971898987
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 953615786516294129}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: -0.45, y: 0.2, z: -3.5}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 8408153219318681515}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1022223411628849703
 GameObject:
@@ -430,8 +461,8 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1523989863385248879}
   serializedVersion: 2
-  m_LocalRotation: {x: 0, y: -0.7071068, z: 0, w: 0.7071068}
-  m_LocalPosition: {x: 0.55, y: 0.9, z: -1.3000001}
+  m_LocalRotation: {x: -0, y: 0.7071068, z: -0, w: -0.7071068}
+  m_LocalPosition: {x: 0.5, y: 1.5, z: -2.4}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -515,6 +546,12 @@ Transform:
   - {fileID: 4800156766779875447}
   - {fileID: 8789108615705859162}
   - {fileID: 8845161188347775613}
+  - {fileID: 888634599220420292}
+  - {fileID: 5041809528914509000}
+  - {fileID: 1541189448852443003}
+  - {fileID: 6575488582314298818}
+  - {fileID: 197919667971898987}
+  - {fileID: 5258589883845855409}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!54 &6312084104710609368
@@ -558,16 +595,30 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Vehicle
   instruments: 1
   instrumentReference: 4
-  instrumentReferenceNotes: 'Tentative silhouette-based identification, not a confirmed licensed vehicle. Display adapts available game telemetry; no fuel, oil, turbine or engine simulation is implied.
-
-    MRAP family reference is approximate. Exact driver''s instrument panel was not established from a verified manual; gauge style and units are a provisional adaptation.
-
-    Functional capacity follows the tentative real-world family. Additional stations have no authored rendered chair and therefore hide the occupant and use an external view. Existing authored chairs/hand grips are preserved.'
+  instrumentReferenceNotes: Generic four-wheel MRAP-style troop carrier. Six inward-facing rear bench occupants; rear double doors are the troop ingress/egress reference.
   displayName: Armored transport
   seatDiagram: {fileID: 21300000, guid: 4d93b912698553749afa440519447c4e, type: 3}
   seatDiagramCenter: {x: -0.00000059604645, y: -0.021418571}
   seatDiagramHalfExtent: 3.3325958
   motor: {fileID: 7982671368684295624}
+  jetAssist:
+    assistEnabled: 1
+    maximumBank: 75
+    headingToBank: 1.8
+    assistedBankRate: 100
+    aimResponse: 2
+  helicopterAssist:
+    assistEnabled: 1
+    attitudeSpring: 60
+    attitudeDamping: 16
+    verticalResponse: 2.8
+    positionHoldSpring: 0.6
+    positionHoldDamping: 1.5
+    maxHoldAcceleration: 18
+    reversalTilt: 38
+    reversalSpeedRange: {x: 4, y: 20}
+    movementVelocityResponse: 0.8
+    cyclicResponseTime: 0.1
   turret: {fileID: 0}
   destructionEffect: {fileID: 695410771644243590, guid: c07b2e8d0c65dad44bf5eaca660002fc, type: 3}
   cameraTarget: {fileID: 6576998073761257344}
@@ -583,6 +634,7 @@ MonoBehaviour:
     showCharacter: 1
     weaponMountedView: 0
     externalView: 0
+    disembarkInside: 0
     eye: {fileID: 4390305269061873719}
     leftGrip: {fileID: 5773834780749496031}
     rightGrip: {fileID: 5497810167112991463}
@@ -596,6 +648,7 @@ MonoBehaviour:
     showCharacter: 1
     weaponMountedView: 0
     externalView: 0
+    disembarkInside: 0
     eye: {fileID: 7900983994235388541}
     leftGrip: {fileID: 0}
     rightGrip: {fileID: 0}
@@ -605,79 +658,85 @@ MonoBehaviour:
     role: 2
     pose: 1
     anchor: {fileID: 7849474334004280658}
-    exit: {fileID: 8790109057039555832}
-    showCharacter: 0
+    exit: {fileID: 888634599220420292}
+    showCharacter: 1
     weaponMountedView: 0
-    externalView: 1
+    externalView: 0
+    disembarkInside: 0
     eye: {fileID: 3046571702160180389}
-    leftGrip: {fileID: 3924383865914063570}
-    rightGrip: {fileID: 2745205927015563845}
-    diagramPosition: {x: -60, y: 37}
+    leftGrip: {fileID: 0}
+    rightGrip: {fileID: 0}
+    diagramPosition: {x: -17, y: -15}
     showVehicleInstruments: 0
   - name: Troop 2
     role: 2
     pose: 1
     anchor: {fileID: 4558639522519706297}
-    exit: {fileID: 8790109057039555832}
-    showCharacter: 0
+    exit: {fileID: 5041809528914509000}
+    showCharacter: 1
     weaponMountedView: 0
-    externalView: 1
+    externalView: 0
+    disembarkInside: 0
     eye: {fileID: 7025465929818752190}
-    leftGrip: {fileID: 473630762475575795}
-    rightGrip: {fileID: 2038926909616630019}
-    diagramPosition: {x: 60, y: 37}
+    leftGrip: {fileID: 0}
+    rightGrip: {fileID: 0}
+    diagramPosition: {x: 17, y: -15}
     showVehicleInstruments: 0
   - name: Troop 3
     role: 2
     pose: 1
     anchor: {fileID: 5735944788415276196}
-    exit: {fileID: 8790109057039555832}
-    showCharacter: 0
+    exit: {fileID: 1541189448852443003}
+    showCharacter: 1
     weaponMountedView: 0
-    externalView: 1
+    externalView: 0
+    disembarkInside: 0
     eye: {fileID: 7936961239648141974}
-    leftGrip: {fileID: 2777042160248323668}
-    rightGrip: {fileID: 840853231154729072}
-    diagramPosition: {x: -60, y: 12}
+    leftGrip: {fileID: 0}
+    rightGrip: {fileID: 0}
+    diagramPosition: {x: -17, y: -35}
     showVehicleInstruments: 0
   - name: Troop 4
     role: 2
     pose: 1
     anchor: {fileID: 8941928339436189585}
-    exit: {fileID: 8790109057039555832}
-    showCharacter: 0
+    exit: {fileID: 6575488582314298818}
+    showCharacter: 1
     weaponMountedView: 0
-    externalView: 1
+    externalView: 0
+    disembarkInside: 0
     eye: {fileID: 5595321428795137579}
-    leftGrip: {fileID: 7716628628420638165}
-    rightGrip: {fileID: 48144217348224692}
-    diagramPosition: {x: 60, y: 12}
+    leftGrip: {fileID: 0}
+    rightGrip: {fileID: 0}
+    diagramPosition: {x: 17, y: -35}
     showVehicleInstruments: 0
   - name: Troop 5
     role: 2
     pose: 1
     anchor: {fileID: 6385723198357113563}
-    exit: {fileID: 8790109057039555832}
-    showCharacter: 0
+    exit: {fileID: 197919667971898987}
+    showCharacter: 1
     weaponMountedView: 0
-    externalView: 1
+    externalView: 0
+    disembarkInside: 0
     eye: {fileID: 8181846581780763685}
-    leftGrip: {fileID: 3768586923619628807}
-    rightGrip: {fileID: 6411560486721018845}
-    diagramPosition: {x: -60, y: -13}
+    leftGrip: {fileID: 0}
+    rightGrip: {fileID: 0}
+    diagramPosition: {x: -17, y: -55}
     showVehicleInstruments: 0
   - name: Troop 6
     role: 2
     pose: 1
     anchor: {fileID: 6569896497885867909}
-    exit: {fileID: 8790109057039555832}
-    showCharacter: 0
+    exit: {fileID: 5258589883845855409}
+    showCharacter: 1
     weaponMountedView: 0
-    externalView: 1
+    externalView: 0
+    disembarkInside: 0
     eye: {fileID: 7026853188438410188}
-    leftGrip: {fileID: 6870969062831559409}
-    rightGrip: {fileID: 7965583170634955018}
-    diagramPosition: {x: 60, y: -13}
+    leftGrip: {fileID: 0}
+    rightGrip: {fileID: 0}
+    diagramPosition: {x: 17, y: -55}
     showVehicleInstruments: 0
   maxHealth: 1400
   bulletDamageMultiplier: 0.09
@@ -893,6 +952,68 @@ Transform:
   - {fileID: 8222001125655967734}
   m_Father: {fileID: 1180757791111449195}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &2499786428159243973
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1541189448852443003}
+  m_Layer: 0
+  m_Name: Troop exit 3
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1541189448852443003
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2499786428159243973}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: -0.45, y: 0.2, z: -3.5}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 8408153219318681515}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &2511184312792672753
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 5041809528914509000}
+  m_Layer: 0
+  m_Name: Troop exit 2
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &5041809528914509000
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2511184312792672753}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0.45, y: 0.2, z: -3.5}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 8408153219318681515}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &2516104079672604295
 GameObject:
   m_ObjectHideFlags: 0
@@ -917,8 +1038,8 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2516104079672604295}
   serializedVersion: 2
-  m_LocalRotation: {x: 0, y: -0.7071068, z: 0, w: 0.7071068}
-  m_LocalPosition: {x: 0.55, y: 0.9, z: -0.1}
+  m_LocalRotation: {x: -0, y: 0.7071068, z: -0, w: -0.7071068}
+  m_LocalPosition: {x: 0.5, y: 1.5, z: -1.2}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -986,8 +1107,8 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2601111997854443881}
   serializedVersion: 2
-  m_LocalRotation: {x: 0, y: -0.7071068, z: 0, w: 0.7071068}
-  m_LocalPosition: {x: 0.55, y: 0.9, z: -0.70000005}
+  m_LocalRotation: {x: -0, y: 0.7071068, z: -0, w: -0.7071068}
+  m_LocalPosition: {x: 0.5, y: 1.5, z: -1.8000001}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -1195,11 +1316,42 @@ Transform:
   m_GameObject: {fileID: 3165497577460329203}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0.65, z: 0.08}
+  m_LocalPosition: {x: 0, y: 0.8, z: 0.13}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 8941928339436189585}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &3298699563654474128
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 888634599220420292}
+  m_Layer: 0
+  m_Name: Troop exit 1
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &888634599220420292
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3298699563654474128}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: -0.45, y: 0.2, z: -3.5}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 8408153219318681515}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &3489275484497910859
 GameObject:
@@ -1226,7 +1378,7 @@ Transform:
   m_GameObject: {fileID: 3489275484497910859}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0.65, z: 0.08}
+  m_LocalPosition: {x: 0, y: 0.8, z: 0.13}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -1256,8 +1408,8 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 3495286935136149405}
   serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0.7071068, z: 0, w: 0.7071068}
-  m_LocalPosition: {x: -0.55, y: 0.9, z: -0.1}
+  m_LocalRotation: {x: -0, y: 0.7071068, z: -0, w: 0.7071068}
+  m_LocalPosition: {x: -0.5, y: 1.5, z: -1.2}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -1524,7 +1676,7 @@ Transform:
   m_GameObject: {fileID: 4172087024071241181}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0.65, z: 0.08}
+  m_LocalPosition: {x: 0, y: 0.8, z: 0.13}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -1720,7 +1872,7 @@ Transform:
   m_GameObject: {fileID: 4878141014588267095}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0.65, z: 0.08}
+  m_LocalPosition: {x: 0, y: 0.8, z: 0.13}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -2442,8 +2594,8 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 7184083281535175638}
   serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0.7071068, z: 0, w: 0.7071068}
-  m_LocalPosition: {x: -0.55, y: 0.9, z: -1.3000001}
+  m_LocalRotation: {x: -0, y: 0.7071068, z: -0, w: 0.7071068}
+  m_LocalPosition: {x: -0.5, y: 1.5, z: -2.4}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -2848,7 +3000,7 @@ Transform:
   m_GameObject: {fileID: 8103464673965532290}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0.65, z: 0.08}
+  m_LocalPosition: {x: 0, y: 0.8, z: 0.13}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -2907,6 +3059,37 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 2.5787857, y: 1.923507, z: 0.9918443}
   m_Center: {x: 0, y: 0, z: 0}
+--- !u!1 &8413180587372773224
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 6575488582314298818}
+  m_Layer: 0
+  m_Name: Troop exit 4
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &6575488582314298818
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8413180587372773224}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0.45, y: 0.2, z: -3.5}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 8408153219318681515}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &8468946481673776070
 GameObject:
   m_ObjectHideFlags: 0
@@ -3115,8 +3298,8 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 8995947733459784191}
   serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0.7071068, z: 0, w: 0.7071068}
-  m_LocalPosition: {x: -0.55, y: 0.9, z: -0.70000005}
+  m_LocalRotation: {x: -0, y: 0.7071068, z: -0, w: 0.7071068}
+  m_LocalPosition: {x: -0.5, y: 1.5, z: -1.8000001}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -3124,6 +3307,37 @@ Transform:
   - {fileID: 2777042160248323668}
   - {fileID: 840853231154729072}
   m_Father: {fileID: 8789108615705859162}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &9046202225126925087
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 5258589883845855409}
+  m_Layer: 0
+  m_Name: Troop exit 6
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &5258589883845855409
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 9046202225126925087}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0.45, y: 0.2, z: -3.5}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 8408153219318681515}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &9055159000499109366
 GameObject:
