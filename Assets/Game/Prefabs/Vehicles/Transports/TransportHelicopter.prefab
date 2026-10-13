@@ -394,6 +394,37 @@ Transform:
   - {fileID: 5423400062156548726}
   m_Father: {fileID: 6526823299160414780}
   m_LocalEulerAnglesHint: {x: 0, y: 180, z: 0}
+--- !u!1 &1133628895123206158
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 6045301067096448212}
+  m_Layer: 0
+  m_Name: Left cabin door control
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &6045301067096448212
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1133628895123206158}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: -1.5, y: 1.25, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 3212331356154487064}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1241871256015554866
 GameObject:
   m_ObjectHideFlags: 0
@@ -718,6 +749,7 @@ GameObject:
   - component: {fileID: 3321397939561544239}
   - component: {fileID: 5233662949061015220}
   - component: {fileID: 697834903200166141}
+  - component: {fileID: 5555702598443817777}
   m_Layer: 0
   m_Name: TransportHelicopter
   m_TagString: Untagged
@@ -746,6 +778,8 @@ Transform:
   - {fileID: 6945705103090620787}
   - {fileID: 3278231929526563697}
   - {fileID: 162184679576912370}
+  - {fileID: 6045301067096448212}
+  - {fileID: 703630574659163607}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!54 &7883439017423682820
@@ -814,6 +848,7 @@ MonoBehaviour:
     showCharacter: 1
     weaponMountedView: 0
     externalView: 0
+    disembarkInside: 0
     eye: {fileID: 1242289192592205925}
     leftGrip: {fileID: 4254304785278506093}
     rightGrip: {fileID: 11550764184044367}
@@ -827,6 +862,7 @@ MonoBehaviour:
     showCharacter: 1
     weaponMountedView: 0
     externalView: 0
+    disembarkInside: 0
     eye: {fileID: 4647745234632798606}
     leftGrip: {fileID: 0}
     rightGrip: {fileID: 0}
@@ -840,6 +876,7 @@ MonoBehaviour:
     showCharacter: 1
     weaponMountedView: 0
     externalView: 0
+    disembarkInside: 0
     eye: {fileID: 3580925503547917948}
     leftGrip: {fileID: 0}
     rightGrip: {fileID: 0}
@@ -853,6 +890,7 @@ MonoBehaviour:
     showCharacter: 1
     weaponMountedView: 0
     externalView: 0
+    disembarkInside: 0
     eye: {fileID: 6155814378294627320}
     leftGrip: {fileID: 0}
     rightGrip: {fileID: 0}
@@ -866,6 +904,7 @@ MonoBehaviour:
     showCharacter: 1
     weaponMountedView: 0
     externalView: 0
+    disembarkInside: 0
     eye: {fileID: 7545159375855254812}
     leftGrip: {fileID: 0}
     rightGrip: {fileID: 0}
@@ -879,6 +918,7 @@ MonoBehaviour:
     showCharacter: 1
     weaponMountedView: 0
     externalView: 0
+    disembarkInside: 0
     eye: {fileID: 5423400062156548726}
     leftGrip: {fileID: 0}
     rightGrip: {fileID: 0}
@@ -892,6 +932,7 @@ MonoBehaviour:
     showCharacter: 1
     weaponMountedView: 0
     externalView: 0
+    disembarkInside: 0
     eye: {fileID: 7124203522865969388}
     leftGrip: {fileID: 0}
     rightGrip: {fileID: 0}
@@ -905,6 +946,7 @@ MonoBehaviour:
     showCharacter: 1
     weaponMountedView: 0
     externalView: 0
+    disembarkInside: 0
     eye: {fileID: 7721400920356580586}
     leftGrip: {fileID: 0}
     rightGrip: {fileID: 0}
@@ -918,6 +960,7 @@ MonoBehaviour:
     showCharacter: 1
     weaponMountedView: 0
     externalView: 0
+    disembarkInside: 0
     eye: {fileID: 271747916545254932}
     leftGrip: {fileID: 0}
     rightGrip: {fileID: 0}
@@ -931,6 +974,7 @@ MonoBehaviour:
     showCharacter: 1
     weaponMountedView: 0
     externalView: 0
+    disembarkInside: 0
     eye: {fileID: 5887203498843046392}
     leftGrip: {fileID: 0}
     rightGrip: {fileID: 0}
@@ -944,6 +988,7 @@ MonoBehaviour:
     showCharacter: 0
     weaponMountedView: 0
     externalView: 1
+    disembarkInside: 0
     eye: {fileID: 1152962814467973953}
     leftGrip: {fileID: 5054771924633094374}
     rightGrip: {fileID: 6045833230911776616}
@@ -957,6 +1002,7 @@ MonoBehaviour:
     showCharacter: 0
     weaponMountedView: 0
     externalView: 1
+    disembarkInside: 0
     eye: {fileID: 4786304872601806334}
     leftGrip: {fileID: 2944336266932812748}
     rightGrip: {fileID: 6335453399586969190}
@@ -970,6 +1016,7 @@ MonoBehaviour:
     showCharacter: 0
     weaponMountedView: 0
     externalView: 1
+    disembarkInside: 0
     eye: {fileID: 2024576721942111902}
     leftGrip: {fileID: 3410530675887629942}
     rightGrip: {fileID: 4933607814095308164}
@@ -983,6 +1030,7 @@ MonoBehaviour:
     showCharacter: 0
     weaponMountedView: 0
     externalView: 1
+    disembarkInside: 0
     eye: {fileID: 2137681853074823876}
     leftGrip: {fileID: 5349321242957179949}
     rightGrip: {fileID: 5348727553972927153}
@@ -996,6 +1044,7 @@ MonoBehaviour:
     showCharacter: 0
     weaponMountedView: 0
     externalView: 1
+    disembarkInside: 0
     eye: {fileID: 609274874091529663}
     leftGrip: {fileID: 4627898839344904924}
     rightGrip: {fileID: 5544152873425310834}
@@ -1080,6 +1129,42 @@ MonoBehaviour:
   secondaryScale: 0.45
   finalScale: 1.5
   smokeScale: 1
+--- !u!114 &5555702598443817777
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2042152971167295315}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 45d943c4f2fa5994a929823439717f07, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::VehicleDoors
+  doors:
+  - name: Left cabin door
+    interaction: {fileID: 6045301067096448212}
+    leaves:
+    - part: {fileID: 1591752994255733414}
+      openTranslation: {x: 0, y: 0, z: -1.85}
+      openEuler: {x: 0, y: 0, z: 0}
+    - part: {fileID: 2238507145011078589}
+      openTranslation: {x: 0, y: 0, z: -1.85}
+      openEuler: {x: 0, y: 0, z: 0}
+    duration: 1.35
+    open: 0
+  - name: Right cabin door
+    interaction: {fileID: 703630574659163607}
+    leaves:
+    - part: {fileID: 3326398775249654877}
+      openTranslation: {x: 0, y: 0, z: -1.85}
+      openEuler: {x: 0, y: 0, z: 0}
+    - part: {fileID: 4025059268961004175}
+      openTranslation: {x: 0, y: 0, z: -1.85}
+      openEuler: {x: 0, y: 0, z: 0}
+    duration: 1.35
+    open: 0
+  interactionRange: 3
 --- !u!1 &2060533512515915458
 GameObject:
   m_ObjectHideFlags: 0
@@ -2821,6 +2906,37 @@ Transform:
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 2993859975124785083}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &6653611063123543046
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 703630574659163607}
+  m_Layer: 0
+  m_Name: Right cabin door control
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &703630574659163607
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6653611063123543046}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 1.5, y: 1.25, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 3212331356154487064}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &6732796071991027749
 GameObject:
