@@ -24,8 +24,8 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 214831399770879202}
   serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0.6087614, w: 0.7933533}
-  m_LocalPosition: {x: 0.16, y: 0.312414, z: 0.55}
+  m_LocalRotation: {x: -0, y: -0, z: -0.7071068, w: 0.7071068}
+  m_LocalPosition: {x: 0.17682661, y: 0.2955178, z: 0.53208065}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -157,8 +157,8 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2233709888829533565}
   serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: -0.6087614, w: 0.7933533}
-  m_LocalPosition: {x: -0.16000003, y: 0.312414, z: 0.55}
+  m_LocalRotation: {x: -0, y: -0, z: 0.7071068, w: 0.7071068}
+  m_LocalPosition: {x: -0.1768266, y: 0.2955178, z: 0.53208065}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -189,7 +189,7 @@ Transform:
   m_GameObject: {fileID: 2287538174302799528}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0.8, z: 0.13}
+  m_LocalPosition: {x: 0, y: 0.79999995, z: 0.13000011}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -219,8 +219,8 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2358792356082472152}
   serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0.32, y: 0.6381038, z: -1.1776035}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 0.32, y: 0.77, z: -1.15}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -536,7 +536,7 @@ Transform:
   m_GameObject: {fileID: 4589015019182877769}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0.8, z: 0.13}
+  m_LocalPosition: {x: 0, y: 0.79999995, z: 0.13000011}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -566,8 +566,8 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 4931680715566278904}
   serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -0.317, y: 0.6381038, z: -1.1776035}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: -0.32, y: 0.77, z: -1.15}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -877,46 +877,51 @@ MonoBehaviour:
   turret: {fileID: 0}
   destructionEffect: {fileID: 695410771644243590, guid: c07b2e8d0c65dad44bf5eaca660002fc, type: 3}
   cameraTarget: {fileID: 499391355438512506}
+  hasRenderedInterior: 1
   seats:
   - name: Driver
     role: 0
+    pose: 0
     anchor: {fileID: 4169499513489583904}
     exit: {fileID: 7549283207029936067}
     showCharacter: 1
     eye: {fileID: 9047198918050450805}
     leftGrip: {fileID: 3111634516876056238}
     rightGrip: {fileID: 5474625763455987799}
-    diagramPosition: {x: -18, y: 45}
+    diagramPosition: {x: -14.067702, y: -8.634963}
     showVehicleInstruments: 1
   - name: Passenger
     role: 2
+    pose: 0
     anchor: {fileID: 2669523430862813023}
     exit: {fileID: 390453185146693351}
     showCharacter: 1
     eye: {fileID: 338844612455888360}
     leftGrip: {fileID: 0}
     rightGrip: {fileID: 0}
-    diagramPosition: {x: 18, y: 45}
+    diagramPosition: {x: 14.067702, y: -9.30005}
     showVehicleInstruments: 0
   - name: Passenger 2
     role: 2
+    pose: 0
     anchor: {fileID: 1159441085914252541}
     exit: {fileID: 3411181308483421224}
     showCharacter: 1
     eye: {fileID: 8269434207286171292}
     leftGrip: {fileID: 0}
     rightGrip: {fileID: 0}
-    diagramPosition: {x: -18, y: 14}
+    diagramPosition: {x: -11.876959, y: -42.818336}
     showVehicleInstruments: 0
   - name: Passenger 3
     role: 2
+    pose: 0
     anchor: {fileID: 2010685189800054486}
     exit: {fileID: 1183745008017322101}
     showCharacter: 1
     eye: {fileID: 6233443174385887920}
     leftGrip: {fileID: 0}
     rightGrip: {fileID: 0}
-    diagramPosition: {x: 18, y: 14}
+    diagramPosition: {x: 11.876959, y: -42.818336}
     showVehicleInstruments: 0
   maxHealth: 900
   bulletDamageMultiplier: 0.325
@@ -1122,7 +1127,7 @@ Transform:
   m_GameObject: {fileID: 6578534069507859791}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0.8, z: 0.13}
+  m_LocalPosition: {x: 0, y: 0.79999995, z: 0.13000011}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -1243,7 +1248,7 @@ Transform:
   m_GameObject: {fileID: 6887355000803037757}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0.8, z: 0.13}
+  m_LocalPosition: {x: 0, y: 0.79999995, z: 0.13000011}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []

@@ -21,8 +21,11 @@ public class Vehicle : MonoBehaviour
     [Serializable]
     public class Seat
     {
+        public enum Pose { Automatic, Sitting, Driving, Turret }
         public string name;
         public SeatRole role;
+        [Tooltip("Override the mounted pose when the chair differs from the station role, such as a seated aircraft gunner.")]
+        public Pose pose;
         public Transform anchor, exit;
         [Tooltip("Disable for remote stations or functional seats without a modeled chair.")]
         public bool showCharacter = true;
@@ -46,6 +49,10 @@ public class Vehicle : MonoBehaviour
     public VehicleTurret turret;
     public ParticleSystem destructionEffect;
     public Transform cameraTarget;
+    [Tooltip("Disable when the model has no rendered cabin. Occupants are hidden and both camera modes use the external view.")]
+    public bool hasRenderedInterior = true;
+    [Tooltip("Extra space around the chassis box from which players may enter.")]
+    public Vector3 entryPadding = new Vector3(1.5f, 1f, 1.5f);
     public Seat[] seats;
     public float maxHealth = 900f;
     [Range(0f,1f)] public float bulletDamageMultiplier=.5f;
@@ -69,8 +76,36 @@ public class Vehicle : MonoBehaviour
     }
     public bool CanExit => !IsDestroyed && Body.linearVelocity.magnitude < 3f && motor.CanDisembark;
     NavMeshObstacle obstacle;
+    Bounds colliderBounds;
+    bool colliderBoundsReady;
     // The authored carving box describes the chassis, in vehicle-local coordinates.
-    public Bounds NavigationBounds => new Bounds(obstacle.center, obstacle.size);
+    public Bounds NavigationBounds
+    {
+        get
+        {
+            if (!obstacle) obstacle = GetComponent<NavMeshObstacle>();
+            if (obstacle) return new Bounds(obstacle.center, obstacle.size);
+            if (!colliderBoundsReady)
+            {
+                bool found = false;
+                foreach (var box in GetComponentsInChildren<BoxCollider>(true))
+                {
+                    if (box.isTrigger) continue;
+                    for (int corner = 0; corner < 8; corner++)
+                    {
+                        var point = box.center + Vector3.Scale(box.size * .5f,
+                            new Vector3((corner & 1) == 0 ? -1 : 1, (corner & 2) == 0 ? -1 : 1, (corner & 4) == 0 ? -1 : 1));
+                        point = transform.InverseTransformPoint(box.transform.TransformPoint(point));
+                        if (!found) { colliderBounds = new Bounds(point, Vector3.zero); found = true; }
+                        else colliderBounds.Encapsulate(point);
+                    }
+                }
+                if (!found) colliderBounds = new Bounds(Vector3.zero, new Vector3(2, 2, 4));
+                colliderBoundsReady = true;
+            }
+            return colliderBounds;
+        }
+    }
 
     void Awake()
     {
@@ -133,6 +168,20 @@ public class Vehicle : MonoBehaviour
         }
         return closest;
     }
+    public bool IsInsideEntryBox(Vector3 position)
+    {
+        var bounds = NavigationBounds;
+        bounds.Expand(entryPadding * 2f);
+        return bounds.Contains(transform.InverseTransformPoint(position));
+    }
+    void DrawEntryBox()
+    {
+        var bounds = NavigationBounds;
+        Gizmos.matrix = transform.localToWorldMatrix;
+        Gizmos.color = new Color(1f, .55f, .12f, .65f);
+        Gizmos.DrawWireCube(bounds.center, bounds.size + entryPadding * 2f);
+        Gizmos.matrix = Matrix4x4.identity;
+    }
     public bool BoardFirstAvailable(VehicleOccupant actor) => Board(actor, FirstAvailableSeat(actor));
     public bool Reserve(VehicleOccupant actor, int index)
     {
@@ -151,7 +200,7 @@ public class Vehicle : MonoBehaviour
     public bool Board(VehicleOccupant actor, int index)
     {
         if (!CanBoard(actor, index) || (!actor.IsLocal && Body.linearVelocity.magnitude > 3f)
-            || Vector3.Distance(actor.transform.position, NearestEntryPoint(actor.transform.position).position) > 3.2f)
+            || !IsInsideEntryBox(actor.transform.position))
             return false;
         if (!actor.IsLocal && !motor.CanDisembark)
             return false;
@@ -213,6 +262,7 @@ public class Vehicle : MonoBehaviour
     }
     void OnDrawGizmosSelected()
     {
+        DrawEntryBox();
         foreach (var s in seats)
         if (s.anchor && s.exit)
         {

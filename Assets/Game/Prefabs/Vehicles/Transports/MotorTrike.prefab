@@ -261,7 +261,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2340793111353535395}
   serializedVersion: 2
-  m_LocalRotation: {x: 0.021020945, y: -0.44692242, z: 0.042018086, w: 0.89333814}
+  m_LocalRotation: {x: -0, y: -0, z: 0.7071068, w: 0.7071068}
   m_LocalPosition: {x: -0.373, y: 0.254, z: 0.658}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
@@ -428,7 +428,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2867317178132910881}
   serializedVersion: 2
-  m_LocalRotation: {x: 0.005873192, y: 0.4350813, z: -0.18598905, w: 0.8809529}
+  m_LocalRotation: {x: -0, y: -0, z: -0.7071068, w: 0.7071068}
   m_LocalPosition: {x: 0.365, y: 0.261, z: 0.646}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
@@ -641,7 +641,7 @@ Transform:
   m_GameObject: {fileID: 3175934928526204853}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0.8, z: 0.13}
+  m_LocalPosition: {x: 0, y: 0.79999995, z: 0.13000011}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -1220,27 +1220,19 @@ MonoBehaviour:
   turret: {fileID: 0}
   destructionEffect: {fileID: 695410771644243590, guid: c07b2e8d0c65dad44bf5eaca660002fc, type: 3}
   cameraTarget: {fileID: 124534357107625144}
+  hasRenderedInterior: 1
   seats:
   - name: Driver
     role: 0
+    pose: 0
     anchor: {fileID: 3567768511394625815}
     exit: {fileID: 7895711308332459966}
     showCharacter: 1
     eye: {fileID: 7327250141183054688}
     leftGrip: {fileID: 6892489571882286264}
     rightGrip: {fileID: 4893679911481341514}
-    diagramPosition: {x: 0, y: 32}
+    diagramPosition: {x: 0.4080401, y: 7.6757674}
     showVehicleInstruments: 1
-  - name: Passenger
-    role: 2
-    anchor: {fileID: 0}
-    exit: {fileID: 0}
-    showCharacter: 1
-    eye: {fileID: 0}
-    leftGrip: {fileID: 0}
-    rightGrip: {fileID: 0}
-    diagramPosition: {x: 32, y: -3}
-    showVehicleInstruments: 0
   maxHealth: 900
   bulletDamageMultiplier: 0.325
   explosiveDamageMultiplier: 0.8

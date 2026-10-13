@@ -47,7 +47,7 @@ public class VehicleReferenceInstruments : MonoBehaviour
         bool littleBird=vehicle.instrumentReference==Vehicle.InstrumentReference.LittleBird;
         attitudeRect.gameObject.SetActive(!littleBird);verticalRect.gameObject.SetActive(!littleBird);
         speed.rectTransform.anchoredPosition=new Vector2(littleBird?-145:-260,0);rotor.rectTransform.anchoredPosition=new Vector2(littleBird?145:260,0);
-        ((RectTransform)panel.transform).localScale=Vector3.one*(cockpit?1:.85f);
+        ((RectTransform)panel.transform).localScale=Vector3.one;
         float knots=Vector3.ProjectOnPlane(vehicle.Body.linearVelocity,Vector3.up).magnitude*1.943844f;
         float feet=groundHeight*3.28084f,climb=vehicle.Body.linearVelocity.y*196.8504f;
         var motor=(HelicopterMotor)vehicle.motor;float nr=motor.RotorPower*100;

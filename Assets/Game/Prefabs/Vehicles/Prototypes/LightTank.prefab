@@ -424,7 +424,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: de07bc139c6f8a34e9ffee3f1f711330, type: 3}
-  m_Name:
+  m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Vehicle
   instruments: 1
   instrumentReference: 5
@@ -439,9 +439,11 @@ MonoBehaviour:
   turret: {fileID: 412871685692491077}
   destructionEffect: {fileID: 695410771644243590, guid: c07b2e8d0c65dad44bf5eaca660002fc, type: 3}
   cameraTarget: {fileID: 4234112904434023793}
+  hasRenderedInterior: 0
   seats:
   - name: Driver
     role: 0
+    pose: 0
     anchor: {fileID: 2069369412218765846}
     exit: {fileID: 217367850325118452}
     showCharacter: 0
@@ -452,6 +454,7 @@ MonoBehaviour:
     showVehicleInstruments: 1
   - name: Commander
     role: 2
+    pose: 0
     anchor: {fileID: 514666183529831575}
     exit: {fileID: 1082959746446833587}
     showCharacter: 0
@@ -510,7 +513,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 7d1fbb5ec61faae40b921fbfc191efb6, type: 3}
-  m_Name:
+  m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::HummerMotor
   vehicle: {fileID: 4638209563810107676}
   wheels:
@@ -556,7 +559,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 3ef518424e140f94fae8a987cef7cb87, type: 3}
-  m_Name:
+  m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::VehicleDestructionEffects
   blackSmoke: {fileID: 6001782565966554119, guid: 43683e0b5831c7d4ead5064f2a129ac0, type: 3}
   secondaryExplosion: {fileID: 7772868914547752988, guid: 47f535017c67d4c4194b60441dabb8e4, type: 3}
@@ -583,7 +586,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: e05ac1e4966f3d041bae7861e297b408, type: 3}
-  m_Name:
+  m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::VehicleAttackSight
   vehicle: {fileID: 4638209563810107676}
   style: 3
@@ -608,7 +611,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 9ac464a7f1889804e8ff5bf436170724, type: 3}
-  m_Name:
+  m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::VehicleTurret
   vehicle: {fileID: 4638209563810107676}
   yawPivot: {fileID: 1447578692474234196}
@@ -644,7 +647,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: fff1dd4e59ccd5140913756ce5512675, type: 3}
-  m_Name:
+  m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::VehicleRoadWheels
   vehicle: {fileID: 4638209563810107676}
   left:

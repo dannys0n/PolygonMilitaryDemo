@@ -29,7 +29,9 @@ public class VehicleSeatPose : MonoBehaviour
         animator.applyRootMotion = false;
         animator.cullingMode = AnimatorCullingMode.AlwaysAnimate;
         animator.enabled = true;
-        animator.Play(seat.role == Vehicle.SeatRole.Gunner ? "Turret" : seat.role == Vehicle.SeatRole.Driver ? "Driving" : "Sitting", 0, 0);
+        string state = seat.pose != Vehicle.Seat.Pose.Automatic ? seat.pose.ToString()
+            : seat.role == Vehicle.SeatRole.Gunner ? "Turret" : seat.role == Vehicle.SeatRole.Driver ? "Driving" : "Sitting";
+        animator.Play(state, 0, 0);
         animator.Update(0f);
         bodyOffset=Quaternion.Inverse(pelvisAnchor.rotation)*(lastBodyPosition-animator.GetBoneTransform(HumanBodyBones.Hips).position);
     }

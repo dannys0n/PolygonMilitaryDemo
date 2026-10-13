@@ -267,12 +267,13 @@ MonoBehaviour:
   turret: {fileID: 2684248542658391728}
   destructionEffect: {fileID: 695410771644243590, guid: c07b2e8d0c65dad44bf5eaca660002fc, type: 3}
   cameraTarget: {fileID: 9190760816090246636}
+  hasRenderedInterior: 0
   seats:
   - name: Pilot
     role: 0
     anchor: {fileID: 589792139286846519}
     exit: {fileID: 5608904133907614270}
-    showCharacter: 1
+    showCharacter: 0
     eye: {fileID: 4793488355362411154}
     leftGrip: {fileID: 3293204507958610603}
     rightGrip: {fileID: 824110037522568098}
@@ -363,6 +364,9 @@ MonoBehaviour:
   weaponIcon: {fileID: 21300000, guid: af5ddbfdd53f9c64cb4e5830fee82296, type: 3}
   weaponName: MINIGUN
   spinBarrels: 1
+  controlRole: 1
+  explosiveVehicleDamage: 0
+  impactEffect: {fileID: 0}
   cameraShake: {fileID: 7400000, guid: b06213c2ef802284f97df928d44be0c6, type: 2}
   barrelAssembly: {fileID: 8044123870507323170}
   barrelSpinUp: 1200
@@ -391,6 +395,7 @@ MonoBehaviour:
   muzzles:
   - {fileID: 5873519301056009290}
   - {fileID: 7104141681438708698}
+  tubeRounds: []
   interval: 0.2
   capacity: 8
   rechargeInterval: 0.75

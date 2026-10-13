@@ -35,7 +35,12 @@ public class VehicleOccupant : MonoBehaviour
     bool previousCameraEnabled;
     float lastVehicleYaw, yaw, pitch = 14, flightYaw, flightPitch, exitHeld, hornUntil, freelookYaw, freelookPitch;
     Vector3 departureVelocity;
-    public bool CockpitView { get; private set; }
+    bool cockpitView;
+    public bool CockpitView
+    {
+        get => cockpitView && (!MountedVehicle || MountedVehicle.hasRenderedInterior);
+        private set => cockpitView = value;
+    }
     public bool Freelook { get; private set; }
     public float HornFeedback => Mathf.Clamp01((hornUntil - Time.time) * 3f);
     public float ViewYaw => yaw;
@@ -84,13 +89,14 @@ public class VehicleOccupant : MonoBehaviour
             }
             Vehicle best = null;
             int seat = -1;
-            float distance = 3.2f;
+            float distance = float.PositiveInfinity;
             foreach (var v in Vehicle.Active)
             {
                 if (v.gameObject.scene != gameObject.scene) continue;
                 int available = v.FirstAvailableSeat(this);
                 if (available < 0) continue;
-                float d = Vector3.Distance(transform.position, v.NearestEntryPoint(transform.position).position);
+                if (!v.IsInsideEntryBox(transform.position)) continue;
+                float d = Vector3.Distance(transform.position, v.transform.TransformPoint(v.NavigationBounds.center));
                 if (d < distance) { distance = d; best = v; seat = available; }
             }
             Prompt = best ? "[E] ENTER " + best.displayName + " / " + best.seats[seat].name : "";
@@ -236,7 +242,7 @@ public class VehicleOccupant : MonoBehaviour
         seatPose = life.actions.animator.GetComponent<VehicleSeatPose>();
         if (!seatPose) seatPose = life.actions.animator.gameObject.AddComponent<VehicleSeatPose>();
         var seated = vehicle.seats[seat];
-        if(seated.showCharacter) seatPose.Begin(life.actions.animator, seated, seated.leftGrip, seated.rightGrip);
+        if(vehicle.hasRenderedInterior && seated.showCharacter) seatPose.Begin(life.actions.animator, seated, seated.leftGrip, seated.rightGrip);
         var humanoidBones = new HashSet<Transform>();
         foreach(HumanBodyBones bone in System.Enum.GetValues(typeof(HumanBodyBones)))
             if(bone!=HumanBodyBones.LastBone){var t=life.actions.animator.GetBoneTransform(bone);if(t)humanoidBones.Add(t);}
@@ -294,7 +300,7 @@ public class VehicleOccupant : MonoBehaviour
         {
             if (!force && !IsLocal) return false;
             position = seat.exit.position;
-            if (!force && Physics.CheckCapsule(position + Vector3.up*.4f, position + Vector3.up*1.5f, .3f, Physics.DefaultRaycastLayers, QueryTriggerInteraction.Ignore)) return false;
+            if (IsLocal) position = ExteriorExit(vehicle, seat);
         }
         departureVelocity = IsLocal ? vehicle.Body.linearVelocity : Vector3.zero;
         if (force && position == default)
@@ -347,7 +353,7 @@ public class VehicleOccupant : MonoBehaviour
         {
             float side = Vector3.Dot(vehicle.transform.right, Quaternion.Euler(0,yaw,0)*Vector3.forward);
             if (Mathf.Abs(side) > .15f) foreach (var candidate in vehicle.seats)
-                if (Mathf.Sign(candidate.exit.localPosition.x)==Mathf.Sign(side)) { seat=candidate;break; }
+                if (candidate.exit && Mathf.Sign(vehicle.transform.InverseTransformPoint(candidate.exit.position).x)==Mathf.Sign(side)) { seat=candidate;break; }
         }
         for (int i = 0; i < 4; i++)
         {
@@ -392,6 +398,18 @@ public class VehicleOccupant : MonoBehaviour
         }
         return false;
     }
+    Vector3 ExteriorExit(Vehicle vehicle, Vehicle.Seat seat)
+    {
+        // Airborne/manual exits must never depend on finding ground or a NavMesh.
+        var bounds = vehicle.NavigationBounds;
+        var local = vehicle.transform.InverseTransformPoint(seat.exit.position);
+        float side = Mathf.Sign(local.x - bounds.center.x);
+        if (side == 0) side = 1;
+        local.x = bounds.center.x + side * (bounds.extents.x + life.controller.radius + .6f);
+        local.y = Mathf.Clamp(local.y, bounds.min.y + .2f, bounds.max.y);
+        local.z = Mathf.Clamp(local.z, bounds.min.z, bounds.max.z);
+        return vehicle.transform.TransformPoint(local);
+    }
     public bool SwitchSeat(int index)
     {
         if (!IsMounted || index<0 || index>=MountedVehicle.seats.Length || index==SeatIndex) return false;
@@ -425,7 +443,7 @@ public class VehicleOccupant : MonoBehaviour
         var seat=vehicle.seats[index];
         seatPose.End();
         transform.SetParent(seat.anchor,false);transform.SetLocalPositionAndRotation(Vector3.zero,Quaternion.identity);
-        if(seat.showCharacter) seatPose.Begin(life.actions.animator, seat, seat.leftGrip, seat.rightGrip);
+        if(vehicle.hasRenderedInterior && seat.showCharacter) seatPose.Begin(life.actions.animator, seat, seat.leftGrip, seat.rightGrip);
         else life.actions.animator.enabled=false;
         UpdateSeatedVisibility();
         if(IsLocal)ResetVehicleCameraShake();
@@ -435,7 +453,7 @@ public class VehicleOccupant : MonoBehaviour
     void UpdateSeatedVisibility()
     {
         var seat=MountedVehicle.seats[SeatIndex];
-        bool visible=seat.showCharacter && !(IsLocal && CockpitView && seat.role==Vehicle.SeatRole.Gunner);
+        bool visible=MountedVehicle.hasRenderedInterior && seat.showCharacter;
         foreach(var skin in seatedBody) if(skin){skin.enabled=visible;skin.forceRenderingOff=!visible;skin.shadowCastingMode=UnityEngine.Rendering.ShadowCastingMode.On;}
     }
     void LateUpdate()
@@ -457,7 +475,7 @@ public class VehicleOccupant : MonoBehaviour
     }
     Vector3 CameraPosition(Vehicle v, Quaternion rotation, bool gunner, bool aircraft, bool pilot, bool? cockpitOverride = null)
     {
-        bool cockpit = cockpitOverride ?? CockpitView;
+        bool cockpit = v.hasRenderedInterior && (cockpitOverride ?? CockpitView);
         Vector3 target = gunner ? v.turret.cameraPoint.position : v.cameraTarget.position;
         if (pilot && ((HelicopterMotor)v.motor).assistEnabled && !cockpit)
             target = v.transform.position + Vector3.up * v.cameraTarget.localPosition.y;
@@ -477,6 +495,7 @@ public class VehicleOccupant : MonoBehaviour
     public void GetSpectatorCameraPose(bool cockpit, out Vector3 position, out Quaternion rotation)
     {
         var v = MountedVehicle;
+        cockpit &= v.hasRenderedInterior;
         bool gunner = v.seats[SeatIndex].role == Vehicle.SeatRole.Gunner;
         bool aircraft = v.motor is HelicopterMotor;
         bool pilot = aircraft && v.seats[SeatIndex].role == Vehicle.SeatRole.Driver;

@@ -1672,7 +1672,7 @@ Transform:
   m_GameObject: {fileID: 4384433277142861463}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 2.7425413, y: 0.2, z: -0.51599693}
+  m_LocalPosition: {x: 2.3, y: 0.15, z: 2.7}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -1986,7 +1986,7 @@ Transform:
   m_GameObject: {fileID: 4807887628622867167}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -2.7425413, y: 0.2, z: -0.51599693}
+  m_LocalPosition: {x: -2.3, y: 0.15, z: 2.7}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -2184,6 +2184,37 @@ WheelCollider:
   m_LayerOverridePriority: 0
   m_Enabled: 1
   m_ProvidesContacts: 0
+--- !u!1 &5859705346124440158
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 3996929003294773796}
+  m_Layer: 0
+  m_Name: Right control grip
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &3996929003294773796
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5859705346124440158}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: -0, z: -0.7071068, w: 0.7071068}
+  m_LocalPosition: {x: 0.18127209, y: 0.26114607, z: 0.59595466}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 2479519175469006452}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &5961038543617449842
 GameObject:
   m_ObjectHideFlags: 0
@@ -2305,6 +2336,37 @@ MeshRenderer:
   m_SortingOrder: 0
   m_MaskInteraction: 0
   m_AdditionalVertexStreams: {fileID: 0}
+--- !u!1 &6124117815809675865
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 337190155443258177}
+  m_Layer: 0
+  m_Name: Left control grip
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &337190155443258177
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6124117815809675865}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: -0, z: 0.7071068, w: 0.7071068}
+  m_LocalPosition: {x: -0.17261797, y: 0.26114607, z: 0.59595466}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 2479519175469006452}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &6214565478784669338
 GameObject:
   m_ObjectHideFlags: 0
@@ -2768,11 +2830,13 @@ Transform:
   m_GameObject: {fileID: 7067097528740539040}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -0.35, y: 1.7677456, z: 0.8777854}
+  m_LocalPosition: {x: -0.723, y: 1.685, z: 2.56}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 1693025716562322350}
+  - {fileID: 337190155443258177}
+  - {fileID: 3996929003294773796}
   m_Father: {fileID: 2897961170030461553}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &7530784590289375707
@@ -3268,7 +3332,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: de07bc139c6f8a34e9ffee3f1f711330, type: 3}
-  m_Name:
+  m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Vehicle
   instruments: 1
   instrumentReference: 9
@@ -3283,26 +3347,29 @@ MonoBehaviour:
   turret: {fileID: 0}
   destructionEffect: {fileID: 695410771644243590, guid: c07b2e8d0c65dad44bf5eaca660002fc, type: 3}
   cameraTarget: {fileID: 1714358296928943642}
+  hasRenderedInterior: 1
   seats:
   - name: Driver
     role: 0
+    pose: 0
     anchor: {fileID: 2479519175469006452}
     exit: {fileID: 5854662717918586914}
-    showCharacter: 0
+    showCharacter: 1
     eye: {fileID: 1693025716562322350}
-    leftGrip: {fileID: 0}
-    rightGrip: {fileID: 0}
-    diagramPosition: {x: -18, y: 46}
+    leftGrip: {fileID: 337190155443258177}
+    rightGrip: {fileID: 3996929003294773796}
+    diagramPosition: {x: -28, y: 46}
     showVehicleInstruments: 1
   - name: Passenger
     role: 2
+    pose: 0
     anchor: {fileID: 1482652856895457762}
     exit: {fileID: 7683783421276418843}
-    showCharacter: 0
+    showCharacter: 1
     eye: {fileID: 2175696053972262389}
     leftGrip: {fileID: 0}
     rightGrip: {fileID: 0}
-    diagramPosition: {x: 18, y: 46}
+    diagramPosition: {x: 28, y: 46}
     showVehicleInstruments: 0
   maxHealth: 3600
   bulletDamageMultiplier: 0.04
@@ -3354,7 +3421,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 7d1fbb5ec61faae40b921fbfc191efb6, type: 3}
-  m_Name:
+  m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::HummerMotor
   vehicle: {fileID: 8152297768278252287}
   wheels:
@@ -3408,7 +3475,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 3ef518424e140f94fae8a987cef7cb87, type: 3}
-  m_Name:
+  m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::VehicleDestructionEffects
   blackSmoke: {fileID: 6001782565966554119, guid: 43683e0b5831c7d4ead5064f2a129ac0, type: 3}
   secondaryExplosion: {fileID: 7772868914547752988, guid: 47f535017c67d4c4194b60441dabb8e4, type: 3}
@@ -3435,7 +3502,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: e05ac1e4966f3d041bae7861e297b408, type: 3}
-  m_Name:
+  m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::VehicleAttackSight
   vehicle: {fileID: 8152297768278252287}
   style: 4
@@ -3460,7 +3527,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 15758ee054fe4464a80e41fe97e37f97, type: 3}
-  m_Name:
+  m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::VehicleLauncher
   vehicle: {fileID: 8152297768278252287}
   projectile: {fileID: 6926061580476085574, guid: 94b468e700b83f04e81bb67298554930, type: 3}
@@ -3504,7 +3571,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 42ab5d7d3115c8b4a80a1c9f2d47345c, type: 3}
-  m_Name:
+  m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::VehicleLauncherMount
   vehicle: {fileID: 8152297768278252287}
   yawPivot: {fileID: 6356913002766686106}
@@ -3538,7 +3605,7 @@ Transform:
   m_GameObject: {fileID: 8580474725640699170}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0.35, y: 1.7677456, z: 0.8777854}
+  m_LocalPosition: {x: 0.738, y: 1.685, z: 2.585}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:

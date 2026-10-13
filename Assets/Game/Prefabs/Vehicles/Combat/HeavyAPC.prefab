@@ -1066,6 +1066,7 @@ Transform:
   - {fileID: 9072149401740804637}
   - {fileID: 1188079112014038992}
   - {fileID: 1817583545020225324}
+  - {fileID: 3784049987785088118}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!54 &3845100521401227709
@@ -1120,9 +1121,11 @@ MonoBehaviour:
   turret: {fileID: 239444765632696351}
   destructionEffect: {fileID: 695410771644243590, guid: c07b2e8d0c65dad44bf5eaca660002fc, type: 3}
   cameraTarget: {fileID: 9072149401740804637}
+  hasRenderedInterior: 0
   seats:
   - name: Driver
     role: 0
+    pose: 0
     anchor: {fileID: 2373635998900916957}
     exit: {fileID: 622678594329726546}
     showCharacter: 0
@@ -1133,6 +1136,7 @@ MonoBehaviour:
     showVehicleInstruments: 1
   - name: Gunner
     role: 1
+    pose: 0
     anchor: {fileID: 3784049987785088118}
     exit: {fileID: 2986402655235383248}
     showCharacter: 0
@@ -1143,6 +1147,7 @@ MonoBehaviour:
     showVehicleInstruments: 0
   - name: Passenger 2
     role: 2
+    pose: 0
     anchor: {fileID: 1486703809124147303}
     exit: {fileID: 5737697697632872355}
     showCharacter: 0
@@ -1153,6 +1158,7 @@ MonoBehaviour:
     showVehicleInstruments: 0
   - name: Passenger 3
     role: 2
+    pose: 0
     anchor: {fileID: 7548704101439919654}
     exit: {fileID: 2512578929733236258}
     showCharacter: 0
@@ -1163,6 +1169,7 @@ MonoBehaviour:
     showVehicleInstruments: 0
   - name: Passenger 4
     role: 2
+    pose: 0
     anchor: {fileID: 5572330232620239676}
     exit: {fileID: 4309783088275220108}
     showCharacter: 0
@@ -1173,6 +1180,7 @@ MonoBehaviour:
     showVehicleInstruments: 0
   - name: Passenger 5
     role: 2
+    pose: 0
     anchor: {fileID: 2986040614792796858}
     exit: {fileID: 7251489768995023202}
     showCharacter: 0
@@ -1183,6 +1191,7 @@ MonoBehaviour:
     showVehicleInstruments: 0
   - name: Passenger 6
     role: 2
+    pose: 0
     anchor: {fileID: 8527995340497058244}
     exit: {fileID: 8806761267136429421}
     showCharacter: 0
@@ -1193,6 +1202,7 @@ MonoBehaviour:
     showVehicleInstruments: 0
   - name: Passenger 7
     role: 2
+    pose: 0
     anchor: {fileID: 8295588506845838416}
     exit: {fileID: 3224060440230357336}
     showCharacter: 0
@@ -1305,6 +1315,9 @@ MonoBehaviour:
   weaponIcon: {fileID: 572006580493702492, guid: a1f34646048f44c40ae64cc725a83f02, type: 3}
   weaponName: AUTOCANNON
   spinBarrels: 0
+  controlRole: 1
+  explosiveVehicleDamage: 1
+  impactEffect: {fileID: 695410771644243590, guid: c07b2e8d0c65dad44bf5eaca660002fc, type: 3}
   cameraShake: {fileID: 7400000, guid: b06213c2ef802284f97df928d44be0c6, type: 2}
   barrelAssembly: {fileID: 2713950607181238299}
   barrelSpinUp: 1200
@@ -1591,7 +1604,6 @@ Transform:
   m_Children:
   - {fileID: 4228003096099542078}
   - {fileID: 3356563936961398811}
-  - {fileID: 3784049987785088118}
   m_Father: {fileID: 6015904881266655505}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &3975104252712048808
@@ -5730,11 +5742,11 @@ Transform:
   m_GameObject: {fileID: 7450360699018287680}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0.25, z: -0.45}
+  m_LocalPosition: {x: 0, y: 0.8, z: 0.13}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
-  m_Father: {fileID: 3356563936961398811}
+  m_Father: {fileID: 3784049987785088118}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &7658189818568885659
 GameObject:
@@ -5800,7 +5812,6 @@ Transform:
   - {fileID: 7936602067319131144}
   - {fileID: 2713950607181238299}
   - {fileID: 7350356442676419694}
-  - {fileID: 2962268424174508252}
   - {fileID: 5189918505144625990}
   - {fileID: 6997630436127767951}
   - {fileID: 6865574929888531815}
@@ -5895,12 +5906,13 @@ Transform:
   m_GameObject: {fileID: 8263128269643693826}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0.08918382, y: -0.19701362, z: -0.0021748543}
+  m_LocalPosition: {x: 0.08918382, y: 2.0556474, z: -0.73869413}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 2190347515269459379}
-  m_Father: {fileID: 4172286060047040585}
+  - {fileID: 2962268424174508252}
+  m_Father: {fileID: 637034302603400674}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &8346621910315473904
 GameObject:

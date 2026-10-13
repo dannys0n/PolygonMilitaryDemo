@@ -145,8 +145,8 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 824601382125547169}
   serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0.6087614, w: 0.7933533}
-  m_LocalPosition: {x: 0.16, y: 0.37094426, z: 0.55}
+  m_LocalRotation: {x: -0, y: -0, z: -0.7071068, w: 0.7071068}
+  m_LocalPosition: {x: 0.21103117, y: 0.37094426, z: 0.55}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -209,7 +209,7 @@ Transform:
   m_GameObject: {fileID: 931555010193573016}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0.8, z: 0.13}
+  m_LocalPosition: {x: 0, y: 0.79999995, z: 0.13000011}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -345,7 +345,7 @@ Transform:
   m_GameObject: {fileID: 1900708746580786593}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0.8, z: 0.13}
+  m_LocalPosition: {x: 0, y: 0.79999995, z: 0.13000011}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -376,7 +376,7 @@ Transform:
   m_GameObject: {fileID: 2432591051545255486}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0.8, z: 0.13}
+  m_LocalPosition: {x: 0, y: 0.62, z: 0.08}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -406,8 +406,8 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 3025246666732384883}
   serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: -0.6087614, w: 0.7933533}
-  m_LocalPosition: {x: -0.16000003, y: 0.37094426, z: 0.55}
+  m_LocalRotation: {x: -0, y: -0, z: 0.7071068, w: 0.7071068}
+  m_LocalPosition: {x: -0.21103114, y: 0.37094426, z: 0.55}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -688,8 +688,8 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 4069950558601589647}
   serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0.65, y: 0.9476255, z: -1.2251639}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 0.42, y: 1.06, z: -1.18}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -1221,66 +1221,51 @@ MonoBehaviour:
   turret: {fileID: 0}
   destructionEffect: {fileID: 695410771644243590, guid: c07b2e8d0c65dad44bf5eaca660002fc, type: 3}
   cameraTarget: {fileID: 5077174907927253123}
+  hasRenderedInterior: 1
   seats:
   - name: Driver
     role: 0
+    pose: 0
     anchor: {fileID: 589802382377437294}
     exit: {fileID: 542192102081524350}
     showCharacter: 1
     eye: {fileID: 6056265647238942694}
     leftGrip: {fileID: 1536233155878690201}
     rightGrip: {fileID: 1546469757189472878}
-    diagramPosition: {x: -18, y: 45}
+    diagramPosition: {x: -9.585634, y: 5.641501}
     showVehicleInstruments: 1
   - name: Passenger
     role: 2
+    pose: 0
     anchor: {fileID: 8276370691989179372}
     exit: {fileID: 6968508369410153953}
     showCharacter: 1
     eye: {fileID: 5029488750347801915}
     leftGrip: {fileID: 0}
     rightGrip: {fileID: 0}
-    diagramPosition: {x: 18, y: 45}
+    diagramPosition: {x: 11.064465, y: 5.641501}
     showVehicleInstruments: 0
   - name: Passenger 2
     role: 2
+    pose: 0
     anchor: {fileID: 2025386117242303430}
     exit: {fileID: 472151225372887581}
     showCharacter: 1
     eye: {fileID: 7152175906989360969}
     leftGrip: {fileID: 0}
     rightGrip: {fileID: 0}
-    diagramPosition: {x: -18, y: 14}
+    diagramPosition: {x: -9.321682, y: -15.112601}
     showVehicleInstruments: 0
   - name: Passenger 3
     role: 2
+    pose: 0
     anchor: {fileID: 6872849264644892461}
     exit: {fileID: 5588383896005965016}
     showCharacter: 1
     eye: {fileID: 3698489942734125869}
     leftGrip: {fileID: 0}
     rightGrip: {fileID: 0}
-    diagramPosition: {x: 18, y: 14}
-    showVehicleInstruments: 0
-  - name: Passenger 4
-    role: 2
-    anchor: {fileID: 8373792008313753885}
-    exit: {fileID: 7065249437610670219}
-    showCharacter: 0
-    eye: {fileID: 7039323846854025334}
-    leftGrip: {fileID: 0}
-    rightGrip: {fileID: 0}
-    diagramPosition: {x: -18, y: -17}
-    showVehicleInstruments: 0
-  - name: Passenger 5
-    role: 2
-    anchor: {fileID: 2185132211463065290}
-    exit: {fileID: 8717333327450899186}
-    showCharacter: 0
-    eye: {fileID: 2553391624130184236}
-    leftGrip: {fileID: 0}
-    rightGrip: {fileID: 0}
-    diagramPosition: {x: 18, y: -17}
+    diagramPosition: {x: 10.800513, y: -15.112601}
     showVehicleInstruments: 0
   maxHealth: 900
   bulletDamageMultiplier: 0.325
@@ -1398,8 +1383,8 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 5637557474099549325}
   serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -0.65, y: 0.9476255, z: -1.2251639}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: -0.42, y: 1.06, z: -1.18}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -1494,7 +1479,7 @@ Transform:
   m_GameObject: {fileID: 6122566101671897452}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0.8, z: 0.13}
+  m_LocalPosition: {x: 0, y: 0.79999995, z: 0.13000011}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -1824,7 +1809,7 @@ Transform:
   m_GameObject: {fileID: 8235706579631875377}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0.8, z: 0.13}
+  m_LocalPosition: {x: 0, y: 0.79999995, z: 0.13000011}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -1945,7 +1930,7 @@ Transform:
   m_GameObject: {fileID: 8475297352803235054}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0.8, z: 0.13}
+  m_LocalPosition: {x: 0, y: 0.62, z: 0.08}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []

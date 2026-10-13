@@ -247,7 +247,7 @@ Transform:
   m_GameObject: {fileID: 1378920093599503960}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0.8, z: 0.13}
+  m_LocalPosition: {x: 0, y: 0.62, z: 0.08}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -3421,7 +3421,7 @@ Transform:
   m_GameObject: {fileID: 4888860292434620925}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0.8, z: 0.13}
+  m_LocalPosition: {x: 0, y: 0.62, z: 0.08}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -3515,7 +3515,7 @@ Transform:
   m_GameObject: {fileID: 5626403570632465434}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0.8, z: 0.13}
+  m_LocalPosition: {x: 0, y: 0.62, z: 0.08}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -3610,7 +3610,7 @@ Transform:
   m_GameObject: {fileID: 6645084018545619146}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0.8, z: 0.13}
+  m_LocalPosition: {x: 0, y: 0.62, z: 0.08}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -3986,56 +3986,57 @@ MonoBehaviour:
   turret: {fileID: 1627803472940609030}
   destructionEffect: {fileID: 695410771644243590, guid: c07b2e8d0c65dad44bf5eaca660002fc, type: 3}
   cameraTarget: {fileID: 63068711675286005}
+  hasRenderedInterior: 0
   seats:
   - name: Driver
     role: 0
     anchor: {fileID: 8508221160049698399}
     exit: {fileID: 8516733420892195051}
-    showCharacter: 1
+    showCharacter: 0
     eye: {fileID: 7282305671009475043}
     leftGrip: {fileID: 5456814952908194524}
     rightGrip: {fileID: 8360498766962998763}
-    diagramPosition: {x: -18, y: 35}
+    diagramPosition: {x: -15.102524, y: 20.092068}
     showVehicleInstruments: 1
   - name: Roof gunner
     role: 1
     anchor: {fileID: 6911892878317854645}
     exit: {fileID: 3812979046147326114}
-    showCharacter: 1
+    showCharacter: 0
     eye: {fileID: 4512435661786533341}
     leftGrip: {fileID: 8272369524724413935}
     rightGrip: {fileID: 4072146754824907095}
-    diagramPosition: {x: 0, y: 2}
+    diagramPosition: {x: -0.3325488, y: -6.165666}
     showVehicleInstruments: 0
   - name: Front passenger
     role: 2
     anchor: {fileID: 4324808422855201514}
     exit: {fileID: 1149512150917648803}
-    showCharacter: 1
+    showCharacter: 0
     eye: {fileID: 4021426138700717619}
     leftGrip: {fileID: 0}
     rightGrip: {fileID: 0}
-    diagramPosition: {x: 18, y: 35}
+    diagramPosition: {x: 14.437426, y: 20.092068}
     showVehicleInstruments: 0
   - name: Rear left
     role: 2
     anchor: {fileID: 9007821415273648080}
     exit: {fileID: 5375957635729235504}
-    showCharacter: 1
+    showCharacter: 0
     eye: {fileID: 6868898737663503709}
     leftGrip: {fileID: 0}
     rightGrip: {fileID: 0}
-    diagramPosition: {x: -18, y: -28}
+    diagramPosition: {x: -15.102524, y: -25.858965}
     showVehicleInstruments: 0
   - name: Rear right
     role: 2
     anchor: {fileID: 6927058776003512427}
     exit: {fileID: 1286838060516910181}
-    showCharacter: 1
+    showCharacter: 0
     eye: {fileID: 595642706526917810}
     leftGrip: {fileID: 0}
     rightGrip: {fileID: 0}
-    diagramPosition: {x: 18, y: -28}
+    diagramPosition: {x: 14.437426, y: -25.858965}
     showVehicleInstruments: 0
   maxHealth: 1000
   bulletDamageMultiplier: 0.075
@@ -4109,6 +4110,9 @@ MonoBehaviour:
   weaponIcon: {fileID: 21300000, guid: af5ddbfdd53f9c64cb4e5830fee82296, type: 3}
   weaponName: MINIGUN
   spinBarrels: 1
+  controlRole: 1
+  explosiveVehicleDamage: 0
+  impactEffect: {fileID: 0}
   cameraShake: {fileID: 7400000, guid: b06213c2ef802284f97df928d44be0c6, type: 2}
   barrelAssembly: {fileID: 1022503967279490446}
   barrelSpinUp: 1200

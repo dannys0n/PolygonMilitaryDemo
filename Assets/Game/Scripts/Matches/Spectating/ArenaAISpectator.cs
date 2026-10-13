@@ -278,6 +278,7 @@ public class ArenaAISpectator : MonoBehaviour
         observedView = FollowedCharacter.player.view;
         observedOccupant = FollowedCharacter.GetComponent<VehicleOccupant>();
         wasMounted = observedOccupant && observedOccupant.IsMounted;
+        if (wasMounted && observedView.TryGetComponent<SoldierFirstPersonBody>(out var body)) body.PrepareForVehicleSpectating();
         var camera = observedView.playerCamera;
         previousFirstPerson = observedView.firstPerson;
         previousCameraEnabled = camera.enabled;
@@ -325,6 +326,7 @@ public class ArenaAISpectator : MonoBehaviour
             camera.fieldOfView = insetFieldOfView;
         }
         if (!observedView || camera != observedView.playerCamera) return;
+        if (observedOccupant && observedOccupant.IsMounted) return;
         if (bodyDirty) CacheBody();
         for (int i = 0; i < hiddenBody.Length; i++)
             if (hiddenBody[i]) hiddenBody[i].shadowCastingMode = ShadowCastingMode.ShadowsOnly;
@@ -411,6 +413,7 @@ public class ArenaAISpectator : MonoBehaviour
         bool mounted = observedOccupant && observedOccupant.IsMounted;
         if (mounted)
         {
+            if (!wasMounted && observedView.TryGetComponent<SoldierFirstPersonBody>(out var body)) body.PrepareForVehicleSpectating();
             observedOccupant.GetSpectatorCameraPose(true, out var firstPosition, out var firstRotation);
             observedView.playerCamera.transform.SetPositionAndRotation(firstPosition, firstRotation);
             observedView.playerCamera.fieldOfView = observedOccupant.IsLocal && observedOccupant.ActiveVehicleCamera

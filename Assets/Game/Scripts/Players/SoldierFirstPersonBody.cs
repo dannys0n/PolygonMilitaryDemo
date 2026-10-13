@@ -35,12 +35,17 @@ public class SoldierFirstPersonBody : MonoBehaviour
         var headObject = new GameObject("First-person hidden head");
         collapsedHead = headObject.transform;
         collapsedHead.SetParent(transform, false);
+        collapsedHead.SetPositionAndRotation(animatedHead.position, animatedHead.rotation);
         collapsedHead.localScale = Vector3.zero;
         foreach (var renderer in view.thirdPersonRoot.GetComponentsInChildren<SkinnedMeshRenderer>(true))
                 if (Array.Exists(renderer.bones, bone => bone && (bone == animatedHead || bone.IsChildOf(animatedHead))))
                 {
                     var child = new GameObject("First-person body: " + renderer.name);
                     child.transform.SetParent(transform, false);
+                    child.transform.SetPositionAndRotation(renderer.transform.position, renderer.transform.rotation);
+                    var rootScale = transform.lossyScale;
+                    var skinScale = renderer.transform.lossyScale;
+                    child.transform.localScale = new Vector3(skinScale.x / rootScale.x, skinScale.y / rootScale.y, skinScale.z / rootScale.z);
                     child.layer = renderer.gameObject.layer;
                     var firstPerson = child.AddComponent<SkinnedMeshRenderer>();
                     firstPerson.sharedMesh = renderer.sharedMesh;
@@ -60,6 +65,10 @@ public class SoldierFirstPersonBody : MonoBehaviour
                     parts.Add(new BodyPart { fullBody = renderer, firstPerson = firstPerson });
                 }
     }
+    public void PrepareForVehicleSpectating()
+    {
+        if (!initialized) BuildParts();
+    }
 
     void LateUpdate()
     {
@@ -75,9 +84,8 @@ public class SoldierFirstPersonBody : MonoBehaviour
             var sourceScale = source.transform.lossyScale;
             target.transform.localScale = new Vector3(sourceScale.x / parentScale.x, sourceScale.y / parentScale.y, sourceScale.z / parentScale.z);
             target.enabled = source.enabled && source.gameObject.activeInHierarchy;
-            // Keep the FPS skinning layout stable before Unity updates its vertex buffers.
-            bool firstPerson = occupant && occupant.IsMounted ? occupant.CockpitView : view.firstPerson;
-            target.forceRenderingOff = source.forceRenderingOff || !firstPerson;
+            // The copy is visible only during its owning first-person camera render.
+            target.forceRenderingOff = true;
             part.previousShadows = source.shadowCastingMode;
             source.GetPropertyBlock(properties);
             target.SetPropertyBlock(properties);
@@ -121,11 +129,17 @@ public class SoldierFirstPersonBody : MonoBehaviour
 
     void BeginCamera(Camera camera)
     {
-        if (!(soldier.inputSource is SoldierLocalInput) && renderStates.Count == 0) return;
+        if (!initialized) return;
+        bool owner = soldier.inputSource is SoldierLocalInput;
+        bool vehiclePerspective = occupant && occupant.IsMounted && camera == view.playerCamera && view.firstPerson;
+        if (!owner && !vehiclePerspective && renderStates.Count == 0) return;
+        if (renderStates.Count == 0)
+            foreach (var part in parts) if (part.fullBody) part.previousShadows = part.fullBody.shadowCastingMode;
         renderStates.Push((camera, headlessActive));
         bool firstPerson = occupant && occupant.IsMounted
-            ? camera == occupant.ActiveVehicleCamera && occupant.CockpitView
-            : camera == view.playerCamera && view.firstPerson;
+            ? (camera == occupant.ActiveVehicleCamera && occupant.CockpitView)
+                || (vehiclePerspective && occupant.MountedVehicle.hasRenderedInterior)
+            : owner && camera == view.playerCamera && view.firstPerson;
         SetHeadless(firstPerson);
     }
 

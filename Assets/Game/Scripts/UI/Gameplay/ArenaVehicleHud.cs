@@ -91,7 +91,7 @@ public class ArenaVehicleHud : MonoBehaviour
         controls.text=role==Vehicle.SeatRole.Driver?(air?"CLIMB  [SPACE]\nDESCEND  [CTRL]\nMOVE  [WASD]\nAIM ALIGN  [RMB]":"BRAKE / REV  [S]\nACCELERATE  [W]\nBOOST  [SHIFT]\nHANDBRAKE  [Z]\nHORN  [H]"):role==Vehicle.SeatRole.Gunner?"FIRE  [LMB]\nZOOM  [RMB]\nAMMO  INF":v.seats[player.SeatIndex].showVehicleInstruments?(air?"FLIGHT MONITOR":"VEHICLE MONITOR"):"PASSENGER";
         if (air && role == Vehicle.SeatRole.Driver) controls.text += "\n[T] ASSIST " + (((HelicopterMotor)v.motor).assistEnabled ? "ON" : "OFF");
         if(!air && role==Vehicle.SeatRole.Driver && showAttack && attackSight.Operational) controls.text += "\nFIRE  [LMB]\nZOOM  [RMB]";
-        rightControls.text="[C]  CAMERA\n[V]  FREELOOK"+(player.Freelook?" ON":"")+"\nHOLD [E]  EXIT\n"+(v.seats.Length==1?"[F1]  STATION":"[F1-F"+v.seats.Length+"]  SEATS");
+        rightControls.text=(v.hasRenderedInterior?"[C]  CAMERA":"EXTERNAL VIEW")+"\n[V]  FREELOOK"+(player.Freelook?" ON":"")+"\nHOLD [E]  EXIT\n"+(v.seats.Length==1?"[F1]  STATION":"[F1-F"+v.seats.Length+"]  SEATS");
         EnsureSeatMarkers(v.seats.Length);
         crew.fontSize = v.seats.Length > 8 ? 10 : v.seats.Length > 5 ? 12 : 14;
         crew.text="";
@@ -297,7 +297,7 @@ public class ArenaVehicleHud : MonoBehaviour
         bool fixedWing=vehicle.instruments==Vehicle.InstrumentLayout.FixedWing;
         bool apache=vehicle.instrumentReference==Vehicle.InstrumentReference.Apache;
         bool metric=vehicle.instrumentReference==Vehicle.InstrumentReference.Su27;
-        panel.localScale=Vector3.one*(player.CockpitView?(fixedWing?1.1f:1f):.82f);
+        panel.localScale=Vector3.one*(fixedWing?1.1f:1f);
         bankScale.gameObject.SetActive(!fixedWing && !apache);
         verticalSpeedIndicator.gameObject.SetActive(!fixedWing && !apache);
         speedTape.gameObject.SetActive(!apache && !metric);
@@ -309,7 +309,7 @@ public class ArenaVehicleHud : MonoBehaviour
         horizon.gameObject.SetActive(!apache || vehicle.Body.linearVelocity.magnitude>20);
         hoverCue.gameObject.SetActive(apache && vehicle.Body.linearVelocity.magnitude<=20);
         if(hoverCue.gameObject.activeSelf)hoverCue.SetHoverVelocity(new Vector2(Vector3.Dot(vehicle.Body.linearVelocity,vehicle.transform.right),Vector3.Dot(vehicle.Body.linearVelocity,vehicle.transform.forward)));
-        panel.anchoredPosition=player.CockpitView?new Vector2(0,35):new Vector2(0,135);
+        panel.anchoredPosition=new Vector2(0,35);
         Transform view = vehicle.transform;
         float heading = Mathf.Repeat(view.eulerAngles.y,360);
         compass.text = "HDG " + HeadingNumber(heading).ToString("000") + "  " + Cardinal(heading);
