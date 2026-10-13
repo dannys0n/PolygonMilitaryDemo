@@ -2093,6 +2093,7 @@ Transform:
   - {fileID: 3464614077848104399}
   - {fileID: 6683583207229089149}
   - {fileID: 9153176928480286198}
+  - {fileID: 1693025716562322350}
   m_Father: {fileID: 6356913002766686106}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!33 &4433187029700346330
@@ -3289,7 +3290,6 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
-  - {fileID: 1693025716562322350}
   - {fileID: 337190155443258177}
   - {fileID: 3996929003294773796}
   m_Father: {fileID: 2897961170030461553}
@@ -3447,7 +3447,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1693025716562322350}
   m_Layer: 0
-  m_Name: Eye
+  m_Name: Launcher director camera
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -3462,11 +3462,11 @@ Transform:
   m_GameObject: {fileID: 7749796155156980401}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0.8, z: 0.13}
+  m_LocalPosition: {x: 0, y: 1.7, z: 5.1}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
-  m_Father: {fileID: 2479519175469006452}
+  m_Father: {fileID: 1792228030003867674}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &7897395889814472233
 GameObject:
@@ -3942,6 +3942,24 @@ MonoBehaviour:
   seatDiagramCenter: {x: 0, y: -0.51599693}
   seatDiagramHalfExtent: 5.2034535
   motor: {fileID: 4319692184328508599}
+  jetAssist:
+    assistEnabled: 1
+    maximumBank: 75
+    headingToBank: 1.8
+    assistedBankRate: 100
+    aimResponse: 2
+  helicopterAssist:
+    assistEnabled: 1
+    attitudeSpring: 60
+    attitudeDamping: 16
+    verticalResponse: 2.8
+    positionHoldSpring: 0.6
+    positionHoldDamping: 1.5
+    maxHoldAcceleration: 18
+    reversalTilt: 38
+    reversalSpeedRange: {x: 4, y: 20}
+    movementVelocityResponse: 0.8
+    cyclicResponseTime: 0.1
   turret: {fileID: 0}
   destructionEffect: {fileID: 695410771644243590, guid: c07b2e8d0c65dad44bf5eaca660002fc, type: 3}
   cameraTarget: {fileID: 1714358296928943642}
@@ -3957,6 +3975,7 @@ MonoBehaviour:
     showCharacter: 1
     weaponMountedView: 0
     externalView: 0
+    disembarkInside: 0
     eye: {fileID: 1693025716562322350}
     leftGrip: {fileID: 337190155443258177}
     rightGrip: {fileID: 3996929003294773796}
@@ -3970,6 +3989,7 @@ MonoBehaviour:
     showCharacter: 1
     weaponMountedView: 0
     externalView: 0
+    disembarkInside: 0
     eye: {fileID: 2175696053972262389}
     leftGrip: {fileID: 0}
     rightGrip: {fileID: 0}
@@ -3983,6 +4003,7 @@ MonoBehaviour:
     showCharacter: 0
     weaponMountedView: 0
     externalView: 1
+    disembarkInside: 0
     eye: {fileID: 3707111520310632584}
     leftGrip: {fileID: 1494622083488272162}
     rightGrip: {fileID: 6308475949543939199}
@@ -4158,6 +4179,9 @@ MonoBehaviour:
   interval: 0.5
   capacity: 12
   rechargeInterval: 4
+  rechargeFullMagazine: 0
+  requiresLock: 0
+  lockDuration: 1.25
 --- !u!114 &1682357728537750647
 MonoBehaviour:
   m_ObjectHideFlags: 0
