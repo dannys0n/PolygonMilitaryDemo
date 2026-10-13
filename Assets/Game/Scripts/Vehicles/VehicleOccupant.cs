@@ -36,6 +36,7 @@ public class VehicleOccupant : MonoBehaviour
     bool previousCameraEnabled;
     float lastVehicleYaw, yaw, pitch = 14, flightYaw, flightPitch, exitHeld, hornUntil, freelookYaw, freelookPitch;
     Vector3 departureVelocity;
+    bool interactionConsumed;
     bool cockpitView;
     public bool CockpitView
     {
@@ -100,9 +101,30 @@ public class VehicleOccupant : MonoBehaviour
                 float d = Vector3.Distance(transform.position, v.transform.TransformPoint(v.NavigationBounds.center));
                 if (d < distance) { distance = d; best = v; seat = available; }
             }
-            Prompt = best ? "[E] ENTER " + best.displayName + " / " + best.seats[seat].name : "";
-            if (best && Cursor.lockState == CursorLockMode.Locked && Input.GetKeyDown(KeyCode.E))
-                best.BoardFirstAvailable(this);
+            VehicleDoors doorControl = null;
+            float doorDistance = float.PositiveInfinity;
+            foreach(var v in Vehicle.Active)
+            {
+                if(v.gameObject.scene!=gameObject.scene || v.IsDestroyed)continue;
+                var doors=v.GetComponent<VehicleDoors>();
+                if(!doors)continue;
+                int index=doors.ClosestDoor(transform.position);
+                if(index<0)continue;
+                float d=Vector3.Distance(transform.position,doors.doors[index].interaction.position);
+                if(d<doorDistance){doorDistance=d;doorControl=doors;}
+            }
+            Prompt = best ? "HOLD [E] ENTER " + best.displayName + " / " + best.seats[seat].name : "";
+            if(doorControl)Prompt += "   TAP [E] DOOR";
+            if(Cursor.lockState == CursorLockMode.Locked)
+            {
+                if(Input.GetKeyDown(KeyCode.E)){exitHeld=0;interactionConsumed=false;}
+                if(Input.GetKey(KeyCode.E) && !interactionConsumed)
+                {
+                    exitHeld+=Time.deltaTime;
+                    if(exitHeld>=.35f){interactionConsumed=true;if(best)best.BoardFirstAvailable(this);}
+                }
+                if(Input.GetKeyUp(KeyCode.E)){if(!interactionConsumed&&doorControl)doorControl.TryToggle(transform.position);exitHeld=0;}
+            }
             return;
         }
         if (Input.GetKeyDown(KeyCode.Escape))
@@ -117,8 +139,15 @@ public class VehicleOccupant : MonoBehaviour
         }
         Prompt = "HOLD [E] EXIT   [F1-F" + MountedVehicle.seats.Length + "] SEATS";
         if (Cursor.lockState != CursorLockMode.Locked) { MountedVehicle.DriverInput = default; return; }
-        exitHeld = Input.GetKey(KeyCode.E) ? exitHeld + Time.deltaTime : 0;
-        if (exitHeld >= .35f) { Leave(false); exitHeld = 0; return; }
+        if(Input.GetKeyDown(KeyCode.E)){exitHeld=0;interactionConsumed=false;}
+        if(Input.GetKeyUp(KeyCode.E))
+        {
+            if(!interactionConsumed && MountedVehicle.seats[SeatIndex].role==Vehicle.SeatRole.Driver)
+                MountedVehicle.GetComponent<VehicleDoors>()?.ToggleAll();
+            exitHeld=0;
+        }
+        if(Input.GetKey(KeyCode.E))exitHeld+=Time.deltaTime;
+        if (exitHeld >= .35f) { interactionConsumed=true; Leave(false); exitHeld = 0; return; }
         int pages=(MountedVehicle.seats.Length+11)/12;
         if(Input.GetKeyDown(KeyCode.PageDown))SeatPage=(SeatPage+1)%pages;
         if(Input.GetKeyDown(KeyCode.PageUp))SeatPage=(SeatPage+pages-1)%pages;
@@ -327,7 +356,10 @@ public class VehicleOccupant : MonoBehaviour
         var seat = vehicle.seats[SeatIndex];
         if (!force && !IsLocal && !vehicle.CanExit)
             return false;
-        if (!FindExit(vehicle, seat, out var position))
+        Vector3 position;
+        bool inside = !force && IsLocal && seat.disembarkInside;
+        if(inside)position=seat.exit.position;
+        else if (!FindExit(vehicle, seat, out position))
         {
             if (!force && !IsLocal) return false;
             position = seat.exit.position;

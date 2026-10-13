@@ -386,6 +386,7 @@ GameObject:
   - component: {fileID: 8139747952899679229}
   - component: {fileID: 3559139984896965336}
   - component: {fileID: 5230501503313852419}
+  - component: {fileID: 3173196881662542789}
   m_Layer: 0
   m_Name: Van
   m_TagString: Untagged
@@ -412,6 +413,7 @@ Transform:
   - {fileID: 3432931982756855821}
   - {fileID: 4168904283341533136}
   - {fileID: 5156571233562053928}
+  - {fileID: 515965217179531562}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!54 &6359203487843734475
@@ -476,6 +478,7 @@ MonoBehaviour:
     showCharacter: 1
     weaponMountedView: 0
     externalView: 0
+    disembarkInside: 0
     eye: {fileID: 885610105592125573}
     leftGrip: {fileID: 545281539935047276}
     rightGrip: {fileID: 1691680648475666811}
@@ -489,6 +492,7 @@ MonoBehaviour:
     showCharacter: 1
     weaponMountedView: 0
     externalView: 0
+    disembarkInside: 0
     eye: {fileID: 1732416571829974394}
     leftGrip: {fileID: 0}
     rightGrip: {fileID: 0}
@@ -586,6 +590,31 @@ MonoBehaviour:
   secondaryScale: 0.45
   finalScale: 1.5
   smokeScale: 1
+--- !u!114 &3173196881662542789
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 525725745201938293}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 45d943c4f2fa5994a929823439717f07, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::VehicleDoors
+  doors:
+  - name: Rear liftgate
+    interaction: {fileID: 515965217179531562}
+    leaves:
+    - part: {fileID: 2392643643038700204}
+      openTranslation: {x: 0, y: 0, z: 0}
+      openEuler: {x: 95, y: 0, z: 0}
+    - part: {fileID: 7615821138009821217}
+      openTranslation: {x: 0, y: 0, z: 0}
+      openEuler: {x: 95, y: 0, z: 0}
+    duration: 1.35
+    open: 0
+  interactionRange: 3
 --- !u!1 &812889291443972957
 GameObject:
   m_ObjectHideFlags: 0
@@ -1836,6 +1865,37 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 1.520278, y: 1.3096328, z: 0.45294797}
   m_Center: {x: 0, y: -0.6519797, z: -0.19304556}
+--- !u!1 &5351093281040751897
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 515965217179531562}
+  m_Layer: 0
+  m_Name: Rear liftgate control
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &515965217179531562
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5351093281040751897}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 1.18, z: -2.26}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 7231480814047119604}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &5374652505242123581
 GameObject:
   m_ObjectHideFlags: 0

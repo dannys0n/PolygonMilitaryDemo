@@ -49,6 +49,7 @@ GameObject:
   - component: {fileID: 1180662967326689201}
   - component: {fileID: 1023945931799251686}
   - component: {fileID: 6488254045036537490}
+  - component: {fileID: 6939973646711257345}
   m_Layer: 0
   m_Name: TravelVan
   m_TagString: Untagged
@@ -75,6 +76,7 @@ Transform:
   - {fileID: 2449233100266473123}
   - {fileID: 4178351173019785377}
   - {fileID: 2884370698017179816}
+  - {fileID: 8805786867538758966}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!54 &4704438596270885083
@@ -139,6 +141,7 @@ MonoBehaviour:
     showCharacter: 1
     weaponMountedView: 0
     externalView: 0
+    disembarkInside: 0
     eye: {fileID: 8906020186081618992}
     leftGrip: {fileID: 1607410544018980426}
     rightGrip: {fileID: 4001455549360515978}
@@ -152,6 +155,7 @@ MonoBehaviour:
     showCharacter: 1
     weaponMountedView: 0
     externalView: 0
+    disembarkInside: 0
     eye: {fileID: 5116893617261499059}
     leftGrip: {fileID: 0}
     rightGrip: {fileID: 0}
@@ -165,6 +169,7 @@ MonoBehaviour:
     showCharacter: 1
     weaponMountedView: 0
     externalView: 0
+    disembarkInside: 0
     eye: {fileID: 6471485202593727553}
     leftGrip: {fileID: 0}
     rightGrip: {fileID: 0}
@@ -178,6 +183,7 @@ MonoBehaviour:
     showCharacter: 1
     weaponMountedView: 0
     externalView: 0
+    disembarkInside: 0
     eye: {fileID: 1826021352616583705}
     leftGrip: {fileID: 0}
     rightGrip: {fileID: 0}
@@ -275,6 +281,31 @@ MonoBehaviour:
   secondaryScale: 0.45
   finalScale: 1.5
   smokeScale: 1
+--- !u!114 &6939973646711257345
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 153092291236615726}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 45d943c4f2fa5994a929823439717f07, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::VehicleDoors
+  doors:
+  - name: Rear liftgate
+    interaction: {fileID: 8805786867538758966}
+    leaves:
+    - part: {fileID: 4142704051588558502}
+      openTranslation: {x: 0, y: 0, z: 0}
+      openEuler: {x: 95, y: 0, z: 0}
+    - part: {fileID: 1485690893213934464}
+      openTranslation: {x: 0, y: 0, z: 0}
+      openEuler: {x: 95, y: 0, z: 0}
+    duration: 1.35
+    open: 0
+  interactionRange: 3
 --- !u!1 &160096946105142817
 GameObject:
   m_ObjectHideFlags: 0
@@ -458,6 +489,37 @@ Transform:
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 529268991100723365}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &1533386668093762695
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 8805786867538758966}
+  m_Layer: 0
+  m_Name: Rear liftgate control
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &8805786867538758966
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1533386668093762695}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 1.18, z: -2.26}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 8060127688881228863}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1599961138898810183
 GameObject:

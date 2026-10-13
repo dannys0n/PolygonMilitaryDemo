@@ -33,6 +33,8 @@ public class Vehicle : MonoBehaviour
         public bool weaponMountedView;
         [Tooltip("Functional station without an authored cabin chair; use the external camera for this seat.")]
         public bool externalView;
+        [Tooltip("Leaving this station puts the local player in the cabin, rather than outside the hull.")]
+        public bool disembarkInside;
         [Tooltip("Authored first-person eye point, relative to the vehicle seat.")]
         public Transform eye;
         public Transform leftGrip, rightGrip;
