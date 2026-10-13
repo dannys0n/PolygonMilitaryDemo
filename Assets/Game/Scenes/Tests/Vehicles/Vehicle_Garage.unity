@@ -8393,7 +8393,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 2861179822930657226, guid: dd5f2de6f1c43a24b9acd4c11f298ea7, type: 3}
       propertyPath: m_fontColor32.rgba
-      value: 4278235135
+      value: 4280257791
       objectReference: {fileID: 0}
     - target: {fileID: 2861179822930657226, guid: dd5f2de6f1c43a24b9acd4c11f298ea7, type: 3}
       propertyPath: m_TextStyleHashCode
@@ -8521,7 +8521,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 7751532037709168954, guid: dd5f2de6f1c43a24b9acd4c11f298ea7, type: 3}
       propertyPath: m_fontColor32.rgba
-      value: 4278235135
+      value: 4280257791
       objectReference: {fileID: 0}
     - target: {fileID: 7751532037709168954, guid: dd5f2de6f1c43a24b9acd4c11f298ea7, type: 3}
       propertyPath: m_TextStyleHashCode
@@ -11977,6 +11977,17 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1381916505}
   m_Mesh: {fileID: 10202, guid: 0000000000000000e000000000000000, type: 0}
+--- !u!114 &1389826811 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 7144054197398680070, guid: eac3568867116ca4592176b2070a5f18, type: 3}
+  m_PrefabInstance: {fileID: 19887362}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d6a238fa8fe2e9047a2c9f2689f0479d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::SoldierMovement
 --- !u!1 &1393987425
 GameObject:
   m_ObjectHideFlags: 0
@@ -12132,6 +12143,10 @@ PrefabInstance:
     - target: {fileID: 770927803071890727, guid: b68aa011f7037c84184823ded57e9de0, type: 3}
       propertyPath: m_AdditionalShaderChannelsFlag
       value: 25
+      objectReference: {fileID: 0}
+    - target: {fileID: 1734822367450576610, guid: b68aa011f7037c84184823ded57e9de0, type: 3}
+      propertyPath: m_TextStyleHashCode
+      value: -1183493901
       objectReference: {fileID: 0}
     - target: {fileID: 3340001136124425572, guid: b68aa011f7037c84184823ded57e9de0, type: 3}
       propertyPath: m_Name
@@ -15291,6 +15306,52 @@ MonoBehaviour:
   respawnDelay: 10
   abandonedDelay: 90
   cleanupDelay: 9
+--- !u!1 &1901740198
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1901740200}
+  - component: {fileID: 1901740199}
+  m_Layer: 0
+  m_Name: Garage speed toggle
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &1901740199
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1901740198}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 36de356a0a940264e8de8537a673a63e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::VehicleGarageControls
+  player: {fileID: 1389826811}
+  font: {fileID: 11400000, guid: 0b65c99348f068b49bef5db0bb76a6e4, type: 2}
+--- !u!4 &1901740200
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1901740198}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1911583719
 GameObject:
   m_ObjectHideFlags: 0
@@ -16651,7 +16712,15 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 154831054847191563, guid: 2e1bcb0270b856d41a3921038711a8f9, type: 3}
+      propertyPath: m_TextStyleHashCode
+      value: -1183493901
+      objectReference: {fileID: 0}
     - target: {fileID: 573182147376519551, guid: 2e1bcb0270b856d41a3921038711a8f9, type: 3}
+      propertyPath: m_TextStyleHashCode
+      value: -1183493901
+      objectReference: {fileID: 0}
+    - target: {fileID: 855559939417649538, guid: 2e1bcb0270b856d41a3921038711a8f9, type: 3}
       propertyPath: m_TextStyleHashCode
       value: -1183493901
       objectReference: {fileID: 0}
@@ -16671,6 +16740,10 @@ PrefabInstance:
       propertyPath: m_TextStyleHashCode
       value: -1183493901
       objectReference: {fileID: 0}
+    - target: {fileID: 1637181802564728296, guid: 2e1bcb0270b856d41a3921038711a8f9, type: 3}
+      propertyPath: m_TextStyleHashCode
+      value: -1183493901
+      objectReference: {fileID: 0}
     - target: {fileID: 1676914759690253385, guid: 2e1bcb0270b856d41a3921038711a8f9, type: 3}
       propertyPath: m_TextStyleHashCode
       value: -1183493901
@@ -16687,7 +16760,31 @@ PrefabInstance:
       propertyPath: m_TextStyleHashCode
       value: -1183493901
       objectReference: {fileID: 0}
+    - target: {fileID: 2492376908254612923, guid: 2e1bcb0270b856d41a3921038711a8f9, type: 3}
+      propertyPath: m_TextStyleHashCode
+      value: -1183493901
+      objectReference: {fileID: 0}
+    - target: {fileID: 2585765769492330583, guid: 2e1bcb0270b856d41a3921038711a8f9, type: 3}
+      propertyPath: m_TextStyleHashCode
+      value: -1183493901
+      objectReference: {fileID: 0}
+    - target: {fileID: 2598679713565108530, guid: 2e1bcb0270b856d41a3921038711a8f9, type: 3}
+      propertyPath: m_TextStyleHashCode
+      value: -1183493901
+      objectReference: {fileID: 0}
+    - target: {fileID: 2598806576519212250, guid: 2e1bcb0270b856d41a3921038711a8f9, type: 3}
+      propertyPath: m_TextStyleHashCode
+      value: -1183493901
+      objectReference: {fileID: 0}
     - target: {fileID: 2744415183429235767, guid: 2e1bcb0270b856d41a3921038711a8f9, type: 3}
+      propertyPath: m_TextStyleHashCode
+      value: -1183493901
+      objectReference: {fileID: 0}
+    - target: {fileID: 2988398251687418401, guid: 2e1bcb0270b856d41a3921038711a8f9, type: 3}
+      propertyPath: m_TextStyleHashCode
+      value: -1183493901
+      objectReference: {fileID: 0}
+    - target: {fileID: 3065015041773170301, guid: 2e1bcb0270b856d41a3921038711a8f9, type: 3}
       propertyPath: m_TextStyleHashCode
       value: -1183493901
       objectReference: {fileID: 0}
@@ -16771,7 +16868,27 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 3485160239981648101, guid: 2e1bcb0270b856d41a3921038711a8f9, type: 3}
+      propertyPath: m_TextStyleHashCode
+      value: -1183493901
+      objectReference: {fileID: 0}
+    - target: {fileID: 3600067227681311266, guid: 2e1bcb0270b856d41a3921038711a8f9, type: 3}
+      propertyPath: m_TextStyleHashCode
+      value: -1183493901
+      objectReference: {fileID: 0}
     - target: {fileID: 3891820946588308415, guid: 2e1bcb0270b856d41a3921038711a8f9, type: 3}
+      propertyPath: m_TextStyleHashCode
+      value: -1183493901
+      objectReference: {fileID: 0}
+    - target: {fileID: 3976589898851682609, guid: 2e1bcb0270b856d41a3921038711a8f9, type: 3}
+      propertyPath: m_TextStyleHashCode
+      value: -1183493901
+      objectReference: {fileID: 0}
+    - target: {fileID: 4059275356160570291, guid: 2e1bcb0270b856d41a3921038711a8f9, type: 3}
+      propertyPath: m_TextStyleHashCode
+      value: -1183493901
+      objectReference: {fileID: 0}
+    - target: {fileID: 4099329927000335426, guid: 2e1bcb0270b856d41a3921038711a8f9, type: 3}
       propertyPath: m_TextStyleHashCode
       value: -1183493901
       objectReference: {fileID: 0}
@@ -16783,7 +16900,15 @@ PrefabInstance:
       propertyPath: m_sharedMaterial
       value: 
       objectReference: {fileID: 2180264, guid: 657be0b70240e6145822e96ac7e1f303, type: 2}
+    - target: {fileID: 4268271509299332822, guid: 2e1bcb0270b856d41a3921038711a8f9, type: 3}
+      propertyPath: m_TextStyleHashCode
+      value: -1183493901
+      objectReference: {fileID: 0}
     - target: {fileID: 4354042335182091145, guid: 2e1bcb0270b856d41a3921038711a8f9, type: 3}
+      propertyPath: m_TextStyleHashCode
+      value: -1183493901
+      objectReference: {fileID: 0}
+    - target: {fileID: 4463634222566147330, guid: 2e1bcb0270b856d41a3921038711a8f9, type: 3}
       propertyPath: m_TextStyleHashCode
       value: -1183493901
       objectReference: {fileID: 0}
@@ -16799,7 +16924,15 @@ PrefabInstance:
       propertyPath: infantryEquipment
       value: 
       objectReference: {fileID: 294226835}
+    - target: {fileID: 4788604949955147189, guid: 2e1bcb0270b856d41a3921038711a8f9, type: 3}
+      propertyPath: m_TextStyleHashCode
+      value: -1183493901
+      objectReference: {fileID: 0}
     - target: {fileID: 4800627953602860362, guid: 2e1bcb0270b856d41a3921038711a8f9, type: 3}
+      propertyPath: m_TextStyleHashCode
+      value: -1183493901
+      objectReference: {fileID: 0}
+    - target: {fileID: 5453616170650702588, guid: 2e1bcb0270b856d41a3921038711a8f9, type: 3}
       propertyPath: m_TextStyleHashCode
       value: -1183493901
       objectReference: {fileID: 0}
@@ -16815,6 +16948,10 @@ PrefabInstance:
       propertyPath: m_sharedMaterial
       value: 
       objectReference: {fileID: 2180264, guid: 657be0b70240e6145822e96ac7e1f303, type: 2}
+    - target: {fileID: 5898497289532003304, guid: 2e1bcb0270b856d41a3921038711a8f9, type: 3}
+      propertyPath: m_TextStyleHashCode
+      value: -1183493901
+      objectReference: {fileID: 0}
     - target: {fileID: 6118986809266256732, guid: 2e1bcb0270b856d41a3921038711a8f9, type: 3}
       propertyPath: m_fontColor32.rgba
       value: 2801795071
@@ -16823,7 +16960,27 @@ PrefabInstance:
       propertyPath: m_TextStyleHashCode
       value: -1183493901
       objectReference: {fileID: 0}
+    - target: {fileID: 6241468919718114485, guid: 2e1bcb0270b856d41a3921038711a8f9, type: 3}
+      propertyPath: m_TextStyleHashCode
+      value: -1183493901
+      objectReference: {fileID: 0}
+    - target: {fileID: 6253558011936455762, guid: 2e1bcb0270b856d41a3921038711a8f9, type: 3}
+      propertyPath: m_TextStyleHashCode
+      value: -1183493901
+      objectReference: {fileID: 0}
     - target: {fileID: 6432344908098520675, guid: 2e1bcb0270b856d41a3921038711a8f9, type: 3}
+      propertyPath: m_TextStyleHashCode
+      value: -1183493901
+      objectReference: {fileID: 0}
+    - target: {fileID: 6483834027920939308, guid: 2e1bcb0270b856d41a3921038711a8f9, type: 3}
+      propertyPath: m_TextStyleHashCode
+      value: -1183493901
+      objectReference: {fileID: 0}
+    - target: {fileID: 6542696561235848382, guid: 2e1bcb0270b856d41a3921038711a8f9, type: 3}
+      propertyPath: m_TextStyleHashCode
+      value: -1183493901
+      objectReference: {fileID: 0}
+    - target: {fileID: 6723695351830329152, guid: 2e1bcb0270b856d41a3921038711a8f9, type: 3}
       propertyPath: m_TextStyleHashCode
       value: -1183493901
       objectReference: {fileID: 0}
@@ -16843,7 +17000,35 @@ PrefabInstance:
       propertyPath: m_TextStyleHashCode
       value: -1183493901
       objectReference: {fileID: 0}
+    - target: {fileID: 7176131307967456510, guid: 2e1bcb0270b856d41a3921038711a8f9, type: 3}
+      propertyPath: m_TextStyleHashCode
+      value: -1183493901
+      objectReference: {fileID: 0}
+    - target: {fileID: 7298591756719813032, guid: 2e1bcb0270b856d41a3921038711a8f9, type: 3}
+      propertyPath: m_TextStyleHashCode
+      value: -1183493901
+      objectReference: {fileID: 0}
+    - target: {fileID: 7361643401874023625, guid: 2e1bcb0270b856d41a3921038711a8f9, type: 3}
+      propertyPath: m_TextStyleHashCode
+      value: -1183493901
+      objectReference: {fileID: 0}
     - target: {fileID: 7392492116222544810, guid: 2e1bcb0270b856d41a3921038711a8f9, type: 3}
+      propertyPath: m_TextStyleHashCode
+      value: -1183493901
+      objectReference: {fileID: 0}
+    - target: {fileID: 7522312386166515972, guid: 2e1bcb0270b856d41a3921038711a8f9, type: 3}
+      propertyPath: m_TextStyleHashCode
+      value: -1183493901
+      objectReference: {fileID: 0}
+    - target: {fileID: 7840912196248343263, guid: 2e1bcb0270b856d41a3921038711a8f9, type: 3}
+      propertyPath: m_TextStyleHashCode
+      value: -1183493901
+      objectReference: {fileID: 0}
+    - target: {fileID: 8114928475132190086, guid: 2e1bcb0270b856d41a3921038711a8f9, type: 3}
+      propertyPath: m_TextStyleHashCode
+      value: -1183493901
+      objectReference: {fileID: 0}
+    - target: {fileID: 8360648552130856364, guid: 2e1bcb0270b856d41a3921038711a8f9, type: 3}
       propertyPath: m_TextStyleHashCode
       value: -1183493901
       objectReference: {fileID: 0}
@@ -16864,6 +17049,10 @@ PrefabInstance:
       value: 2801795071
       objectReference: {fileID: 0}
     - target: {fileID: 8986882430991413573, guid: 2e1bcb0270b856d41a3921038711a8f9, type: 3}
+      propertyPath: m_TextStyleHashCode
+      value: -1183493901
+      objectReference: {fileID: 0}
+    - target: {fileID: 9066963139085021184, guid: 2e1bcb0270b856d41a3921038711a8f9, type: 3}
       propertyPath: m_TextStyleHashCode
       value: -1183493901
       objectReference: {fileID: 0}
@@ -16892,3 +17081,4 @@ SceneRoots:
   - {fileID: 621848908}
   - {fileID: 1929441653}
   - {fileID: 1456502133}
+  - {fileID: 1901740200}
