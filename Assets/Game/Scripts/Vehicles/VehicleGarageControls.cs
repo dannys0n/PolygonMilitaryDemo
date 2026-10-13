@@ -8,7 +8,7 @@ public class VehicleGarageControls : MonoBehaviour
     public SoldierMovement player;
     public TMP_FontAsset font;
     float walkingSpeed, runningSpeed;
-    bool doubleSpeed;
+    bool fastMovement = true;
     TMP_Text label;
 
     void Start()
@@ -22,7 +22,7 @@ public class VehicleGarageControls : MonoBehaviour
         var scaler = canvas.GetComponent<CanvasScaler>();
         scaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
         scaler.referenceResolution = new Vector2(1920, 1080);
-        var button = new GameObject("Double walking speed", typeof(RectTransform), typeof(UnityEngine.UI.Image), typeof(UnityEngine.UI.Button));
+        var button = new GameObject("Fast movement", typeof(RectTransform), typeof(UnityEngine.UI.Image), typeof(UnityEngine.UI.Button));
         button.transform.SetParent(canvas.transform, false);
         var rect = button.GetComponent<RectTransform>();
         rect.anchorMin = rect.anchorMax = rect.pivot = Vector2.one;
@@ -40,7 +40,7 @@ public class VehicleGarageControls : MonoBehaviour
         label.rectTransform.anchorMin = Vector2.zero;
         label.rectTransform.anchorMax = Vector2.one;
         label.rectTransform.offsetMin = label.rectTransform.offsetMax = Vector2.zero;
-        Refresh();
+        ApplyMovementSpeed();
     }
     void Update()
     {
@@ -48,15 +48,19 @@ public class VehicleGarageControls : MonoBehaviour
     }
     void Toggle()
     {
-        doubleSpeed = !doubleSpeed;
-        player.moveSpeed = walkingSpeed * (doubleSpeed ? 2 : 1);
-        player.runSpeed = runningSpeed * (doubleSpeed ? 2 : 1);
+        fastMovement = !fastMovement;
+        ApplyMovementSpeed();
+    }
+    void ApplyMovementSpeed()
+    {
+        player.moveSpeed = walkingSpeed * (fastMovement ? 3 : 1);
+        player.runSpeed = runningSpeed * (fastMovement ? 3 : 1);
         Refresh();
     }
     void Refresh()
     {
-        label.text = "[F9]  WALK SPEED  " + (doubleSpeed ? "2x" : "1x");
-        label.color = doubleSpeed ? new Color(1, .55f, .12f) : Color.white;
+        label.text = "[F9]  MOVE SPEED  " + (fastMovement ? "3x" : "1x");
+        label.color = fastMovement ? new Color(1, .55f, .12f) : Color.white;
     }
     void OnDisable()
     {

@@ -12,7 +12,7 @@ public class JetMotor : VehicleMotor
     public float parasiteDrag = .035f, inducedDrag = .075f, sideslipDrag = .6f;
     [Header("Engine")]
     public float maximumThrust = 180000, afterburnerMultiplier = 1.6f, engineResponse = 1.5f;
-    public float throttleChangeRate = .55f, startingThrottle = .65f, maxSpeed = 180;
+    public float throttleChangeRate = .55f, startingThrottle = 0, maxSpeed = 180;
     [Header("Flight controls")]
 
     public float pitchRate = 65, rollRate = 120, yawRate = 28;

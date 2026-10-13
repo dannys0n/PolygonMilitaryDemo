@@ -10,6 +10,7 @@ public sealed class VehicleDecoy : MonoBehaviour
     public Vector3 velocity;
     public float lifetime = 5;
     [Min(0)] public float airDrag=.5f;
+    [Min(0)] public float gravityMultiplier=1;
     [Min(0)] public float trailFadeTime=2;
     float expires;
     bool burnedOut;
@@ -28,7 +29,7 @@ public sealed class VehicleDecoy : MonoBehaviour
                 particle.Stop(false,ParticleSystemStopBehavior.StopEmitting);
             Destroy(gameObject,trailFadeTime);
         }
-        velocity+=Physics.gravity*Time.fixedDeltaTime;
+        velocity+=Physics.gravity*gravityMultiplier*Time.fixedDeltaTime;
         velocity*=Mathf.Exp(-airDrag*Time.fixedDeltaTime);
         transform.position+=velocity*Time.fixedDeltaTime;
     }

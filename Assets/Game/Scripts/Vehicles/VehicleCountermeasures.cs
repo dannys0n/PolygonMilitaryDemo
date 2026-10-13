@@ -106,6 +106,8 @@ public sealed class VehicleCountermeasures : MonoBehaviour
         {
             var cone=Random.insideUnitCircle*Mathf.Tan(flareDispersion*Mathf.Deg2Rad);
             direction=(socket.forward+socket.right*cone.x+socket.up*cone.y).normalized;
+            // Keep the outward/rearward kick, with a gentler initial downward component.
+            if(direction.y<0)direction.y*=.4f;
             speed=Random.Range(Mathf.Max(0,flareEjectionSpeed.x),Mathf.Max(flareEjectionSpeed.x,flareEjectionSpeed.y));
         }
         decoy.velocity=vehicle.Body.GetPointVelocity(socket.position)+direction*speed;
