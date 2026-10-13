@@ -142,8 +142,15 @@ public class VehicleOccupant : MonoBehaviour
         if(Input.GetKeyDown(KeyCode.E)){exitHeld=0;interactionConsumed=false;}
         if(Input.GetKeyUp(KeyCode.E))
         {
-            if(!interactionConsumed && MountedVehicle.seats[SeatIndex].role==Vehicle.SeatRole.Driver)
-                MountedVehicle.GetComponent<VehicleDoors>()?.ToggleAll();
+            if(!interactionConsumed)
+            {
+                var doors=MountedVehicle.GetComponent<VehicleDoors>();
+                if(doors)
+                {
+                    if(MountedVehicle.seats[SeatIndex].role==Vehicle.SeatRole.Driver)doors.ToggleAll();
+                    else doors.TryToggle(transform.position);
+                }
+            }
             exitHeld=0;
         }
         if(Input.GetKey(KeyCode.E))exitHeld+=Time.deltaTime;

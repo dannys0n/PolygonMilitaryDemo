@@ -42,7 +42,8 @@ public sealed class VehicleMissileGuidance : MonoBehaviour
         // Laser designation strikes the selected visible surface when no vehicle was acquired.
         if (guidance == Guidance.LaserSpot || guidance == Guidance.CommandLineOfSight)
             foreach (var hit in Physics.RaycastAll(aim, acquisitionRange, Physics.DefaultRaycastLayers, QueryTriggerInteraction.Ignore))
-                if (!hit.transform.IsChildOf(source.transform) && hit.distance < Vector3.Distance(aim.origin, aimPoint)) aimPoint = hit.point;
+                if (!hit.transform.IsChildOf(source.transform) && !hit.transform.IsChildOf(transform)
+                    && !(hit.collider is CharacterController) && hit.distance < Vector3.Distance(aim.origin, aimPoint)) aimPoint = hit.point;
     }
     void FixedUpdate()
     {
