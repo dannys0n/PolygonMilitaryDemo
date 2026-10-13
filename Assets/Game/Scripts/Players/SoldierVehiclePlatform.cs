@@ -10,7 +10,6 @@ public class SoldierVehiclePlatform : MonoBehaviour
     CharacterController controller;
     SoldierLook look;
     Vector3 localPoint, previousPoint, momentum, standingCenter, eyePosition;
-    Quaternion previousRotation;
     float standingHeight;
     readonly RaycastHit[] hits = new RaycastHit[24];
 
@@ -38,8 +37,6 @@ public class SoldierVehiclePlatform : MonoBehaviour
             {
                 Vector3 current=Support.transform.TransformPoint(localPoint);
                 controller.Move(current-previousPoint);
-                float yaw=Mathf.DeltaAngle(previousRotation.eulerAngles.y,Support.transform.eulerAngles.y);
-                transform.Rotate(0,yaw,0,Space.World);
             }
         }
         if(!Support && momentum.sqrMagnitude>.001f)
@@ -98,7 +95,6 @@ public class SoldierVehiclePlatform : MonoBehaviour
         {
             localPoint=Support.transform.InverseTransformPoint(transform.position);
             previousPoint=transform.position;
-            previousRotation=Support.transform.rotation;
             momentum=Vector3.zero;
         }
     }

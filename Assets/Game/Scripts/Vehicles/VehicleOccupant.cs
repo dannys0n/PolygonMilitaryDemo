@@ -160,8 +160,8 @@ public class VehicleOccupant : MonoBehaviour
         if(Input.GetKeyDown(KeyCode.PageUp))SeatPage=(SeatPage+pages-1)%pages;
         for (int i=0;i<12;i++)
             if (Input.GetKeyDown((KeyCode)((int)KeyCode.F1+i))) SwitchSeat(SeatPage*12+i);
-        if (Input.GetKeyDown(KeyCode.C)) CockpitView = !CockpitView;
-        if (Input.GetKeyDown(KeyCode.V))
+        if (Input.GetKeyDown(KeyCode.V)) CockpitView = !CockpitView;
+        if (Input.GetKeyDown(KeyCode.C))
         {
             Freelook = !Freelook;
             if (Freelook && MountedVehicle.seats[SeatIndex].role != Vehicle.SeatRole.Driver) { flightYaw = yaw; flightPitch = pitch; }

@@ -141,7 +141,7 @@ public class ArenaVehicleHud : MonoBehaviour
             +(defenses.ReadyIn>0?" / "+defenses.ReadyIn.ToString("0")+" S":defenses.Charges==0?" / +1 "+defenses.RechargeIn.ToString("0")+" S":"");
         UpdateEquipmentSystems(v,role,weaponSystems,selectedWeapon,defenses,armed);
         int pageSeats=Mathf.Min(12,v.seats.Length-player.SeatPage*12);
-        rightControls.text=(v.hasRenderedInterior&&!v.seats[player.SeatIndex].externalView?"[C]  CAMERA":"EXTERNAL VIEW")+"\n[V]  FREELOOK"+(player.Freelook?" ON":"")+"\nHOLD [E]  EXIT\n"+(pageSeats==1?"[F1]  STATION":"[F1-F"+pageSeats+"]  SEATS");
+        rightControls.text=(v.hasRenderedInterior&&!v.seats[player.SeatIndex].externalView?"[V]  CAMERA":"EXTERNAL VIEW")+"\n[C]  FREELOOK"+(player.Freelook?" ON":"")+"\nHOLD [E]  EXIT\n"+(pageSeats==1?"[F1]  STATION":"[F1-F"+pageSeats+"]  SEATS");
         if(v.GetComponent<VehicleDoors>())rightControls.text += "\nTAP [E]  " + (role==Vehicle.SeatRole.Driver ? "DOORS" : "NEARBY DOOR");
         if(v.seats.Length>12)rightControls.text+="\n[PGUP/PGDN] PAGE "+(player.SeatPage+1)+"/"+((v.seats.Length+11)/12);
         EnsureSeatMarkers(v.seats.Length);
