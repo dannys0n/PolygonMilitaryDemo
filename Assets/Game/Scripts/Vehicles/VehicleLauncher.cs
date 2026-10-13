@@ -11,6 +11,8 @@ public class VehicleLauncher : MonoBehaviour
     public float interval = .2f;
     public int capacity = 8;
     public float rechargeInterval = .75f;
+    [Tooltip("Restore the entire missile load after the delay from the last shot, rather than one missile per interval.")]
+    public bool rechargeFullMagazine;
     int missiles;
     float nextRecharge;
     public int Missiles => missiles;
@@ -21,12 +23,17 @@ public class VehicleLauncher : MonoBehaviour
     {
         while(missiles<capacity && now>=nextRecharge)
         {
-            if(tubeRounds.Length>0)
+            int rounds = rechargeFullMagazine ? capacity - missiles : 1;
+            for (int i = 0; i < rounds; i++)
             {
-                int tube=((barrel-capacity+missiles)%tubeRounds.Length+tubeRounds.Length)%tubeRounds.Length;
-                tubeRounds[tube].SetActive(true);
+                if(tubeRounds.Length>0)
+                {
+                    int tube=((barrel-capacity+missiles)%tubeRounds.Length+tubeRounds.Length)%tubeRounds.Length;
+                    if(tubeRounds[tube]) tubeRounds[tube].SetActive(true);
+                }
+                missiles++;
             }
-            missiles++; nextRecharge += rechargeInterval;
+            nextRecharge += Mathf.Max(.01f,rechargeInterval);
         }
         if(missiles==capacity) nextRecharge=float.PositiveInfinity;
     }
@@ -107,7 +114,7 @@ public class VehicleLauncher : MonoBehaviour
         if (missiles==0 || vehicle.IsDestroyed || pilot.MountedVehicle != vehicle || vehicle.seats[pilot.SeatIndex].role != controlRole || Time.time < nextShot)
             return false;
         nextShot = Time.time + interval;
-        if(missiles==capacity) nextRecharge=Time.time+rechargeInterval;
+        if(rechargeFullMagazine || missiles==capacity) nextRecharge=Time.time+Mathf.Max(.01f,rechargeInterval);
         missiles--;
         int tubeIndex=barrel++ % muzzles.Length;
         var muzzle = muzzles[tubeIndex];

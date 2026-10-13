@@ -13,9 +13,13 @@ public class VehicleRocket : MonoBehaviour
     GameObject source;
     Vector3 previous;
     bool exploded;
+    static readonly HashSet<VehicleRocket> active = new HashSet<VehicleRocket>();
+    [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
+    static void ResetRegistry() => active.Clear();
+    void OnDisable() => active.Remove(this);
     public void Launch(Vehicle vehicle, GameObject shooter)
     {
-        Launch(shooter, vehicle.transform, vehicle.Body.linearVelocity);
+        Launch(shooter, vehicle.transform, vehicle.Body.GetPointVelocity(transform.position));
     }
     public void Launch(GameObject shooter, Transform ignoredOwner, Vector3 inheritedVelocity)
     {
@@ -25,9 +29,18 @@ public class VehicleRocket : MonoBehaviour
         body.useGravity = useGravity;
         previous = transform.position;
         body.linearVelocity = transform.forward * speed + inheritedVelocity;
-        var collider = GetComponent<Collider>();
-        foreach (var c in owner.GetComponentsInChildren<Collider>())
-            Physics.IgnoreCollision(collider, c);
+        var projectileColliders = GetComponentsInChildren<Collider>(true);
+        if (owner)
+            foreach (var c in owner.GetComponentsInChildren<Collider>(true))
+                foreach (var projectileCollider in projectileColliders)
+                    Physics.IgnoreCollision(projectileCollider, c);
+        // Rapid-fire cannon rounds must not detonate against their owner's earlier rounds.
+        foreach (var other in active)
+            if (other && owner && other.owner == owner)
+                foreach (var otherCollider in other.GetComponentsInChildren<Collider>(true))
+                    foreach (var projectileCollider in projectileColliders)
+                        Physics.IgnoreCollision(projectileCollider, otherCollider);
+        active.Add(this);
         if (exhaust) exhaust.Play(true);
         Invoke(nameof(Expire),lifetime);
     }
@@ -51,7 +64,7 @@ public class VehicleRocket : MonoBehaviour
         float distance = delta.magnitude;
         bool found = false;
         foreach (var hit in Physics.RaycastAll(previous,delta.normalized,delta.magnitude,Physics.DefaultRaycastLayers,QueryTriggerInteraction.Ignore))
-            if (!hit.transform.IsChildOf(owner) && !hit.transform.IsChildOf(transform) && hit.distance <= distance)
+            if (!IgnoreHit(hit.collider) && hit.distance <= distance)
             {
                 nearest = hit; distance = hit.distance; found = true;
             }
@@ -64,11 +77,17 @@ public class VehicleRocket : MonoBehaviour
     }
     void OnCollisionEnter(Collision collision)
     {
-        if (owner && !collision.transform.IsChildOf(owner))
+        if (body && !IgnoreHit(collision.collider) && collision.contactCount > 0)
         {
             var contact=collision.GetContact(0);
             Explode(contact.point,contact.normal);
         }
+    }
+    bool IgnoreHit(Collider collider)
+    {
+        if (collider.transform.IsChildOf(transform) || (owner && collider.transform.IsChildOf(owner))) return true;
+        var round = collider.GetComponentInParent<VehicleRocket>();
+        return round && owner && round.owner == owner;
     }
     void Explode(Vector3 point,Vector3 normal)
     {

@@ -65,7 +65,8 @@ public class JetMotor : VehicleMotor
 
     void SimulateControlSurfaces(Vector3 requestedDeflection, float dt)
     {
-        // Fin travel, not an instantaneous rotation command, determines the steering torque.
+        // Animate the pilot's sustained pitch/roll/rudder command, not the rate controller's
+        // diminishing correction torque after the requested turning rate is reached.
         Vector3 current = ControlDeflection;
         current.x = Mathf.MoveTowards(current.x, requestedDeflection.x, surfaceResponse * dt / Mathf.Max(1, elevatorTravel));
         current.y = Mathf.MoveTowards(current.y, requestedDeflection.y, surfaceResponse * dt / Mathf.Max(1, rudderTravel));
@@ -130,14 +131,14 @@ public class JetMotor : VehicleMotor
         float authority = Mathf.Clamp01(forwardSpeed * forwardSpeed / (referenceControlSpeed * referenceControlSpeed));
         FlightControlInput = powered ? new Vector3(Mathf.Clamp(input.pitchRate, -1, 1),
             Mathf.Clamp(input.yaw, -1, 1), -Mathf.Clamp(input.move.x, -1, 1)) : Vector3.zero;
-        Vector3 localRates = Vector3.Scale(FlightControlInput, new Vector3(pitchRate, yawRate, rollRate)) * Mathf.Deg2Rad;
+        SimulateControlSurfaces(FlightControlInput, dt);
+        Vector3 localRates = Vector3.Scale(ControlDeflection, new Vector3(pitchRate, yawRate, rollRate)) * Mathf.Deg2Rad;
         Vector3 localAngular = Quaternion.Inverse(frame) * body.angularVelocity;
         float controlLimit = Mathf.Max(.01f, maximumAngularAcceleration);
         Vector3 requestedControl = Vector3.ClampMagnitude((localRates - localAngular) * controlResponse, controlLimit);
-        SimulateControlSurfaces(powered ? requestedControl / controlLimit : Vector3.zero, dt);
         // Airflow determines how much authority a deflected surface has. Visible travel can
         // still occur on the runway, but cannot roll or pitch a stationary aircraft into flight.
-        Vector3 acceleration = ControlDeflection * controlLimit;
+        Vector3 acceleration = powered ? requestedControl : Vector3.zero;
         acceleration *= authority;
         if (Grounded)
         {
