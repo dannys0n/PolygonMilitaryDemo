@@ -66,7 +66,7 @@ public class ArenaVehicleHud : MonoBehaviour
         if(mountedFade)mountedFade.alpha=1-Mathf.Pow(1-presentationBlend,3);
         var v=player.MountedVehicle;bool air=v.IsAircraft;var role=v.seats[player.SeatIndex].role;
         diagram.sprite = v.seatDiagram ? v.seatDiagram : air ? helicopterDiagram : humveeDiagram;
-        seatDiagramLinks.SetVehicle(v,player.SeatIndex);
+        seatDiagramLinks.SetVehicle(v,player.SeatIndex,player.SeatPage);
         var attackSight=v.GetComponent<VehicleAttackSight>();bool showAttack=attackSight&&attackSight.DisplaysForSeat(player.SeatIndex);
         var weaponSystems=v.GetComponent<VehicleWeaponSystems>();
         var selectedWeapon=weaponSystems?weaponSystems.Current(player):null;
@@ -115,19 +115,23 @@ public class ArenaVehicleHud : MonoBehaviour
             if(count>1)controls.text+="\n[1-"+count+"] WEAPONS / WHEEL";
         }
         if(!air && role==Vehicle.SeatRole.Driver && showAttack && attackSight.Operational) controls.text += "\nFIRE  [LMB]\nZOOM  [RMB]";
-        rightControls.text=(v.hasRenderedInterior?"[C]  CAMERA":"EXTERNAL VIEW")+"\n[V]  FREELOOK"+(player.Freelook?" ON":"")+"\nHOLD [E]  EXIT\n"+(v.seats.Length==1?"[F1]  STATION":"[F1-F"+v.seats.Length+"]  SEATS");
+        int pageSeats=Mathf.Min(12,v.seats.Length-player.SeatPage*12);
+        rightControls.text=(v.hasRenderedInterior&&!v.seats[player.SeatIndex].externalView?"[C]  CAMERA":"EXTERNAL VIEW")+"\n[V]  FREELOOK"+(player.Freelook?" ON":"")+"\nHOLD [E]  EXIT\n"+(pageSeats==1?"[F1]  STATION":"[F1-F"+pageSeats+"]  SEATS");
+        if(v.seats.Length>12)rightControls.text+="\n[PGUP/PGDN] PAGE "+(player.SeatPage+1)+"/"+((v.seats.Length+11)/12);
         EnsureSeatMarkers(v.seats.Length);
         crew.fontSize = v.seats.Length > 8 ? 10 : v.seats.Length > 5 ? 12 : 14;
         crew.text="";
         for(int i=0;i<seatMarkers.Length;i++)
         {
-            bool exists=i<v.seats.Length;seatMarkers[i].gameObject.SetActive(exists);if(!exists)continue;
-            var seat=v.seats[i];bool occupied=seat.occupant;
+            int seatIndex=player.SeatPage*12+i;
+            bool exists=seatIndex<v.seats.Length;seatMarkers[i].gameObject.SetActive(exists);if(!exists)continue;
+            var seat=v.seats[seatIndex];bool occupied=seat.occupant;
             seatMarkers[i].rectTransform.anchoredPosition=v.seatDiagram?seat.diagramPosition:air?new Vector2(0,i==0?26:54):i==1?new Vector2(0,-7):new Vector2(i==0||i==3?-15:15,i<3?20:-30);
-            seatMarkers[i].color=i==player.SeatIndex?accent:occupied?Color.white:new Color(1,1,1,.18f);
-            seatNumbers[i].color=i==player.SeatIndex||occupied?Color.black:Color.white;
+            seatMarkers[i].color=seatIndex==player.SeatIndex?accent:occupied?Color.white:new Color(1,1,1,.18f);
+            seatNumbers[i].color=seatIndex==player.SeatIndex||occupied?Color.black:Color.white;
+            seatNumbers[i].text=(seatIndex+1).ToString();
             string name=occupied?(seat.occupant==player?"YOU":seat.occupant.name):"EMPTY";
-            crew.text+="<color="+(i==player.SeatIndex?"#FF8C1F":"#FFFFFF")+">"+(i+1)+"  "+name+"</color>  <size="+(v.seats.Length>8?10:12)+">"+seat.name.ToUpperInvariant()+"</size>\n";
+            crew.text+="<color="+(seatIndex==player.SeatIndex?"#FF8C1F":"#FFFFFF")+">"+(seatIndex+1)+"  "+name+"</color>  <size="+(v.seats.Length>8?10:12)+">"+seat.name.ToUpperInvariant()+"</size>\n";
         }
         float health=v.Health/v.maxHealth;for(int i=0;i<hullSegments.Length;i++)hullSegments[i].color=i<hullSegments.Length*health?Color.white:new Color(1,1,1,.15f);
         if(!air)
@@ -319,6 +323,7 @@ public class ArenaVehicleHud : MonoBehaviour
     }
     void EnsureSeatMarkers(int count)
     {
+        count=Mathf.Min(12,count);
         int previous = seatMarkers.Length;
         if (count <= previous) return;
         System.Array.Resize(ref seatMarkers, count);

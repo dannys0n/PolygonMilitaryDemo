@@ -90,6 +90,37 @@ MeshRenderer:
   m_SortingOrder: 0
   m_MaskInteraction: 0
   m_AdditionalVertexStreams: {fileID: 0}
+--- !u!1 &777868549285808415
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 8935324206630940836}
+  m_Layer: 0
+  m_Name: Right grip
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &8935324206630940836
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 777868549285808415}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: -0.7071068, w: 0.7071068}
+  m_LocalPosition: {x: 0.25, y: 0.3, z: 0.25}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 8578079016602166605}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &947580643044477520
 GameObject:
   m_ObjectHideFlags: 0
@@ -306,6 +337,37 @@ MeshRenderer:
   m_SortingOrder: 0
   m_MaskInteraction: 0
   m_AdditionalVertexStreams: {fileID: 0}
+--- !u!1 &1346594484429064729
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 2335572474074161159}
+  m_Layer: 0
+  m_Name: Eye
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &2335572474074161159
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1346594484429064729}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0.65, z: 0.08}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 8578079016602166605}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1555781544511919185
 GameObject:
   m_ObjectHideFlags: 0
@@ -856,6 +918,7 @@ Transform:
   - {fileID: 2704874199394701947}
   - {fileID: 4671277484044566004}
   - {fileID: 8397750257114106478}
+  - {fileID: 6054216676718420054}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!54 &8097823751301355584
@@ -901,7 +964,9 @@ MonoBehaviour:
   instrumentReference: 8
   instrumentReferenceNotes: 'Tentative silhouette-based identification, not a confirmed licensed vehicle. Display adapts available game telemetry; no fuel, oil, turbine or engine simulation is implied.
 
-    T72 family reference is approximate. Exact driver''s instrument panel was not established from a verified manual; gauge style and units are a provisional adaptation.'
+    T72 family reference is approximate. Exact driver''s instrument panel was not established from a verified manual; gauge style and units are a provisional adaptation.
+
+    Functional capacity follows the tentative real-world family. Additional stations have no authored rendered chair and therefore hide the occupant and use an external view. Existing authored chairs/hand grips are preserved.'
   displayName: Russian tank (prototype)
   seatDiagram: {fileID: 21300000, guid: 02575d3f0c1038a4a977869139874d65, type: 3}
   seatDiagramCenter: {x: 0, y: 1.5729933}
@@ -921,22 +986,37 @@ MonoBehaviour:
     exit: {fileID: 2704874199394701947}
     showCharacter: 0
     weaponMountedView: 0
+    externalView: 0
     eye: {fileID: 6810075948333118855}
     leftGrip: {fileID: 0}
     rightGrip: {fileID: 0}
-    diagramPosition: {x: 0, y: 20}
+    diagramPosition: {x: -60, y: 62}
     showVehicleInstruments: 1
-  - name: Commander
+  - name: Gunner
     role: 1
     pose: 0
     anchor: {fileID: 4671277484044566004}
     exit: {fileID: 8397750257114106478}
     showCharacter: 0
     weaponMountedView: 0
+    externalView: 0
     eye: {fileID: 454261327421370213}
     leftGrip: {fileID: 0}
     rightGrip: {fileID: 0}
-    diagramPosition: {x: 22, y: -15}
+    diagramPosition: {x: 60, y: 62}
+    showVehicleInstruments: 1
+  - name: Commander
+    role: 2
+    pose: 1
+    anchor: {fileID: 8578079016602166605}
+    exit: {fileID: 2704874199394701947}
+    showCharacter: 0
+    weaponMountedView: 0
+    externalView: 1
+    eye: {fileID: 2335572474074161159}
+    leftGrip: {fileID: 3069933965562546977}
+    rightGrip: {fileID: 8935324206630940836}
+    diagramPosition: {x: -60, y: 37}
     showVehicleInstruments: 1
   maxHealth: 3600
   bulletDamageMultiplier: 0.04
@@ -4285,6 +4365,40 @@ ParticleSystemRenderer:
   m_MeshWeighting1: 1
   m_MeshWeighting2: 1
   m_MeshWeighting3: 1
+--- !u!1 &3368800316434895632
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 8578079016602166605}
+  m_Layer: 0
+  m_Name: Seat 3 Commander
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &8578079016602166605
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3368800316434895632}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0.7071068, z: 0, w: 0.7071068}
+  m_LocalPosition: {x: -0.55, y: 0.9, z: -0.1}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children:
+  - {fileID: 2335572474074161159}
+  - {fileID: 3069933965562546977}
+  - {fileID: 8935324206630940836}
+  m_Father: {fileID: 6054216676718420054}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &3401643762925347130
 GameObject:
   m_ObjectHideFlags: 0
@@ -5517,6 +5631,37 @@ Transform:
   m_Children: []
   m_Father: {fileID: 7810959860692041376}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &7131637958899777908
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 3069933965562546977}
+  m_Layer: 0
+  m_Name: Left grip
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &3069933965562546977
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7131637958899777908}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0.7071068, w: 0.7071068}
+  m_LocalPosition: {x: -0.25, y: 0.3, z: 0.25}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 8578079016602166605}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &7143143093771545155
 GameObject:
   m_ObjectHideFlags: 0
@@ -5546,6 +5691,38 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
+  m_Father: {fileID: 248534790599472409}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &7164264801682056671
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 6054216676718420054}
+  m_Layer: 0
+  m_Name: Additional functional stations
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &6054216676718420054
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7164264801682056671}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children:
+  - {fileID: 8578079016602166605}
   m_Father: {fileID: 248534790599472409}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &7288289509591434175

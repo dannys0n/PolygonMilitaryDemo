@@ -5,11 +5,12 @@ public class VehicleSeatDiagramGraphic : UnityEngine.UI.MaskableGraphic
 {
     Vehicle vehicle;
     int selectedSeat;
-    public void SetVehicle(Vehicle value,int selected){vehicle=value;selectedSeat=selected;SetVerticesDirty();}
+    int seatPage;
+    public void SetVehicle(Vehicle value,int selected,int page=0){vehicle=value;selectedSeat=selected;seatPage=page;SetVerticesDirty();}
     protected override void OnPopulateMesh(UnityEngine.UI.VertexHelper mesh)
     {
         mesh.Clear();if(!vehicle)return;
-        for(int seatIndex=0;seatIndex<vehicle.seats.Length;seatIndex++)
+        for(int seatIndex=seatPage*12;seatIndex<Mathf.Min(vehicle.seats.Length,(seatPage+1)*12);seatIndex++)
         {
             var seat=vehicle.seats[seatIndex];if(!seat.anchor)continue;Vector3 local=vehicle.transform.InverseTransformPoint(seat.anchor.position);
             Vector2 target=(new Vector2(local.x,local.z)-vehicle.seatDiagramCenter)*(80f/Mathf.Max(.01f,vehicle.seatDiagramHalfExtent));

@@ -31,6 +31,8 @@ public class Vehicle : MonoBehaviour
         public bool showCharacter = true;
         [Tooltip("Exposed weapon station: FPS follows the weapon camera pivot and hides its operator. Seated cockpit stations leave this disabled.")]
         public bool weaponMountedView;
+        [Tooltip("Functional station without an authored cabin chair; use the external camera for this seat.")]
+        public bool externalView;
         [Tooltip("Authored first-person eye point, relative to the vehicle seat.")]
         public Transform eye;
         public Transform leftGrip, rightGrip;

@@ -12,6 +12,7 @@ public class VehicleOccupant : MonoBehaviour
     public int faction = -1;
     public Vehicle MountedVehicle { get; private set; }
     public int SeatIndex { get; private set; }
+    public int SeatPage { get; private set; }
     public Transform EntryPoint { get; private set; }
     public Vector3 EntryLocalPosition { get; private set; }
     public Quaternion EntryLocalRotation { get; private set; }
@@ -38,7 +39,7 @@ public class VehicleOccupant : MonoBehaviour
     bool cockpitView;
     public bool CockpitView
     {
-        get => cockpitView && (!MountedVehicle || MountedVehicle.hasRenderedInterior);
+        get => cockpitView && (!MountedVehicle || (MountedVehicle.hasRenderedInterior && !MountedVehicle.seats[SeatIndex].externalView));
         private set => cockpitView = value;
     }
     public bool Freelook { get; private set; }
@@ -118,8 +119,11 @@ public class VehicleOccupant : MonoBehaviour
         if (Cursor.lockState != CursorLockMode.Locked) { MountedVehicle.DriverInput = default; return; }
         exitHeld = Input.GetKey(KeyCode.E) ? exitHeld + Time.deltaTime : 0;
         if (exitHeld >= .35f) { Leave(false); exitHeld = 0; return; }
-        for (int i=0;i<MountedVehicle.seats.Length;i++)
-            if (Input.GetKeyDown((KeyCode)((int)KeyCode.F1+i))) SwitchSeat(i);
+        int pages=(MountedVehicle.seats.Length+11)/12;
+        if(Input.GetKeyDown(KeyCode.PageDown))SeatPage=(SeatPage+1)%pages;
+        if(Input.GetKeyDown(KeyCode.PageUp))SeatPage=(SeatPage+pages-1)%pages;
+        for (int i=0;i<12;i++)
+            if (Input.GetKeyDown((KeyCode)((int)KeyCode.F1+i))) SwitchSeat(SeatPage*12+i);
         if (Input.GetKeyDown(KeyCode.C)) CockpitView = !CockpitView;
         if (Input.GetKeyDown(KeyCode.V))
         {
@@ -237,6 +241,7 @@ public class VehicleOccupant : MonoBehaviour
         EntryLocalRotation = Quaternion.Inverse(vehicle.transform.rotation) * transform.rotation;
         MountedVehicle = vehicle;
         SeatIndex = seat;
+        SeatPage = seat / 12;
         originalParent = transform.parent;
         life.actions.CancelActions();
         life.movement.ResetMovement();
@@ -465,6 +470,7 @@ public class VehicleOccupant : MonoBehaviour
     void MoveToSeat(int index)
     {
         SeatIndex=index;
+        SeatPage=index/12;
         var vehicle=MountedVehicle;
         var seat=vehicle.seats[index];
         seatPose.End();
@@ -502,7 +508,7 @@ public class VehicleOccupant : MonoBehaviour
     }
     Vector3 CameraPosition(Vehicle v, Quaternion rotation, bool gunner, bool aircraft, bool pilot, bool? cockpitOverride = null)
     {
-        bool cockpit = v.hasRenderedInterior && (cockpitOverride ?? CockpitView);
+        bool cockpit = v.hasRenderedInterior && !v.seats[SeatIndex].externalView && (cockpitOverride ?? CockpitView);
         Vector3 target = gunner ? v.turret.cameraPoint.position : v.cameraTarget.position;
         if (pilot && v.FlightAssistEnabled && !cockpit)
             target = v.transform.position + Vector3.up * v.cameraTarget.localPosition.y;
@@ -524,6 +530,7 @@ public class VehicleOccupant : MonoBehaviour
     {
         var v = MountedVehicle;
         cockpit &= v.hasRenderedInterior;
+        cockpit &= !v.seats[SeatIndex].externalView;
         bool gunner = v.seats[SeatIndex].role == Vehicle.SeatRole.Gunner;
         bool aircraft = v.IsAircraft;
         bool pilot = aircraft && v.seats[SeatIndex].role == Vehicle.SeatRole.Driver;
