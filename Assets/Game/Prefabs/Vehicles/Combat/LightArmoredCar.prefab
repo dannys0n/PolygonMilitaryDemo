@@ -17,7 +17,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &5858529981496711620
 Transform:
   m_ObjectHideFlags: 0
@@ -2849,6 +2849,24 @@ MonoBehaviour:
   seatDiagramCenter: {x: 0, y: 0.0068769455}
   seatDiagramHalfExtent: 2.6060827
   motor: {fileID: 4563167683163496768}
+  jetAssist:
+    assistEnabled: 1
+    maximumBank: 75
+    headingToBank: 1.8
+    assistedBankRate: 100
+    aimResponse: 2
+  helicopterAssist:
+    assistEnabled: 1
+    attitudeSpring: 60
+    attitudeDamping: 16
+    verticalResponse: 2.8
+    positionHoldSpring: 0.6
+    positionHoldDamping: 1.5
+    maxHoldAcceleration: 18
+    reversalTilt: 38
+    reversalSpeedRange: {x: 4, y: 20}
+    movementVelocityResponse: 0.8
+    cyclicResponseTime: 0.1
   turret: {fileID: 1432593500547559855}
   destructionEffect: {fileID: 695410771644243590, guid: c07b2e8d0c65dad44bf5eaca660002fc, type: 3}
   cameraTarget: {fileID: 4169558518417320302}
@@ -2864,6 +2882,7 @@ MonoBehaviour:
     showCharacter: 1
     weaponMountedView: 0
     externalView: 0
+    disembarkInside: 0
     eye: {fileID: 5285106694860561584}
     leftGrip: {fileID: 3146409560817386826}
     rightGrip: {fileID: 3063973406416746523}
@@ -2871,12 +2890,13 @@ MonoBehaviour:
     showVehicleInstruments: 1
   - name: Weapon operator
     role: 1
-    pose: 0
+    pose: 3
     anchor: {fileID: 6759784795450639428}
     exit: {fileID: 4590391913063429257}
-    showCharacter: 0
+    showCharacter: 1
     weaponMountedView: 1
     externalView: 0
+    disembarkInside: 0
     eye: {fileID: 951777763984439356}
     leftGrip: {fileID: 5280712491040372915}
     rightGrip: {fileID: 4431689367613495964}
@@ -2890,6 +2910,7 @@ MonoBehaviour:
     showCharacter: 1
     weaponMountedView: 0
     externalView: 0
+    disembarkInside: 0
     eye: {fileID: 6392461833452624710}
     leftGrip: {fileID: 0}
     rightGrip: {fileID: 0}
@@ -2903,6 +2924,7 @@ MonoBehaviour:
     showCharacter: 1
     weaponMountedView: 0
     externalView: 0
+    disembarkInside: 0
     eye: {fileID: 9081366408767025039}
     leftGrip: {fileID: 0}
     rightGrip: {fileID: 0}
@@ -2916,6 +2938,7 @@ MonoBehaviour:
     showCharacter: 1
     weaponMountedView: 0
     externalView: 0
+    disembarkInside: 0
     eye: {fileID: 1437722585323946420}
     leftGrip: {fileID: 0}
     rightGrip: {fileID: 0}
@@ -3104,7 +3127,7 @@ Transform:
   m_GameObject: {fileID: 7818074881013625963}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 4.9303805e-34, y: -0.3049544, z: 0.075167954}
+  m_LocalPosition: {x: 0, y: -0.12, z: -0.12}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
