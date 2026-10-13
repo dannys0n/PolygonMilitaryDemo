@@ -132,7 +132,9 @@ public class ArenaVehicleHud : MonoBehaviour
         controls.text=role==Vehicle.SeatRole.Driver?(air?"CLIMB  [SPACE]\nDESCEND  [CTRL]\nMOVE  [WASD]\nAIM ALIGN  [RMB]":"BRAKE / REV  [S]\nACCELERATE  [W]\nBOOST  [SHIFT]\nHANDBRAKE  [Z]\nHORN  [H]"):role==Vehicle.SeatRole.Gunner?"FIRE  [LMB]\nZOOM  [RMB]\nAMMO  INF":v.seats[player.SeatIndex].showVehicleInstruments?(air?"FLIGHT MONITOR":"VEHICLE MONITOR"):"PASSENGER";
         if (air && role == Vehicle.SeatRole.Driver) controls.text += "\n[T] ASSIST " + (v.FlightAssistEnabled ? "ON" : "OFF");
         if (v.motor is JetMotor && role == Vehicle.SeatRole.Driver)
-            controls.text = "THROTTLE  [W/S]\nRUDDER  [A/D]\nPITCH / ROLL  [MOUSE]\nAFTERBURNER  [SHIFT]\nAIRBRAKE  [SPACE]\n[T] ASSIST " + (v.FlightAssistEnabled ? "ON" : "OFF");
+            controls.text = "THROTTLE  [W/S]\nRUDDER  [A/D]\nPITCH / ROLL  [MOUSE]"
+                + (((JetMotor)v.motor).afterburnerMultiplier>1 ? "\nAFTERBURNER  [SHIFT]" : "")
+                + "\nBRAKE  [SPACE]\n[T] ASSIST " + (v.FlightAssistEnabled ? "ON" : "OFF");
         if(weaponSystems && selectedWeapon!=null)
         {
             int count=System.Array.FindAll(weaponSystems.weapons,w=>w.role==role).Length;

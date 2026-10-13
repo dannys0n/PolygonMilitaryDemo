@@ -11530,10 +11530,10 @@ GameObject:
   - component: {fileID: 1010680757653157015}
   - component: {fileID: 6729898731218706979}
   - component: {fileID: 2436668545536414338}
-  - component: {fileID: 5160192186890993291}
   - component: {fileID: 7483978070333465820}
   - component: {fileID: 1469930384491035982}
   - component: {fileID: 2180521722715104340}
+  - component: {fileID: 8475718888510843849}
   m_Layer: 0
   m_Name: TransportPlane
   m_TagString: Untagged
@@ -11579,9 +11579,9 @@ Rigidbody:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 6233881705779557729}
   serializedVersion: 5
-  m_Mass: 12000
-  m_LinearDamping: 0.02
-  m_AngularDamping: 0.3
+  m_Mass: 120000
+  m_LinearDamping: 0
+  m_AngularDamping: 0.05
   m_CenterOfMass: {x: 0, y: 0, z: 0}
   m_InertiaTensor: {x: 1, y: 1, z: 1}
   m_InertiaRotation: {x: 0, y: 0, z: 0, w: 1}
@@ -11621,13 +11621,13 @@ MonoBehaviour:
   seatDiagram: {fileID: 21300000, guid: 0ba917c0badb9d94ba394ba484478c8e, type: 3}
   seatDiagramCenter: {x: 0, y: -12.040503}
   seatDiagramHalfExtent: 27.377941
-  motor: {fileID: 5160192186890993291}
+  motor: {fileID: 8475718888510843849}
   jetAssist:
     assistEnabled: 1
-    maximumBank: 75
-    headingToBank: 1.8
-    assistedBankRate: 100
-    aimResponse: 2
+    maximumBank: 35
+    headingToBank: 0.8
+    assistedBankRate: 25
+    aimResponse: 0.9
   helicopterAssist:
     assistEnabled: 1
     attitudeSpring: 60
@@ -13136,42 +13136,6 @@ NavMeshObstacle:
   m_CarveOnlyStationary: 1
   m_Center: {x: 0, y: 8.076273, z: -12.040503}
   m_TimeToStationary: 0.5
---- !u!114 &5160192186890993291
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 6233881705779557729}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: de5486c71a7407f418fbf760667a3ab7, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::HelicopterMotor
-  vehicle: {fileID: 6729898731218706979}
-  mainRotor: {fileID: 2689713066182833111}
-  tailRotor: {fileID: 807064023592738190}
-  airframe: {fileID: 4801903600859818414}
-  landingGear:
-  - {fileID: 5819429481407031292}
-  - {fileID: 5997305348939293709}
-  - {fileID: 5202061298698775334}
-  rotorRpm: 420
-  spoolTime: 2.5
-  maxTilt: 24
-  maxAimPitch: 60
-  yawRate: 65
-  climbSpeed: 5
-  maxSpeed: 32
-  flightForceMultiplier: 1.75
-  maxThrustMultiplier: 2.2
-  manualPitchRate: 70
-  manualRollRate: 70
-  manualResponse: 16
-  manualMaxAngularAcceleration: 16
-  forwardDrag: 0.025
-  sidewaysDrag: 0.05
-  quadraticDrag: 0.0015
 --- !u!114 &7483978070333465820
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -13223,6 +13187,7 @@ MonoBehaviour:
       openEuler: {x: -100, y: 0, z: 0}
     duration: 1.35
     open: 0
+  operateTogether: 0
   interactionRange: 5
 --- !u!114 &2180521722715104340
 MonoBehaviour:
@@ -13250,6 +13215,80 @@ MonoBehaviour:
   rechargeSeconds: 25
   smokeDuration: 10
   automaticForAI: 1
+--- !u!114 &8475718888510843849
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6233881705779557729}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d5752c2f36eeba8448ae46df1f51ea48, type: 3}
+  m_Name:
+  m_EditorClassIdentifier: Assembly-CSharp::JetMotor
+  vehicle: {fileID: 6729898731218706979}
+  landingGear:
+  - {fileID: 5819429481407031292}
+  - {fileID: 5997305348939293709}
+  - {fileID: 5202061298698775334}
+  wingArea: 353
+  airDensity: 1.225
+  wingIncidence: 5
+  liftBias: 0.4
+  liftSlope: 5.5
+  stallAngle: 20
+  maximumLiftCoefficient: 1.8
+  parasiteDrag: 0.035
+  inducedDrag: 0.06
+  sideslipDrag: 0.6
+  maximumThrust: 720000
+  afterburnerMultiplier: 1
+  engineResponse: 0.35
+  throttleChangeRate: 0.3
+  startingThrottle: 0
+  maxSpeed: 120
+  pitchRate: 18
+  rollRate: 28
+  yawRate: 10
+  controlResponse: 3
+  maximumAngularAcceleration: 1.5
+  referenceControlSpeed: 65
+  lateralFlowResponse: 1.2
+  maxLoadFactor: 2.5
+  controlSurfaces:
+  - part: {fileID: 1787626100736267787}
+    hingeAxis: {x: 1, y: 0, z: 0}
+    pitch: 0
+    roll: 1
+    yaw: 0
+  - part: {fileID: 3687820032276868103}
+    hingeAxis: {x: 1, y: 0, z: 0}
+    pitch: 0
+    roll: -1
+    yaw: 0
+  - part: {fileID: 6505523396228800138}
+    hingeAxis: {x: 0, y: 1, z: 0}
+    pitch: 0
+    roll: 0
+    yaw: 1
+  - part: {fileID: 5842628637816411667}
+    hingeAxis: {x: 1, y: 0, z: 0}
+    pitch: 1
+    roll: 0
+    yaw: 0
+  - part: {fileID: 1020541208331215643}
+    hingeAxis: {x: 1, y: 0, z: 0}
+    pitch: 1
+    roll: 0
+    yaw: 0
+  aileronTravel: 18
+  elevatorTravel: 20
+  rudderTravel: 25
+  surfaceResponse: 55
+  wheelBrakeAcceleration: 3
+  groundSteeringRate: 12
+  rotationSpeed: 60
 --- !u!1 &6281865560454465029
 GameObject:
   m_ObjectHideFlags: 0
