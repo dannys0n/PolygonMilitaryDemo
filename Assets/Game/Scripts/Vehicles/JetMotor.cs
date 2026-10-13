@@ -34,6 +34,12 @@ public class JetMotor : VehicleMotor
     public ControlSurface[] controlSurfaces = System.Array.Empty<ControlSurface>();
     public float aileronTravel = 22, elevatorTravel = 22, rudderTravel = 20, surfaceResponse = 120;
     public Vector3 ControlDeflection { get; private set; }
+    [Header("Propeller (optional)")]
+    public Transform propeller;
+    public Vector3 propellerAxis = Vector3.forward;
+    public float propellerRpm = 1800;
+    Quaternion propellerRest;
+    float propellerAngle;
     [Header("Ground handling")]
     public float wheelBrakeAcceleration = 8, groundSteeringRate = 28, rotationSpeed = 60;
     public float Throttle { get; private set; }
@@ -50,6 +56,7 @@ public class JetMotor : VehicleMotor
     void Start()
     {
         Throttle = startingThrottle;
+        if (propeller) propellerRest = propeller.localRotation;
 
         vehicle.Body.maxAngularVelocity = 4;
         foreach (var surface in controlSurfaces)
@@ -58,6 +65,11 @@ public class JetMotor : VehicleMotor
 
     void LateUpdate()
     {
+        if (propeller)
+        {
+            propellerAngle = (propellerAngle + propellerRpm * 6 * Mathf.Clamp01(EnginePower) * Time.deltaTime) % 360;
+            propeller.localRotation = propellerRest * Quaternion.AngleAxis(propellerAngle, propellerAxis);
+        }
         // Render the actuator state simulated in FixedUpdate. No separate visual steering delay.
         foreach (var surface in controlSurfaces)
             if (surface.part) surface.part.localRotation = surface.restRotation * Quaternion.AngleAxis(surface.angle, surface.hingeAxis);

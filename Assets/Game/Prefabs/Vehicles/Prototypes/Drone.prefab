@@ -738,8 +738,8 @@ GameObject:
   - component: {fileID: 6455931487516671116}
   - component: {fileID: 2915813012966032725}
   - component: {fileID: 476797470601733806}
-  - component: {fileID: 5303036104770562350}
   - component: {fileID: 9149490158345366965}
+  - component: {fileID: 5880839351255570568}
   m_Layer: 0
   m_Name: Drone
   m_TagString: Untagged
@@ -761,8 +761,6 @@ Transform:
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 6689837438213323678}
-  - {fileID: 4030945969592917455}
-  - {fileID: 2821964236325096970}
   - {fileID: 2414430885994394109}
   - {fileID: 851548760170290939}
   - {fileID: 2237540116975980397}
@@ -780,7 +778,7 @@ Rigidbody:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2150335621027998238}
   serializedVersion: 5
-  m_Mass: 500
+  m_Mass: 1500
   m_LinearDamping: 0.02
   m_AngularDamping: 0.3
   m_CenterOfMass: {x: 0, y: 0, z: 0}
@@ -820,13 +818,13 @@ MonoBehaviour:
   seatDiagram: {fileID: 21300000, guid: c939027718530094dba2f26c254bee33, type: 3}
   seatDiagramCenter: {x: 0, y: 0.3023796}
   seatDiagramHalfExtent: 10.869845
-  motor: {fileID: 5303036104770562350}
+  motor: {fileID: 5880839351255570568}
   jetAssist:
     assistEnabled: 1
-    maximumBank: 75
+    maximumBank: 30
     headingToBank: 1.8
-    assistedBankRate: 100
-    aimResponse: 2
+    assistedBankRate: 28
+    aimResponse: 0.8
   helicopterAssist:
     assistEnabled: 1
     attitudeSpring: 60
@@ -879,42 +877,6 @@ NavMeshObstacle:
   m_CarveOnlyStationary: 1
   m_Center: {x: 0, y: 0.8, z: 0.3023796}
   m_TimeToStationary: 0.5
---- !u!114 &5303036104770562350
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2150335621027998238}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: de5486c71a7407f418fbf760667a3ab7, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::HelicopterMotor
-  vehicle: {fileID: 2915813012966032725}
-  mainRotor: {fileID: 4030945969592917455}
-  tailRotor: {fileID: 2821964236325096970}
-  airframe: {fileID: 6689837438213323678}
-  landingGear:
-  - {fileID: 9036793929931162607}
-  - {fileID: 5920968942783267212}
-  - {fileID: 6670236679646052382}
-  rotorRpm: 420
-  spoolTime: 2.5
-  maxTilt: 24
-  maxAimPitch: 60
-  yawRate: 65
-  climbSpeed: 5
-  maxSpeed: 32
-  flightForceMultiplier: 1.75
-  maxThrustMultiplier: 2.2
-  manualPitchRate: 70
-  manualRollRate: 70
-  manualResponse: 16
-  manualMaxAngularAcceleration: 16
-  forwardDrag: 0.025
-  sidewaysDrag: 0.05
-  quadraticDrag: 0.0015
 --- !u!114 &9149490158345366965
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -942,6 +904,93 @@ MonoBehaviour:
   secondaryScale: 0.45
   finalScale: 1.5
   smokeScale: 1
+--- !u!114 &5880839351255570568
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2150335621027998238}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d5752c2f36eeba8448ae46df1f51ea48, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::JetMotor
+  vehicle: {fileID: 2915813012966032725}
+  landingGear:
+  - {fileID: 9036793929931162607}
+  - {fileID: 5920968942783267212}
+  - {fileID: 6670236679646052382}
+  wingArea: 70
+  airDensity: 1.225
+  wingIncidence: 5
+  liftBias: 0.18
+  liftSlope: 5.5
+  stallAngle: 18
+  maximumLiftCoefficient: 1.65
+  parasiteDrag: 0.035
+  inducedDrag: 0.075
+  sideslipDrag: 0.6
+  maximumThrust: 10000
+  afterburnerMultiplier: 1
+  engineResponse: 0.7
+  throttleChangeRate: 0.4
+  startingThrottle: 0
+  maxSpeed: 45
+  pitchRate: 22
+  rollRate: 35
+  yawRate: 12
+  controlResponse: 3
+  maximumAngularAcceleration: 3
+  referenceControlSpeed: 20
+  lateralFlowResponse: 2
+  maxLoadFactor: 2.5
+  controlSurfaces:
+  - part: {fileID: 42460470536643320}
+    hingeAxis: {x: 0, y: 1, z: 0}
+    pitch: 0
+    roll: 0
+    yaw: 1
+  - part: {fileID: 1102761759618757362}
+    hingeAxis: {x: 1, y: 0, z: 0}
+    pitch: 0
+    roll: -1
+    yaw: 0
+  - part: {fileID: 974476501822030944}
+    hingeAxis: {x: 1, y: 0, z: 0}
+    pitch: 0
+    roll: -1
+    yaw: 0
+  - part: {fileID: 1152987864308753274}
+    hingeAxis: {x: 1, y: 0, z: 0}
+    pitch: 0
+    roll: 1
+    yaw: 0
+  - part: {fileID: 8717737633001334782}
+    hingeAxis: {x: 1, y: 0, z: 0}
+    pitch: 0
+    roll: 1
+    yaw: 0
+  - part: {fileID: 5698725768314671713}
+    hingeAxis: {x: 1, y: 0, z: 0}
+    pitch: 1
+    roll: 0
+    yaw: 0
+  - part: {fileID: 5171504810770646437}
+    hingeAxis: {x: 1, y: 0, z: 0}
+    pitch: 1
+    roll: 0
+    yaw: 0
+  aileronTravel: 22
+  elevatorTravel: 22
+  rudderTravel: 20
+  surfaceResponse: 120
+  propeller: {fileID: 4107912910749383933}
+  propellerAxis: {x: 0, y: 0, z: 1}
+  propellerRpm: 1600
+  wheelBrakeAcceleration: 3
+  groundSteeringRate: 20
+  rotationSpeed: 24
 --- !u!1 &2274019124036057980
 GameObject:
   m_ObjectHideFlags: 0
@@ -1257,37 +1306,6 @@ Transform:
   - {fileID: 1593680691186244368}
   m_Father: {fileID: 4949029197312469996}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!1 &3172253630371194476
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 4030945969592917455}
-  m_Layer: 0
-  m_Name: Flight thrust reference
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!4 &4030945969592917455
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 3172253630371194476}
-  serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 4949029197312469996}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &3303751019984612835
 GameObject:
   m_ObjectHideFlags: 0
@@ -1521,37 +1539,6 @@ MeshRenderer:
   m_SortingOrder: 0
   m_MaskInteraction: 0
   m_AdditionalVertexStreams: {fileID: 0}
---- !u!1 &4477979589482184600
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 2821964236325096970}
-  m_Layer: 0
-  m_Name: Flight yaw reference
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!4 &2821964236325096970
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 4477979589482184600}
-  serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 4949029197312469996}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &4481552159388326372
 GameObject:
   m_ObjectHideFlags: 0
