@@ -26,9 +26,12 @@ public class VehicleLauncherMount : MonoBehaviour
         hasAim = true;
     }
 
-    void LateUpdate()
+    int lastAimFrame = -1;
+    void LateUpdate() => UpdateAim();
+    public void UpdateAim()
     {
-        if (!hasAim || vehicle.IsDestroyed) return;
+        if (!hasAim || !vehicle || vehicle.IsDestroyed || lastAimFrame == Time.frameCount) return;
+        lastAimFrame = Time.frameCount;
         Vector3 direction = (aimPoint - muzzle.position).normalized;
         Vector3 local = yawPivot.parent.InverseTransformDirection(direction);
         float yaw = Mathf.Clamp(Mathf.Atan2(local.x, local.z) * Mathf.Rad2Deg, -yawLimit, yawLimit);

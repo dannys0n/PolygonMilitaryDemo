@@ -170,6 +170,7 @@ public class VehicleLauncher : MonoBehaviour
         Recharge(Time.time);
         if (missiles==0 || vehicle.IsDestroyed || pilot.MountedVehicle != vehicle || vehicle.seats[pilot.SeatIndex].role != controlRole || Time.time < nextShot)
             return false;
+        if (TryGetComponent<VehicleLauncherMount>(out var mount)) mount.UpdateAim();
         if (requiresLock)
         {
             // Revalidate immediately: a lost target or an unselected weapon cannot fire a stale lock.

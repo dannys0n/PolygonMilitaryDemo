@@ -23,6 +23,7 @@ public class VehicleTurret : MonoBehaviour
     Quaternion barrelRest;
     public float casingScale = 1.7f;
     int pendingFlashes, pendingOwnerCasings;
+
     public float damage = 34, range = 120, roundsPerMinute = 650, turnRate = 100;
     public Vector2 pitchLimits = new Vector2(-20, 45);
     Vector3 aimDirection = Vector3.forward;
@@ -58,8 +59,11 @@ public class VehicleTurret : MonoBehaviour
         if (direction.sqrMagnitude > .001f)
             aimDirection = direction.normalized;
     }
-    void LateUpdate()
+    int lastAimFrame = -1;
+    void UpdateAim()
     {
+        if (lastAimFrame == Time.frameCount) return;
+        lastAimFrame = Time.frameCount;
         Vector3 direction = aimAtPoint ? (aimPoint-muzzle.position).normalized : aimDirection;
         Vector3 local = yawPivot.parent.InverseTransformDirection(direction);
         float yaw = Mathf.Atan2(local.x, local.z) * Mathf.Rad2Deg;
@@ -69,6 +73,10 @@ public class VehicleTurret : MonoBehaviour
             yawPivot.localRotation = Quaternion.RotateTowards(yawPivot.localRotation, Quaternion.Euler(0, yaw, 0), turnRate * Time.deltaTime);
             pitchPivot.localRotation = Quaternion.RotateTowards(pitchPivot.localRotation, Quaternion.Euler(-up, 0, 0), turnRate * Time.deltaTime);
         }
+    }
+    void LateUpdate()
+    {
+        UpdateAim();
         bool firing=Time.time-lastBarrelShot < 60f/roundsPerMinute+.02f;
         barrelSpeed=Mathf.MoveTowards(barrelSpeed,firing ? roundsPerMinute/6f : 0,(firing?barrelSpinUp:barrelSpinDown)*Time.deltaTime);
         barrelAngle=(barrelAngle+barrelSpeed*6f*Time.deltaTime)%360;
@@ -89,6 +97,7 @@ public class VehicleTurret : MonoBehaviour
     void OnDisable()
     {
         pendingFlashes = pendingOwnerCasings = 0;
+
         barrelSpeed=0;
         lastBarrelShot=float.NegativeInfinity;
         if(muzzleFlash) muzzleFlash.Stop(true, ParticleSystemStopBehavior.StopEmittingAndClear);
@@ -98,6 +107,7 @@ public class VehicleTurret : MonoBehaviour
         if (vehicle.IsDestroyed || !gunner.IsMounted || gunner.MountedVehicle != vehicle
             || vehicle.seats[gunner.SeatIndex].role != controlRole || Time.time < nextShot)
             return false;
+        UpdateAim();
         nextShot = Time.time + 60f / roundsPerMinute;
         RaycastHit nearest = default;
         bool found = false;
