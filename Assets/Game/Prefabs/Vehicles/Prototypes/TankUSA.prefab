@@ -1470,6 +1470,7 @@ GameObject:
   - component: {fileID: 742150743054112647}
   - component: {fileID: 7237710854105870748}
   - component: {fileID: 5938741535178617939}
+  - component: {fileID: 5458846285146850502}
   m_Layer: 0
   m_Name: TankUSA
   m_TagString: Untagged
@@ -1551,7 +1552,9 @@ MonoBehaviour:
 
     M1 Abrams family, high confidence; master/alert and driver instrument panels described in the public NPS study. https://hdl.handle.net/10945/5377'
   displayName: US tank (prototype)
-  seatDiagram: {fileID: 0}
+  seatDiagram: {fileID: 21300000, guid: fa96b24f426709549a8670bc93b4737c, type: 3}
+  seatDiagramCenter: {x: 0, y: 1.0690985}
+  seatDiagramHalfExtent: 5.587643
   motor: {fileID: 7237710854105870748}
   turret: {fileID: 0}
   destructionEffect: {fileID: 695410771644243590, guid: c07b2e8d0c65dad44bf5eaca660002fc, type: 3}
@@ -1565,8 +1568,9 @@ MonoBehaviour:
     eye: {fileID: 5992331123731970159}
     leftGrip: {fileID: 0}
     rightGrip: {fileID: 0}
-    diagramPosition: {x: -14, y: 25}
-  - name: Passenger
+    diagramPosition: {x: 0, y: 20}
+    showVehicleInstruments: 1
+  - name: Commander
     role: 2
     anchor: {fileID: 1783491758803715761}
     exit: {fileID: 2897441276186921359}
@@ -1574,7 +1578,8 @@ MonoBehaviour:
     eye: {fileID: 6866298457223990215}
     leftGrip: {fileID: 0}
     rightGrip: {fileID: 0}
-    diagramPosition: {x: 14, y: 25}
+    diagramPosition: {x: 22, y: -15}
+    showVehicleInstruments: 1
   maxHealth: 3600
   bulletDamageMultiplier: 0.04
   explosiveDamageMultiplier: 0.55
@@ -1688,6 +1693,27 @@ MonoBehaviour:
   secondaryScale: 0.45
   finalScale: 1.5
   smokeScale: 1
+--- !u!114 &5458846285146850502
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5416334223319766583}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e05ac1e4966f3d041bae7861e297b408, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::VehicleAttackSight
+  vehicle: {fileID: 5174917174514700154}
+  style: 0
+  barrel: {fileID: 3705457893121322424}
+  muzzleLocalPosition: {x: 0.06443353, y: -0.000000044703484, z: 3.9264102}
+  forwardLocal: {x: 0, y: 0, z: 1}
+  weaponIcon: {fileID: 21300000, guid: ad031b359a8f6544bb2652fcfc845cd0, type: 3}
+  weaponName: 120 MM MAIN GUN
+  ammunitionType: APFSDS
+  range: 4000
 --- !u!1 &5496200820025048392
 GameObject:
   m_ObjectHideFlags: 0

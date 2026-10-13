@@ -3979,7 +3979,9 @@ MonoBehaviour:
 
     HMMWV/Hummer family, high confidence. TM 9-2320-280-10: circular speedometer and brake annunciator; mph. https://www.nsnlookup.com/equipment-intelligence/land/hmmwv/technical-manual/tm-9-2320-280-10/52'
   displayName: Hummer
-  seatDiagram: {fileID: 0}
+  seatDiagram: {fileID: 21300000, guid: 09bc86d9a82ea7d40a205c8dfd6d9c50, type: 3}
+  seatDiagramCenter: {x: 0.010131836, y: -0.012149334}
+  seatDiagramHalfExtent: 2.4373772
   motor: {fileID: 7749662443089936875}
   turret: {fileID: 1627803472940609030}
   destructionEffect: {fileID: 695410771644243590, guid: c07b2e8d0c65dad44bf5eaca660002fc, type: 3}
@@ -3993,7 +3995,8 @@ MonoBehaviour:
     eye: {fileID: 7282305671009475043}
     leftGrip: {fileID: 5456814952908194524}
     rightGrip: {fileID: 8360498766962998763}
-    diagramPosition: {x: 0, y: 0}
+    diagramPosition: {x: -18, y: 35}
+    showVehicleInstruments: 1
   - name: Roof gunner
     role: 1
     anchor: {fileID: 6911892878317854645}
@@ -4002,7 +4005,8 @@ MonoBehaviour:
     eye: {fileID: 4512435661786533341}
     leftGrip: {fileID: 8272369524724413935}
     rightGrip: {fileID: 4072146754824907095}
-    diagramPosition: {x: 0, y: 0}
+    diagramPosition: {x: 0, y: 2}
+    showVehicleInstruments: 0
   - name: Front passenger
     role: 2
     anchor: {fileID: 4324808422855201514}
@@ -4011,7 +4015,8 @@ MonoBehaviour:
     eye: {fileID: 4021426138700717619}
     leftGrip: {fileID: 0}
     rightGrip: {fileID: 0}
-    diagramPosition: {x: 0, y: 0}
+    diagramPosition: {x: 18, y: 35}
+    showVehicleInstruments: 0
   - name: Rear left
     role: 2
     anchor: {fileID: 9007821415273648080}
@@ -4020,7 +4025,8 @@ MonoBehaviour:
     eye: {fileID: 6868898737663503709}
     leftGrip: {fileID: 0}
     rightGrip: {fileID: 0}
-    diagramPosition: {x: 0, y: 0}
+    diagramPosition: {x: -18, y: -28}
+    showVehicleInstruments: 0
   - name: Rear right
     role: 2
     anchor: {fileID: 6927058776003512427}
@@ -4029,7 +4035,8 @@ MonoBehaviour:
     eye: {fileID: 595642706526917810}
     leftGrip: {fileID: 0}
     rightGrip: {fileID: 0}
-    diagramPosition: {x: 0, y: 0}
+    diagramPosition: {x: 18, y: -28}
+    showVehicleInstruments: 0
   maxHealth: 1000
   bulletDamageMultiplier: 0.075
   explosiveDamageMultiplier: 0.65
@@ -4267,6 +4274,14 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 2710166008724627184}
     m_Modifications:
+    - target: {fileID: 273994455614854434, guid: b673e78b6ab8a4d4ea5d2119b6724883, type: 3}
+      propertyPath: m_Layer
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3655317360853100847, guid: b673e78b6ab8a4d4ea5d2119b6724883, type: 3}
+      propertyPath: m_Layer
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 3889828901477873715, guid: b673e78b6ab8a4d4ea5d2119b6724883, type: 3}
       propertyPath: m_LocalPosition.x
       value: 0
@@ -4310,6 +4325,18 @@ PrefabInstance:
     - target: {fileID: 4517289003729461897, guid: b673e78b6ab8a4d4ea5d2119b6724883, type: 3}
       propertyPath: m_Name
       value: Hummer_003
+      objectReference: {fileID: 0}
+    - target: {fileID: 4517289003729461897, guid: b673e78b6ab8a4d4ea5d2119b6724883, type: 3}
+      propertyPath: m_Layer
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4558162642765721438, guid: b673e78b6ab8a4d4ea5d2119b6724883, type: 3}
+      propertyPath: m_Layer
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6981343718945561855, guid: b673e78b6ab8a4d4ea5d2119b6724883, type: 3}
+      propertyPath: m_Layer
+      value: 0
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -4357,6 +4384,10 @@ PrefabInstance:
     - target: {fileID: 516326385010432276, guid: 01884fb765ff88e4b91949fdddc82b2d, type: 3}
       propertyPath: m_Name
       value: Machine_gun_004
+      objectReference: {fileID: 0}
+    - target: {fileID: 516326385010432276, guid: 01884fb765ff88e4b91949fdddc82b2d, type: 3}
+      propertyPath: m_Layer
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 892148889074074542, guid: 01884fb765ff88e4b91949fdddc82b2d, type: 3}
       propertyPath: m_LocalPosition.x

@@ -1549,7 +1549,9 @@ MonoBehaviour:
 
     M113 family, medium/high confidence. Analog driver''s instruments. TM 9-2350-261-10. https://www.nsnlookup.com/equipment-intelligence/land/m113/technical-manual/tm-9-2350-261-10/103'
   displayName: Armored personnel carrier (prototype)
-  seatDiagram: {fileID: 0}
+  seatDiagram: {fileID: 21300000, guid: 41c0640f47397c8438f3305dc8c1049e, type: 3}
+  seatDiagramCenter: {x: 0, y: 0.037368774}
+  seatDiagramHalfExtent: 2.9430907
   motor: {fileID: 6708346829158872596}
   turret: {fileID: 0}
   destructionEffect: {fileID: 695410771644243590, guid: c07b2e8d0c65dad44bf5eaca660002fc, type: 3}
@@ -1563,8 +1565,9 @@ MonoBehaviour:
     eye: {fileID: 5320772160473640139}
     leftGrip: {fileID: 0}
     rightGrip: {fileID: 0}
-    diagramPosition: {x: -14, y: 25}
-  - name: Passenger
+    diagramPosition: {x: -18, y: 40}
+    showVehicleInstruments: 1
+  - name: Commander
     role: 2
     anchor: {fileID: 3544746482695318608}
     exit: {fileID: 6629541792639530376}
@@ -1572,7 +1575,8 @@ MonoBehaviour:
     eye: {fileID: 5810737232776882386}
     leftGrip: {fileID: 0}
     rightGrip: {fileID: 0}
-    diagramPosition: {x: 14, y: 25}
+    diagramPosition: {x: 12, y: 5}
+    showVehicleInstruments: 1
   maxHealth: 3600
   bulletDamageMultiplier: 0.04
   explosiveDamageMultiplier: 0.55

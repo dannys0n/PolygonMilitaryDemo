@@ -1695,7 +1695,9 @@ MonoBehaviour:
 
     C-17 family, high confidence. HUD is a primary flight reference; heading/speed/altitude and flight-path symbology. https://www.afmc.af.mil/News/Article-Display/Article/1476038/heads-up-418th-flts-wraps-up-new-pilot-display-tests/'
   displayName: Transport plane (prototype)
-  seatDiagram: {fileID: 0}
+  seatDiagram: {fileID: 21300000, guid: 0ba917c0badb9d94ba394ba484478c8e, type: 3}
+  seatDiagramCenter: {x: 0, y: -12.040503}
+  seatDiagramHalfExtent: 27.377941
   motor: {fileID: 5160192186890993291}
   turret: {fileID: 0}
   destructionEffect: {fileID: 695410771644243590, guid: c07b2e8d0c65dad44bf5eaca660002fc, type: 3}
@@ -1709,8 +1711,9 @@ MonoBehaviour:
     eye: {fileID: 8471201304334519950}
     leftGrip: {fileID: 0}
     rightGrip: {fileID: 0}
-    diagramPosition: {x: -14, y: 25}
-  - name: Passenger
+    diagramPosition: {x: -18, y: 46}
+    showVehicleInstruments: 1
+  - name: Co-pilot
     role: 2
     anchor: {fileID: 6801278224526727115}
     exit: {fileID: 1837174108217638759}
@@ -1718,7 +1721,8 @@ MonoBehaviour:
     eye: {fileID: 4070549514727049852}
     leftGrip: {fileID: 0}
     rightGrip: {fileID: 0}
-    diagramPosition: {x: 14, y: 25}
+    diagramPosition: {x: 18, y: 46}
+    showVehicleInstruments: 1
   maxHealth: 2200
   bulletDamageMultiplier: 0.08
   explosiveDamageMultiplier: 0.55

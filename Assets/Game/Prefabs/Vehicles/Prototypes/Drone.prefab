@@ -499,13 +499,15 @@ MonoBehaviour:
 
     MQ-1/MQ-9 family, medium confidence; remote operator telemetry. https://www.ga-asi.com/ground-control-stations/'
   displayName: Drone (prototype)
-  seatDiagram: {fileID: 0}
+  seatDiagram: {fileID: 21300000, guid: c939027718530094dba2f26c254bee33, type: 3}
+  seatDiagramCenter: {x: 0, y: 0.3023796}
+  seatDiagramHalfExtent: 10.869845
   motor: {fileID: 5303036104770562350}
   turret: {fileID: 0}
   destructionEffect: {fileID: 695410771644243590, guid: c07b2e8d0c65dad44bf5eaca660002fc, type: 3}
   cameraTarget: {fileID: 2529154209472982359}
   seats:
-  - name: Pilot
+  - name: Operator
     role: 0
     anchor: {fileID: 8617348325039066005}
     exit: {fileID: 555180864062471024}
@@ -513,7 +515,8 @@ MonoBehaviour:
     eye: {fileID: 1593680691186244368}
     leftGrip: {fileID: 0}
     rightGrip: {fileID: 0}
-    diagramPosition: {x: -14, y: 25}
+    diagramPosition: {x: 0, y: 32}
+    showVehicleInstruments: 1
   maxHealth: 2200
   bulletDamageMultiplier: 0.08
   explosiveDamageMultiplier: 0.55

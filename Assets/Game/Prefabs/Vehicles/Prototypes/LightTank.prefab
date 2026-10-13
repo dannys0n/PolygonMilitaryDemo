@@ -348,6 +348,7 @@ GameObject:
   - component: {fileID: 7644685257530621074}
   - component: {fileID: 5976936208733314332}
   - component: {fileID: 6916287674398212671}
+  - component: {fileID: 5598535153285950260}
   m_Layer: 0
   m_Name: LightTank
   m_TagString: Untagged
@@ -429,7 +430,9 @@ MonoBehaviour:
 
     Bradley family reference is approximate. Exact driver''s instrument panel was not established from a verified manual; gauge style and units are a provisional adaptation.'
   displayName: Light tank (prototype)
-  seatDiagram: {fileID: 0}
+  seatDiagram: {fileID: 21300000, guid: 324e5839b1a963d44aeec84d629860cc, type: 3}
+  seatDiagramCenter: {x: 0, y: 0}
+  seatDiagramHalfExtent: 3.6982043
   motor: {fileID: 5976936208733314332}
   turret: {fileID: 0}
   destructionEffect: {fileID: 695410771644243590, guid: c07b2e8d0c65dad44bf5eaca660002fc, type: 3}
@@ -443,8 +446,9 @@ MonoBehaviour:
     eye: {fileID: 2988455816406240496}
     leftGrip: {fileID: 0}
     rightGrip: {fileID: 0}
-    diagramPosition: {x: -14, y: 25}
-  - name: Passenger
+    diagramPosition: {x: -20, y: 40}
+    showVehicleInstruments: 1
+  - name: Commander
     role: 2
     anchor: {fileID: 514666183529831575}
     exit: {fileID: 1082959746446833587}
@@ -452,7 +456,8 @@ MonoBehaviour:
     eye: {fileID: 516977434640273258}
     leftGrip: {fileID: 0}
     rightGrip: {fileID: 0}
-    diagramPosition: {x: 14, y: 25}
+    diagramPosition: {x: 15, y: 0}
+    showVehicleInstruments: 1
   maxHealth: 3600
   bulletDamageMultiplier: 0.04
   explosiveDamageMultiplier: 0.55
@@ -566,6 +571,27 @@ MonoBehaviour:
   secondaryScale: 0.45
   finalScale: 1.5
   smokeScale: 1
+--- !u!114 &5598535153285950260
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2146322321438096962}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e05ac1e4966f3d041bae7861e297b408, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::VehicleAttackSight
+  vehicle: {fileID: 4638209563810107676}
+  style: 3
+  barrel: {fileID: 2186096514274842312}
+  muzzleLocalPosition: {x: 0, y: 0.019771047, z: 2.2164953}
+  forwardLocal: {x: 0, y: 0, z: 1}
+  weaponIcon: {fileID: 21300000, guid: 2c96c802e944f77419702839605741d6, type: 3}
+  weaponName: IFV CANNON
+  ammunitionType: APFSDS
+  range: 4000
 --- !u!1 &2155077309122243850
 GameObject:
   m_ObjectHideFlags: 0

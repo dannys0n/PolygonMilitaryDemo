@@ -1211,8 +1211,12 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Vehicle
   instruments: 0
+  instrumentReference: 0
+  instrumentReferenceNotes: 
   displayName: SUV
   seatDiagram: {fileID: 21300000, guid: 000a37490156f684d8c584452226b9a6, type: 3}
+  seatDiagramCenter: {x: -0.030866861, y: -0.5491252}
+  seatDiagramHalfExtent: 3.3395958
   motor: {fileID: 554041316626627695}
   turret: {fileID: 0}
   destructionEffect: {fileID: 695410771644243590, guid: c07b2e8d0c65dad44bf5eaca660002fc, type: 3}
@@ -1226,7 +1230,8 @@ MonoBehaviour:
     eye: {fileID: 6056265647238942694}
     leftGrip: {fileID: 1536233155878690201}
     rightGrip: {fileID: 1546469757189472878}
-    diagramPosition: {x: -13, y: 32}
+    diagramPosition: {x: -18, y: 45}
+    showVehicleInstruments: 1
   - name: Passenger
     role: 2
     anchor: {fileID: 8276370691989179372}
@@ -1235,7 +1240,8 @@ MonoBehaviour:
     eye: {fileID: 5029488750347801915}
     leftGrip: {fileID: 0}
     rightGrip: {fileID: 0}
-    diagramPosition: {x: 13, y: 32}
+    diagramPosition: {x: 18, y: 45}
+    showVehicleInstruments: 0
   - name: Passenger 2
     role: 2
     anchor: {fileID: 2025386117242303430}
@@ -1244,7 +1250,8 @@ MonoBehaviour:
     eye: {fileID: 7152175906989360969}
     leftGrip: {fileID: 0}
     rightGrip: {fileID: 0}
-    diagramPosition: {x: -13, y: 13}
+    diagramPosition: {x: -18, y: 14}
+    showVehicleInstruments: 0
   - name: Passenger 3
     role: 2
     anchor: {fileID: 6872849264644892461}
@@ -1253,7 +1260,8 @@ MonoBehaviour:
     eye: {fileID: 3698489942734125869}
     leftGrip: {fileID: 0}
     rightGrip: {fileID: 0}
-    diagramPosition: {x: 13, y: 13}
+    diagramPosition: {x: 18, y: 14}
+    showVehicleInstruments: 0
   - name: Passenger 4
     role: 2
     anchor: {fileID: 8373792008313753885}
@@ -1262,7 +1270,8 @@ MonoBehaviour:
     eye: {fileID: 7039323846854025334}
     leftGrip: {fileID: 0}
     rightGrip: {fileID: 0}
-    diagramPosition: {x: -13, y: -6}
+    diagramPosition: {x: -18, y: -17}
+    showVehicleInstruments: 0
   - name: Passenger 5
     role: 2
     anchor: {fileID: 2185132211463065290}
@@ -1271,7 +1280,8 @@ MonoBehaviour:
     eye: {fileID: 2553391624130184236}
     leftGrip: {fileID: 0}
     rightGrip: {fileID: 0}
-    diagramPosition: {x: 13, y: -6}
+    diagramPosition: {x: 18, y: -17}
+    showVehicleInstruments: 0
   maxHealth: 900
   bulletDamageMultiplier: 0.325
   explosiveDamageMultiplier: 0.8

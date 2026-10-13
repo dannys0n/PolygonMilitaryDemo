@@ -628,7 +628,9 @@ MonoBehaviour:
 
     Tor family reference is approximate. Exact driver''s instrument panel was not established from a verified manual; gauge style and units are a provisional adaptation.'
   displayName: Radar vehicle (prototype)
-  seatDiagram: {fileID: 0}
+  seatDiagram: {fileID: 21300000, guid: eadee39d81cf90d43884919b4a0a1c85, type: 3}
+  seatDiagramCenter: {x: 0.15774262, y: 0}
+  seatDiagramHalfExtent: 3.6982043
   motor: {fileID: 5878398722427174556}
   turret: {fileID: 0}
   destructionEffect: {fileID: 695410771644243590, guid: c07b2e8d0c65dad44bf5eaca660002fc, type: 3}
@@ -642,8 +644,9 @@ MonoBehaviour:
     eye: {fileID: 4293732323786929443}
     leftGrip: {fileID: 0}
     rightGrip: {fileID: 0}
-    diagramPosition: {x: -14, y: 25}
-  - name: Passenger
+    diagramPosition: {x: -20, y: 40}
+    showVehicleInstruments: 1
+  - name: Systems operator
     role: 2
     anchor: {fileID: 3889513435974590376}
     exit: {fileID: 4083837839091349567}
@@ -651,7 +654,8 @@ MonoBehaviour:
     eye: {fileID: 1118144998669573684}
     leftGrip: {fileID: 0}
     rightGrip: {fileID: 0}
-    diagramPosition: {x: 14, y: 25}
+    diagramPosition: {x: 15, y: 0}
+    showVehicleInstruments: 1
   maxHealth: 3600
   bulletDamageMultiplier: 0.04
   explosiveDamageMultiplier: 0.55

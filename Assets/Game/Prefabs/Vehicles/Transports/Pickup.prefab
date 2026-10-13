@@ -1049,8 +1049,12 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Vehicle
   instruments: 0
+  instrumentReference: 0
+  instrumentReferenceNotes: 
   displayName: Pickup
   seatDiagram: {fileID: 21300000, guid: 835614d4459bb2d44834fa6fe39173bd, type: 3}
+  seatDiagramCenter: {x: 0, y: 0.0011014938}
+  seatDiagramHalfExtent: 2.5910356
   motor: {fileID: 5789014915771245960}
   turret: {fileID: 0}
   destructionEffect: {fileID: 695410771644243590, guid: c07b2e8d0c65dad44bf5eaca660002fc, type: 3}
@@ -1064,7 +1068,8 @@ MonoBehaviour:
     eye: {fileID: 8894640417419793731}
     leftGrip: {fileID: 6430649261601218183}
     rightGrip: {fileID: 8151894015814994607}
-    diagramPosition: {x: -13, y: 32}
+    diagramPosition: {x: -18, y: 45}
+    showVehicleInstruments: 1
   - name: Passenger
     role: 2
     anchor: {fileID: 7044216853390034285}
@@ -1073,7 +1078,8 @@ MonoBehaviour:
     eye: {fileID: 6182988538744215349}
     leftGrip: {fileID: 0}
     rightGrip: {fileID: 0}
-    diagramPosition: {x: 13, y: 32}
+    diagramPosition: {x: 18, y: 45}
+    showVehicleInstruments: 0
   - name: Passenger 2
     role: 2
     anchor: {fileID: 8556332160688051754}
@@ -1082,7 +1088,8 @@ MonoBehaviour:
     eye: {fileID: 1074814946947939368}
     leftGrip: {fileID: 0}
     rightGrip: {fileID: 0}
-    diagramPosition: {x: -13, y: 13}
+    diagramPosition: {x: -18, y: 14}
+    showVehicleInstruments: 0
   - name: Passenger 3
     role: 2
     anchor: {fileID: 6013961344346770865}
@@ -1091,7 +1098,8 @@ MonoBehaviour:
     eye: {fileID: 3713135780482753269}
     leftGrip: {fileID: 0}
     rightGrip: {fileID: 0}
-    diagramPosition: {x: 13, y: 13}
+    diagramPosition: {x: 18, y: 14}
+    showVehicleInstruments: 0
   maxHealth: 900
   bulletDamageMultiplier: 0.325
   explosiveDamageMultiplier: 0.8

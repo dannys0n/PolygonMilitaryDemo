@@ -782,6 +782,7 @@ GameObject:
   - component: {fileID: 8251247456376732550}
   - component: {fileID: 4415436128638825526}
   - component: {fileID: 4007626982851943679}
+  - component: {fileID: 8554759021365195547}
   m_Layer: 0
   m_Name: TankRussian
   m_TagString: Untagged
@@ -863,7 +864,9 @@ MonoBehaviour:
 
     T72 family reference is approximate. Exact driver''s instrument panel was not established from a verified manual; gauge style and units are a provisional adaptation.'
   displayName: Russian tank (prototype)
-  seatDiagram: {fileID: 0}
+  seatDiagram: {fileID: 21300000, guid: 02575d3f0c1038a4a977869139874d65, type: 3}
+  seatDiagramCenter: {x: 0, y: 1.5729933}
+  seatDiagramHalfExtent: 6.330797
   motor: {fileID: 4415436128638825526}
   turret: {fileID: 0}
   destructionEffect: {fileID: 695410771644243590, guid: c07b2e8d0c65dad44bf5eaca660002fc, type: 3}
@@ -877,8 +880,9 @@ MonoBehaviour:
     eye: {fileID: 6810075948333118855}
     leftGrip: {fileID: 0}
     rightGrip: {fileID: 0}
-    diagramPosition: {x: -14, y: 25}
-  - name: Passenger
+    diagramPosition: {x: 0, y: 20}
+    showVehicleInstruments: 1
+  - name: Commander
     role: 2
     anchor: {fileID: 4671277484044566004}
     exit: {fileID: 8397750257114106478}
@@ -886,7 +890,8 @@ MonoBehaviour:
     eye: {fileID: 454261327421370213}
     leftGrip: {fileID: 0}
     rightGrip: {fileID: 0}
-    diagramPosition: {x: 14, y: 25}
+    diagramPosition: {x: 22, y: -15}
+    showVehicleInstruments: 1
   maxHealth: 3600
   bulletDamageMultiplier: 0.04
   explosiveDamageMultiplier: 0.55
@@ -1000,6 +1005,27 @@ MonoBehaviour:
   secondaryScale: 0.45
   finalScale: 1.5
   smokeScale: 1
+--- !u!114 &8554759021365195547
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2315570130380455751}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e05ac1e4966f3d041bae7861e297b408, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::VehicleAttackSight
+  vehicle: {fileID: 2496971061401589123}
+  style: 2
+  barrel: {fileID: 7810959860692041376}
+  muzzleLocalPosition: {x: 0, y: 0.01242134, z: 6.103814}
+  forwardLocal: {x: 0, y: 0, z: 1}
+  weaponIcon: {fileID: 21300000, guid: 32ccd526d433039448ef8019ef765eb8, type: 3}
+  weaponName: 125 MM MAIN GUN
+  ammunitionType: APFSDS
+  range: 4000
 --- !u!1 &2616424724911175789
 GameObject:
   m_ObjectHideFlags: 0

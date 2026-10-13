@@ -1161,6 +1161,7 @@ GameObject:
   - component: {fileID: 124991227107332705}
   - component: {fileID: 3975336535070856059}
   - component: {fileID: 5921328640503533560}
+  - component: {fileID: 8141444729520873955}
   m_Layer: 0
   m_Name: TankGerman
   m_TagString: Untagged
@@ -1242,7 +1243,9 @@ MonoBehaviour:
 
     Leopard2 family reference is approximate. Exact driver''s instrument panel was not established from a verified manual; gauge style and units are a provisional adaptation.'
   displayName: German tank (prototype)
-  seatDiagram: {fileID: 0}
+  seatDiagram: {fileID: 21300000, guid: c6bb99ddb0619ef458563d3e52338946, type: 3}
+  seatDiagramCenter: {x: 0, y: 0.7694583}
+  seatDiagramHalfExtent: 5.914359
   motor: {fileID: 3975336535070856059}
   turret: {fileID: 0}
   destructionEffect: {fileID: 695410771644243590, guid: c07b2e8d0c65dad44bf5eaca660002fc, type: 3}
@@ -1256,8 +1259,9 @@ MonoBehaviour:
     eye: {fileID: 6814849178048135650}
     leftGrip: {fileID: 0}
     rightGrip: {fileID: 0}
-    diagramPosition: {x: -14, y: 25}
-  - name: Passenger
+    diagramPosition: {x: 22, y: 20}
+    showVehicleInstruments: 1
+  - name: Commander
     role: 2
     anchor: {fileID: 6343221134568490611}
     exit: {fileID: 5417503591131376187}
@@ -1265,7 +1269,8 @@ MonoBehaviour:
     eye: {fileID: 2194472628780982169}
     leftGrip: {fileID: 0}
     rightGrip: {fileID: 0}
-    diagramPosition: {x: 14, y: 25}
+    diagramPosition: {x: -20, y: -15}
+    showVehicleInstruments: 1
   maxHealth: 3600
   bulletDamageMultiplier: 0.04
   explosiveDamageMultiplier: 0.55
@@ -1379,6 +1384,27 @@ MonoBehaviour:
   secondaryScale: 0.45
   finalScale: 1.5
   smokeScale: 1
+--- !u!114 &8141444729520873955
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3800691038718240925}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e05ac1e4966f3d041bae7861e297b408, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::VehicleAttackSight
+  vehicle: {fileID: 8354287537461198690}
+  style: 1
+  barrel: {fileID: 8582236083814386747}
+  muzzleLocalPosition: {x: 0.00000009685755, y: 0.023358688, z: 4.2597957}
+  forwardLocal: {x: 0, y: 0, z: 1}
+  weaponIcon: {fileID: 21300000, guid: 6de584058565b6d46bdd252afee15d95, type: 3}
+  weaponName: 120 MM MAIN GUN
+  ammunitionType: APFSDS
+  range: 4000
 --- !u!1 &3860510351366812075
 GameObject:
   m_ObjectHideFlags: 0

@@ -867,8 +867,12 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Vehicle
   instruments: 0
+  instrumentReference: 0
+  instrumentReferenceNotes: 
   displayName: Compact car
   seatDiagram: {fileID: 21300000, guid: c85c16d355d44004680fee6cd736e7dc, type: 3}
+  seatDiagramCenter: {x: 0, y: 0.0036511421}
+  seatDiagramHalfExtent: 2.155434
   motor: {fileID: 789834358330519409}
   turret: {fileID: 0}
   destructionEffect: {fileID: 695410771644243590, guid: c07b2e8d0c65dad44bf5eaca660002fc, type: 3}
@@ -882,7 +886,8 @@ MonoBehaviour:
     eye: {fileID: 9047198918050450805}
     leftGrip: {fileID: 3111634516876056238}
     rightGrip: {fileID: 5474625763455987799}
-    diagramPosition: {x: -13, y: 32}
+    diagramPosition: {x: -18, y: 45}
+    showVehicleInstruments: 1
   - name: Passenger
     role: 2
     anchor: {fileID: 2669523430862813023}
@@ -891,7 +896,8 @@ MonoBehaviour:
     eye: {fileID: 338844612455888360}
     leftGrip: {fileID: 0}
     rightGrip: {fileID: 0}
-    diagramPosition: {x: 13, y: 32}
+    diagramPosition: {x: 18, y: 45}
+    showVehicleInstruments: 0
   - name: Passenger 2
     role: 2
     anchor: {fileID: 1159441085914252541}
@@ -900,7 +906,8 @@ MonoBehaviour:
     eye: {fileID: 8269434207286171292}
     leftGrip: {fileID: 0}
     rightGrip: {fileID: 0}
-    diagramPosition: {x: -13, y: 13}
+    diagramPosition: {x: -18, y: 14}
+    showVehicleInstruments: 0
   - name: Passenger 3
     role: 2
     anchor: {fileID: 2010685189800054486}
@@ -909,7 +916,8 @@ MonoBehaviour:
     eye: {fileID: 6233443174385887920}
     leftGrip: {fileID: 0}
     rightGrip: {fileID: 0}
-    diagramPosition: {x: 13, y: 13}
+    diagramPosition: {x: 18, y: 14}
+    showVehicleInstruments: 0
   maxHealth: 900
   bulletDamageMultiplier: 0.325
   explosiveDamageMultiplier: 0.8

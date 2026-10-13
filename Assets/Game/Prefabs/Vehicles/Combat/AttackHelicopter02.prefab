@@ -179,6 +179,8 @@ MonoBehaviour:
     AH/MH-6, MD-500 family, high confidence. CSP-E-1 flight manual instrument-panel figure 4-2. Ground speed and AGL substitute for unsimulated air-data instruments. https://www.heliczech.cz/wp-content/uploads/2024/07/POH-MD500E.pdf'
   displayName: Attack helicopter 2
   seatDiagram: {fileID: 21300000, guid: 27163ab2ddfefa54085a23c08d33754a, type: 3}
+  seatDiagramCenter: {x: -0.01392293, y: -1.0140619}
+  seatDiagramHalfExtent: 5.808713
   motor: {fileID: 8589393883394410537}
   turret: {fileID: 470926342569773407}
   destructionEffect: {fileID: 695410771644243590, guid: c07b2e8d0c65dad44bf5eaca660002fc, type: 3}
@@ -192,7 +194,8 @@ MonoBehaviour:
     eye: {fileID: 5669225177981451939}
     leftGrip: {fileID: 7826392686211082360}
     rightGrip: {fileID: 3774253319605959161}
-    diagramPosition: {x: -13, y: 32}
+    diagramPosition: {x: -18, y: 30}
+    showVehicleInstruments: 1
   - name: Gunner
     role: 1
     anchor: {fileID: 9085382975911655203}
@@ -201,7 +204,8 @@ MonoBehaviour:
     eye: {fileID: 5913415830873229699}
     leftGrip: {fileID: 5804528069486010695}
     rightGrip: {fileID: 4545707930231354043}
-    diagramPosition: {x: 0, y: -8}
+    diagramPosition: {x: 18, y: 30}
+    showVehicleInstruments: 0
   maxHealth: 1600
   bulletDamageMultiplier: 0.3
   explosiveDamageMultiplier: 0.8

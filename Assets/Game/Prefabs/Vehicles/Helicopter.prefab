@@ -260,7 +260,9 @@ MonoBehaviour:
 
     AH-64 family, medium/high confidence. Adapted IHADSS hover velocity cue and transition symbology. https://api.digitalcombatsimulator.com/upload/iblock/c22/hyhtbs5kqjyjauapanut3az7bbs3p3b1/DCS_AH-64D_Quick_Start_Manual_EN.pdf'
   displayName: Helicopter
-  seatDiagram: {fileID: 0}
+  seatDiagram: {fileID: 21300000, guid: 7d0af615358e98949b7b4f55458012b5, type: 3}
+  seatDiagramCenter: {x: -0.000014781952, y: 0.4960122}
+  seatDiagramHalfExtent: 8.557807
   motor: {fileID: 3531695694254071810}
   turret: {fileID: 2684248542658391728}
   destructionEffect: {fileID: 695410771644243590, guid: c07b2e8d0c65dad44bf5eaca660002fc, type: 3}
@@ -274,7 +276,8 @@ MonoBehaviour:
     eye: {fileID: 4793488355362411154}
     leftGrip: {fileID: 3293204507958610603}
     rightGrip: {fileID: 824110037522568098}
-    diagramPosition: {x: 0, y: 0}
+    diagramPosition: {x: 0, y: 18}
+    showVehicleInstruments: 1
   - name: Gunner
     role: 1
     anchor: {fileID: 306680582579715985}
@@ -283,7 +286,8 @@ MonoBehaviour:
     eye: {fileID: 351725149298160244}
     leftGrip: {fileID: 1837567454299737933}
     rightGrip: {fileID: 1234364694785150440}
-    diagramPosition: {x: 0, y: 0}
+    diagramPosition: {x: 0, y: 49}
+    showVehicleInstruments: 0
   maxHealth: 1600
   bulletDamageMultiplier: 0.175
   explosiveDamageMultiplier: 0.8
@@ -3912,6 +3916,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: Machine_gun_004
       objectReference: {fileID: 0}
+    - target: {fileID: 516326385010432276, guid: 01884fb765ff88e4b91949fdddc82b2d, type: 3}
+      propertyPath: m_Layer
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 892148889074074542, guid: 01884fb765ff88e4b91949fdddc82b2d, type: 3}
       propertyPath: m_LocalScale.x
       value: 1
@@ -4000,6 +4008,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: Helicopter_001
       objectReference: {fileID: 0}
+    - target: {fileID: 284370713675221194, guid: 6e84c9e601def334d8eb819fdb44e30f, type: 3}
+      propertyPath: m_Layer
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 628701869070520944, guid: 6e84c9e601def334d8eb819fdb44e30f, type: 3}
       propertyPath: m_LocalPosition.x
       value: 0
@@ -4038,6 +4050,14 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 628701869070520944, guid: 6e84c9e601def334d8eb819fdb44e30f, type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3374799248585985372, guid: 6e84c9e601def334d8eb819fdb44e30f, type: 3}
+      propertyPath: m_Layer
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6476820632041379714, guid: 6e84c9e601def334d8eb819fdb44e30f, type: 3}
+      propertyPath: m_Layer
       value: 0
       objectReference: {fileID: 0}
     m_RemovedComponents: []

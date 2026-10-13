@@ -29,7 +29,10 @@ public class Vehicle : MonoBehaviour
         [Tooltip("Authored first-person eye point, relative to the vehicle seat.")]
         public Transform eye;
         public Transform leftGrip, rightGrip;
+        [Tooltip("Marker position on the 160-pixel vehicle seat diagram. Front of vehicle points up.")]
         public Vector2 diagramPosition;
+        [Tooltip("Show driver/pilot instruments at a monitoring seat, such as a commander or co-pilot station.")]
+        public bool showVehicleInstruments;
         [NonSerialized] public VehicleOccupant occupant, reservation;
         [NonSerialized] public float reservedUntil;
     }
@@ -37,6 +40,8 @@ public class Vehicle : MonoBehaviour
     public static readonly List<Vehicle> Active = new List<Vehicle>();
     public string displayName;
     public Sprite seatDiagram;
+    [HideInInspector] public Vector2 seatDiagramCenter;
+    [HideInInspector] public float seatDiagramHalfExtent=1;
     public VehicleMotor motor;
     public VehicleTurret turret;
     public ParticleSystem destructionEffect;

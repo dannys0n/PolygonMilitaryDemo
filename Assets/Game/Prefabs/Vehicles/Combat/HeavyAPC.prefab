@@ -1040,6 +1040,7 @@ GameObject:
   - component: {fileID: 2115610958736138699}
   - component: {fileID: 239444765632696351}
   - component: {fileID: 1889989780189448004}
+  - component: {fileID: 2152031159990771986}
   m_Layer: 0
   m_Name: HeavyAPC
   m_TagString: Untagged
@@ -1113,6 +1114,8 @@ MonoBehaviour:
     Stryker/LAV III family, medium confidence. Driver digital display and remote weapon-station adaptation. https://www.army.mil/article-amp/2881/new_simulators_get_stryker_drivers_up_to_speed'
   displayName: Heavy wheeled APC
   seatDiagram: {fileID: 21300000, guid: 7df3dea783f31c443bbb96872a025693, type: 3}
+  seatDiagramCenter: {x: 0, y: -0.15655088}
+  seatDiagramHalfExtent: 4.2610726
   motor: {fileID: 5462524098512299916}
   turret: {fileID: 239444765632696351}
   destructionEffect: {fileID: 695410771644243590, guid: c07b2e8d0c65dad44bf5eaca660002fc, type: 3}
@@ -1126,7 +1129,8 @@ MonoBehaviour:
     eye: {fileID: 7512529369134584614}
     leftGrip: {fileID: 6803412315734152828}
     rightGrip: {fileID: 6048532731355865485}
-    diagramPosition: {x: -13, y: 32}
+    diagramPosition: {x: -18, y: 47}
+    showVehicleInstruments: 1
   - name: Gunner
     role: 1
     anchor: {fileID: 3784049987785088118}
@@ -1135,7 +1139,8 @@ MonoBehaviour:
     eye: {fileID: 2962268424174508252}
     leftGrip: {fileID: 6997630436127767951}
     rightGrip: {fileID: 6865574929888531815}
-    diagramPosition: {x: 0, y: -8}
+    diagramPosition: {x: 18, y: 47}
+    showVehicleInstruments: 0
   - name: Passenger 2
     role: 2
     anchor: {fileID: 1486703809124147303}
@@ -1144,7 +1149,8 @@ MonoBehaviour:
     eye: {fileID: 5991916577718535617}
     leftGrip: {fileID: 0}
     rightGrip: {fileID: 0}
-    diagramPosition: {x: -13, y: 13}
+    diagramPosition: {x: -18, y: 14}
+    showVehicleInstruments: 0
   - name: Passenger 3
     role: 2
     anchor: {fileID: 7548704101439919654}
@@ -1153,7 +1159,8 @@ MonoBehaviour:
     eye: {fileID: 7214784072403161259}
     leftGrip: {fileID: 0}
     rightGrip: {fileID: 0}
-    diagramPosition: {x: 13, y: 13}
+    diagramPosition: {x: 18, y: 14}
+    showVehicleInstruments: 0
   - name: Passenger 4
     role: 2
     anchor: {fileID: 5572330232620239676}
@@ -1162,7 +1169,8 @@ MonoBehaviour:
     eye: {fileID: 8159447747675017530}
     leftGrip: {fileID: 0}
     rightGrip: {fileID: 0}
-    diagramPosition: {x: -13, y: -6}
+    diagramPosition: {x: -18, y: -19}
+    showVehicleInstruments: 0
   - name: Passenger 5
     role: 2
     anchor: {fileID: 2986040614792796858}
@@ -1171,7 +1179,8 @@ MonoBehaviour:
     eye: {fileID: 7396910639175960806}
     leftGrip: {fileID: 0}
     rightGrip: {fileID: 0}
-    diagramPosition: {x: 13, y: -6}
+    diagramPosition: {x: 18, y: -19}
+    showVehicleInstruments: 0
   - name: Passenger 6
     role: 2
     anchor: {fileID: 8527995340497058244}
@@ -1180,7 +1189,8 @@ MonoBehaviour:
     eye: {fileID: 1975793827411355319}
     leftGrip: {fileID: 0}
     rightGrip: {fileID: 0}
-    diagramPosition: {x: -13, y: -25}
+    diagramPosition: {x: -18, y: -52}
+    showVehicleInstruments: 0
   - name: Passenger 7
     role: 2
     anchor: {fileID: 8295588506845838416}
@@ -1189,7 +1199,8 @@ MonoBehaviour:
     eye: {fileID: 3244001800188641210}
     leftGrip: {fileID: 0}
     rightGrip: {fileID: 0}
-    diagramPosition: {x: 13, y: -25}
+    diagramPosition: {x: 18, y: -52}
+    showVehicleInstruments: 0
   maxHealth: 2400
   bulletDamageMultiplier: 0.06
   explosiveDamageMultiplier: 0.65
@@ -1331,6 +1342,27 @@ MonoBehaviour:
   secondaryScale: 0.45
   finalScale: 1.5
   smokeScale: 1
+--- !u!114 &2152031159990771986
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3154030866521880946}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e05ac1e4966f3d041bae7861e297b408, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::VehicleAttackSight
+  vehicle: {fileID: 9130765350476394884}
+  style: 3
+  barrel: {fileID: 7936602067319131144}
+  muzzleLocalPosition: {x: 0, y: -0.015413202, z: 2.1618457}
+  forwardLocal: {x: 0, y: 0, z: 1}
+  weaponIcon: {fileID: 572006580493702492, guid: a1f34646048f44c40ae64cc725a83f02, type: 3}
+  weaponName: AUTOCANNON
+  ammunitionType: CANNON
+  range: 4000
 --- !u!1 &3369670643029365182
 GameObject:
   m_ObjectHideFlags: 0

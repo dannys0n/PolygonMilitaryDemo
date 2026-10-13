@@ -748,6 +748,8 @@ MonoBehaviour:
     FMTV cab-over truck family, medium confidence; driver speedometer and instrument controls from TM 9-2320-366-10-1. https://www.nsnlookup.com/equipment-intelligence/land/fmtv/technical-manual/tm-9-2320-366-10-1/132'
   displayName: Truck chassis
   seatDiagram: {fileID: 21300000, guid: 8555b1f789a33cb4a8a1f448dfe388a6, type: 3}
+  seatDiagramCenter: {x: 0, y: 0.70228624}
+  seatDiagramHalfExtent: 3.8270538
   motor: {fileID: 6954979894660510634}
   turret: {fileID: 0}
   destructionEffect: {fileID: 695410771644243590, guid: c07b2e8d0c65dad44bf5eaca660002fc, type: 3}
@@ -761,7 +763,8 @@ MonoBehaviour:
     eye: {fileID: 968120993170560602}
     leftGrip: {fileID: 9211350031379281642}
     rightGrip: {fileID: 6128555665528778437}
-    diagramPosition: {x: -13, y: 32}
+    diagramPosition: {x: -18, y: 45}
+    showVehicleInstruments: 1
   - name: Passenger
     role: 2
     anchor: {fileID: 7205474858538344042}
@@ -770,7 +773,8 @@ MonoBehaviour:
     eye: {fileID: 3395924933455054427}
     leftGrip: {fileID: 0}
     rightGrip: {fileID: 0}
-    diagramPosition: {x: 13, y: 32}
+    diagramPosition: {x: 18, y: 45}
+    showVehicleInstruments: 0
   maxHealth: 1400
   bulletDamageMultiplier: 0.325
   explosiveDamageMultiplier: 0.8

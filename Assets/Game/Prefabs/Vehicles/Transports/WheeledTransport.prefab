@@ -531,6 +531,8 @@ MonoBehaviour:
     MRAP family reference is approximate. Exact driver''s instrument panel was not established from a verified manual; gauge style and units are a provisional adaptation.'
   displayName: Armored transport
   seatDiagram: {fileID: 21300000, guid: 4d93b912698553749afa440519447c4e, type: 3}
+  seatDiagramCenter: {x: -0.00000059604645, y: -0.021418571}
+  seatDiagramHalfExtent: 3.3325958
   motor: {fileID: 7982671368684295624}
   turret: {fileID: 0}
   destructionEffect: {fileID: 695410771644243590, guid: c07b2e8d0c65dad44bf5eaca660002fc, type: 3}
@@ -544,8 +546,9 @@ MonoBehaviour:
     eye: {fileID: 4390305269061873719}
     leftGrip: {fileID: 5773834780749496031}
     rightGrip: {fileID: 5497810167112991463}
-    diagramPosition: {x: -13, y: 32}
-  - name: Passenger
+    diagramPosition: {x: -18, y: 45}
+    showVehicleInstruments: 1
+  - name: Commander
     role: 2
     anchor: {fileID: 4680342505225339084}
     exit: {fileID: 3415155466182606029}
@@ -553,7 +556,8 @@ MonoBehaviour:
     eye: {fileID: 7900983994235388541}
     leftGrip: {fileID: 0}
     rightGrip: {fileID: 0}
-    diagramPosition: {x: 13, y: 32}
+    diagramPosition: {x: 18, y: 45}
+    showVehicleInstruments: 1
   - name: Passenger 2
     role: 2
     anchor: {fileID: 4000564111394071476}
@@ -562,7 +566,8 @@ MonoBehaviour:
     eye: {fileID: 7866077262670261546}
     leftGrip: {fileID: 0}
     rightGrip: {fileID: 0}
-    diagramPosition: {x: -13, y: 13}
+    diagramPosition: {x: -18, y: 14}
+    showVehicleInstruments: 0
   - name: Passenger 3
     role: 2
     anchor: {fileID: 3647195214128807730}
@@ -571,7 +576,8 @@ MonoBehaviour:
     eye: {fileID: 5981236384196357178}
     leftGrip: {fileID: 0}
     rightGrip: {fileID: 0}
-    diagramPosition: {x: 13, y: 13}
+    diagramPosition: {x: 18, y: 14}
+    showVehicleInstruments: 0
   - name: Passenger 4
     role: 2
     anchor: {fileID: 8876726078879745466}
@@ -580,7 +586,8 @@ MonoBehaviour:
     eye: {fileID: 3673748742324795101}
     leftGrip: {fileID: 0}
     rightGrip: {fileID: 0}
-    diagramPosition: {x: -13, y: -6}
+    diagramPosition: {x: -18, y: -17}
+    showVehicleInstruments: 0
   - name: Passenger 5
     role: 2
     anchor: {fileID: 3705634106237066385}
@@ -589,7 +596,8 @@ MonoBehaviour:
     eye: {fileID: 8764183114938391468}
     leftGrip: {fileID: 0}
     rightGrip: {fileID: 0}
-    diagramPosition: {x: 13, y: -6}
+    diagramPosition: {x: 18, y: -17}
+    showVehicleInstruments: 0
   - name: Passenger 6
     role: 2
     anchor: {fileID: 409584966250976230}
@@ -598,7 +606,8 @@ MonoBehaviour:
     eye: {fileID: 2900474159147802430}
     leftGrip: {fileID: 0}
     rightGrip: {fileID: 0}
-    diagramPosition: {x: -13, y: -25}
+    diagramPosition: {x: -18, y: -48}
+    showVehicleInstruments: 0
   - name: Passenger 7
     role: 2
     anchor: {fileID: 2332215154380783709}
@@ -607,7 +616,8 @@ MonoBehaviour:
     eye: {fileID: 434751485789077116}
     leftGrip: {fileID: 0}
     rightGrip: {fileID: 0}
-    diagramPosition: {x: 13, y: -25}
+    diagramPosition: {x: 18, y: -48}
+    showVehicleInstruments: 0
   maxHealth: 1400
   bulletDamageMultiplier: 0.09
   explosiveDamageMultiplier: 0.65

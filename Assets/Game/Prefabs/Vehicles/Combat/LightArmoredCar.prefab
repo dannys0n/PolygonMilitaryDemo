@@ -2565,6 +2565,8 @@ MonoBehaviour:
     HMMWV/Hummer family, high confidence. TM 9-2320-280-10: circular speedometer and brake annunciator; mph. https://www.nsnlookup.com/equipment-intelligence/land/hmmwv/technical-manual/tm-9-2320-280-10/52'
   displayName: Light armored car
   seatDiagram: {fileID: 21300000, guid: f666fc47ee5e7de4f9f17c977eeced48, type: 3}
+  seatDiagramCenter: {x: 0, y: 0.0068769455}
+  seatDiagramHalfExtent: 2.6060827
   motor: {fileID: 4563167683163496768}
   turret: {fileID: 1432593500547559855}
   destructionEffect: {fileID: 695410771644243590, guid: c07b2e8d0c65dad44bf5eaca660002fc, type: 3}
@@ -2578,7 +2580,8 @@ MonoBehaviour:
     eye: {fileID: 5285106694860561584}
     leftGrip: {fileID: 3146409560817386826}
     rightGrip: {fileID: 3063973406416746523}
-    diagramPosition: {x: -13, y: 32}
+    diagramPosition: {x: -18, y: 36}
+    showVehicleInstruments: 1
   - name: Gunner
     role: 1
     anchor: {fileID: 6759784795450639428}
@@ -2587,7 +2590,8 @@ MonoBehaviour:
     eye: {fileID: 951777763984439356}
     leftGrip: {fileID: 5280712491040372915}
     rightGrip: {fileID: 4431689367613495964}
-    diagramPosition: {x: 0, y: -8}
+    diagramPosition: {x: 0, y: 5}
+    showVehicleInstruments: 0
   - name: Passenger 2
     role: 2
     anchor: {fileID: 5208435718160690636}
@@ -2596,7 +2600,8 @@ MonoBehaviour:
     eye: {fileID: 6392461833452624710}
     leftGrip: {fileID: 0}
     rightGrip: {fileID: 0}
-    diagramPosition: {x: -13, y: 13}
+    diagramPosition: {x: 18, y: 36}
+    showVehicleInstruments: 0
   - name: Passenger 3
     role: 2
     anchor: {fileID: 1451228687628264424}
@@ -2605,7 +2610,8 @@ MonoBehaviour:
     eye: {fileID: 9081366408767025039}
     leftGrip: {fileID: 0}
     rightGrip: {fileID: 0}
-    diagramPosition: {x: 13, y: 13}
+    diagramPosition: {x: -18, y: -28}
+    showVehicleInstruments: 0
   - name: Passenger 4
     role: 2
     anchor: {fileID: 2874138950154247603}
@@ -2614,7 +2620,8 @@ MonoBehaviour:
     eye: {fileID: 1437722585323946420}
     leftGrip: {fileID: 0}
     rightGrip: {fileID: 0}
-    diagramPosition: {x: -13, y: -6}
+    diagramPosition: {x: 18, y: -28}
+    showVehicleInstruments: 0
   maxHealth: 1100
   bulletDamageMultiplier: 0.1
   explosiveDamageMultiplier: 0.65
