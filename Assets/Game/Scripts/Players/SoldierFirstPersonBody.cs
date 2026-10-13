@@ -140,6 +140,7 @@ public class SoldierFirstPersonBody : MonoBehaviour
             ? (camera == occupant.ActiveVehicleCamera && occupant.CockpitView)
                 || (vehiclePerspective && occupant.MountedVehicle.hasRenderedInterior)
             : owner && camera == view.playerCamera && view.firstPerson;
+        if (occupant && occupant.IsMounted && occupant.MountedVehicle.seats[occupant.SeatIndex].weaponMountedView) firstPerson = false;
         SetHeadless(firstPerson);
     }
 

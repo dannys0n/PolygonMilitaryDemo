@@ -29,6 +29,8 @@ public class Vehicle : MonoBehaviour
         public Transform anchor, exit;
         [Tooltip("Disable for remote stations or functional seats without a modeled chair.")]
         public bool showCharacter = true;
+        [Tooltip("Exposed weapon station: FPS follows the weapon camera pivot and hides its operator. Seated cockpit stations leave this disabled.")]
+        public bool weaponMountedView;
         [Tooltip("Authored first-person eye point, relative to the vehicle seat.")]
         public Transform eye;
         public Transform leftGrip, rightGrip;
@@ -51,6 +53,8 @@ public class Vehicle : MonoBehaviour
     public Transform cameraTarget;
     [Tooltip("Disable when the model has no rendered cabin. Occupants are hidden and both camera modes use the external view.")]
     public bool hasRenderedInterior = true;
+    [Tooltip("Show an external TPS camera monitor in cockpit view, for vehicles with limited windshield visibility.")]
+    public bool cockpitExternalMonitor;
     [Tooltip("Extra space around the chassis box from which players may enter.")]
     public Vector3 entryPadding = new Vector3(1.5f, 1f, 1.5f);
     public Seat[] seats;
@@ -168,18 +172,28 @@ public class Vehicle : MonoBehaviour
         }
         return closest;
     }
-    public bool IsInsideEntryBox(Vector3 position)
+    public Bounds EntryBounds
     {
-        var bounds = NavigationBounds;
-        bounds.Expand(entryPadding * 2f);
-        return bounds.Contains(transform.InverseTransformPoint(position));
+        get
+        {
+            var bounds = NavigationBounds;
+            bounds.Expand(entryPadding * 2f);
+            float bottom = Mathf.Min(bounds.min.y, -.5f);
+            // Include landing gear, rather than starting the box at the elevated fuselage.
+            if (motor is HelicopterMotor aircraft)
+                foreach (var gear in aircraft.landingGear)
+                    bottom = Mathf.Min(bottom, transform.InverseTransformPoint(gear.transform.TransformPoint(gear.center)).y - gear.radius - .5f);
+            bounds.SetMinMax(new Vector3(bounds.min.x, bottom, bounds.min.z), bounds.max);
+            return bounds;
+        }
     }
+    public bool IsInsideEntryBox(Vector3 position) => EntryBounds.Contains(transform.InverseTransformPoint(position));
     void DrawEntryBox()
     {
-        var bounds = NavigationBounds;
+        var bounds = EntryBounds;
         Gizmos.matrix = transform.localToWorldMatrix;
         Gizmos.color = new Color(1f, .55f, .12f, .65f);
-        Gizmos.DrawWireCube(bounds.center, bounds.size + entryPadding * 2f);
+        Gizmos.DrawWireCube(bounds.center, bounds.size);
         Gizmos.matrix = Matrix4x4.identity;
     }
     public bool BoardFirstAvailable(VehicleOccupant actor) => Board(actor, FirstAvailableSeat(actor));

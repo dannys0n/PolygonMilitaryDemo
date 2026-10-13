@@ -326,7 +326,8 @@ public class ArenaAISpectator : MonoBehaviour
             camera.fieldOfView = insetFieldOfView;
         }
         if (!observedView || camera != observedView.playerCamera) return;
-        if (observedOccupant && observedOccupant.IsMounted) return;
+        if (observedOccupant && observedOccupant.IsMounted
+            && !observedOccupant.MountedVehicle.seats[observedOccupant.SeatIndex].weaponMountedView) return;
         if (bodyDirty) CacheBody();
         for (int i = 0; i < hiddenBody.Length; i++)
             if (hiddenBody[i]) hiddenBody[i].shadowCastingMode = ShadowCastingMode.ShadowsOnly;

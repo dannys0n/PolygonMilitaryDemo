@@ -16,6 +16,7 @@ public class ArenaVehicleHud : MonoBehaviour
     public GameObject vehicleEquipment;
     public Image equippedIcon, slotIcon;
     public Material selectedIconGlow, filamentLine, accentLineGlow;
+    public Material externalMonitorMaterial;
     public TMP_Text equippedName, ammunition, fireMode, slotKey, equipmentLabel;
     public Image[] seatMarkers, hullSegments;
     public TextMeshProUGUI[] seatNumbers;
@@ -51,6 +52,8 @@ public class ArenaVehicleHud : MonoBehaviour
         var pitchScale=new GameObject("Su27 right pitch scale",typeof(RectTransform),typeof(CanvasRenderer),typeof(VehicleDiagramGraphic));pitchScale.transform.SetParent(flightPanel.transform,false);metricPitchScale=pitchScale.GetComponent<VehicleDiagramGraphic>();metricPitchScale.drawing=VehicleDiagramGraphic.Drawing.PitchScale;metricPitchScale.rectTransform.anchoredPosition=new Vector2(150,0);metricPitchScale.rectTransform.sizeDelta=new Vector2(25,170);metricPitchScale.tickStep=10;metricPitchScale.pixelsPerUnit=2;metricPitchScale.raycastTarget=false;metricPitchScale.tickLabels=new TMP_Text[5];for(int i=0;i<5;i++)metricPitchScale.tickLabels[i]=DashboardLabel("Pitch tick "+i,metricPitchScale.transform,Vector2.zero,new Vector2(35,20),12);metricPitchReadout=DashboardLabel("Metric pitch",flightPanel.transform,new Vector2(160,-100),new Vector2(140,25),14);pitchScale.SetActive(false);metricPitchReadout.gameObject.SetActive(false);
         attackHud=gameObject.AddComponent<ArenaVehicleAttackHud>();attackHud.Build(telemetry);
         mountedFade=mountedPanel.GetComponent<CanvasGroup>();
+        var externalMonitor=gameObject.AddComponent<VehicleExternalViewMonitor>();
+        externalMonitor.Build(this,telemetry,externalMonitorMaterial);
     }
     void Update()
     {
@@ -152,7 +155,7 @@ public class ArenaVehicleHud : MonoBehaviour
         if (player.IsMounted && player.MountedVehicle.motor is HelicopterMotor && ShowVehicleInstruments(player.MountedVehicle))
             if(flightPanel.activeSelf) UpdateFlightInstruments(player.MountedVehicle, groundAltitude);
         flightPathMarker.gameObject.SetActive(player.IsMounted && flightPanel.activeSelf && player.MountedVehicle.Body.linearVelocity.sqrMagnitude>1);
-        if(flightPathMarker.gameObject.activeSelf){var cam=player.ActiveVehicleCamera ? player.ActiveVehicleCamera : Camera.main;if(cam)PlaceMarker(flightPathMarker,cam,cam.transform.position+player.MountedVehicle.Body.linearVelocity.normalized*100);else flightPathMarker.gameObject.SetActive(false);}
+        if(flightPathMarker.gameObject.activeSelf){var cam=player.ActiveVehicleCamera ? player.ActiveVehicleCamera : Camera.main;if(cam)PlaceMarker(flightPathMarker,cam,cam.transform.position+player.MountedVehicle.Body.linearVelocity.normalized*100,true);else flightPathMarker.gameObject.SetActive(false);}
         bool armed = player.IsMounted && vehicleEquipment.activeSelf;
         gunnerReadout.gameObject.SetActive(armed && player.MountedVehicle.seats[player.SeatIndex].role==Vehicle.SeatRole.Gunner);
         desiredAim.gameObject.SetActive(armed); actualAim.gameObject.SetActive(armed);
@@ -338,12 +341,29 @@ public class ArenaVehicleHud : MonoBehaviour
         }
         return ray.GetPoint(nearest);
     }
-    static void PlaceMarker(RectTransform marker,Camera camera,Vector3 point)
+    static void PlaceMarker(RectTransform marker,Camera camera,Vector3 point,bool clampToView=false)
     {
-        Vector3 screen=camera.WorldToScreenPoint(point);bool visible=screen.z>0;
+        Vector3 screen=camera.WorldToScreenPoint(point);
+        if(clampToView)
+        {
+            if(screen.z<=0)
+            {
+                var center=camera.pixelRect.center;
+                var direction=center-new Vector2(screen.x,screen.y);
+                direction=direction.sqrMagnitude<1?Vector2.down:direction.normalized;
+                screen.x=center.x+direction.x*camera.pixelRect.width;
+                screen.y=center.y+direction.y*camera.pixelRect.height;
+            }
+            const float margin=45;
+            var rect=camera.pixelRect;
+            screen.x=Mathf.Clamp(screen.x,rect.xMin+margin,rect.xMax-margin);
+            screen.y=Mathf.Clamp(screen.y,rect.yMin+margin,rect.yMax-margin);
+        }
+        bool visible=clampToView||screen.z>0;
         marker.gameObject.SetActive(visible);if(!visible)return;
         RectTransformUtility.ScreenPointToLocalPointInRectangle((RectTransform)marker.parent,screen,null,out var local);
         marker.anchoredPosition=local;
+        if(clampToView)marker.GetComponent<Graphic>().canvasRenderer.SetAlpha(screen.z>0?.9f:.35f);
     }
     bool ShowVehicleInstruments(Vehicle v)=>v.seats[player.SeatIndex].role==Vehicle.SeatRole.Driver||v.seats[player.SeatIndex].showVehicleInstruments;
     static bool UsesAnalogGround(Vehicle v)=>v.instruments==Vehicle.InstrumentLayout.Road || v.instrumentReference==Vehicle.InstrumentReference.HMMWV || v.instrumentReference==Vehicle.InstrumentReference.M113 || v.instrumentReference==Vehicle.InstrumentReference.Leopard2 || v.instrumentReference==Vehicle.InstrumentReference.T72 || v.instrumentReference==Vehicle.InstrumentReference.FMTV || v.instrumentReference==Vehicle.InstrumentReference.MRAP || v.instrumentReference==Vehicle.InstrumentReference.Bradley;

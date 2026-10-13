@@ -453,7 +453,8 @@ public class VehicleOccupant : MonoBehaviour
     void UpdateSeatedVisibility()
     {
         var seat=MountedVehicle.seats[SeatIndex];
-        bool visible=MountedVehicle.hasRenderedInterior && seat.showCharacter;
+        bool visible=MountedVehicle.hasRenderedInterior && seat.showCharacter
+            && !(IsLocal && CockpitView && seat.weaponMountedView);
         foreach(var skin in seatedBody) if(skin){skin.enabled=visible;skin.forceRenderingOff=!visible;skin.shadowCastingMode=UnityEngine.Rendering.ShadowCastingMode.On;}
     }
     void LateUpdate()
@@ -480,7 +481,8 @@ public class VehicleOccupant : MonoBehaviour
         if (pilot && ((HelicopterMotor)v.motor).assistEnabled && !cockpit)
             target = v.transform.position + Vector3.up * v.cameraTarget.localPosition.y;
         Vector3 desired;
-        if (cockpit) desired = v.seats[SeatIndex].eye ? v.seats[SeatIndex].eye.position : gunner ? target : v.seats[SeatIndex].anchor.position + v.transform.up * (aircraft ? 1.15f : 1f);
+        if (cockpit) desired = gunner && v.seats[SeatIndex].weaponMountedView ? target
+            : v.seats[SeatIndex].eye ? v.seats[SeatIndex].eye.position : gunner ? target : v.seats[SeatIndex].anchor.position + v.transform.up * (aircraft ? 1.15f : 1f);
         else desired = target + rotation * (aircraft ? new Vector3(4,1.5f,-20) : new Vector3(0,1,-7));
         if (!cockpit)
         {
