@@ -53,7 +53,7 @@ public class VehicleSpawnPoint : MonoBehaviour
         }
         var choices = catalog ? (combatPool ? catalog.combatVehicles : catalog.transports) : null;
         if (groundOnly && choices != null)
-            choices = System.Array.FindAll(choices, v => !(v.motor is HelicopterMotor));
+            choices = System.Array.FindAll(choices, v => !v.IsAircraft);
         var selected = choices != null && choices.Length > 0 ? choices[Random.Range(0, choices.Length)] : prefab;
         Current = Instantiate(selected, transform.position, transform.rotation);
         Current.Destroyed += OnDestroyed;

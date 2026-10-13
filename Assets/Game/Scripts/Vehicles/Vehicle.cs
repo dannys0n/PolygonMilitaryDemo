@@ -48,6 +48,13 @@ public class Vehicle : MonoBehaviour
     [HideInInspector] public Vector2 seatDiagramCenter;
     [HideInInspector] public float seatDiagramHalfExtent=1;
     public VehicleMotor motor;
+    public bool IsAircraft => motor is HelicopterMotor || motor is JetMotor;
+    public bool FlightAssistEnabled
+    {
+        get => motor is JetMotor jet ? jet.assistEnabled : ((HelicopterMotor)motor).assistEnabled;
+        set { if (motor is JetMotor jet) jet.assistEnabled = value; else ((HelicopterMotor)motor).assistEnabled = value; }
+    }
+    public Quaternion RequestedFlightAttitude => motor is JetMotor jet ? jet.RequestedAttitude : ((HelicopterMotor)motor).RequestedAttitude;
     public VehicleTurret turret;
     public ParticleSystem destructionEffect;
     public Transform cameraTarget;
@@ -182,6 +189,9 @@ public class Vehicle : MonoBehaviour
             // Include landing gear, rather than starting the box at the elevated fuselage.
             if (motor is HelicopterMotor aircraft)
                 foreach (var gear in aircraft.landingGear)
+                    bottom = Mathf.Min(bottom, transform.InverseTransformPoint(gear.transform.TransformPoint(gear.center)).y - gear.radius - .5f);
+            if (motor is JetMotor jet)
+                foreach (var gear in jet.landingGear)
                     bottom = Mathf.Min(bottom, transform.InverseTransformPoint(gear.transform.TransformPoint(gear.center)).y - gear.radius - .5f);
             bounds.SetMinMax(new Vector3(bounds.min.x, bottom, bounds.min.z), bounds.max);
             return bounds;

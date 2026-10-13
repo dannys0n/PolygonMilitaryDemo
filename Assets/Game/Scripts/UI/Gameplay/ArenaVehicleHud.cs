@@ -64,7 +64,7 @@ public class ArenaVehicleHud : MonoBehaviour
         if(!mounted){flightPanel.SetActive(false);vehicleEquipment.SetActive(false);roadPanel.SetActive(false);armoredPanel.SetActive(false);dronePanel.SetActive(false);presentationBlend=0;return;}
         presentationBlend=Mathf.MoveTowards(presentationBlend,1,Time.deltaTime/.18f);
         if(mountedFade)mountedFade.alpha=1-Mathf.Pow(1-presentationBlend,3);
-        var v=player.MountedVehicle;bool air=v.motor is HelicopterMotor;var role=v.seats[player.SeatIndex].role;
+        var v=player.MountedVehicle;bool air=v.IsAircraft;var role=v.seats[player.SeatIndex].role;
         diagram.sprite = v.seatDiagram ? v.seatDiagram : air ? helicopterDiagram : humveeDiagram;
         seatDiagramLinks.SetVehicle(v,player.SeatIndex);
         var attackSight=v.GetComponent<VehicleAttackSight>();bool showAttack=attackSight&&attackSight.DisplaysForSeat(player.SeatIndex);
@@ -92,7 +92,9 @@ public class ArenaVehicleHud : MonoBehaviour
         status.text=v.displayName.ToUpperInvariant()+" / "+v.seats[player.SeatIndex].name.ToUpperInvariant()+"    "+Mathf.RoundToInt(v.Body.linearVelocity.magnitude*3.6f)+" KPH";
         if (player.HornFeedback>0) status.text+="  HORN";
         controls.text=role==Vehicle.SeatRole.Driver?(air?"CLIMB  [SPACE]\nDESCEND  [CTRL]\nMOVE  [WASD]\nAIM ALIGN  [RMB]":"BRAKE / REV  [S]\nACCELERATE  [W]\nBOOST  [SHIFT]\nHANDBRAKE  [Z]\nHORN  [H]"):role==Vehicle.SeatRole.Gunner?"FIRE  [LMB]\nZOOM  [RMB]\nAMMO  INF":v.seats[player.SeatIndex].showVehicleInstruments?(air?"FLIGHT MONITOR":"VEHICLE MONITOR"):"PASSENGER";
-        if (air && role == Vehicle.SeatRole.Driver) controls.text += "\n[T] ASSIST " + (((HelicopterMotor)v.motor).assistEnabled ? "ON" : "OFF");
+        if (air && role == Vehicle.SeatRole.Driver) controls.text += "\n[T] ASSIST " + (v.FlightAssistEnabled ? "ON" : "OFF");
+        if (v.motor is JetMotor && role == Vehicle.SeatRole.Driver)
+            controls.text = "THROTTLE  [W/S]\nRUDDER  [A/D]\nPITCH / ROLL  [MOUSE]\nAFTERBURNER  [SHIFT]\nAIRBRAKE  [SPACE]\n[T] ASSIST " + (v.FlightAssistEnabled ? "ON" : "OFF");
         if(!air && role==Vehicle.SeatRole.Driver && showAttack && attackSight.Operational) controls.text += "\nFIRE  [LMB]\nZOOM  [RMB]";
         rightControls.text=(v.hasRenderedInterior?"[C]  CAMERA":"EXTERNAL VIEW")+"\n[V]  FREELOOK"+(player.Freelook?" ON":"")+"\nHOLD [E]  EXIT\n"+(v.seats.Length==1?"[F1]  STATION":"[F1-F"+v.seats.Length+"]  SEATS");
         EnsureSeatMarkers(v.seats.Length);
@@ -138,7 +140,7 @@ public class ArenaVehicleHud : MonoBehaviour
         speedReadout.text="GS <size=26>"+Mathf.RoundToInt(metric?horizontalSpeed*3.6f:knots).ToString("000")+"</size> "+(metric?"KM/H":"KT");
         altitudeReadout.text="AGL <size=26>"+Mathf.RoundToInt(metric?altitude:altitude*3.28084f).ToString("0000")+"</size> "+(metric?"M":"FT");
         if(metric)telemetry.text="V/S "+v.Body.linearVelocity.y.ToString("+0.0;-0.0;0.0")+" M/S";
-        string assist=((HelicopterMotor)v.motor).assistEnabled?"ASSIST":"MANUAL";
+        string assist=v.FlightAssistEnabled?"ASSIST":"MANUAL";
         systemsReadout.text=v.instruments==Vehicle.InstrumentLayout.Helicopter
             ? "ROTOR "+Mathf.RoundToInt(((HelicopterMotor)v.motor).RotorPower*100)+"%   "+assist
             : "FLIGHT CONTROL  /  "+assist;
@@ -152,7 +154,7 @@ public class ArenaVehicleHud : MonoBehaviour
         var sightCamera=player.ActiveVehicleCamera?player.ActiveVehicleCamera:Camera.main;
         attackHud.Present(player,attackSight,sightCamera);
         if(attackHud.Visible){gunnerReadout.gameObject.SetActive(false);desiredAim.gameObject.SetActive(false);actualAim.gameObject.SetActive(false);flightPathMarker.gameObject.SetActive(false);return;}
-        if (player.IsMounted && player.MountedVehicle.motor is HelicopterMotor && ShowVehicleInstruments(player.MountedVehicle))
+        if (player.IsMounted && player.MountedVehicle.IsAircraft && ShowVehicleInstruments(player.MountedVehicle))
             if(flightPanel.activeSelf) UpdateFlightInstruments(player.MountedVehicle, groundAltitude);
         flightPathMarker.gameObject.SetActive(player.IsMounted && flightPanel.activeSelf);
         if(flightPathMarker.gameObject.activeSelf)
@@ -187,7 +189,7 @@ public class ArenaVehicleHud : MonoBehaviour
         else
         {
             var launcher = vehicle.GetComponent<VehicleLauncher>();
-            requested = ((HelicopterMotor)vehicle.motor).RequestedAttitude * Vector3.forward;
+            requested = vehicle.RequestedFlightAttitude * Vector3.forward;
             actual = launcher.NextShotRay; range = 180;
         }
         if (!player.Freelook) requested = camera.transform.forward;
@@ -290,7 +292,7 @@ public class ArenaVehicleHud : MonoBehaviour
     {
         float heading=Mathf.Repeat(v.transform.eulerAngles.y,360);
         droneHeading.text="UAS  /  HDG "+HeadingNumber(heading).ToString("000")+"°";
-        droneTelemetry.text="AGL     "+altitude.ToString("0.0")+" M\nGS       "+Vector3.ProjectOnPlane(v.Body.linearVelocity,Vector3.up).magnitude.ToString("0.0")+" M/S\nV/S      "+v.Body.linearVelocity.y.ToString("+0.0;-0.0;0.0")+" M/S\n<color=#FF9637>"+(((HelicopterMotor)v.motor).assistEnabled?"POSITION ASSIST":"MANUAL CONTROL")+"</color>";
+        droneTelemetry.text="AGL     "+altitude.ToString("0.0")+" M\nGS       "+Vector3.ProjectOnPlane(v.Body.linearVelocity,Vector3.up).magnitude.ToString("0.0")+" M/S\nV/S      "+v.Body.linearVelocity.y.ToString("+0.0;-0.0;0.0")+" M/S\n<color=#FF9637>"+(v.FlightAssistEnabled?"POSITION ASSIST":"MANUAL CONTROL")+"</color>";
     }
     void EnsureSeatMarkers(int count)
     {

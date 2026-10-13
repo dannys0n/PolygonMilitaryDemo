@@ -130,6 +130,7 @@ public class ArenaVehicleAI : MonoBehaviour
                 if (!driver && !v.Driver)
                     continue; // Do not occupy an unpiloted passenger seat indefinitely.
                 Vector3 proposed = infantry.Destination;
+                if (v.motor is JetMotor && !scenario.allowAIHelicopters) continue;
                 if (v.motor is HelicopterMotor && (!scenario.allowAIHelicopters || (driver && !ChooseLanding(v, out proposed))))
                     continue;
                 float trip=Vector3.Distance(v.transform.position,proposed);
@@ -254,7 +255,9 @@ public class ArenaVehicleAI : MonoBehaviour
             return;
         }
         bool threat = NearbyEnemy(15) != null;
-        if (v.motor is HelicopterMotor heli)
+        if (v.motor is JetMotor jet)
+            FlyJet(v, jet);
+        else if (v.motor is HelicopterMotor heli)
             Fly(v, heli, threat);
         else
             Drive(v, threat);
@@ -265,6 +268,25 @@ public class ArenaVehicleAI : MonoBehaviour
         return NavMesh.SamplePosition(v.transform.position, out var from, 5, filter)
             && NavMesh.SamplePosition(goal, out var to, 6, filter)
             && NavMesh.CalculatePath(from.position, to.position, filter, path) && path.status == NavMeshPathStatus.PathComplete;
+    }
+    void FlyJet(Vehicle v, JetMotor jet)
+    {
+        State = TravelState.Driving;
+        Vector3 target = Goal;
+        float ground = GroundHeight(v.transform.position);
+        target.y = GroundHeight(target) + 65;
+        Vector3 direction = target - v.transform.position;
+        float horizontal = Vector3.ProjectOnPlane(direction, Vector3.up).magnitude;
+        float heading = Mathf.Atan2(direction.x, direction.z) * Mathf.Rad2Deg;
+        // Bank around the objective rather than trying to hover over its exact point.
+        if (horizontal < 180) heading += 65;
+        float pitch = -Mathf.Atan2(direction.y, Mathf.Max(1, horizontal)) * Mathf.Rad2Deg;
+        if (jet.Grounded || v.transform.position.y < ground + 30) pitch = -12;
+        v.DriverInput = new VehicleInput { directionalFlight = true, heading = heading,
+            viewPitch = Mathf.Clamp(pitch, -25, 15), move = new Vector2(0, jet.Airspeed < 100 ? 1 : -.3f),
+            boost = jet.Grounded };
+        if (v.turret) UseTurret(v);
+        if (v.GetComponent<VehicleLauncher>()) UseRockets(v);
     }
     void Drive(Vehicle v, bool threat)
     {
