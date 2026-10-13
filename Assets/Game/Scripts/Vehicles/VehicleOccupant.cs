@@ -217,7 +217,9 @@ public class VehicleOccupant : MonoBehaviour
                     Quaternion view = Quaternion.Euler(pitch,yaw,0);
                     Vector3 origin = CameraPosition(vehicle,view,false,true,true);
                     var aimLauncher = vehicle.GetComponent<VehicleLauncher>();
-                    Vector3 direction = aimLauncher ? aimLauncher.DirectionToAimPoint(new Ray(origin,view*Vector3.forward),180) : view*Vector3.forward;
+                    // Jets continuously steer toward screen center; only helicopters need weapon parallax correction.
+                    Vector3 direction = !(vehicle.motor is JetMotor) && aimLauncher
+                        ? aimLauncher.DirectionToAimPoint(new Ray(origin,view*Vector3.forward),180) : view*Vector3.forward;
                     flightYaw = Mathf.Atan2(direction.x,direction.z)*Mathf.Rad2Deg;
                     flightPitch = -Mathf.Asin(Mathf.Clamp(direction.y,-1,1))*Mathf.Rad2Deg;
                 }

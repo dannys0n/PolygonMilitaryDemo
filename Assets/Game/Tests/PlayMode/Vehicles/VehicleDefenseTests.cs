@@ -98,6 +98,112 @@ public class VehicleDefenseTests
         yield return null;for(int i=0;i<10;i++){Call(motor,"Simulate",input,true);yield return new WaitForFixedUpdate();}
         Assert.Greater(root.GetComponent<Rigidbody>().linearVelocity.z,.1f);Assert.Greater((float)Get(motor,"EnginePower"),0);Assert.Less(root.GetComponent<Rigidbody>().linearVelocity.y,-.2f);
     }
+    [UnityTest] public IEnumerator JetsRespondFasterWithoutBypassingRigidBodyFlight()
+    {
+        foreach(string name in new[]{"Jet01","Jet02"})
+        foreach(bool assisted in new[]{false,true})
+        {
+            var prefab=AssetDatabase.LoadAssetAtPath<GameObject>("Assets/Game/Prefabs/Vehicles/Prototypes/"+name+".prefab");
+            var roots=new GameObject[2];var motors=new Component[2];
+            for(int i=0;i<2;i++)
+            {
+                roots[i]=Object.Instantiate(prefab,new Vector3(i*500,1000,0),Quaternion.identity);objects.Add(roots[i]);
+                ((Behaviour)roots[i].GetComponent(T("Vehicle"))).enabled=false;
+                motors[i]=roots[i].GetComponent(T("JetMotor"));Set(motors[i],"assistEnabled",assisted);
+                roots[i].GetComponent<Rigidbody>().linearVelocity=Vector3.forward*50;
+            }
+            // Compare against the preceding airframe tune using the same forces and starting airspeed.
+            Set(motors[0],"pitchRate",65f);Set(motors[0],"rollRate",120f);Set(motors[0],"yawRate",28f);
+            Set(motors[0],"controlResponse",5f);Set(motors[0],"maximumAngularAcceleration",12f);
+            Set(motors[0],"referenceControlSpeed",65f);Set(motors[0],"maximumBank",60f);Set(motors[0],"headingToBank",1.4f);
+            var input=Activator.CreateInstance(T("VehicleInput"));Set(input,"directionalFlight",assisted);
+            Set(input,"heading",60f);Set(input,"viewPitch",-15f);Set(input,"pitchRate",-.5f);Set(input,"move",new Vector2(.5f,0));
+            yield return null;
+            for(int step=0;step<25;step++)
+            {for(int i=0;i<2;i++)Call(motors[i],"Simulate",input,true);yield return new WaitForFixedUpdate();}
+            float previous=Quaternion.Angle(Quaternion.identity,roots[0].transform.rotation);
+            float tuned=Quaternion.Angle(Quaternion.identity,roots[1].transform.rotation);
+            Assert.Greater(tuned,previous*1.1f,name+" must respond sooner in "+(assisted?"assisted":"manual")+" flight");
+            Assert.Less(roots[1].GetComponent<Rigidbody>().angularVelocity.magnitude,4.01f,"Keep the physical angular-speed limit");
+            TestContext.WriteLine(name+" "+(assisted?"assisted":"manual")+": rotation after 0.5 s "+previous.ToString("F1")+" -> "+tuned.ToString("F1")+" degrees");
+            foreach(var root in roots)Object.Destroy(root);yield return null;
+        }
+    }
+    [UnityTest] public IEnumerator AssistedJetsTurnTheirFlightPathWithoutADS()
+    {
+        foreach(string name in new[]{"Jet01","Jet02"})
+        {
+            var roots=new GameObject[2];var motors=new Component[2];var inputs=new object[2];
+            var prefab=AssetDatabase.LoadAssetAtPath<GameObject>("Assets/Game/Prefabs/Vehicles/Prototypes/"+name+".prefab");
+            for(int i=0;i<2;i++)
+            {
+                roots[i]=Object.Instantiate(prefab,new Vector3(i*500,1000,0),Quaternion.identity);objects.Add(roots[i]);
+                ((Behaviour)roots[i].GetComponent(T("Vehicle"))).enabled=false;
+                motors[i]=roots[i].GetComponent(T("JetMotor"));Set(motors[i],"assistEnabled",true);
+                roots[i].GetComponent<Rigidbody>().linearVelocity=Vector3.forward*100;
+                inputs[i]=Activator.CreateInstance(T("VehicleInput"));Set(inputs[i],"directionalFlight",true);
+                Set(inputs[i],"heading",60f);Set(inputs[i],"aim",i==1);
+            }
+            yield return null;
+            for(int step=0;step<150;step++)
+            {for(int i=0;i<2;i++)Call(motors[i],"Simulate",inputs[i],true);yield return new WaitForFixedUpdate();}
+            for(int i=0;i<2;i++)
+            {
+                var body=roots[i].GetComponent<Rigidbody>();
+                float pathHeading=Mathf.Atan2(body.linearVelocity.x,body.linearVelocity.z)*Mathf.Rad2Deg;
+                float noseHeading=roots[i].transform.eulerAngles.y;
+                Assert.Greater(pathHeading,20,"The flight path must turn, not just the rendered nose");
+                Assert.Less(Mathf.Abs(Mathf.DeltaAngle(noseHeading,pathHeading)),15,"Nose and actual trajectory must remain coordinated");
+                Assert.Less(Mathf.Abs(roots[i].transform.position.y-1000),20,"Assist should support the banked turn");
+                TestContext.WriteLine(name+" ADS="+(i==1)+": path="+pathHeading.ToString("F1")+", nose="+noseHeading.ToString("F1"));
+            }
+            Assert.Less(Quaternion.Angle(roots[0].transform.rotation,roots[1].transform.rotation),.5f,"ADS must not enable or change jet steering");
+            foreach(var root in roots)Object.Destroy(root);yield return null;
+        }
+    }
+    [UnityTest] public IEnumerator JetRearTargetDoesNotFlipTurnDirection()
+    {
+        var prefab=AssetDatabase.LoadAssetAtPath<GameObject>("Assets/Game/Prefabs/Vehicles/Prototypes/Jet01.prefab");
+        var root=Object.Instantiate(prefab,new Vector3(0,1000,0),Quaternion.identity);objects.Add(root);
+        ((Behaviour)root.GetComponent(T("Vehicle"))).enabled=false;
+        var motor=root.GetComponent(T("JetMotor"));Set(motor,"assistEnabled",true);
+        root.GetComponent<Rigidbody>().linearVelocity=Vector3.forward*100;
+        var input=Activator.CreateInstance(T("VehicleInput"));Set(input,"directionalFlight",true);
+        yield return null;
+        for(int step=0;step<60;step++)
+        {
+            // Mouse jitter around directly behind must not repeatedly reverse the physical bank.
+            Set(input,"heading",root.transform.eulerAngles.y+(step%2==0?179f:181f));
+            Call(motor,"Simulate",input,true);yield return new WaitForFixedUpdate();
+            if(step>15)
+            {
+                Vector3 right=Quaternion.Euler(0,root.transform.eulerAngles.y,0)*Vector3.right;
+                Assert.Greater(Vector3.Dot(root.transform.up,right),0,"Keep banking to the chosen side of the 180-degree turn");
+            }
+        }
+        var velocity=root.GetComponent<Rigidbody>().linearVelocity;
+        Assert.Greater(Mathf.Atan2(velocity.x,velocity.z)*Mathf.Rad2Deg,5,"The sustained bank must turn the path");
+    }
+    [UnityTest] public IEnumerator JetAcceleratesFasterAndSettlesBelowReducedSpeedLimit()
+    {
+        var prefab=AssetDatabase.LoadAssetAtPath<GameObject>("Assets/Game/Prefabs/Vehicles/Prototypes/Jet01.prefab");
+        var roots=new GameObject[2];var motors=new Component[2];
+        for(int i=0;i<2;i++)
+        {
+            roots[i]=Object.Instantiate(prefab,new Vector3(i*500,1000,0),Quaternion.identity);objects.Add(roots[i]);
+            ((Behaviour)roots[i].GetComponent(T("Vehicle"))).enabled=false;
+            motors[i]=roots[i].GetComponent(T("JetMotor"));Set(motors[i],"assistEnabled",true);
+            roots[i].GetComponent<Rigidbody>().linearVelocity=Vector3.forward*60;
+        }
+        Set(motors[0],"maximumThrust",180000f);Set(motors[0],"engineResponse",1.5f);Set(motors[0],"throttleChangeRate",.55f);Set(motors[0],"maxSpeed",180f);
+        var input=Activator.CreateInstance(T("VehicleInput"));Set(input,"directionalFlight",true);Set(input,"move",Vector2.up);Set(input,"boost",true);
+        yield return null;
+        for(int step=0;step<100;step++)
+        {for(int i=0;i<2;i++)Call(motors[i],"Simulate",input,true);yield return new WaitForFixedUpdate();}
+        Assert.Greater(roots[1].GetComponent<Rigidbody>().linearVelocity.magnitude,roots[0].GetComponent<Rigidbody>().linearVelocity.magnitude+10,"Faster acceleration from flight speed");
+        for(int step=0;step<400;step++){Call(motors[1],"Simulate",input,true);yield return new WaitForFixedUpdate();}
+        Assert.Less(roots[1].GetComponent<Rigidbody>().linearVelocity.magnitude,(float)Get(motors[1],"maxSpeed")*1.05f,"Afterburner must respect the lower speed envelope");
+    }
     [UnityTest] public IEnumerator RearDoorOpensAndClosesItsColliderWithTheMesh()
     {
         var prefab=AssetDatabase.LoadAssetAtPath<GameObject>("Assets/Game/Prefabs/Vehicles/Transports/Van.prefab");var root=Object.Instantiate(prefab,new Vector3(0,1000,0),Quaternion.identity);objects.Add(root);
