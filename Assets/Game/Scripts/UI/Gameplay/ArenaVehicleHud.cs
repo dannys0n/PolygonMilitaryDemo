@@ -52,6 +52,8 @@ public class ArenaVehicleHud : MonoBehaviour
     void Awake()
     {
         ArenaHudTheme.StyleLines(transform, filamentLine, accentLineGlow);
+        // Ammunition and weapon identity belong to the shared bottom-right equipment card.
+        weapon.gameObject.SetActive(false);
         diagram.rectTransform.sizeDelta=new Vector2(160,160);diagram.preserveAspect=true;
         var links=new GameObject("Seat diagram callouts",typeof(RectTransform),typeof(CanvasRenderer),typeof(VehicleSeatDiagramGraphic));links.transform.SetParent(diagram.transform,false);links.transform.SetAsFirstSibling();seatDiagramLinks=links.GetComponent<VehicleSeatDiagramGraphic>();seatDiagramLinks.rectTransform.sizeDelta=new Vector2(160,160);seatDiagramLinks.raycastTarget=false;
         BuildRoadDashboard();
@@ -220,7 +222,7 @@ public class ArenaVehicleHud : MonoBehaviour
             if(count==0 && armed)count=1;
             var activeWeapon=(RectTransform)equippedIcon.transform.parent;
             var activePosition=activeWeapon.anchoredPosition;
-            activePosition.y=100+Mathf.Max(0,(count+1)/2-1)*68;
+            activePosition.y=58;
             activeWeapon.anchoredPosition=activePosition;
             while(systemTiles.Count<count)
             {
@@ -229,17 +231,28 @@ public class ArenaVehicleHud : MonoBehaviour
                 var icon=tile.Find("Weapon Icon").GetComponent<Image>();
                 var key=tile.Find("Key").GetComponent<TMP_Text>();
                 var caption=Instantiate(equippedName,tile);caption.name="System name and ammunition";
-                caption.fontSize=10;caption.alignment=TextAlignmentOptions.BottomLeft;caption.raycastTarget=false;
+                caption.fontSize=14;caption.alignment=TextAlignmentOptions.MidlineLeft;caption.raycastTarget=false;
+                caption.enableAutoSizing=true;caption.fontSizeMin=11;caption.fontSizeMax=14;
                 caption.rectTransform.anchorMin=caption.rectTransform.anchorMax=new Vector2(.5f,.5f);
                 caption.rectTransform.anchoredPosition=new Vector2(8,-22);caption.rectTransform.sizeDelta=new Vector2(142,20);
-                icon.rectTransform.sizeDelta=new Vector2(120,32);icon.rectTransform.anchoredPosition=new Vector2(18,8);
+                icon.rectTransform.sizeDelta=new Vector2(128,44);icon.rectTransform.anchoredPosition=new Vector2(18,0);
                 icon.preserveAspect=true;icon.raycastTarget=false;
                 systemTiles.Add(tile);systemIcons.Add(icon);systemKeys.Add(key);systemCaptions.Add(caption);
             }
             for(int i=0;i<systemTiles.Count;i++)
             {
                 var tile=systemTiles[i];tile.gameObject.SetActive(i<count);
-                tile.sizeDelta=new Vector2(170,62);tile.anchoredPosition=new Vector2(i%2==0?-89:89,(i/2)*68);
+                // Weapon slots stay below the active card; utility occupies the infantry grenade row.
+                bool defense=defenses && role!=Vehicle.SeatRole.Passenger && i==seatSystems.Count;
+                int weaponCount=Mathf.Max(1,seatSystems.Count);
+                float width=(350f-8f*(weaponCount-1))/weaponCount;
+                tile.sizeDelta=new Vector2(defense?170:width,48);
+                tile.anchoredPosition=defense?new Vector2(89,190):new Vector2(-175+width*.5f+i*(width+8),0);
+                var key=systemKeys[i].rectTransform;
+                key.anchoredPosition=new Vector2(-tile.sizeDelta.x*.5f+20,0);
+                systemIcons[i].rectTransform.sizeDelta=new Vector2(Mathf.Max(32,width-42),44);
+                systemIcons[i].rectTransform.anchoredPosition=new Vector2(18,0);
+                systemCaptions[i].gameObject.SetActive(defense);
             }
         }
         bool utility=displayedDefenses && role!=Vehicle.SeatRole.Passenger;
@@ -267,10 +280,10 @@ public class ArenaVehicleHud : MonoBehaviour
             else if(defense)
             {
                 key.text="X";
-                caption.text=defenses.SystemName+"  "+defenses.Charges+"/"+defenses.capacity;
+                caption.text=defenses.SystemName+"\n"+defenses.Charges+" / "+defenses.capacity;
                 if(defenses.ReadyIn>0)caption.text+="  "+defenses.ReadyIn.ToString("0")+"s";
                 else if(defenses.Charges<defenses.capacity)caption.text+="  +1 "+defenses.RechargeIn.ToString("0")+"s";
-                caption.rectTransform.sizeDelta=new Vector2(142,44);caption.rectTransform.anchoredPosition=new Vector2(10,4);
+                caption.rectTransform.sizeDelta=new Vector2(122,44);caption.rectTransform.anchoredPosition=new Vector2(18,0);
             }
             else
             {
@@ -305,7 +318,8 @@ public class ArenaVehicleHud : MonoBehaviour
             }
             else flightPathMarker.gameObject.SetActive(false);
         }
-        bool armed = player.IsMounted && vehicleEquipment.activeSelf;
+        var mountedSystems=player.IsMounted?player.MountedVehicle.GetComponent<VehicleWeaponSystems>():null;
+        bool armed = player.IsMounted && (mountedSystems?mountedSystems.Current(player)!=null:equippedIcon.transform.parent.gameObject.activeSelf);
         gunnerReadout.gameObject.SetActive(armed && player.MountedVehicle.seats[player.SeatIndex].role==Vehicle.SeatRole.Gunner);
         desiredAim.gameObject.SetActive(armed); actualAim.gameObject.SetActive(armed);
         if (!armed) return;
@@ -338,7 +352,7 @@ public class ArenaVehicleHud : MonoBehaviour
             ? ResolvePoint(actual,Mathf.Min(range,Vector3.Distance(actual.origin,desiredPoint)),vehicle)
             : activeLauncher.PredictedImpactPoint;
         PlaceMarker(actualAim,camera,impact);
-        if(gunner){var direction=vehicle.turret.muzzle.forward;float azimuth=Mathf.Repeat(Mathf.Atan2(direction.x,direction.z)*Mathf.Rad2Deg,360);float elevation=Mathf.Asin(Mathf.Clamp(direction.y,-1,1))*Mathf.Rad2Deg;float zoom=Mathf.Tan(35*Mathf.Deg2Rad)/Mathf.Tan(camera.fieldOfView*.5f*Mathf.Deg2Rad);float relativeYaw=Mathf.DeltaAngle(vehicle.transform.eulerAngles.y,azimuth);float distance=Vector3.Distance(actual.origin,ResolvePoint(actual,range,vehicle));string station=vehicle.instruments==Vehicle.InstrumentLayout.Armored?"WEAPON STATION":"GUN SIGHT";gunnerReadout.text=station+"   RNG "+(distance>=range-.1f?">":"")+Mathf.RoundToInt(distance).ToString("0000")+" M   AZ "+relativeYaw.ToString("+000;-000;000")+"°   EL "+elevation.ToString("+00;-00;00")+"°   "+zoom.ToString("F1")+"X";}
+        if(gunner){var direction=activeGun.muzzle.forward;float azimuth=Mathf.Repeat(Mathf.Atan2(direction.x,direction.z)*Mathf.Rad2Deg,360);float elevation=Mathf.Asin(Mathf.Clamp(direction.y,-1,1))*Mathf.Rad2Deg;float zoom=Mathf.Tan(35*Mathf.Deg2Rad)/Mathf.Tan(camera.fieldOfView*.5f*Mathf.Deg2Rad);float relativeYaw=Mathf.DeltaAngle(vehicle.transform.eulerAngles.y,azimuth);float distance=Vector3.Distance(actual.origin,ResolvePoint(actual,range,vehicle));string station=vehicle.instruments==Vehicle.InstrumentLayout.Armored?"WEAPON STATION":"GUN SIGHT";gunnerReadout.text=station+"   RNG "+(distance>=range-.1f?">":"")+Mathf.RoundToInt(distance).ToString("0000")+" M   AZ "+relativeYaw.ToString("+000;-000;000")+"°   EL "+elevation.ToString("+00;-00;00")+"°   "+zoom.ToString("F1")+"X";}
     }
     void BuildRoadDashboard()
     {
