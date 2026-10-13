@@ -27,6 +27,8 @@ public class VehicleTurret : MonoBehaviour
     public Vector2 pitchLimits = new Vector2(-20, 45);
     Vector3 aimDirection = Vector3.forward;
     float nextShot;
+    public float ReadyIn => Mathf.Max(0,nextShot-Time.time);
+    public bool IsSingleShot => roundsPerMinute < 60;
     Vector3 aimPoint;
     bool aimAtPoint;
     public Vector3 RequestedAimDirection => aimDirection;

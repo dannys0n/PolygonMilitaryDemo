@@ -65,7 +65,12 @@ public class ArenaVehicleAttackHud : MonoBehaviour
             else if(i<16){scaleLabels[i].text=(40-(i-9)*5).ToString();scaleLabels[i].rectTransform.anchoredPosition=new Vector2(110+(i-9)*15,-75);}
             else {scaleLabels[i].text=i==16?"0.5":"2.7";scaleLabels[i].rectTransform.anchoredPosition=i==16?new Vector2(36,42):new Vector2(202,-105);}
         }
-        weaponText.text=sight.ammunitionType+"\n<color=#FF9637>"+(sight.Operational?"READY":"SAFE")+"</color>";
+        var systems=vehicle.GetComponent<VehicleWeaponSystems>();
+        var selected=systems && vehicle.turret?systems.Current(vehicle.turret.controlRole):null;
+        float reload=selected!=null?selected.ReadyIn:vehicle.turret?vehicle.turret.ReadyIn:0;
+        bool single=selected!=null?selected.IsSingleShot:vehicle.turret && vehicle.turret.IsSingleShot;
+        string readiness=!sight.Operational?"SAFE":single && reload>0?"RELOAD "+reload.ToString("F1")+" S":"READY";
+        weaponText.text=sight.ammunitionType+(single?(reload>0?"  0/1":"  1/1"):"")+"\n<color=#FF9637>"+readiness+"</color>";
         var ray=sight.WeaponRay;Vector3 local=vehicle.transform.InverseTransformDirection(ray.direction);float traverse=Mathf.Atan2(local.x,local.z)*Mathf.Rad2Deg;float elevation=Mathf.Asin(Mathf.Clamp(local.y,-1,1))*Mathf.Rad2Deg;orientation.SetTraverse(traverse);
         orientationText.text="TRV "+traverse.ToString("+000;-000;000")+"°   EL "+elevation.ToString("+00;-00;00")+"°";
         Vector3 point=ray.GetPoint(Range(ray,sight.range,vehicle));Vector3 screen=camera.WorldToScreenPoint(point);actualDirection.gameObject.SetActive(screen.z>0);if(screen.z>0){RectTransformUtility.ScreenPointToLocalPointInRectangle((RectTransform)actualDirection.parent,screen,null,out var position);actualDirection.anchoredPosition=position;}

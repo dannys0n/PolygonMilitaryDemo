@@ -19,6 +19,8 @@ public sealed class VehicleWeaponSystems : MonoBehaviour
         public bool ejectCasings;
         public Sprite icon;
         [NonSerialized] public float nextShot;
+        public bool IsSingleShot => system == FireSystem.Gun && roundsPerMinute < 60;
+        public float ReadyIn => system == FireSystem.Launcher && launcher ? launcher.ReadyIn : Mathf.Max(0,nextShot-Time.time);
     }
     public Vehicle vehicle;
     public Weapon[] weapons = Array.Empty<Weapon>();

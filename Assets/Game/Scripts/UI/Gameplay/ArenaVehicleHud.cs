@@ -92,9 +92,10 @@ public class ArenaVehicleHud : MonoBehaviour
             if(selectedIconGlow)equippedIcon.material=slotIcon.material=selectedIconGlow;
             equippedName.text=selectedWeapon.name;
             var rack=selectedWeapon.launcher;
-            ammunition.text=selectedWeapon.system==VehicleWeaponSystems.FireSystem.Launcher?rack.Missiles+" / "+rack.capacity:"INF";
-            float delay=rack?rack.ReadyIn:Mathf.Max(0,selectedWeapon.nextShot-Time.time);
-            fireMode.text=delay>0?delay.ToString("F1")+" S":"READY";
+            float delay=selectedWeapon.ReadyIn;
+            ammunition.text=selectedWeapon.system==VehicleWeaponSystems.FireSystem.Launcher?rack.Missiles+" / "+rack.capacity
+                :selectedWeapon.IsSingleShot?(delay>0?"0 / 1":"1 / 1"):"INF";
+            fireMode.text=delay>0?(selectedWeapon.IsSingleShot?"RELOAD ":"")+delay.ToString("F1")+" S":"READY";
             slotKey.text="LMB";equipmentLabel.text="VEHICLE WEAPON";
         }
         else if(showAttack)
@@ -102,8 +103,12 @@ public class ArenaVehicleHud : MonoBehaviour
             equippedIcon.sprite=slotIcon.sprite=attackSight.weaponIcon;equippedIcon.color=slotIcon.color=Color.white;
             if(selectedIconGlow)equippedIcon.material=slotIcon.material=selectedIconGlow;
             var attackLauncher=v.GetComponent<VehicleLauncher>();
-            equippedName.text=attackSight.weaponName;ammunition.text=attackLauncher?attackLauncher.Missiles+" / "+attackLauncher.capacity:attackSight.Operational?"INF":"--";
-            fireMode.text=attackLauncher?(attackLauncher.ReadyIn<=0?"READY":attackLauncher.ReadyIn.ToString("F1")+" S"):attackSight.Operational?(v.turret.roundsPerMinute<60?"SINGLE":"AUTO"):"SAFE";slotKey.text=attackSight.Operational?"LMB":"";equipmentLabel.text="VEHICLE WEAPON";
+            equippedName.text=attackSight.weaponName;
+            bool single=v.turret && v.turret.IsSingleShot;
+            float delay=attackLauncher?attackLauncher.ReadyIn:v.turret?v.turret.ReadyIn:0;
+            ammunition.text=attackLauncher?attackLauncher.Missiles+" / "+attackLauncher.capacity:single?(delay>0?"0 / 1":"1 / 1"):attackSight.Operational?"INF":"--";
+            fireMode.text=!attackSight.Operational?"SAFE":delay>0?(single?"RELOAD ":"")+delay.ToString("F1")+" S":single?"READY":"AUTO";
+            slotKey.text=attackSight.Operational?"LMB":"";equipmentLabel.text="VEHICLE WEAPON";
         }
         else if (armed)
         {
@@ -112,8 +117,10 @@ public class ArenaVehicleHud : MonoBehaviour
             equippedIcon.sprite = slotIcon.sprite = gunner ? v.turret.weaponIcon : launcher.weaponIcon;
             equippedIcon.color = slotIcon.color = Color.white;
             if (selectedIconGlow) equippedIcon.material = slotIcon.material = selectedIconGlow;
-            equippedName.text = gunner ? v.turret.weaponName : "ROCKETS"; ammunition.text = gunner ? "INF" : launcher.Missiles + " / " + launcher.capacity;
-            fireMode.text = gunner ? "AUTO" : launcher.ReadyIn <= 0 ? "READY" : launcher.ReadyIn.ToString("F1") + " S";
+            equippedName.text = gunner ? v.turret.weaponName : "ROCKETS";
+            ammunition.text = gunner ? v.turret.IsSingleShot?(v.turret.ReadyIn>0?"0 / 1":"1 / 1"):"INF" : launcher.Missiles + " / " + launcher.capacity;
+            fireMode.text = gunner ? v.turret.IsSingleShot?(v.turret.ReadyIn>0?"RELOAD "+v.turret.ReadyIn.ToString("F1")+" S":"READY"):"AUTO"
+                : launcher.ReadyIn <= 0 ? "READY" : launcher.ReadyIn.ToString("F1") + " S";
             slotKey.text = "LMB"; equipmentLabel.text = "VEHICLE WEAPON";
         }
         status.text=v.displayName.ToUpperInvariant()+" / "+v.seats[player.SeatIndex].name.ToUpperInvariant()+"    "+Mathf.RoundToInt(v.Body.linearVelocity.magnitude*3.6f)+" KPH";
@@ -253,7 +260,8 @@ public class ArenaVehicleHud : MonoBehaviour
             if(entry!=null)
             {
                 icon.sprite=entry.icon;key.text=(i+1).ToString();
-                caption.text=entry.name+"  "+(entry.launcher?entry.launcher.Missiles+"/"+entry.launcher.capacity:"INF");
+                caption.text=entry.name+"  "+(entry.launcher?entry.launcher.Missiles+"/"+entry.launcher.capacity:entry.IsSingleShot?(entry.ReadyIn>0?"0/1":"1/1"):"INF");
+                if(entry.IsSingleShot && entry.ReadyIn>0)caption.text+="  "+entry.ReadyIn.ToString("F1")+"s";
             }
             else if(defense)
             {
