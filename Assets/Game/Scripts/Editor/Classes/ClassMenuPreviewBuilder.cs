@@ -37,9 +37,10 @@ public static class ClassMenuPreviewBuilder
             if(!inputs||!inputs.catalog)throw new InvalidOperationException("Configure ClassMenuSources catalog first");
             var gameplay=inputs.catalog;
             var icons=inputs.icons.Where(i=>i.asset).ToDictionary(i=>i.asset,i=>i.icon);
-            var views=inputs.views.Where(v=>v.weapon).ToDictionary(v=>v.weapon,v=>v.view);
+            var views=gameplay.entries.Where(e=>e.weapon&&e.firstPersonPrefab).ToDictionary(e=>e.weapon,e=>e.firstPersonPrefab);
             var catalog=AssetDatabase.LoadAssetAtPath<ArenaClassMenuCatalog>(CatalogAsset);
             if(!catalog){catalog=ScriptableObject.CreateInstance<ArenaClassMenuCatalog>();AssetDatabase.CreateAsset(catalog,CatalogAsset);}
+            catalog.source=gameplay;
             var allParts=new List<ArenaClassMenuCatalog.Part>();
             foreach(var sight in gameplay.entries.SelectMany(e=>e.sights).Where(s=>s).Distinct())
                 allParts.Add(new ArenaClassMenuCatalog.Part{id=sight.id,name=sight.displayName,optic=true,icon=icons.TryGetValue(sight,out var icon)?icon:null,previewAddress=sight.prefab?Preview(sight.prefab.gameObject,"optic-"+sight.id):null});

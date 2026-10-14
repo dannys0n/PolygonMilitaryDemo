@@ -13,7 +13,8 @@ public class ArenaRandomLoadouts : MonoBehaviour
     {
         var primary = new List<ArenaWeaponCatalog.Entry>();
         var secondary = new List<ArenaWeaponCatalog.Entry>();
-        foreach (var entry in catalog.entries)
+        var source=actor.match.settings.weaponCatalog?actor.match.settings.weaponCatalog:catalog;
+        foreach (var entry in source.Weapons(actor.match.settings.polishedWeaponsOnly))
         {
             if (Array.FindIndex(actor.player.loadout.slots, slot => slot.definition == entry.weapon) < 0) continue;
             if (ArenaCustomClassStore.IsPrimary(entry.weapon)) primary.Add(entry);

@@ -43,6 +43,7 @@ public class ArenaClassMenu : MonoBehaviour
     void Start()
     {
         if (!participant) return;
+        if(participant.match.settings.weaponCatalog)catalog=participant.match.settings.weaponCatalog;
         RefreshChoices();
         participant.match.MatchEnded += OnMatchEnded;
         if (participant.NeedsClassSelection) Open();
@@ -50,7 +51,9 @@ public class ArenaClassMenu : MonoBehaviour
     void RefreshChoices()
     {
         foreach(var old in rows){old.gameObject.SetActive(false);Destroy(old.gameObject);}rows.Clear();choices.Clear();
-        choices.AddRange(participant.match.settings.classes);choices.AddRange(ArenaCustomClassStore.Load(catalog));
+        choices.AddRange(participant.match.settings.classes);
+        foreach(var choice in ArenaCustomClassStore.Load(catalog))
+            if(!participant.match.settings.polishedWeaponsOnly || catalog.Find(choice.primary).polished&&catalog.Find(choice.secondary).polished)choices.Add(choice);
         foreach (var choice in choices)
         {
             var row = Instantiate(rowTemplate, rowTemplate.transform.parent);
@@ -63,7 +66,7 @@ public class ArenaClassMenu : MonoBehaviour
     }
     public void OpenEditor()
     {
-        ArenaClassEditor.Open(choice=>{RefreshChoices();Preview(choice);},null,preview&&preview.isCustom?preview.customIndex:0,catalog);
+        ArenaClassEditor.Open(choice=>{RefreshChoices();Preview(choice);},null,preview&&preview.isCustom?preview.customIndex:0,catalog,participant.match.settings.polishedWeaponsOnly);
     }
     public void Open()
     {

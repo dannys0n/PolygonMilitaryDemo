@@ -41,6 +41,13 @@ public class ArenaClassMenuCatalog : ScriptableObject
     { public string sight,riser; public Vector3 contactPoint,scale; }
     [Serializable] public class BuiltIn
     { public WeaponAttachmentDefinition.MountKind mount; public string sight; public string[] rendererNames=Array.Empty<string>(); }
+    public ArenaWeaponCatalog source;
+    // Preview addresses remain generated; gameplay facts are refreshed from the shared definitions.
+    public void RefreshWeaponFacts()
+    {
+        if(!source)return;
+        foreach(var item in weapons){var definition=source.FindWeapon(item.id);if(!definition)continue;item.name=definition.displayName;item.category=definition.category;item.isUtility=definition.isUtility;item.damage=definition.damage;item.rpm=definition.roundsPerMinute;item.rounds=definition.magazineCapacity;item.icon=definition.icon;}
+    }
     public Weapon[] weapons=Array.Empty<Weapon>();
     public Part[] parts=Array.Empty<Part>();
     public Weapon FindWeapon(string id)=>Array.Find(weapons,w=>w.id==id);

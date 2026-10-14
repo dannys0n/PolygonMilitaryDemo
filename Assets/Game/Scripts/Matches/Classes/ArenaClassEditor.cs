@@ -31,7 +31,7 @@ public class ArenaClassEditor : MonoBehaviour
     Action closed;
     // Existing in-game callers already own this catalog. It is never serialized into the menu prefab.
     ArenaWeaponCatalog contextCatalog;
-    string allowedKey;
+    bool onlyPolished;
     readonly Dictionary<string,WeaponOptions> options=new Dictionary<string,WeaponOptions>();
     readonly Dictionary<string,string> defaultSights=new Dictionary<string,string>();
     class WeaponOptions
@@ -42,12 +42,12 @@ public class ArenaClassEditor : MonoBehaviour
         public List<TMP_Dropdown.OptionData>[] attachmentLabels;
     }
     public bool IsVisible=>panel.activeSelf;
-    public static ArenaClassEditor Open(Action<ArenaClassDefinition> saved=null,Action closed=null,int selected=0,ArenaWeaponCatalog weaponCatalog=null)
+    public static ArenaClassEditor Open(Action<ArenaClassDefinition> saved=null,Action closed=null,int selected=0,ArenaWeaponCatalog weaponCatalog=null,bool polishedOnly=false)
     {
         if(saved!=null&&!weaponCatalog)throw new ArgumentException("A gameplay save callback requires its weapon catalog. Menu-only editing can omit both.",nameof(weaponCatalog));
         var editor=FindAnyObjectByType<ArenaClassEditor>(FindObjectsInactive.Include);
         if(!editor)editor=Instantiate(Resources.Load<GameObject>("ArenaClassEditor")).GetComponent<ArenaClassEditor>();
-        editor.contextCatalog=weaponCatalog;editor.saved=saved;editor.closed=closed;editor.ConfigureWeapons(weaponCatalog);editor.Show(selected);return editor;
+        editor.contextCatalog=weaponCatalog;editor.saved=saved;editor.closed=closed;editor.onlyPolished=polishedOnly;editor.menuCatalog.RefreshWeaponFacts();editor.ConfigureWeapons(weaponCatalog);editor.Show(selected);return editor;
     }
     void Awake()
     {
@@ -63,9 +63,7 @@ public class ArenaClassEditor : MonoBehaviour
     static List<TMP_Dropdown.OptionData> Labels(ArenaClassMenuCatalog.Part[] parts,string first)=>new[]{new TMP_Dropdown.OptionData(first)}.Concat(parts.Select(p=>new TMP_Dropdown.OptionData(p.name,p.icon,Color.white))).ToList();
     void ConfigureWeapons(ArenaWeaponCatalog catalog)
     {
-        var allowed=catalog?new HashSet<string>(catalog.entries.Select(e=>e.weapon.catalogId)):null;
-        var key=catalog?string.Join("|",catalog.entries.Select(e=>e.weapon.catalogId+":"+(e.defaultSight?e.defaultSight.id:"")+":"+string.Join(",",e.sights.Where(s=>s).Select(s=>s.id))+":"+string.Join(",",e.attachments.Where(a=>a).Select(a=>a.id)))):"ALL";
-        if(key==allowedKey)return;allowedKey=key;
+        var allowed=catalog?new HashSet<string>(catalog.Weapons().Where(e=>!onlyPolished||e.polished||e.weapon.isUtility).Select(e=>e.weapon.catalogId)):null;
         var all=menuCatalog.weapons.Where(w=>allowed==null||allowed.Contains(w.id)).OrderBy(w=>w.category).ThenBy(w=>w.name).ToArray();
         options.Clear();defaultSights.Clear();
         foreach(var w in all)

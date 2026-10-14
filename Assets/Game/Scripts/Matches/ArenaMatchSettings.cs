@@ -19,5 +19,8 @@ public class ArenaMatchSettings : ScriptableObject
     [Min(0f)] public float openingTeamSeparation = 30f;
     [Tooltip("Choose a fresh preset for AI on every respawn in a prototype match.")]
     public bool randomizeAIClassOnRespawn;
+    [Header("Equipment source") ]
+    public ArenaWeaponCatalog weaponCatalog;
+    public bool polishedWeaponsOnly;
     public ArenaClassDefinition[] classes;
 }
