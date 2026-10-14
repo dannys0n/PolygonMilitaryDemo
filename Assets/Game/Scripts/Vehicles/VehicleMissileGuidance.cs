@@ -52,7 +52,7 @@ public sealed class VehicleMissileGuidance : MonoBehaviour
     public bool CanAcquire(Vehicle source, Vehicle candidate, Ray aim, Ray? launchRay = null)
     {
         if (!source || !candidate || candidate == source || candidate.IsDestroyed || !candidate.IsOccupied) return false;
-        bool flying = candidate.instruments == Vehicle.InstrumentLayout.FixedWing || candidate.instruments == Vehicle.InstrumentLayout.Helicopter;
+        bool flying = candidate.IsAircraft;
         if ((guidance == Guidance.AirToAir || guidance == Guidance.AirDefence) && !flying) return false;
         int faction = -1;
         foreach (var seat in source.seats) if (seat.occupant) { faction = seat.occupant.faction; break; }
