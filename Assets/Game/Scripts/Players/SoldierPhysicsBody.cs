@@ -20,7 +20,12 @@ public sealed class SoldierPhysicsBody : MonoBehaviour
     public float height => capsule.height;
     public Vector3 center => capsule.center;
     public Vector3 Feet => body.position+Vector3.up*(capsule.center.y-capsule.height*.5f);
-    readonly RaycastHit[] hits=new RaycastHit[24];
+    readonly ContactPoint[] contacts=new ContactPoint[32];
+    float contactTime=float.NegativeInfinity;
+    Vector3 contactNormalSum;
+    Rigidbody contactSupport;
+    float bestContactUp;
+    Collider supportCollider;
     float ungroundUntil;
     public static bool IsMotorCollider(Collider collider)=>collider && collider.TryGetComponent<SoldierPhysicsBody>(out var character) && collider==character.capsule;
     void Awake()
@@ -45,28 +50,59 @@ public sealed class SoldierPhysicsBody : MonoBehaviour
         body.collisionDetectionMode=CollisionDetectionMode.Discrete;body.interpolation=RigidbodyInterpolation.None;
         body.isKinematic=true;body.detectCollisions=false;
         if(capsule)capsule.enabled=false;
-        isGrounded=false;Support=null;
+        isGrounded=false;Support=null;ClearGroundContacts();
     }
     void FixedUpdate()=>ProbeGround();
     public void ProbeGround()
     {
         isGrounded=false;Support=null;GroundNormal=Vector3.up;
         if(!enabled || Time.fixedTime<ungroundUntil)return;
-        float r=radius*.9f;int mask=~(1<<gameObject.layer);
-        int count=Physics.SphereCastNonAlloc(Feet+Vector3.up*(r+.15f),r,Vector3.down,hits,.24f,mask,QueryTriggerInteraction.Ignore);
-        float nearest=float.PositiveInfinity;
-        for(int i=0;i<count;i++)
+        // Consume contacts from the preceding solver step, not a nearby floor prediction.
+        bool fresh=Time.fixedTime-contactTime<=Time.fixedDeltaTime*1.5f;
+        bool resting=body.IsSleeping()&&supportCollider&&supportCollider.enabled;
+        if((fresh||resting)&&contactNormalSum.sqrMagnitude>.001f)
         {
-            var hit=hits[i];
-            if(hit.collider.transform.IsChildOf(transform)||IsMotorCollider(hit.collider)||hit.distance>=nearest
-                ||Vector3.Angle(hit.normal,Vector3.up)>slopeLimit)continue;
-            nearest=hit.distance;isGrounded=true;GroundNormal=hit.normal;Support=hit.rigidbody;
+            GroundNormal=contactNormalSum.normalized;
+            Support=contactSupport;
+            isGrounded=true;
         }
     }
-    public void BeginJump(){ungroundUntil=Time.fixedTime+.12f;isGrounded=false;Support=null;}
+    void OnCollisionEnter(Collision collision)=>CollectGroundContacts(collision);
+    void OnCollisionStay(Collision collision)=>CollectGroundContacts(collision);
+    void CollectGroundContacts(Collision collision)
+    {
+        if(!enabled||Time.fixedTime<ungroundUntil)return;
+        if(contactTime!=Time.fixedTime)
+        {
+            contactTime=Time.fixedTime;contactNormalSum=Vector3.zero;
+            contactSupport=null;supportCollider=null;bestContactUp=-1;
+        }
+        int count=collision.GetContacts(contacts);
+        float minUp=Mathf.Cos(slopeLimit*Mathf.Deg2Rad);
+        for(int i=0;i<count;i++)
+        {
+            var contact=contacts[i];
+            // Only the motor capsule's lower contacts can ground the character.
+            if(contact.thisCollider!=capsule||contact.normal.y<minUp
+                ||contact.point.y>Feet.y+radius+.05f)continue;
+            contactNormalSum+=contact.normal;
+            if(contact.normal.y>bestContactUp)
+            {
+                bestContactUp=contact.normal.y;
+                contactSupport=contact.otherCollider.attachedRigidbody;
+                supportCollider=contact.otherCollider;
+            }
+        }
+    }
+    void ClearGroundContacts()
+    {
+        contactTime=float.NegativeInfinity;contactNormalSum=Vector3.zero;
+        contactSupport=null;supportCollider=null;
+    }
+    public void BeginJump(){ungroundUntil=Time.fixedTime+.12f;isGrounded=false;Support=null;ClearGroundContacts();}
     public void ResetMotion()
     {
-        ungroundUntil=0;isGrounded=false;Support=null;
+        ungroundUntil=0;isGrounded=false;Support=null;ClearGroundContacts();
         if(body&&!body.isKinematic){body.linearVelocity=Vector3.zero;body.angularVelocity=Vector3.zero;}
     }
 }

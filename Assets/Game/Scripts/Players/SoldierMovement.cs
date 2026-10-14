@@ -12,7 +12,6 @@ public class SoldierMovement : MonoBehaviour
     [Min(0)] public float jumpHeight=1.2f;
     [Header("Physical movement")]
     [Min(1)] public float groundAcceleration=45,airAcceleration=8;
-    [Min(.1f)] public float maximumStepSpeed=2.5f;
     public bool IsRunning { get; private set; }
     public Vector3 Velocity=>controller.Velocity;
     SoldierFirstPersonView view;
@@ -56,10 +55,11 @@ public class SoldierMovement : MonoBehaviour
         if(wasGrounded&&!grounded)airReference=Vector3.ProjectOnPlane(body.linearVelocity-direction*speed,Vector3.up);
         if(grounded)
         {
+            // A landing ends the airborne reference; never keep steering toward the departed plane.
+            airReference=Vector3.ProjectOnPlane(controller.GroundVelocity,Vector3.up);
             Vector3 wanted=controller.GroundVelocity+Vector3.ProjectOnPlane(direction,controller.GroundNormal).normalized*direction.magnitude*speed;
             Vector3 error=Vector3.ProjectOnPlane(wanted-body.linearVelocity,controller.GroundNormal);
             body.AddForce(Vector3.ClampMagnitude(error/dt,groundAcceleration),ForceMode.Acceleration);
-            if(direction.sqrMagnitude>.01f)StepUp(direction);
             if(jumpRequested)
             {
                 airReference=Vector3.ProjectOnPlane(controller.GroundVelocity,Vector3.up);
@@ -79,23 +79,6 @@ public class SoldierMovement : MonoBehaviour
         view.armsAnimator.SetFloat("RunBlend",Mathf.SmoothStep(0,1,sprintBlend));
         animator.SetFloat("MoveX",input.x,.05f,dt);animator.SetFloat("MoveZ",input.y,.05f,dt);
         animator.SetBool("Grounded",grounded);animator.SetFloat("VerticalSpeed",controller.velocity.y);
-    }
-    void StepUp(Vector3 direction)
-    {
-        Vector3 feet=controller.Feet;direction.Normalize();float reach=controller.radius+.16f;
-        int mask=~(1<<gameObject.layer);
-        if(!Physics.Raycast(feet+Vector3.up*.08f,direction,out _,reach,mask,QueryTriggerInteraction.Ignore))return;
-        Vector3 above=feet+direction*reach+Vector3.up*(controller.stepOffset+.1f);
-        if(!Physics.Raycast(above,Vector3.down,out var top,controller.stepOffset+.1f,mask,QueryTriggerInteraction.Ignore))return;
-        float rise=top.point.y-feet.y;
-        if(rise<.02f||rise>controller.stepOffset||Vector3.Angle(top.normal,Vector3.up)>controller.slopeLimit)return;
-        Vector3 center=controller.body.position+controller.center+Vector3.up*(rise+.03f);
-        float segment=controller.height*.5f-controller.radius;
-        int count=Physics.CapsuleCastNonAlloc(center+Vector3.up*segment,center-Vector3.up*segment,
-            controller.radius*.95f,direction,hits,reach,mask,QueryTriggerInteraction.Ignore);
-        if(count>0)return;
-        float target=controller.GroundVelocity.y+maximumStepSpeed;
-        controller.body.AddForce(Vector3.up*Mathf.Clamp(target-controller.body.linearVelocity.y,0,groundAcceleration*Time.fixedDeltaTime),ForceMode.VelocityChange);
     }
     void AdjustClearance(Vector3 direction)
     {
