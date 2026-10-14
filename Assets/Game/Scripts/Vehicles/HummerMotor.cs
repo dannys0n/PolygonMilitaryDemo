@@ -98,6 +98,8 @@ public class HummerMotor : VehicleMotor
     {
         foreach (var w in wheels)
         {
+            // Track support contacts have no independent rolling visual.
+            if (!w.mesh) continue;
             w.collider.GetWorldPose(out var pos, out var rot);
             w.mesh.SetPositionAndRotation(pos, rot * w.rotationOffset);
         }
