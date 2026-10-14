@@ -43,6 +43,11 @@ public class ArenaVehicleAI : MonoBehaviour
         }
     }
 
+    public void SetTravelGoal(Vector3 destination)
+    {
+        Goal=destination;nextPath=0;corner=0;recoveries=0;landing=false;
+        boardedAt=progressAt=Time.time;progressPosition=transform.position;
+    }
     void Awake()
     {
         path = new NavMeshPath();

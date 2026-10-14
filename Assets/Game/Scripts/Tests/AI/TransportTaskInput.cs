@@ -37,7 +37,7 @@ public sealed class TransportTaskInput : SoldierInputSource
         var local=carrier.transform.InverseTransformPoint(transform.position);
         bool supported=life.controller.Support==carrier.Body;
         if(CurrentTask==Task.BoardCargo&&supported&&Vector3.ProjectOnPlane(local-localGoal,Vector3.up).sqrMagnitude<2){Completed=true;return frame;}
-        if(CurrentTask==Task.ExitCargo&&(local.z<localGoal.z||local.y<localGoal.y-4))
+        if(CurrentTask==Task.ExitCargo&&((Vector3.ProjectOnPlane(local-localGoal,Vector3.up).sqrMagnitude<1&&!supported)||local.y<localGoal.y-4))
         {falling=true;return frame;}
         Vector3 delta=carrier.transform.TransformPoint(localGoal)-transform.position;
         float yaw=Mathf.Atan2(delta.x,delta.z)*Mathf.Rad2Deg;

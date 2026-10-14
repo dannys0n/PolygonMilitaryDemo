@@ -80,6 +80,25 @@ public class AIBehaviorScenarioTests
    Assert.AreEqual(0,Get(scenario,"ErrorCount"));
   }
  }
+  [UnityTest] public IEnumerator TransportSelectorCanSpawnEveryCatalogVehicle()
+ {
+  yield return Load("AI_Transport_Overflow");var options=(Array)Get(scenario,"VehicleOptions");Assert.Greater(options.Length,20);
+  for(int i=0;i<options.Length;i++)
+  {
+   scenario.GetType().GetMethod("SelectVehicle").Invoke(scenario,new object[]{i});yield return null;
+   Assert.NotNull((UnityEngine.Object)Get(scenario,"Vehicle"));Assert.AreEqual(options.GetValue(i),Get(scenario,"vehiclePrefab"));
+   Assert.AreEqual(0,((IList)Get(scenario,"Actors")).Count,"Switching vehicle clears the old crew");
+   Assert.AreEqual(0,Get(scenario,"ErrorCount"),"Vehicle selector must spawn without runtime errors");
+  }
+ }
+ [UnityTest] public IEnumerator SeatedTransportTripUsesProductionAIAndMoves()
+ {
+  yield return Load("AI_Transport_Overflow");yield return new WaitForSeconds(1.5f);Command(scenario,"FillSeats");yield return new WaitForSeconds(1);
+  var vehicle=(Component)Get(scenario,"Vehicle");var initial=vehicle.transform.position;Command(scenario,"StartTransportTrip");
+  float until=Time.time+15;while(Time.time<until&&Vector3.Distance(initial,vehicle.transform.position)<5)yield return null;
+  Assert.Greater(Vector3.Distance(initial,vehicle.transform.position),5,"Production driver must move toward the trip destination");
+  Assert.AreEqual(0,Get(scenario,"ErrorCount"));
+ }
  void AssertFullCrew()
  {
   int total=0;

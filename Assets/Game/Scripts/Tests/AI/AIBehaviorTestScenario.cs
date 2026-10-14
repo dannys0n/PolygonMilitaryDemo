@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 // Small repeatable scenarios. UI and unit tests invoke the exact same public commands.
@@ -9,6 +10,11 @@ public sealed class AIBehaviorTestScenario : MonoBehaviour
     public Scenario scenario;
     public ArenaMatch match;
     public Vehicle vehiclePrefab;
+    public VehicleCatalog vehicleCatalog;
+    public Vehicle[] VehicleOptions { get; private set; }=System.Array.Empty<Vehicle>();
+    Vector2 vehicleScroll;
+    int vehicleSelection;
+    public Vector3 transportDestination=new Vector3(60,0,80);
     public Vehicle opposingVehiclePrefab;
     public Vehicle Opponent { get; private set; }
     public bool CrewReady { get; private set; }
@@ -29,7 +35,34 @@ public sealed class AIBehaviorTestScenario : MonoBehaviour
     void OnEnable()=>Application.logMessageReceived+=Log;
     void OnDisable()=>Application.logMessageReceived-=Log;
     void Log(string message,string stack,LogType type){if(type==LogType.Exception||type==LogType.Error){ErrorCount++;status=message;}}
-    void Start(){match.enabled=false;ResetScenario();}
+    void Start()
+    {
+        match.enabled=false;
+        if(vehicleCatalog)VehicleOptions=vehicleCatalog.transports.Concat(vehicleCatalog.combatVehicles).Where(v=>v).Distinct().OrderBy(v=>v.displayName).ThenBy(v=>v.name).ToArray();
+        vehicleSelection=System.Array.IndexOf(VehicleOptions,vehiclePrefab);
+        ResetScenario();
+    }
+    public void SelectVehicle(int index)
+    {
+        if(index<0||index>=VehicleOptions.Length)return;
+        vehicleSelection=index;vehiclePrefab=VehicleOptions[index];ResetScenario();observer.follow=Vehicle.transform;
+        status="Selected "+Vehicle.displayName+". Fill seats, then start a trip or test exits.";
+    }
+    public void StartTransportTrip()
+    {
+        if(!Vehicle||!Vehicle.Driver){status="Fill functional seats first.";return;}
+        foreach(var actor in Actors)if(actor.GetComponent<VehicleOccupant>().IsMounted)
+        {
+            var infantry=actor.GetComponent<ArenaAIInput>();infantry.enabled=true;actor.GetComponent<SoldierController>().inputSource=infantry;
+            var ai=actor.GetComponent<ArenaVehicleAI>();ai.enabled=true;ai.SetTravelGoal(transportDestination);
+        }
+        observer.follow=Vehicle.transform;Running=true;status="Production vehicle AI driving/flying to the test destination. Passenger exits remain available.";
+    }
+    Vector3 DoorOutward(VehicleDoors.Door door)
+    {
+        var direction=Vector3.ProjectOnPlane(door.interaction.position-Vehicle.transform.TransformPoint(Vehicle.NavigationBounds.center),Vector3.up);
+        return direction.sqrMagnitude>.01f?direction.normalized:-Vehicle.transform.forward;
+    }
     ArenaParticipant Spawn(Vector3 position,int index,ArenaParticipant.Team team=ArenaParticipant.Team.Red)
     {
         var staging=new GameObject("Actor initialization");staging.transform.SetParent(population.transform,false);staging.SetActive(false);
@@ -74,14 +107,14 @@ public sealed class AIBehaviorTestScenario : MonoBehaviour
         var doors=Vehicle.GetComponent<VehicleDoors>();if(!doors||doors.doors.Length==0){status="Vehicle has no cargo access.";yield break;}
         var door=doors.doors[0];if(!door.open)doors.Toggle(0);
         int start=Actors.Count;
-        Vector3 entry=door.interaction.position;
-        for(int i=0;i<2;i++)Spawn(entry+new Vector3(i==0?-1:1,0,-2),start+i);
+        Vector3 entry=door.interaction.position;Vector3 outward=DoorOutward(door);Vector3 across=Vector3.Cross(Vector3.up,outward);
+        for(int i=0;i<2;i++)Spawn(entry+outward*2+across*(i==0?-1:1),start+i);
         population.SetActive(true);yield return null;
         for(int i=start;i<Actors.Count;i++)
         {
-            Actors[i].Respawn(entry+new Vector3(i==start?-.7f:.7f,0,-2),Quaternion.identity);
-            var local=Vehicle.transform.InverseTransformPoint(entry);Vector3 inward=Vector3.ProjectOnPlane(Vehicle.NavigationBounds.center-local,Vector3.up).normalized;
-            Actors[i].GetComponent<TransportTaskInput>().Command(TransportTaskInput.Task.BoardCargo,Vehicle,local+inward*1.6f+Vector3.right*(i==start?-.45f:.45f));
+            Actors[i].Respawn(entry+outward*2+across*(i==start?-.7f:.7f),Quaternion.identity);
+            var local=Vehicle.transform.InverseTransformPoint(entry);Vector3 inward=Vehicle.transform.InverseTransformDirection(-outward);Vector3 lane=Vehicle.transform.InverseTransformDirection(across);
+            Actors[i].GetComponent<TransportTaskInput>().Command(TransportTaskInput.Task.BoardCargo,Vehicle,local+inward*1.6f+lane*(i==start?-.45f:.45f));
         }
         Running=true;status="Two overflow riders walking/jumping in. Functional seats remain full.";
     }
@@ -104,10 +137,10 @@ public sealed class AIBehaviorTestScenario : MonoBehaviour
     {
         if(!Vehicle)return;
         if(scenario==Scenario.PlaneCargoExit&&!flight){Vehicle.Body.isKinematic=false;Vehicle.Body.collisionDetectionMode=CollisionDetectionMode.ContinuousDynamic;Vehicle.enabled=true;Vehicle.Body.linearVelocity=Vehicle.transform.forward*85;foreach(var actor in Actors)if(!actor.GetComponent<VehicleOccupant>().IsMounted)actor.player.controller.body.linearVelocity=Vehicle.Body.GetPointVelocity(actor.transform.position);flight=true;}
-        var doors=Vehicle.GetComponent<VehicleDoors>();if(doors&&!doors.doors[0].open)doors.ToggleAll();
-        var exit=Vehicle.transform.InverseTransformPoint(doors.doors[0].interaction.position)+new Vector3(0,1,-3);
+        var doors=Vehicle.GetComponent<VehicleDoors>();if(!doors||doors.doors.Length==0){status="This vehicle has no physical cargo door; use passenger exits.";return;}if(!doors.doors[0].open)doors.ToggleAll();
+        var exit=Vehicle.transform.InverseTransformPoint(doors.doors[0].interaction.position+DoorOutward(doors.doors[0])*3)+Vector3.up;
         foreach(var actor in Actors)if(!actor.GetComponent<VehicleOccupant>().IsMounted)
-        {var goal=exit;goal.x=Mathf.Clamp(Vehicle.transform.InverseTransformPoint(actor.transform.position).x,-.7f,.7f);actor.GetComponent<TransportTaskInput>().Command(TransportTaskInput.Task.ExitCargo,Vehicle,goal);}
+        {var goal=exit;if(scenario==Scenario.PlaneCargoExit)goal.x=Mathf.Clamp(Vehicle.transform.InverseTransformPoint(actor.transform.position).x,-.7f,.7f);actor.GetComponent<TransportTaskInput>().Command(TransportTaskInput.Task.ExitCargo,Vehicle,goal);}
         Running=true;status="Cargo exit active: normal movement, jump and landing detection.";
     }
     public bool Unloading { get; private set; }
@@ -196,11 +229,20 @@ public sealed class AIBehaviorTestScenario : MonoBehaviour
         GUILayout.BeginArea(new Rect(12,12,390,Screen.height-24),GUI.skin.box);GUILayout.Label(scenario.ToString());GUILayout.Label(status);GUILayout.Label("Actors: "+Actors.Count+" / completed: "+CompletedCount+" / runtime errors: "+ErrorCount);
         if(GUILayout.Button("Reset scenario"))ResetScenario();
         if(scenario==Scenario.PlaneCargoExit){if(GUILayout.Button("Load plane cargo (hold setup)"))LoadPlaneCargo();if(GUILayout.Button("Start flight and exit cargo"))ExitCargo();}
-        else if(scenario==Scenario.TransportOverflow){if(GUILayout.Button("Fill functional seats"))FillSeats();if(GUILayout.Button("Add two physical overflow riders"))AddOverflowRiders();if(GUILayout.Button("Unload passengers (keep driver/gunner)"))UnloadPassengers();if(GUILayout.Button("Exit physical cargo"))ExitCargo();}
+        else if(scenario==Scenario.TransportOverflow){GUILayout.Label(Vehicle?Vehicle.displayName:"No vehicle");if(GUILayout.Button("Fill functional seats"))FillSeats();if(GUILayout.Button("Start AI transport trip"))StartTransportTrip();if(GUILayout.Button("Add two physical overflow riders"))AddOverflowRiders();if(GUILayout.Button("Unload passengers (keep driver/gunner)"))UnloadPassengers();if(GUILayout.Button("Exit physical cargo"))ExitCargo();}
         else if(scenario==Scenario.VehicleCombat){if(GUILayout.Button("Start / restart full-crew engagement"))StartVehicleCombat();GUILayout.Label("Weapon shots: "+ShotsFired);VehicleTelemetry(Vehicle,"Red");VehicleTelemetry(Opponent,"Blue");}
         else if(GUILayout.Button("Start 2 vs 2 infantry combat"))StartCombat();
         if(GUILayout.Button("Free camera"))observer.follow=null;
         foreach(var actor in Actors)if(GUILayout.Button(actor.name+" / "+(actor.health.IsDead?"dead":actor.health.CurrentHealth.ToString("F0"))))observer.follow=actor.transform;
         GUILayout.EndArea();
+        if(scenario==Scenario.TransportOverflow&&VehicleOptions.Length>0)
+        {
+            GUILayout.BeginArea(new Rect(414,12,290,Mathf.Min(560,Screen.height-24)),GUI.skin.box);
+            GUILayout.Label("Select vehicle ("+VehicleOptions.Length+")");
+            vehicleScroll=GUILayout.BeginScrollView(vehicleScroll);
+            for(int i=0;i<VehicleOptions.Length;i++)
+                if(GUILayout.Button((i==vehicleSelection?"> ":"")+VehicleOptions[i].displayName))SelectVehicle(i);
+            GUILayout.EndScrollView();GUILayout.EndArea();
+        }
     }
 }
