@@ -34,7 +34,8 @@ public class ArenaVehicleAI : MonoBehaviour
     {
         get
         {
-            if(company)return true;\n            var actor=infantry.participant;
+            if(company)return true;
+            var actor=infantry.participant;
             if(actor.match.rules is ConquestRules conquest && conquest.squads)
                 return conquest.squads.IsVehicleSquad(actor);
             int index=0;

@@ -51,6 +51,19 @@ public class HecticCompanySupervisor : MonoBehaviour
             if(troop.occupant.IsMounted){var v=troop.occupant.MountedVehicle;if(!company.fleet.Contains(v))company.fleet.Add(v);claimed.Add(v);}
             else if(!troop.infantry.IsCombatAlert)waiting.Add(troop);
         }
+        // HQ deployment already seats everyone. Reassign at most two seated passengers
+        // to physical cargo boarding while parked, so this path is exercised naturally.
+        foreach(var v in company.fleet)
+        {
+            if(!v||!v.CanExit||!v.hasRenderedInterior||!v.TryGetComponent<VehicleDoors>(out var access)||access.doors.Length==0||v.motor is JetMotor)continue;
+            int extra=0;
+            foreach(var troop in company.troops)
+            {
+                if(extra>=2)break;
+                if(!troop.occupant.IsMounted||troop.occupant.MountedVehicle!=v||v.seats[troop.occupant.SeatIndex].role!=Vehicle.SeatRole.Passenger)continue;
+                troop.occupant.Leave(false);waiting.Add(troop);extra++;
+            }
+        }
         var candidates=new List<Vehicle>();
         foreach(var v in Vehicle.Active)
         {
@@ -64,6 +77,19 @@ public class HecticCompanySupervisor : MonoBehaviour
         {
             if(waiting.Count==0)break;
             bool driver=v.Driver&&v.Driver.faction==(int)company.team;
+            var doors=v.GetComponent<VehicleDoors>();
+            if(doors&&doors.doors.Length>0&&v.hasRenderedInterior&&!(v.motor is JetMotor))
+            {
+                int extra=Mathf.Min(2,Mathf.Max(0,waiting.Count-(driver?0:1)));
+                for(int rider=0;rider<extra;rider++)
+                {
+                    var pick=waiting[waiting.Count-1];waiting.RemoveAt(waiting.Count-1);
+                    var door=doors.doors[0];if(!door.open)doors.Toggle(0);
+                    var bounds=v.NavigationBounds;
+                    boarding[pick]=new BoardingOrder{vehicle=v,seat=-1,physical=true,entry=door.interaction,
+                        localDestination=CargoPoint(v,door.interaction,rider),expires=Time.time+embarkTimeout};
+                }
+            }
             for(int seat=0;seat<v.seats.Length&&waiting.Count>0;seat++)
             {
                 ArenaVehicleAI pick=null;float best=float.PositiveInfinity;
@@ -81,19 +107,17 @@ public class HecticCompanySupervisor : MonoBehaviour
             }
             if(!driver)continue;
             claimed.Add(v);if(!company.fleet.Contains(v))company.fleet.Add(v);
-            var doors=v.GetComponent<VehicleDoors>();
-            if(doors&&doors.doors.Length>0&&v.hasRenderedInterior&&!(v.motor is JetMotor))
-            {
-                for(int rider=0;rider<2&&waiting.Count>0;rider++)
-                {
-                    var pick=waiting[0];waiting.RemoveAt(0);
-                    var door=doors.doors[0];if(!door.open)doors.Toggle(0);
-                    var bounds=v.NavigationBounds;
-                    boarding[pick]=new BoardingOrder{vehicle=v,seat=-1,physical=true,entry=door.interaction,
-                        localDestination=bounds.center+new Vector3((rider==0?-1:1)*bounds.extents.x*.3f,-bounds.extents.y*.4f,0),expires=Time.time+embarkTimeout};
-                }
-            }
+
         }
+    }
+    public static Vector3 CargoPoint(Vehicle vehicle,Transform entry,int rider)
+    {
+        Vector3 local=vehicle.transform.InverseTransformPoint(entry.position);
+        // NavigationBounds includes tail/engine volume. Step inward from the actual
+        // door rather than sending helicopter riders through the rear bulkhead.
+        Vector3 inward=Vector3.ProjectOnPlane(vehicle.NavigationBounds.center-local,Vector3.up).normalized;
+        Vector3 tangent=Vector3.Cross(Vector3.up,inward);
+        return local+inward*1.6f+tangent*(rider==0?-.45f:.45f);
     }
     public bool TryBoard(ArenaVehicleAI troop,out BoardingOrder order)
     {
@@ -102,7 +126,14 @@ public class HecticCompanySupervisor : MonoBehaviour
     }
     public void FinishBoarding(ArenaVehicleAI troop){boarding.Remove(troop);}
     public bool TryGoal(ArenaVehicleAI troop,out Vector3 goal)
-    {goal=default;if(!companyOf.TryGetValue(troop,out var c)||!c.objective)return false;goal=c.objective.transform.position;return true;}
+    {
+        goal=default;
+        // A mixed-squad transport follows its pilot's company; passengers dismount together.
+        var leader=troop;
+        if(troop.occupant.IsMounted&&troop.occupant.MountedVehicle.Driver&&troop.occupant.MountedVehicle.Driver.TryGetComponent<ArenaVehicleAI>(out var pilot))leader=pilot;
+        if(!companyOf.TryGetValue(leader,out var c)||!c.objective)return false;
+        goal=c.objective.transform.position;return true;
+    }
     public bool HoldDeparture(ArenaVehicleAI driver)
     {
         if(!companyOf.TryGetValue(driver,out var c)||Time.time-c.formedAt>=embarkTimeout)return false;

@@ -76,6 +76,12 @@ public class ArenaAIInput : SoldierInputSource
     int lastPatrolIndex = -1;
     bool hasPatrolDestination, targetVisible;
     float aimHoldUntil;
+    HecticPhysicalBoarding physicalBoarding;
+    HecticAirDeploymentInput airDeployment;
+    HecticAIOrchestrator squadCommand;
+    bool checkedCommand;
+    int sidearmKillsAtDraw;
+    bool sidearmEngagementUsed;
     int burstShots, burstShotLimit;
     float combatAlertUntil, heardAt = float.NegativeInfinity, investigationUntil, nextLook;
     Vector3 investigationPoint, openLook;
@@ -165,6 +171,7 @@ public class ArenaAIInput : SoldierInputSource
     void ResetIntent()
     {
         target = null; HasCover = false; State = Behavior.Inactive;
+        sidearmEngagementUsed=false;sidearmKillsAtDraw=participant.Kills;
         aimHoldUntil = 0f; burstShots = burstShotLimit = 0; LastCombatTime = float.NegativeInfinity;
         WantsToSprint = false;
         combatAlertUntil = investigationUntil = nextLook = 0f;
@@ -201,6 +208,10 @@ public class ArenaAIInput : SoldierInputSource
 
     public override SoldierInputFrame ReadInput()
     {
+        if(!physicalBoarding)physicalBoarding=GetComponent<HecticPhysicalBoarding>();
+        if(!airDeployment)airDeployment=GetComponent<HecticAirDeploymentInput>();
+        if(soldier.actions.enabled&&airDeployment&&airDeployment.TryRead(out var airInput))return airInput;
+        if(soldier.actions.enabled&&physicalBoarding&&physicalBoarding.TryRead(out var physicalInput))return physicalInput;
         RestoreNavigation();
         if (!soldier.actions.enabled || participant.IsAwaitingSpawn || !participant.match.IsRunning || !agent.isOnNavMesh)
         { State = Behavior.Inactive; WantsToSprint = false; return default; }
@@ -235,7 +246,7 @@ public class ArenaAIInput : SoldierInputSource
             direction = GetOpenLook(direction);
             yaw = Mathf.Atan2(direction.x, direction.z) * Mathf.Rad2Deg;
         }
-        float yawError = Mathf.DeltaAngle(transform.eulerAngles.y, yaw), pitchError = up + life.look.Pitch;
+        float yawError = Mathf.DeltaAngle(life.look.Yaw, yaw), pitchError = up + life.look.Pitch;
         float step = turnSpeed * Time.deltaTime;
         var look = new Vector2(Mathf.Clamp(yawError, -step, step), Mathf.Clamp(pitchError, -step, step));
         bool arrived = HorizontalDistance(transform.position, Destination) <= ArrivalDistance;
@@ -329,31 +340,50 @@ public class ArenaAIInput : SoldierInputSource
         bool inCombat = targetVisible || Time.time - LastCombatTime < combatReadyDuration
             || Time.time < aimHoldUntil;
         int desired = primary;
-        if (inCombat)
+        bool primaryEmpty=primaryAmmo.MagazineAmmo+primaryAmmo.ReserveAmmo==0;
+        if(!inCombat)sidearmEngagementUsed=false;
+        if(loadout.selectedSlot!=primarySlot&&participant.Kills>sidearmKillsAtDraw)sidearmEngagementUsed=true;
+        if(primaryEmpty)desired=sidearm;
+        else if (inCombat)
         {
-            // Stay on the pistol for the engagement once the primary magazine runs
-            // dry. Distance and reserves do not cause opportunistic weapon changes.
-            if (loadout.selectedSlot != primarySlot || primaryAmmo.MagazineAmmo > 0) return 0;
-            // Reload the primary instead of drawing the pistol against a larger group.
-            int visibleEnemies = 0;
-            foreach (var enemy in participant.match.participants)
+            if(loadout.selectedSlot!=primarySlot&&!sidearmEngagementUsed)return 0;
+            if(primaryAmmo.MagazineAmmo==0&&targetVisible&&!sidearmEngagementUsed)
             {
-                if (!enemy.isActiveAndEnabled || enemy.team == participant.team
-                    || enemy.health.IsDead || enemy.IsAwaitingSpawn) continue;
-                if ((AimPoint(enemy) - life.look.aimCamera.transform.position).sqrMagnitude > sightRange * sightRange) continue;
-                if (CanSee(enemy) && ++visibleEnemies > 2) return 0;
+                int visibleEnemies=0;
+                foreach(var enemy in participant.match.participants)
+                {
+                    if(!enemy.isActiveAndEnabled||enemy.team==participant.team||enemy.health.IsDead||enemy.IsAwaitingSpawn)continue;
+                    if((AimPoint(enemy)-life.look.aimCamera.transform.position).sqrMagnitude>sightRange*sightRange)continue;
+                    if(CanSee(enemy)&&++visibleEnemies>2)break;
+                }
+                var pistol=loadout.slots[loadout.AvailableSlots[sidearm-1]].state;
+                if(visibleEnemies>0&&visibleEnemies<=2&&pistol.MagazineAmmo+pistol.ReserveAmmo>0)desired=sidearm;
             }
-            var sidearmAmmo = loadout.slots[loadout.AvailableSlots[sidearm - 1]].state;
-            if (sidearmAmmo.MagazineAmmo + sidearmAmmo.ReserveAmmo == 0) return 0;
-            desired = sidearm;
         }
         // Outside combat, return to the primary; normal reload logic replenishes it.
         if (loadout.AvailableSlots[desired - 1] == loadout.selectedSlot) return 0;
+        if(desired==sidearm)sidearmKillsAtDraw=participant.Kills;
         nextWeapon = Time.time + weaponDecisionInterval;
         return desired;
     }
     void ChooseMovement(bool visible, float distance, bool needsReload)
     {
+        if(!checkedCommand){squadCommand=participant.match.GetComponent<HecticAIOrchestrator>();checkedCommand=true;}
+        if(squadCommand&&visible&&target)
+        {
+            // The mode's tactical layer is deliberately small: fire, spread into lanes,
+            // and stay on the squad objective. Strategic/company planning is elsewhere.
+            HasCover=false;State=distance>attackRange?Behavior.Approach:Behavior.Strafe;
+            if(needsReload||soldier.actions.IsReloading){SetDestination(transform.position);return;}
+            if(Time.time>=nextReposition)
+            {
+                nextReposition=Time.time+2;
+                if(squadCommand.TryGetCombatDestination(this,lastSeen,out var combatPoint))SetDestination(combatPoint,true);
+                else SetDestination(transform.position,true);
+            }
+            return;
+        }
+
         if (!target)
         {
             HasCover = false;

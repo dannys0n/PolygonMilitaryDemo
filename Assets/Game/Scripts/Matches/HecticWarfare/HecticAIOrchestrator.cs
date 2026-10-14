@@ -73,6 +73,20 @@ public class HecticAIOrchestrator : MonoBehaviour
         {float d=(member.transform.position-actor.transform.position).sqrMagnitude;if(d<closest){closest=d;best=member;}}
         return best;
     }
+    public bool TryGetCombatDestination(ArenaAIInput ai, Vector3 threat, out Vector3 destination)
+    {
+        destination=default;var order=OrderFor(ai.participant);if(order==null)return false;
+        int index=order.members.IndexOf(ai);
+        Vector3 delta=Vector3.ProjectOnPlane(threat-ai.transform.position,Vector3.up);
+        Vector3 forward=delta.sqrMagnitude>.01f?delta.normalized:ai.transform.forward;
+        Vector3 right=Vector3.Cross(Vector3.up,forward);
+        float advance=Mathf.Max(0,delta.magnitude-ai.attackRange*.85f);
+        Vector3 candidate=ai.transform.position+forward*Mathf.Min(advance,12)
+            +right*((index%2==0?-1:1)*(3+index/2));
+        var filter=new NavMeshQueryFilter{agentTypeID=ai.agent.agentTypeID,areaMask=ai.agent.areaMask};
+        if(!NavMesh.SamplePosition(candidate,out var hit,3,filter)||NavMesh.Raycast(ai.transform.position,hit.position,out _,filter))return false;
+        destination=hit.position;return true;
+    }
     public bool TryGetObjective(ArenaAIInput ai,out Vector3 destination)
     {
         destination=default;var order=OrderFor(ai.participant);if(order==null||!order.point)return false;
