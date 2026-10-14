@@ -40,6 +40,32 @@ public class HecticPlayModeTests
         var nav=g.GetComponent<UnityEngine.AI.NavMeshAgent>();if(nav)nav.enabled=false;
         holder.SetActive(true);return g.GetComponent(T("ArenaVehicleAI"));
     }
+    [UnityTest] public IEnumerator InfantryBodyHitSurvivesPhysicsLayerSetup()
+    {
+        var shooter=Actor(new Vector3(0,1000,0));var target=Actor(new Vector3(0,1000,10));
+        yield return null;
+        var hitscan=shooter.GetComponent(T("SoldierHitscan"));
+        var region=target.GetComponentsInChildren(T("SoldierHitRegion")).First(r=>!(bool)Get(r,"head"));
+        var collider=region.GetComponent<Collider>();
+        var camera=(Camera)Get(hitscan,"aimCamera");
+        camera.transform.position=shooter.transform.position+Vector3.up*1.4f;
+        camera.transform.rotation=Quaternion.LookRotation(collider.bounds.center-camera.transform.position);
+        Physics.SyncTransforms();
+        Assert.AreNotEqual(0,((LayerMask)Get(hitscan,"hitLayers")).value&(1<<region.gameObject.layer),"Physics initialization must preserve a hittable damage layer");
+        var loadout=shooter.GetComponent(T("SoldierWeaponLoadout"));
+        var weapon=Get(loadout,"EquippedWeapon");
+        var definition=Object.Instantiate((ScriptableObject)Get(weapon,"definition"));
+        try
+        {
+            Set(definition,"damage",25f);Set(definition,"spreadDegrees",0f);Set(definition,"rocketProjectile",null);Set(definition,"thrownExplosive",null);
+            var muzzle=Root("Damage test muzzle").transform;muzzle.position=camera.transform.position;
+            var health=target.GetComponent(T("SoldierHealth"));float before=(float)Get(health,"CurrentHealth");
+            var result=Call(hitscan,"Fire",definition,muzzle);
+            Assert.IsTrue((bool)Get(result,"damaged"),"Production hitscan must damage the real infantry body region");
+            Assert.AreEqual(before-25,(float)Get(health,"CurrentHealth"));
+        }
+        finally{Object.Destroy(definition);}
+    }
     [UnityTearDown] public IEnumerator Cleanup(){foreach(var g in roots)if(g){var occupant=g.GetComponent(T("VehicleOccupant"));if(occupant&&(bool)Get(occupant,"IsMounted"))Call(occupant,"Leave",true);}foreach(var g in roots)if(g)Object.Destroy(g);foreach(var instance in navigation)instance.Remove();foreach(var data in navigationData)Object.Destroy(data);navigation.Clear();navigationData.Clear();roots.Clear();match=null;yield return null;}
     void BuildExitNavigation(GameObject floor,Component actor)
     {

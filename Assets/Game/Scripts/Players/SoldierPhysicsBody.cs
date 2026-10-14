@@ -34,7 +34,10 @@ public sealed class SoldierPhysicsBody : MonoBehaviour
         body.constraints=RigidbodyConstraints.FreezeRotationX|RigidbodyConstraints.FreezeRotationZ;body.useGravity=true;
         body.linearDamping=0;body.angularDamping=0;body.maxDepenetrationVelocity=8;
         int layer=LayerMask.NameToLayer("Characters");
-        if(layer>=0)foreach(var collider in GetComponentsInChildren<Collider>(true))collider.gameObject.layer=layer;
+        // Locomotion and damage queries use separate authored layers. Do not move hitboxes
+        // out of weapon masks when configuring the character motor.
+        if(layer>=0)foreach(var collider in GetComponentsInChildren<Collider>(true))
+            if(!collider.TryGetComponent<SoldierHitRegion>(out _))collider.gameObject.layer=layer;
     }
     void OnEnable()
     {
