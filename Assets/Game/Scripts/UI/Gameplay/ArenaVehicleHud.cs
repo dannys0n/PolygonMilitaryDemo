@@ -47,6 +47,9 @@ public class ArenaVehicleHud : MonoBehaviour
     readonly System.Collections.Generic.List<TMP_Text> systemKeys=new System.Collections.Generic.List<TMP_Text>();
     readonly System.Collections.Generic.List<TMP_Text> systemCaptions=new System.Collections.Generic.List<TMP_Text>();
     bool seatHasWeapon;
+    Vehicle radarStatusVehicle;
+    bool radarWasLinked;
+    float radarStatusChangedAt = float.NegativeInfinity;
     Vehicle displayedSystemsVehicle;
     Vehicle.SeatRole displayedSystemsRole;
     VehicleCountermeasures displayedDefenses;
@@ -155,6 +158,14 @@ public class ArenaVehicleHud : MonoBehaviour
         {
             int count=System.Array.FindAll(weaponSystems.weapons,w=>w.role==role).Length;
             if(count>1)controls.text+="\n[1-"+count+"] WEAPONS / WHEEL";
+        }
+        if(weaponSystems && System.Array.Exists(weaponSystems.weapons,w=>w.requiresRadarSupport))
+        {
+            bool linked=VehicleRadarSupport.HasFriendlyRadar(v);
+            if(radarStatusVehicle!=v){radarStatusVehicle=v;radarWasLinked=linked;radarStatusChangedAt=float.NegativeInfinity;}
+            else if(linked!=radarWasLinked){radarWasLinked=linked;radarStatusChangedAt=Time.time;}
+            string radio=Time.time-radarStatusChangedAt<2.5f?(linked?"RADAR LINK ACQUIRED":"RADAR LINK LOST"):(linked?"AA RADAR LINK: ONLINE":"AA RADAR LINK: OFFLINE");
+            controls.text+="\n<color="+(linked?"#FF8C1F":"#FFFFFF")+">"+radio+"</color>";
         }
         if(!air && role==Vehicle.SeatRole.Driver && showAttack && attackSight.Operational) controls.text += "\nFIRE  [LMB]\nZOOM  [RMB]";
         UpdateEquipmentSystems(v,role,weaponSystems,selectedWeapon,defenses,armed);

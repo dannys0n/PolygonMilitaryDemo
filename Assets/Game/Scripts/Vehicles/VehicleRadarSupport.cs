@@ -5,6 +5,12 @@ public class VehicleRadarSupport : MonoBehaviour
 {
     public Vehicle vehicle;
     public float linkRange = 1500;
+    int lastOperatorFaction = -1;
+    public int Team
+    {
+        get { int current = Faction(vehicle); if (current >= 0) lastOperatorFaction = current; return lastOperatorFaction; }
+    }
+    void Update() { int current = Faction(vehicle); if (current >= 0) lastOperatorFaction = current; }
     public static bool HasFriendlyRadar(Vehicle requester)
     {
         int faction = Faction(requester);
@@ -13,7 +19,7 @@ public class VehicleRadarSupport : MonoBehaviour
         {
             if (!candidate || candidate.IsDestroyed || candidate.gameObject.scene != requester.gameObject.scene) continue;
             var radar = candidate.GetComponent<VehicleRadarSupport>();
-            if (!radar || !radar.isActiveAndEnabled || Faction(candidate) != faction) continue;
+            if (!radar || !radar.isActiveAndEnabled || radar.Team != faction) continue;
             if ((candidate.transform.position - requester.transform.position).sqrMagnitude <= radar.linkRange * radar.linkRange) return true;
         }
         return false;
