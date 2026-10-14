@@ -84,8 +84,11 @@ public sealed class HecticWarfareScenario : MonoBehaviour
     public bool TryDeploy(ArenaParticipant actor)
     {
         var pass=passes[(int)actor.team];
-        if(AirEventActive&&pass&&(!planeVisits.TryGetValue(actor,out int last)||last!=eventNumber)&&pass.TryDeploy(actor))
-        {planeVisits[actor]=eventNumber;return true;}
+        if(AirEventActive&&pass&&(!planeVisits.TryGetValue(actor,out int last)||last!=eventNumber)&&pass.CanReceiveDeployment)
+        {
+            if(!pass.TryDeploy(actor))return false; // Queue through the shared respawn retry, rather than losing the air-drop turn.
+            planeVisits[actor]=eventNumber;return true;
+        }
         if(rules.squads)
         {
             foreach(var member in rules.squads.Members(actor))

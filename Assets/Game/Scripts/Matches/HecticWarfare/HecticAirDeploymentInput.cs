@@ -9,7 +9,8 @@ public sealed class HecticAirDeploymentInput : MonoBehaviour
     SoldierLife life;
     ArenaAIInput infantry;
     Transform exit;
-    float leaveAt,startedAt;
+    float leaveAt,startedAt,nextJump, cargoHeight, exitLane;
+    Rigidbody departedBody;
     Vector3 landingGoal;
     void Awake(){life=GetComponent<SoldierLife>();infantry=GetComponent<ArenaAIInput>();}
     void OnEnable()
@@ -23,10 +24,13 @@ public sealed class HecticAirDeploymentInput : MonoBehaviour
         ResetDeployment();
     }
     void OnDied(GameObject source)=>ResetDeployment();
-    public void ResetDeployment(){Carrier=null;exit=null;IsDropping=false;IsActive=false;}
+    public void ResetDeployment(){Carrier=null;exit=null;departedBody=null;IsDropping=false;IsActive=false;}
     public void Begin(Vehicle carrier,Transform exitPoint,Vector3 goal)
     {
         IsActive=true;Carrier=carrier;exit=exitPoint;landingGoal=goal;leaveAt=Time.time+1;startedAt=Time.time;IsDropping=false;
+        departedBody=carrier.Body;nextJump=0;
+        var localPosition=carrier.transform.InverseTransformPoint(transform.position);
+        cargoHeight=localPosition.y;exitLane=Mathf.Clamp(localPosition.x,-.7f,.7f);
         if(infantry)infantry.agent.enabled=false;
     }
     public bool TryRead(out SoldierInputFrame input)
@@ -40,10 +44,14 @@ public sealed class HecticAirDeploymentInput : MonoBehaviour
         if(Carrier)
         {
             if(Time.time<leaveAt)return true;
-            Vector3 destination=exit?exit.position:Carrier.transform.TransformPoint(new Vector3(0,1,-8));
+            Vector3 exitLocal=exit?Carrier.transform.InverseTransformPoint(exit.position):new Vector3(0,cargoHeight,-22);
+            exitLocal.x+=exitLane;
+            Vector3 destination=Carrier.transform.TransformPoint(exitLocal);
             Vector3 delta=destination-transform.position;
-            bool supported=life.controller.Support==Carrier.Body;
-            if(!supported&&!Carrier.NavigationBounds.Contains(Carrier.transform.InverseTransformPoint(transform.position)))
+            Vector3 localPosition=Carrier.transform.InverseTransformPoint(transform.position);
+            // Render bounds exclude parts of the cargo floor and cannot define an exit.
+            // Finish the walk only beyond the rear waypoint or after falling below the deck.
+            if(localPosition.z<exitLocal.z || localPosition.y<cargoHeight-3)
             {Carrier=null;IsDropping=true;}
             else
             {
@@ -51,11 +59,14 @@ public sealed class HecticAirDeploymentInput : MonoBehaviour
                 input.lookDelta=new Vector2(Mathf.Clamp(Mathf.DeltaAngle(life.look.Yaw,yaw),-120*Time.deltaTime,120*Time.deltaTime),0);
                 Vector3 local=Quaternion.Inverse(Quaternion.Euler(0,life.look.Yaw,0))*Vector3.ProjectOnPlane(delta,Vector3.up).normalized;
                 input.move=new Vector2(local.x,local.z);
+                // The floor/ramp seam is raised; use the ordinary jump input to clear it.
+                if(localPosition.z<-10 && life.controller.isGrounded && Time.time>=nextJump)
+                {input.jump=true;nextJump=Time.time+.8f;}
                 return true;
             }
         }
         if(!IsDropping)return false;
-        if(life.controller.isGrounded){ResetDeployment();return false;}
+        if(life.controller.isGrounded && (!departedBody || life.controller.Support!=departedBody)){ResetDeployment();return false;}
         Vector3 direction=landingGoal-transform.position;
         float heading=Mathf.Atan2(direction.x,direction.z)*Mathf.Rad2Deg;
         input.lookDelta=new Vector2(Mathf.Clamp(Mathf.DeltaAngle(life.look.Yaw,heading),-90*Time.deltaTime,90*Time.deltaTime),0);

@@ -44,7 +44,10 @@ public class SoldierLook : MonoBehaviour
 
     public void UpdateAimTarget()
     {
-        Ray centerRay = aimCamera.ViewportPointToRay(new Vector3(0.5f, 0.5f, 0f));
+        // Non-rendering AI/vehicle cameras need only their aim direction, not a render projection.
+        Ray centerRay = aimCamera.isActiveAndEnabled
+            ? aimCamera.ViewportPointToRay(new Vector3(0.5f, 0.5f, 0f))
+            : new Ray(aimCamera.transform.position, aimCamera.transform.forward);
         aimTarget.position = centerRay.GetPoint(10f);
     }
 

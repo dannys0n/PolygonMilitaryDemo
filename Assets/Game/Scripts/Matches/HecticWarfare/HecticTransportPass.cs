@@ -17,6 +17,7 @@ public sealed class HecticTransportPass : MonoBehaviour
     float endsAt,nextDeployment;
     int dropIndex,leg;
     bool ready, retired;
+    public bool CanReceiveDeployment=>Aircraft&&!Aircraft.IsDestroyed&&!retired;
     public void Begin()=>StartCoroutine(Launch());
     IEnumerator Launch()
     {
@@ -82,9 +83,19 @@ public sealed class HecticTransportPass : MonoBehaviour
         if(Vector3.ProjectOnPlane(from,Vector3.up).magnitude>scenario.battlefieldRadius*.8f)target=scenario.battlefieldCenter+Vector3.up*altitude;
         Vector3 direction=target-Aircraft.transform.position;
         float horizontal=new Vector2(direction.x,direction.z).magnitude;
-        float pitch=-Mathf.Atan2(direction.y-Mathf.Clamp(Aircraft.Body.linearVelocity.y,-5,5)*4,Mathf.Max(horizontal,50))*Mathf.Rad2Deg;
+        // Altitude control is independent of distance to the far end of the map.
+        // Include the airframe's level-flight trim instead of commanding a zero-lift nose angle.
+        float trim=0;
+        if(Aircraft.motor is JetMotor jet)
+        {
+            float pressure=.5f*jet.airDensity*Mathf.Max(25,Aircraft.Body.linearVelocity.sqrMagnitude);
+            float coefficient=Aircraft.Body.mass*Physics.gravity.magnitude/(pressure*jet.wingArea);
+            trim=Mathf.Clamp((coefficient-jet.liftBias)/jet.liftSlope*Mathf.Rad2Deg-jet.wingIncidence,0,8);
+        }
+        float climb=Mathf.Clamp(direction.y*.02f-Aircraft.Body.linearVelocity.y*.08f,-.2f,.2f);
+        float pitch=-Mathf.Atan(climb)*Mathf.Rad2Deg-trim;
         Aircraft.DriverInput=new VehicleInput{directionalFlight=true,heading=Mathf.Atan2(direction.x,direction.z)*Mathf.Rad2Deg,
-            viewPitch=Mathf.Clamp(pitch,-12,12),move=new Vector2(0,Aircraft.Body.linearVelocity.magnitude<cruiseSpeed?1:-.3f)};
+            viewPitch=Mathf.Clamp(pitch,-16,12),move=new Vector2(0,Aircraft.Body.linearVelocity.magnitude<cruiseSpeed?1:-.3f)};
     }
     public void Retire()
     {
