@@ -1122,9 +1122,28 @@ MonoBehaviour:
   seatDiagramCenter: {x: 0, y: 0.0036511421}
   seatDiagramHalfExtent: 2.155434
   motor: {fileID: 789834358330519409}
+  jetAssist:
+    assistEnabled: 1
+    maximumBank: 75
+    headingToBank: 1.8
+    assistedBankRate: 100
+    aimResponse: 2
+  helicopterAssist:
+    assistEnabled: 1
+    attitudeSpring: 60
+    attitudeDamping: 16
+    verticalResponse: 2.8
+    positionHoldSpring: 0.6
+    positionHoldDamping: 1.5
+    maxHoldAcceleration: 18
+    reversalTilt: 38
+    reversalSpeedRange: {x: 4, y: 20}
+    movementVelocityResponse: 0.8
+    cyclicResponseTime: 0.1
   turret: {fileID: 0}
   destructionEffect: {fileID: 695410771644243590, guid: c07b2e8d0c65dad44bf5eaca660002fc, type: 3}
   cameraTarget: {fileID: 499391355438512506}
+  targetPoint: {fileID: 0}
   hasRenderedInterior: 1
   cockpitExternalMonitor: 0
   entryPadding: {x: 1.5, y: 1, z: 1.5}
@@ -1137,6 +1156,7 @@ MonoBehaviour:
     showCharacter: 1
     weaponMountedView: 0
     externalView: 0
+    disembarkInside: 0
     eye: {fileID: 9047198918050450805}
     leftGrip: {fileID: 3111634516876056238}
     rightGrip: {fileID: 5474625763455987799}
@@ -1150,6 +1170,7 @@ MonoBehaviour:
     showCharacter: 1
     weaponMountedView: 0
     externalView: 0
+    disembarkInside: 0
     eye: {fileID: 338844612455888360}
     leftGrip: {fileID: 0}
     rightGrip: {fileID: 0}
@@ -1163,6 +1184,7 @@ MonoBehaviour:
     showCharacter: 1
     weaponMountedView: 0
     externalView: 0
+    disembarkInside: 0
     eye: {fileID: 8269434207286171292}
     leftGrip: {fileID: 0}
     rightGrip: {fileID: 0}
@@ -1176,14 +1198,15 @@ MonoBehaviour:
     showCharacter: 1
     weaponMountedView: 0
     externalView: 0
+    disembarkInside: 0
     eye: {fileID: 6233443174385887920}
     leftGrip: {fileID: 0}
     rightGrip: {fileID: 0}
     diagramPosition: {x: 11.876959, y: -42.818336}
     showVehicleInstruments: 0
-  maxHealth: 900
+  maxHealth: 600
   bulletDamageMultiplier: 0.325
-  explosiveDamageMultiplier: 0.8
+  explosiveDamageMultiplier: 1
 --- !u!114 &789834358330519409
 MonoBehaviour:
   m_ObjectHideFlags: 0

@@ -260,6 +260,7 @@ MonoBehaviour:
   turret: {fileID: 470926342569773407}
   destructionEffect: {fileID: 695410771644243590, guid: c07b2e8d0c65dad44bf5eaca660002fc, type: 3}
   cameraTarget: {fileID: 3097006301021105797}
+  targetPoint: {fileID: 0}
   hasRenderedInterior: 1
   cockpitExternalMonitor: 0
   entryPadding: {x: 1.5, y: 1, z: 1.5}
@@ -320,9 +321,9 @@ MonoBehaviour:
     rightGrip: {fileID: 0}
     diagramPosition: {x: 50, y: -20}
     showVehicleInstruments: 0
-  maxHealth: 1600
+  maxHealth: 1100
   bulletDamageMultiplier: 0.3
-  explosiveDamageMultiplier: 0.8
+  explosiveDamageMultiplier: 1
 --- !u!114 &8589393883394410537
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -450,6 +451,7 @@ MonoBehaviour:
     damage: 32
     range: 1000
     roundsPerMinute: 2000
+    requiresRadarSupport: 0
     explosive: 0
     ejectCasings: 1
     icon: {fileID: -5948544802483944527, guid: b42deefd30f3b9449a793c3ff7479b69, type: 3}

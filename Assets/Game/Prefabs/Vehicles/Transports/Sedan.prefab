@@ -981,9 +981,28 @@ MonoBehaviour:
   seatDiagramCenter: {x: -0.0006661415, y: 0.011836529}
   seatDiagramHalfExtent: 2.789334
   motor: {fileID: 6277339215291697634}
+  jetAssist:
+    assistEnabled: 1
+    maximumBank: 75
+    headingToBank: 1.8
+    assistedBankRate: 100
+    aimResponse: 2
+  helicopterAssist:
+    assistEnabled: 1
+    attitudeSpring: 60
+    attitudeDamping: 16
+    verticalResponse: 2.8
+    positionHoldSpring: 0.6
+    positionHoldDamping: 1.5
+    maxHoldAcceleration: 18
+    reversalTilt: 38
+    reversalSpeedRange: {x: 4, y: 20}
+    movementVelocityResponse: 0.8
+    cyclicResponseTime: 0.1
   turret: {fileID: 0}
   destructionEffect: {fileID: 695410771644243590, guid: c07b2e8d0c65dad44bf5eaca660002fc, type: 3}
   cameraTarget: {fileID: 210851068525611522}
+  targetPoint: {fileID: 0}
   hasRenderedInterior: 1
   cockpitExternalMonitor: 0
   entryPadding: {x: 1.5, y: 1, z: 1.5}
@@ -996,6 +1015,7 @@ MonoBehaviour:
     showCharacter: 1
     weaponMountedView: 0
     externalView: 0
+    disembarkInside: 0
     eye: {fileID: 2239644874034970897}
     leftGrip: {fileID: 461278712836696799}
     rightGrip: {fileID: 3093326268269569546}
@@ -1009,6 +1029,7 @@ MonoBehaviour:
     showCharacter: 1
     weaponMountedView: 0
     externalView: 0
+    disembarkInside: 0
     eye: {fileID: 6180414473787762035}
     leftGrip: {fileID: 0}
     rightGrip: {fileID: 0}
@@ -1022,6 +1043,7 @@ MonoBehaviour:
     showCharacter: 1
     weaponMountedView: 0
     externalView: 0
+    disembarkInside: 0
     eye: {fileID: 2920993472137558665}
     leftGrip: {fileID: 0}
     rightGrip: {fileID: 0}
@@ -1035,14 +1057,15 @@ MonoBehaviour:
     showCharacter: 1
     weaponMountedView: 0
     externalView: 0
+    disembarkInside: 0
     eye: {fileID: 2330060461127898389}
     leftGrip: {fileID: 0}
     rightGrip: {fileID: 0}
     diagramPosition: {x: 11.491377, y: -28.15974}
     showVehicleInstruments: 0
-  maxHealth: 900
+  maxHealth: 600
   bulletDamageMultiplier: 0.325
-  explosiveDamageMultiplier: 0.8
+  explosiveDamageMultiplier: 1
 --- !u!114 &6277339215291697634
 MonoBehaviour:
   m_ObjectHideFlags: 0
