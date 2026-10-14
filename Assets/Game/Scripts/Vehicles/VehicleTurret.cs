@@ -30,6 +30,7 @@ public class VehicleTurret : MonoBehaviour
     public Vector2 pitchLimits = new Vector2(-20, 45);
     Vector3 aimDirection = Vector3.forward;
     float nextShot;
+    int visualShot;
     public float ReadyIn => Mathf.Max(0,nextShot-Time.time);
     public bool IsSingleShot => roundsPerMinute < 60;
     Vector3 aimPoint;
@@ -112,9 +113,10 @@ public class VehicleTurret : MonoBehaviour
             return false;
         UpdateAim();
         nextShot = Time.time + 60f / roundsPerMinute;
+        bool showVisual=BulletTracer.ShowVisual(++visualShot,roundsPerMinute);
         RaycastHit nearest = default;
         bool found = false;
-        foreach (var hit in projectile ? System.Array.Empty<RaycastHit>() : Physics.RaycastAll(muzzle.position, muzzle.forward, range, Physics.DefaultRaycastLayers, QueryTriggerInteraction.Collide))
+        foreach (var hit in projectile && !projectile.ballistic ? System.Array.Empty<RaycastHit>() : Physics.RaycastAll(muzzle.position, muzzle.forward, range, Physics.DefaultRaycastLayers, QueryTriggerInteraction.Collide))
         {
             if (hit.transform.IsChildOf(vehicle.transform) || SoldierPhysicsBody.IsMotorCollider(hit.collider))
                 continue;
@@ -126,10 +128,10 @@ public class VehicleTurret : MonoBehaviour
                 nearest = hit;
             }
         }
-        if (found)
+        if (found && !projectile)
         {
             var hitEffect = !explosiveVehicleDamage && bulletImpactEffect ? bulletImpactEffect : impactEffect;
-            if(hitEffect)
+            if(hitEffect && showVisual)
             {
                 var effect=Instantiate(hitEffect,nearest.point+nearest.normal*.03f,Quaternion.FromToRotation(Vector3.forward,nearest.normal));
                 effect.Play(true);
@@ -154,9 +156,11 @@ public class VehicleTurret : MonoBehaviour
                 }
             }
         }
+        if((!projectile||projectile.ballistic) && showVisual)BulletTracer.Emit(muzzle.position,found?nearest.point:muzzle.position+muzzle.forward*range,projectile?projectile.speed:vehicle.motor is HelicopterMotor||vehicle.motor is JetMotor?1500f:1000f);
         if (projectile)
         {
             var round = Instantiate(projectile, muzzle.position + muzzle.forward * projectile.launchClearance, muzzle.rotation);
+            if(round.ballistic)round.showImpactVisual=showVisual;
             round.Launch(vehicle, gunner.gameObject);
         }
         // Fire cadence is the gate for this prototype weapon; launcher reserves are managed separately.

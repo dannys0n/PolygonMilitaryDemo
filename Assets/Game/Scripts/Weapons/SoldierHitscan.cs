@@ -7,6 +7,8 @@ public class SoldierHitscan : MonoBehaviour
     public LayerMask hitLayers = Physics.DefaultRaycastLayers;
     [Min(.001f)] public float muzzleClearance = .01f;
     public bool drawDebug;
+    int visualShot;
+    bool showShotVisual;
     public event System.Action<ShotResult> ShotResolved;
     // Optional local world interactions may consume a shot before damage/projectiles.
     public event System.Func<Ray, bool> ShotInteraction;
@@ -45,6 +47,7 @@ public class SoldierHitscan : MonoBehaviour
             grenade.Launch(definition,gameObject,aim.direction*definition.throwSpeed+Vector3.up*definition.upwardSpeed);
             var shot=new ShotResult{origin=muzzle.position,point=aim.GetPoint(weapon.range)};ShotResolved?.Invoke(shot);return shot;
         }
+        showShotVisual=BulletTracer.ShowVisual(++visualShot,weapon.roundsPerMinute);
         return weapon.UsesSpread ? FireSpread(weapon, muzzle, aim) : FireBullet(weapon, muzzle);
     }
     ShotResult FireBullet(SoldierWeaponDefinition weapon, Transform muzzle)
@@ -186,6 +189,12 @@ public class SoldierHitscan : MonoBehaviour
 
     ShotResult Publish(ShotResult result)
     {
+        if(showShotVisual)
+        {
+            var loadout=GetComponent<SoldierWeaponLoadout>();
+            var worldMuzzle=loadout&&loadout.ThirdPersonView?loadout.ThirdPersonView.effects.muzzleFlash:null;
+            BulletTracer.Emit(worldMuzzle?worldMuzzle.position:result.origin,result.point);
+        }
         if (drawDebug) Debug.DrawLine(result.origin, result.point, Color.yellow, 1f);
         ShotResolved?.Invoke(result);
         return result;

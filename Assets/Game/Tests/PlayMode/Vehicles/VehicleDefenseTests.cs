@@ -84,10 +84,22 @@ public class VehicleDefenseTests
     {var m=Missile("Optical","LaserSpot",out _);var cloud=Root("Obscurant");cloud.transform.position=new Vector3(0,1000,60);cloud.AddComponent(T("GrenadeSmoke"));yield return new WaitForFixedUpdate();yield return new WaitForFixedUpdate();Assert.IsNull(Get(m,"Target"));}
     [UnityTest] public IEnumerator DistantFlareDoesNotProvideGlobalImmunity()
     {var m=Missile("Infrared","AirToAir",out var target);var d=Decoy("Infrared");d.transform.position=new Vector3(0,1000,250);yield return new WaitForFixedUpdate();yield return new WaitForFixedUpdate();Assert.AreEqual(target,Get(m,"Target"));}
-    [UnityTest] public IEnumerator CountermeasureCooldownAndRechargeAreBounded()
+    [UnityTest] public IEnumerator FlaresRechargeWithoutExhaustingDeployments()
     {
         var v=Vehicle("Dispenser",0,new Vector3(0,1000,0));var c=v.gameObject.AddComponent(T("VehicleCountermeasures"));
-        Set(c,"automaticForAI",false);Set(c,"flares",true);Set(c,"dispensers",new Transform[0]);Set(c,"cooldown",.1f);Set(c,"rechargeSeconds",1f);
+        Set(c,"automaticForAI",false);Set(c,"flares",true);Set(c,"dispensers",new Transform[0]);Set(c,"cooldown",.1f);Set(c,"rechargeSeconds",.2f);
+        for(int i=0;i<5;i++)
+        {
+            Assert.IsTrue((bool)Call(c,"Deploy"));Assert.AreEqual(2,Get(c,"Charges"));
+            Assert.IsFalse((bool)Call(c,"Deploy"));yield return new WaitForSeconds(.12f);
+            Assert.IsFalse((bool)Call(c,"Deploy"),"Recharge must finish, not only the shorter cooldown");
+            yield return new WaitForSeconds(.12f);
+        }
+    }
+    [UnityTest] public IEnumerator SmokeRetainsItsBoundedRechargeableChargePool()
+    {
+        var v=Vehicle("Smoke dispenser",0,new Vector3(0,1000,0));var c=v.gameObject.AddComponent(T("VehicleCountermeasures"));
+        Set(c,"automaticForAI",false);Set(c,"smoke",true);Set(c,"dispensers",new Transform[0]);Set(c,"cooldown",.1f);Set(c,"rechargeSeconds",1f);
         Assert.IsTrue((bool)Call(c,"Deploy"));Assert.IsFalse((bool)Call(c,"Deploy"));yield return new WaitForSeconds(.15f);
         Assert.IsTrue((bool)Call(c,"Deploy"));Assert.AreEqual(0,Get(c,"Charges"));Assert.IsFalse((bool)Call(c,"Deploy"));
         yield return new WaitForSeconds(1.1f);Assert.GreaterOrEqual((int)Get(c,"Charges"),1);Assert.LessOrEqual((int)Get(c,"Charges"),2);

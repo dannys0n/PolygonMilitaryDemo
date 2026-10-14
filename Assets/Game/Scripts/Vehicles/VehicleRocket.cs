@@ -7,6 +7,9 @@ public class VehicleRocket : MonoBehaviour
     public ParticleSystem impactEffect, exhaust;
     public float launchClearance = .4f;
     public bool useGravity;
+    [Tooltip("Ballistic cannon round, not a missile or launcher rocket.")]
+    public bool ballistic;
+    [System.NonSerialized] public bool showImpactVisual=true;
     [Tooltip("Detonate at the end of flight; intended for guided missiles with self-destruct.")]
     public bool explodeOnExpiry;
     public float speed = 65, radius = 4, infantryDamage = 140, vehicleDamage = 350, lifetime = 5;
@@ -50,12 +53,17 @@ public class VehicleRocket : MonoBehaviour
                     foreach (var projectileCollider in projectileColliders)
                         Physics.IgnoreCollision(projectileCollider, otherCollider);
         active.Add(this);
-        if (exhaust) exhaust.Play(true);
+        if(ballistic)
+        {
+            foreach(var renderer in GetComponentsInChildren<Renderer>(true))renderer.enabled=false;
+            if(exhaust)exhaust.Stop(true,ParticleSystemStopBehavior.StopEmittingAndClear);
+        }
+        else if (exhaust) exhaust.Play(true);
         expiresAt=Time.time+Mathf.Max(.01f,lifetime);
     }
     void StopExhaust()
     {
-        if (!exhaust) return;
+        if (!exhaust || ballistic) return;
         exhaust.transform.SetParent(null,true);
         exhaust.Stop(true,ParticleSystemStopBehavior.StopEmitting);
         Destroy(exhaust.gameObject,exhaust.main.startLifetime.constantMax+1f);
@@ -110,6 +118,8 @@ public class VehicleRocket : MonoBehaviour
             return;
         exploded = true;
         ExplosionDamage.Apply(point,normal,radius,infantryDamage,vehicleDamage,source,transform);
+        if(showImpactVisual && impactEffect)
+        {
         var effect = Instantiate(impactEffect,point+normal*.03f,Quaternion.FromToRotation(Vector3.forward,normal));
         effect.Play(true);
         float effectDuration=0;
@@ -119,6 +129,7 @@ public class VehicleRocket : MonoBehaviour
             effectDuration=Mathf.Max(effectDuration,settings.startDelay.constantMax+settings.duration+settings.startLifetime.constantMax);
         }
         Destroy(effect.gameObject,effectDuration+1f);
+        }
         StopExhaust();
         Destroy(gameObject);
     }
