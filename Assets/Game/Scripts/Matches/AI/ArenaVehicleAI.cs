@@ -276,7 +276,7 @@ public class ArenaVehicleAI : MonoBehaviour
         float ground = GroundHeight(v.transform.position);
         int lane=(int)((uint)infantry.participant.GetEntityId().GetHashCode()%4);
         target.y = GroundHeight(target) + 65+lane*25;
-        var aerialEnemy=FindVehicleTarget(v,v.cameraTarget.position,350,false);
+        var aerialEnemy=FindVehicleTarget(v,v.turret?v.turret.muzzle.position:v.cameraTarget.position,350,false);
         if(aerialEnemy&&aerialEnemy.TryGetComponent<VehicleOccupant>(out var opponent)&&opponent.IsMounted&&opponent.MountedVehicle.IsAircraft)
             target=opponent.MountedVehicle.Body.worldCenterOfMass+opponent.MountedVehicle.Body.linearVelocity*1.5f;
         Vector3 direction = target - v.transform.position;
@@ -394,7 +394,7 @@ public class ArenaVehicleAI : MonoBehaviour
         if (v.Health < v.maxHealth * .35f)
             landing = true;
         var launcher = v.GetComponent<VehicleLauncher>();
-        var enemy = launcher && !landing ? FindVehicleTarget(v, v.cameraTarget.position, 150, false) : null;
+        var enemy = launcher && !landing ? FindVehicleTarget(v, launcher.NextShotRay.origin, 150, false) : null;
         Vector3 travelGoal = Goal;
         if (enemy)
         {
@@ -486,7 +486,13 @@ public class ArenaVehicleAI : MonoBehaviour
     Vector3 EnemyPoint(ArenaParticipant enemy)
     {
         var rider=enemy.GetComponent<VehicleOccupant>();
-        return rider && rider.IsMounted ? rider.MountedVehicle.cameraTarget.position : enemy.transform.position+Vector3.up*1.25f;
+        if(rider && rider.IsMounted)
+        {
+            var vehicle=rider.MountedVehicle;
+            // Camera framing may sit above the hull; aim at physical geometry instead.
+            return vehicle.targetPoint ? vehicle.targetPoint.position : vehicle.transform.TransformPoint(vehicle.NavigationBounds.center);
+        }
+        return enemy.transform.position+Vector3.up*1.25f;
     }
     bool HasLineOfFire(Vehicle v,ArenaParticipant enemy,Vector3 from,Vector3 to)
     {
@@ -519,7 +525,7 @@ public class ArenaVehicleAI : MonoBehaviour
             float distance=direction.magnitude;if(distance>range)continue;
             var mounted=enemy.GetComponent<VehicleOccupant>();
             float score=distance-(mounted&&mounted.IsMounted?range:0);if(score>nearest)continue;
-            if(gunner&&v.turret)
+            if(gunner&&v.turret&&!v.turret.fixedMount)
             {
                 var local=v.turret.yawPivot.parent.InverseTransformDirection(direction);
                 float elevation=Mathf.Atan2(local.y,new Vector2(local.x,local.z).magnitude)*Mathf.Rad2Deg;
@@ -545,7 +551,8 @@ public class ArenaVehicleAI : MonoBehaviour
             var profiles=System.Array.FindAll(systems.weapons,w=>w.role==role);
             if(profiles.Length==0)return;
             float range=0;foreach(var profile in profiles)range=Mathf.Max(range,profile.range);
-            var target=FindVehicleTarget(v,v.cameraTarget.position,range,true);if(!target)return;
+            var searchOrigin=profiles[0].gun ? profiles[0].gun.muzzle.position : profiles[0].launcher ? profiles[0].launcher.NextShotRay.origin : v.cameraTarget.position;
+            var target=FindVehicleTarget(v,searchOrigin,range,true);if(!target)return;
             var enemyOccupant=target.GetComponent<VehicleOccupant>();
             bool armored=enemyOccupant&&enemyOccupant.IsMounted;
             int choice=0;

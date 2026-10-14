@@ -46,9 +46,9 @@ public class VehicleRocket : MonoBehaviour
             foreach (var c in owner.GetComponentsInChildren<Collider>(true))
                 foreach (var projectileCollider in projectileColliders)
                     Physics.IgnoreCollision(projectileCollider, c);
-        // Rapid-fire cannon rounds must not detonate against their owner's earlier rounds.
+        // Ballistic rounds are not interceptors; ignore other rounds as well as owner volleys.
         foreach (var other in active)
-            if (other && owner && other.owner == owner)
+            if (other && (ballistic || other.ballistic || (owner && other.owner == owner)))
                 foreach (var otherCollider in other.GetComponentsInChildren<Collider>(true))
                     foreach (var projectileCollider in projectileColliders)
                         Physics.IgnoreCollision(projectileCollider, otherCollider);
@@ -110,7 +110,7 @@ public class VehicleRocket : MonoBehaviour
     {
         if (collider.transform.IsChildOf(transform) || (owner && collider.transform.IsChildOf(owner))) return true;
         var round = collider.GetComponentInParent<VehicleRocket>();
-        return round && owner && round.owner == owner;
+        return round && (ballistic || round.ballistic || (owner && round.owner == owner));
     }
     void Explode(Vector3 point,Vector3 normal)
     {

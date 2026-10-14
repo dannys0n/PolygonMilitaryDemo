@@ -5,10 +5,14 @@ using UnityEngine;
 // Small repeatable scenarios. UI and unit tests invoke the exact same public commands.
 public sealed class AIBehaviorTestScenario : MonoBehaviour
 {
-    public enum Scenario { PlaneCargoExit, TransportOverflow, InfantryCombat }
+    public enum Scenario { PlaneCargoExit, TransportOverflow, InfantryCombat, VehicleCombat }
     public Scenario scenario;
     public ArenaMatch match;
     public Vehicle vehiclePrefab;
+    public Vehicle opposingVehiclePrefab;
+    public Vehicle Opponent { get; private set; }
+    public bool CrewReady { get; private set; }
+    public int ShotsFired { get; private set; }
     public GameObject actorPrefab;
     public BehaviorTestCamera observer;
     public int cargoCount=6;
@@ -26,11 +30,11 @@ public sealed class AIBehaviorTestScenario : MonoBehaviour
     void OnDisable()=>Application.logMessageReceived-=Log;
     void Log(string message,string stack,LogType type){if(type==LogType.Exception||type==LogType.Error){ErrorCount++;status=message;}}
     void Start(){match.enabled=false;ResetScenario();}
-    ArenaParticipant Spawn(Vector3 position,int index)
+    ArenaParticipant Spawn(Vector3 position,int index,ArenaParticipant.Team team=ArenaParticipant.Team.Red)
     {
         var staging=new GameObject("Actor initialization");staging.transform.SetParent(population.transform,false);staging.SetActive(false);
         var g=Instantiate(actorPrefab,staging.transform);g.name="Test actor "+index;
-        var actor=g.GetComponent<ArenaParticipant>();actor.match=match;actor.team=ArenaParticipant.Team.Red;
+        var actor=g.GetComponent<ArenaParticipant>();actor.match=match;actor.team=team;
         var nav=g.GetComponent<UnityEngine.AI.NavMeshAgent>();if(nav)nav.enabled=false;
         var ai=g.GetComponent<ArenaAIInput>();if(ai)ai.enabled=false;
         var vehicleAI=g.GetComponent<ArenaVehicleAI>();if(vehicleAI)vehicleAI.enabled=false;
@@ -41,8 +45,10 @@ public sealed class AIBehaviorTestScenario : MonoBehaviour
     public void ResetScenario(){StopAllCoroutines();ResetWorld();}
     void ResetWorld()
     {
-        flight=false;Running=false;Unloading=false;pilot=null;observer.follow=null;
-        if(population){population.SetActive(false);Destroy(population);}if(Vehicle)Destroy(Vehicle.gameObject);
+        flight=false;Running=false;Unloading=false;CrewReady=false;ShotsFired=0;pilot=null;observer.follow=null;
+        // Mounted actors are parented to seat anchors, not the population root.
+        foreach(var actor in Actors)if(actor){var rider=actor.GetComponent<VehicleOccupant>();if(rider.IsMounted)rider.Leave(true);actor.gameObject.SetActive(false);Destroy(actor.gameObject);}
+        if(population){population.SetActive(false);Destroy(population);}if(Vehicle)Destroy(Vehicle.gameObject);if(Opponent)Destroy(Opponent.gameObject);Opponent=null;
         Actors.Clear();population=new GameObject("Scenario actors");population.SetActive(false);
         if(vehiclePrefab)Vehicle=Instantiate(vehiclePrefab,Vector3.up*.2f,Quaternion.identity);
         ErrorCount=0;status="Ready. Each command can be reset and repeated.";
@@ -126,8 +132,55 @@ public sealed class AIBehaviorTestScenario : MonoBehaviour
     {
         ResetWorld();for(int i=0;i<4;i++)Spawn(new Vector3(i%2==0?-10:10,.2f,(i/2)*5),i);
         population.SetActive(true);yield return null;match.BeginMatch();
-        for(int i=0;i<Actors.Count;i++){var a=Actors[i];a.team=i%2==0?ArenaParticipant.Team.Red:ArenaParticipant.Team.Blue;a.Respawn(new Vector3(i%2==0?-10:10,.2f,(i/2)*5),Quaternion.Euler(0,i%2==0?90:-90,0));var ai=a.GetComponent<ArenaAIInput>();ai.enabled=true;a.GetComponent<SoldierController>().inputSource=ai;}
+        for(int i=0;i<Actors.Count;i++){var a=Actors[i];a.team=i%2==0?ArenaParticipant.Team.Red:ArenaParticipant.Team.Blue;a.SelectClass(match.settings.classes[0]);a.Respawn(new Vector3(i%2==0?-10:10,.2f,(i/2)*5),Quaternion.Euler(0,i%2==0?90:-90,0));var ai=a.GetComponent<ArenaAIInput>();ai.enabled=true;a.GetComponent<SoldierController>().inputSource=ai;}
         Running=true;status="Two versus two: production perception, bursts, damage, death and ragdolls.";
+    }
+    public void StartVehicleCombat()=>StartCoroutine(VehicleCombat());
+    void CountShot(VehicleOccupant shooter,Vector3 origin)=>ShotsFired++;
+    IEnumerator VehicleCombat()
+    {
+        ResetWorld();yield return null; // Finish disposing the previous crew before rebuilding.
+        if(!Vehicle||!opposingVehiclePrefab){status="Missing combat vehicle prefab.";yield break;}
+        Opponent=Instantiate(opposingVehiclePrefab);
+        var vehicles=new[]{Vehicle,Opponent};
+        bool aircraft=Vehicle.IsAircraft;
+        float separation=Vehicle.motor is JetMotor?140:aircraft?55:45;
+        float height=Vehicle.motor is JetMotor?100:aircraft?25:.6f;
+        for(int side=0;side<2;side++)
+        {
+            var vehicle=vehicles[side];
+            vehicle.transform.SetPositionAndRotation(new Vector3(0,height,side==0?-separation:separation),Quaternion.Euler(0,side==0?0:180,0));
+            vehicle.enabled=false;vehicle.Body.collisionDetectionMode=CollisionDetectionMode.Discrete;vehicle.Body.isKinematic=true;
+            foreach(var gun in vehicle.GetComponentsInChildren<VehicleTurret>(true))gun.ShotFired+=CountShot;
+            foreach(var launcher in vehicle.GetComponentsInChildren<VehicleLauncher>(true))launcher.ShotFired+=CountShot;
+            for(int seat=0;seat<vehicle.seats.Length;seat++)
+                Spawn(vehicle.transform.position+Vector3.right*(10+seat*2),Actors.Count,side==0?ArenaParticipant.Team.Red:ArenaParticipant.Team.Blue);
+        }
+        population.SetActive(true);yield return null;match.BeginMatch();
+        int index=0;
+        foreach(var vehicle in vehicles)
+        {
+            for(int seat=0;seat<vehicle.seats.Length;seat++)
+            {
+                var actor=Actors[index++];actor.Respawn(vehicle.transform.position+Vector3.right*10,vehicle.transform.rotation);
+                var occupant=actor.GetComponent<VehicleOccupant>();occupant.faction=(int)actor.team;
+                var ai=actor.GetComponent<ArenaAIInput>();ai.enabled=true;actor.GetComponent<SoldierController>().inputSource=ai;
+                // A controlled initial condition, not a boarding test: the complete crew starts seated.
+                vehicle.seats[seat].occupant=occupant;occupant.Mount(vehicle,seat);
+                actor.GetComponent<ArenaVehicleAI>().enabled=true;
+            }
+            vehicle.Body.isKinematic=false;vehicle.Body.collisionDetectionMode=CollisionDetectionMode.ContinuousDynamic;vehicle.enabled=true;
+            if(vehicle.motor is JetMotor jet){jet.startingThrottle=.8f;vehicle.Body.linearVelocity=vehicle.transform.forward*jet.maxSpeed*.7f;}
+        }
+        CrewReady=true;Running=true;observer.follow=Vehicle.transform;
+        status="Opposing full crews: production targeting, steering, firing and damage. Reset to repeat.";
+    }
+    void VehicleTelemetry(Vehicle vehicle,string team)
+    {
+        if(!vehicle)return;
+        int occupied=0;foreach(var seat in vehicle.seats)if(seat.occupant)occupied++;
+        GUILayout.Label(team+" "+vehicle.displayName+" | seats "+occupied+"/"+vehicle.seats.Length+" | health "+vehicle.Health.ToString("F0")+" | speed "+vehicle.Body.linearVelocity.magnitude.ToString("F0")+" m/s");
+        if(GUILayout.Button("Follow "+team+" vehicle"))observer.follow=vehicle.transform;
     }
     void FixedUpdate()
     {
@@ -144,6 +197,7 @@ public sealed class AIBehaviorTestScenario : MonoBehaviour
         if(GUILayout.Button("Reset scenario"))ResetScenario();
         if(scenario==Scenario.PlaneCargoExit){if(GUILayout.Button("Load plane cargo (hold setup)"))LoadPlaneCargo();if(GUILayout.Button("Start flight and exit cargo"))ExitCargo();}
         else if(scenario==Scenario.TransportOverflow){if(GUILayout.Button("Fill functional seats"))FillSeats();if(GUILayout.Button("Add two physical overflow riders"))AddOverflowRiders();if(GUILayout.Button("Unload passengers (keep driver/gunner)"))UnloadPassengers();if(GUILayout.Button("Exit physical cargo"))ExitCargo();}
+        else if(scenario==Scenario.VehicleCombat){if(GUILayout.Button("Start / restart full-crew engagement"))StartVehicleCombat();GUILayout.Label("Weapon shots: "+ShotsFired);VehicleTelemetry(Vehicle,"Red");VehicleTelemetry(Opponent,"Blue");}
         else if(GUILayout.Button("Start 2 vs 2 infantry combat"))StartCombat();
         if(GUILayout.Button("Free camera"))observer.follow=null;
         foreach(var actor in Actors)if(GUILayout.Button(actor.name+" / "+(actor.health.IsDead?"dead":actor.health.CurrentHealth.ToString("F0"))))observer.follow=actor.transform;

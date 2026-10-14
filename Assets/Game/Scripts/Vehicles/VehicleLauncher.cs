@@ -10,6 +10,7 @@ public class VehicleLauncher : MonoBehaviour
     public AnimationClip cameraShake;
     public Transform[] muzzles;
     public GameObject[] tubeRounds = System.Array.Empty<GameObject>();
+    public event System.Action<VehicleOccupant,Vector3> ShotFired;
     public float interval = .2f;
     public int capacity = 8;
     public float rechargeInterval = .75f;
@@ -209,6 +210,7 @@ public class VehicleLauncher : MonoBehaviour
         }
         if (pilot.IsLocal) pilot.PlayVehicleCameraShake(cameraShake);
         if (rocket.TryGetComponent<VehicleMissileGuidance>(out var guidance)) guidance.Initialize(vehicle, RequestedAimRay, this, validatedTarget);
+        ShotFired?.Invoke(pilot,muzzle.position);
         return true;
     }
 }

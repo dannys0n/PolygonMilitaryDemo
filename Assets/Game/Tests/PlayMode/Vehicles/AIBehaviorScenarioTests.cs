@@ -16,7 +16,7 @@ public class AIBehaviorScenarioTests
  static object Get(object o,string name){var p=o.GetType().GetProperty(name,Flags);return p!=null?p.GetValue(o):o.GetType().GetField(name,Flags).GetValue(o);}
  static void Command(object o,string name)=>o.GetType().GetMethod(name).Invoke(o,null);
  Component scenario;
- IEnumerator Load(string name){yield return EditorSceneManager.LoadSceneAsyncInPlayMode("Assets/Game/Scenes/Tests/AI/"+name+".unity",new LoadSceneParameters(LoadSceneMode.Single));yield return null;scenario=UnityEngine.Object.FindAnyObjectByType(T("AIBehaviorTestScenario")) as Component;Assert.NotNull(scenario);}
+ IEnumerator Load(string name){if(scenario){Command(scenario,"ResetScenario");yield return null;}yield return EditorSceneManager.LoadSceneAsyncInPlayMode("Assets/Game/Scenes/Tests/AI/"+name+".unity",new LoadSceneParameters(LoadSceneMode.Single));yield return null;scenario=UnityEngine.Object.FindAnyObjectByType(T("AIBehaviorTestScenario")) as Component;Assert.NotNull(scenario);}
  [UnityTearDown] public IEnumerator Cleanup(){if(scenario)Command(scenario,"ResetScenario");yield return null;}
  [UnityTest] public IEnumerator PlaneCargoActorsExitAndLandThroughTheSceneButtons()
  {
@@ -48,6 +48,47 @@ public class AIBehaviorScenarioTests
   bool damaged=false;float until=Time.time+15;
   while(Time.time<until&&!damaged){foreach(var actor in actors){var health=Get(actor,"health");if((float)Get(health,"CurrentHealth")<(float)Get(health,"maxHealth"))damaged=true;}yield return null;}
   Assert.IsTrue(damaged,"Production AI must spot an enemy and inflict real damage");Assert.AreEqual(0,Get(scenario,"ErrorCount"));
+ }
+ [UnityTest] public IEnumerator FullGroundCrewsFireAndDamageOpposingVehicles()
+ {
+  foreach(var name in new[]{"AI_Tank_Combat","AI_Full_Technical_Combat"})
+  {
+   yield return Load(name);Command(scenario,"StartVehicleCombat");
+   float until=Time.time+8;while(Time.time<until&&!(bool)Get(scenario,"CrewReady"))yield return null;
+   Assert.IsTrue((bool)Get(scenario,"CrewReady"),name+" crew setup");AssertFullCrew();
+   var red=(Component)Get(scenario,"Vehicle");var blue=(Component)Get(scenario,"Opponent");
+   until=Time.time+25;
+   while(Time.time<until&&(float)Get(red,"Health")>=(float)Get(red,"maxHealth")&&(float)Get(blue,"Health")>=(float)Get(blue,"maxHealth"))yield return null;
+   Assert.Greater((int)Get(scenario,"ShotsFired"),0,name+" must fire production weapons");
+   Assert.IsTrue((float)Get(red,"Health")<(float)Get(red,"maxHealth")||(float)Get(blue,"Health")<(float)Get(blue,"maxHealth"),name+" must cause actual vehicle damage");
+   Assert.AreEqual(0,Get(scenario,"ErrorCount"));
+  }
+ }
+ [UnityTest] public IEnumerator AircraftCrewsUseProductionFlightInputsWithoutRuntimeErrors()
+ {
+  foreach(var name in new[]{"AI_Jet_Dogfight","AI_Helicopter_Combat"})
+  {
+   yield return Load(name);Command(scenario,"StartVehicleCombat");
+   float until=Time.time+8;while(Time.time<until&&!(bool)Get(scenario,"CrewReady"))yield return null;
+   Assert.IsTrue((bool)Get(scenario,"CrewReady"));AssertFullCrew();
+   var red=(Component)Get(scenario,"Vehicle");var blue=(Component)Get(scenario,"Opponent");
+   Vector3 initial=red.transform.position;yield return new WaitForSeconds(10);
+   Assert.Greater(Vector3.Distance(initial,red.transform.position),5,name+" physically flies");
+   Assert.Greater((int)Get(scenario,"ShotsFired"),0,name+" must engage with production weapons");
+   Assert.IsTrue((bool)Get(red,"IsDestroyed")||red.transform.position.y>5,name+" surviving red aircraft remains airborne");Assert.IsTrue((bool)Get(blue,"IsDestroyed")||blue.transform.position.y>5,name+" surviving blue aircraft remains airborne");
+   foreach(var actor in (IList)Get(scenario,"Actors"))Assert.IsTrue(((Behaviour)((Component)actor).GetComponent(T("ArenaVehicleAI"))).enabled,"Use the existing production brain");
+   Assert.AreEqual(0,Get(scenario,"ErrorCount"));
+  }
+ }
+ void AssertFullCrew()
+ {
+  int total=0;
+  foreach(string side in new[]{"Vehicle","Opponent"})
+  {
+   var vehicle=Get(scenario,side);foreach(var seat in (Array)Get(vehicle,"seats"))
+   {var occupant=Get(seat,"occupant");Assert.IsTrue((bool)(UnityEngine.Object)occupant,"Every functional seat is occupied");var actor=((Component)occupant).GetComponent(T("ArenaParticipant"));Assert.AreEqual(side=="Vehicle"?"Red":"Blue",Get(actor,"team").ToString());total++;}
+  }
+  Assert.AreEqual(total,((IList)Get(scenario,"Actors")).Count);
  }
 }
 #endif
