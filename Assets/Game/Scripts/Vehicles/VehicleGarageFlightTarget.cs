@@ -50,6 +50,7 @@ public class VehicleGarageFlightTarget : MonoBehaviour
     void OnDestroyed(Vehicle destroyed)
     {
         destroyed.Destroyed -= OnDestroyed;
+        Destroy(destroyed.gameObject, 7);
         vehicle = null;
         if (pilot) Destroy(pilot.gameObject);
         if (pilotContainer) Destroy(pilotContainer);
