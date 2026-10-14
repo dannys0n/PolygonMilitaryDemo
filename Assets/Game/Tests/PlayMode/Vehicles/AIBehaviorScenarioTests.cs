@@ -164,6 +164,32 @@ public class AIBehaviorScenarioTests
   var local=(Behaviour)actor.GetComponent(T("SoldierLocalInput"));if(!local)local=(Behaviour)actor.gameObject.AddComponent(T("SoldierLocalInput"));local.enabled=false;
   var controller=actor.GetComponent(T("SoldierController"));controller.GetType().GetField("inputSource").SetValue(controller,local);
  }
+ [UnityTest] public IEnumerator CrowdedSameSideBoardingAvoidsPhysicalPushing()
+ {
+  yield return Load("AI_Transport_Overflow");var options=(Array)Get(scenario,"VehicleOptions");
+  int index=Array.FindIndex(options.Cast<Component>().ToArray(),v=>v.name=="PickupTechnical");scenario.GetType().GetMethod("SelectVehicle").Invoke(scenario,new object[]{index});yield return new WaitForSeconds(1.5f);
+  var vehicle=(Component)Get(scenario,"Vehicle");int seats=((Array)Get(vehicle,"seats")).Length;
+  for(int i=0;i<seats+1;i++){Command(scenario,"AddPlayer");yield return new WaitForSeconds(.15f);}
+  var actors=((IList)Get(scenario,"Actors")).Cast<Component>().ToArray();var bounds=(Bounds)Get(vehicle,"EntryBounds");
+  for(int i=0;i<actors.Length;i++)
+  {
+   var point=vehicle.transform.TransformPoint(new Vector3(bounds.max.x+2,.1f,bounds.center.z+(i-(actors.Length-1)*.5f)*1.2f));
+   actors[i].GetType().GetMethod("Respawn",new[]{typeof(Vector3),typeof(Quaternion)}).Invoke(actors[i],new object[]{point,Quaternion.Euler(0,-90,0)});
+   var agent=actors[i].GetComponent<UnityEngine.AI.NavMeshAgent>();Assert.GreaterOrEqual(agent.radius,.5f,"Avoidance includes clearance beyond the physical capsule");
+  }
+  Command(scenario,"ToggleAllEnterExit");float until=Time.time+20;float deepest=0;
+  while(Time.time<until&&MountedActors()<seats)
+  {
+   for(int i=0;i<actors.Length;i++)for(int j=i+1;j<actors.Length;j++)
+   {
+    if(IsMounted(actors[i])||IsMounted(actors[j]))continue;
+    var a=(CapsuleCollider)Get(actors[i].GetComponent(T("SoldierPhysicsBody")),"capsule");var b=(CapsuleCollider)Get(actors[j].GetComponent(T("SoldierPhysicsBody")),"capsule");
+    if(Physics.ComputePenetration(a,a.transform.position,a.transform.rotation,b,b.transform.position,b.transform.rotation,out _,out float depth))deepest=Mathf.Max(deepest,depth);
+   }
+   yield return null;
+  }
+  Assert.AreEqual(seats,MountedActors(),"Approaching agents must fill the vehicle without a doorway deadlock");Assert.Less(deepest,.1f,"Agents must not force their physical capsules deeply through one another");Assert.AreEqual(0,Get(scenario,"ErrorCount"));
+ }
  void AssertFullCrew()
  {
   int total=0;

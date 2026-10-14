@@ -40,8 +40,8 @@ public class ArenaVehicleAI : MonoBehaviour
         if(Time.time<nextDecision)return true;nextDecision=Time.time+.25f;
         int seat=orderedVehicle.FirstAvailableSeat(occupant);
         if(seat<0||!orderedVehicle.CanExit)return true;
-        var entry=orderedVehicle.NearestEntryPoint(transform.position);
-        if(!ArenaAITactics.Reachable(infantry,entry.position,path,out _,out _)||!orderedVehicle.Reserve(occupant,seat))return true;
+        var entry=ChooseEntry(orderedVehicle);
+        if(!entry||!orderedVehicle.Reserve(occupant,seat))return true;
         reserved=orderedVehicle;reservedSeat=seat;reservedEntry=entry;reservedForCombat=true;
         State=TravelState.Boarding;infantry.BoardingTarget=entry;progressAt=Time.time;
         return false;
@@ -121,7 +121,7 @@ public class ArenaVehicleAI : MonoBehaviour
                 return;
             }
             infantry.BoardingTarget = reservedEntry;
-            if (Vector3.Distance(transform.position, infantry.BoardingTarget.position) < 2.8f && reserved.Board(occupant, reservedSeat))
+            if (reserved.IsInsideEntryBox(transform.position) && reserved.Board(occupant, reservedSeat))
             {
                 infantry.BoardingTarget = null;
                 reserved = null;
@@ -212,12 +212,31 @@ public class ArenaVehicleAI : MonoBehaviour
             return;
         reservedForCombat=combat || crew;
         reserved = choice;
-        reservedEntry = choice.NearestEntryPoint(transform.position);
+        reservedEntry = ChooseEntry(choice);
+        if(!reservedEntry){CancelBoarding();return;}
         reservedSeat = seatIndex;
         Goal = goal;
         State = TravelState.Boarding;
         infantry.BoardingTarget = reservedEntry;
         progressAt = Time.time;
+    }
+    Transform ChooseEntry(Vehicle vehicle)
+    {
+        Transform best=null;float bestCost=float.PositiveInfinity;
+        foreach(var seat in vehicle.seats)
+        {
+            var entry=seat.exit;if(!entry)continue;
+            if(!ArenaAITactics.Reachable(infantry,entry.position,path,out _,out float walk))continue;
+            float cost=walk;
+            foreach(var other in vehicle.seats)
+            {
+                var rider=other.reservation;if(!rider||rider==occupant||Time.time>=other.reservedUntil)continue;
+                var ai=rider.GetComponent<ArenaVehicleAI>();
+                if(ai&&ai.reservedEntry&&(ai.reservedEntry.position-entry.position).sqrMagnitude<2.25f)cost+=4;
+            }
+            if(cost<bestCost){bestCost=cost;best=entry;}
+        }
+        return best;
     }
     bool ChooseLanding(Vehicle v, out Vector3 goal)
     {

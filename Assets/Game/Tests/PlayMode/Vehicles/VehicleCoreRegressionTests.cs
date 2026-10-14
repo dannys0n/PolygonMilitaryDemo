@@ -67,6 +67,19 @@ public class VehicleCoreRegressionTests
         finally{Object.Destroy(definition);}
     }
     [UnityTearDown] public IEnumerator Cleanup(){foreach(var g in roots)if(g){var occupant=g.GetComponent(T("VehicleOccupant"));if(occupant&&(bool)Get(occupant,"IsMounted"))Call(occupant,"Leave",true);}foreach(var g in roots)if(g)Object.Destroy(g);foreach(var instance in navigation)instance.Remove();foreach(var data in navigationData)Object.Destroy(data);navigation.Clear();navigationData.Clear();roots.Clear();match=null;yield return null;}
+    [UnityTest] public IEnumerator NearbyVehicleBehindIsVisibleButInfantryStillUsesItsCone()
+    {
+        var observer=Actor(new Vector3(0,1000,0));var enemy=Actor(new Vector3(0,1000,-12));yield return null;
+        var input=observer.GetComponent(T("ArenaAIInput"));var target=enemy.GetComponent(T("ArenaParticipant"));
+        observer.transform.rotation=Quaternion.identity;
+        Assert.IsFalse((bool)Call(input,"CanSee",target),"On-foot infantry behind the observer stays outside its cone");
+        var vehicle=Vehicle("Combat/PickupTechnical");vehicle.transform.position=new Vector3(0,1000,-12);
+        var occupant=Get(enemy,"occupant");var seats=(Array)Get(vehicle,"seats");Set(seats.GetValue(0),"occupant",occupant);Call(occupant,"Mount",vehicle,0);Physics.SyncTransforms();
+        Assert.IsTrue((bool)Call(input,"CanSee",target),"Nearby occupied vehicles are detected in a full circle");
+        var wall=GameObject.CreatePrimitive(PrimitiveType.Cube);roots.Add(wall);wall.transform.position=new Vector3(0,1001,-5);wall.transform.localScale=new Vector3(8,6,.5f);Physics.SyncTransforms();
+        Assert.IsFalse((bool)Call(input,"CanSee",target),"Full-circle awareness must still respect occlusion");
+        Call(occupant,"Leave",true);
+    }
     void BuildExitNavigation(GameObject floor,Component actor)
     {
         var agent=actor.GetComponent<UnityEngine.AI.NavMeshAgent>();

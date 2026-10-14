@@ -13,6 +13,9 @@ public class ArenaAIInput : SoldierInputSource
     [Header("Perception and movement")]
     public float sightRange = 45f;
     [Range(0f, 180f)] public float fieldOfView = 140f;
+    [Range(0f,360f)] public float vehicleFieldOfView=360f;
+    [Min(0)] public float nearbyVehicleAwarenessRange=35f;
+    [Min(0)] public float avoidanceClearance=.12f;
     public float attackRange = 18f;
     public float turnSpeed = 180f;
     public float reactionTime = .35f;
@@ -145,6 +148,7 @@ public class ArenaAIInput : SoldierInputSource
     {
         queryPath = new NavMeshPath();
         agent.updatePosition = agent.updateRotation = agent.updateUpAxis = false;
+        agent.radius=Mathf.Max(agent.radius,life.controller.radius+avoidanceClearance);
     }
     void OnEnable() { life.Respawned += ResetIntent; life.health.Died += OnDied; life.health.Damaged += OnDamaged; soldier.actions.FireStarted += OnShot; }
     void OnDisable() { life.Respawned -= ResetIntent; life.health.Died -= OnDied; life.health.Damaged -= OnDamaged; soldier.actions.FireStarted -= OnShot; ResetIntent(); }
@@ -545,7 +549,10 @@ public class ArenaAIInput : SoldierInputSource
     bool CanSee(ArenaParticipant enemy)
     {
         Vector3 origin = life.look.aimCamera.transform.position, point = AimPoint(enemy);
-        if (Vector3.Angle(transform.forward, point - origin) > fieldOfView * .5f) return false;
+        bool nearbyVehicle=enemy.TryGetComponent<VehicleOccupant>(out var occupant)&&occupant.IsMounted
+            && (occupant.MountedVehicle.transform.position-transform.position).sqrMagnitude<=nearbyVehicleAwarenessRange*nearbyVehicleAwarenessRange;
+        float fov=nearbyVehicle?vehicleFieldOfView:fieldOfView;
+        if (Vector3.Angle(transform.forward, point - origin) > fov * .5f) return false;
         return ArenaAITactics.ClearShot(this, origin, point, enemy);
     }
 
