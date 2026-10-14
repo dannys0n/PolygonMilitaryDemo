@@ -18,6 +18,8 @@ public sealed class VehicleMissileGuidance : MonoBehaviour
     public float seekerDelay = .15f;
     Rigidbody body;
     Vehicle target;
+    VehicleDecoy decoy;
+    bool diverted;
     Vector3 aimPoint;
     float launchTime;
     bool initialized;
@@ -26,6 +28,7 @@ public sealed class VehicleMissileGuidance : MonoBehaviour
     {
         body = GetComponent<Rigidbody>(); launchTime = Time.time; initialized = true;
         director = launcher;
+        decoy=null;diverted=false;
         aimPoint = aim.GetPoint(acquisitionRange);
         target = launcher && launcher.requiresLock ? validatedTarget : FindTarget(source, aim);
         // Laser designation strikes the selected visible surface when no vehicle was acquired.
@@ -98,8 +101,10 @@ public sealed class VehicleMissileGuidance : MonoBehaviour
                         && !hit.transform.IsChildOf(target.transform) && !(hit.collider is CharacterController))
                     {obscured=true;break;}
                 if(obscured)continue;
-                // A fooled seeker goes inertial; never chase a flare or reacquire the aircraft.
-                target=null;initialized=false;return;
+                // Follow the false signature briefly; never reacquire the original aircraft.
+                target=null;decoy=candidate;diverted=true;aimPoint=candidate.transform.position;
+                if(TryGetComponent<VehicleRocket>(out var rocket))rocket.LimitRemainingLifetime(2,true);
+                break;
             }
         }
         if(SeekerType==Seeker.Optical && target && GrenadeSmoke.BlocksLine(body.position,TargetPoint(target)))
@@ -108,10 +113,17 @@ public sealed class VehicleMissileGuidance : MonoBehaviour
         {target=null;initialized=false;return;}
         if(!target && SeekerType==Seeker.Optical && guidance==Guidance.LaserSpot && GrenadeSmoke.BlocksLine(body.position,aimPoint))
         {initialized=false;return;}
-        if (!target && guidance != Guidance.LaserSpot && guidance != Guidance.CommandLineOfSight) return; // Unguided flight on seeker failure.
+        if (!target && !diverted && guidance != Guidance.LaserSpot && guidance != Guidance.CommandLineOfSight) return; // Unguided flight on seeker failure.
         Vector3 point = aimPoint;
         float speed = body.linearVelocity.magnitude;
-        if (guidance == Guidance.CommandLineOfSight && director)
+        if(diverted)
+        {
+            if(!decoy || !decoy.Alive){initialized=false;return;}
+            point=decoy.transform.position;
+            float time=Vector3.Distance(body.position,point)/Mathf.Max(1,speed);
+            point+=decoy.velocity*Mathf.Min(time,1f);
+        }
+        else if (guidance == Guidance.CommandLineOfSight && director)
         {
             Ray command = director.RequestedAimRay;
             // SACLOS approximation: correct toward the maintained sight line, not an autonomous seeker.

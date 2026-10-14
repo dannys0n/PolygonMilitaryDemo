@@ -15,6 +15,13 @@ public class VehicleRocket : MonoBehaviour
     GameObject source;
     Vector3 previous;
     bool exploded;
+    float expiresAt=float.PositiveInfinity;
+    public float RemainingLifetime => Mathf.Max(0,expiresAt-Time.time);
+    public void LimitRemainingLifetime(float seconds, bool detonate = false)
+    {
+        expiresAt=Mathf.Min(expiresAt,Time.time+Mathf.Max(0,seconds));
+        explodeOnExpiry|=detonate;
+    }
     static readonly HashSet<VehicleRocket> active = new HashSet<VehicleRocket>();
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
     static void ResetRegistry() => active.Clear();
@@ -44,7 +51,7 @@ public class VehicleRocket : MonoBehaviour
                         Physics.IgnoreCollision(projectileCollider, otherCollider);
         active.Add(this);
         if (exhaust) exhaust.Play(true);
-        Invoke(nameof(Expire),lifetime);
+        expiresAt=Time.time+Mathf.Max(.01f,lifetime);
     }
     void StopExhaust()
     {
@@ -66,6 +73,7 @@ public class VehicleRocket : MonoBehaviour
     void FixedUpdate()
     {
         if (!body || exploded) return;
+        if(Time.time>=expiresAt){Expire();return;}
         Vector3 delta = body.position - previous;
         RaycastHit nearest = default;
         float distance = delta.magnitude;
