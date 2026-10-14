@@ -46,6 +46,7 @@ public class ArenaVehicleHud : MonoBehaviour
     readonly System.Collections.Generic.List<Image> systemIcons=new System.Collections.Generic.List<Image>();
     readonly System.Collections.Generic.List<TMP_Text> systemKeys=new System.Collections.Generic.List<TMP_Text>();
     readonly System.Collections.Generic.List<TMP_Text> systemCaptions=new System.Collections.Generic.List<TMP_Text>();
+    bool seatHasWeapon;
     Vehicle displayedSystemsVehicle;
     Vehicle.SeatRole displayedSystemsRole;
     VehicleCountermeasures displayedDefenses;
@@ -89,7 +90,7 @@ public class ArenaVehicleHud : MonoBehaviour
         telemetry.gameObject.SetActive(!jetInstruments);systemsReadout.gameObject.SetActive(!jetInstruments);
         mountedPanel.SetActive(mounted);
         infantryEquipment.SetActive(!mounted);infantryCrosshair.SetActive(!mounted);
-        if(!mounted){flightPanel.SetActive(false);vehicleEquipment.SetActive(false);roadPanel.SetActive(false);armoredPanel.SetActive(false);dronePanel.SetActive(false);presentationBlend=0;displayedSystemsVehicle=null;return;}
+        if(!mounted){flightPanel.SetActive(false);vehicleEquipment.SetActive(false);roadPanel.SetActive(false);armoredPanel.SetActive(false);dronePanel.SetActive(false);presentationBlend=0;displayedSystemsVehicle=null;seatHasWeapon=false;return;}
         presentationBlend=Mathf.MoveTowards(presentationBlend,1,Time.deltaTime/.18f);
         if(mountedFade)mountedFade.alpha=1-Mathf.Pow(1-presentationBlend,3);
         var v=player.MountedVehicle;bool air=v.IsAircraft;var role=v.seats[player.SeatIndex].role;
@@ -99,6 +100,7 @@ public class ArenaVehicleHud : MonoBehaviour
         var weaponSystems=v.GetComponent<VehicleWeaponSystems>();
         var selectedWeapon=weaponSystems?weaponSystems.Current(player):null;
         bool armed = weaponSystems?selectedWeapon!=null:showAttack || (role == Vehicle.SeatRole.Gunner && v.turret) || (air && role == Vehicle.SeatRole.Driver && v.GetComponent<VehicleLauncher>());
+        seatHasWeapon=armed;
         vehicleEquipment.SetActive(armed);
         if(selectedWeapon!=null)
         {
@@ -231,7 +233,7 @@ public class ArenaVehicleHud : MonoBehaviour
                 foreach(Transform child in template.parent)
                     if(child.name.StartsWith("Weapon Tile"))child.gameObject.SetActive(false);
             }
-            int count=seatSystems.Count+(defenses && role!=Vehicle.SeatRole.Passenger?1:0);
+            int count=seatSystems.Count+(armed && defenses && role!=Vehicle.SeatRole.Passenger?1:0);
             if(count==0 && armed)count=1;
             var activeWeapon=(RectTransform)equippedIcon.transform.parent;
             var activePosition=activeWeapon.anchoredPosition;
@@ -270,12 +272,23 @@ public class ArenaVehicleHud : MonoBehaviour
         }
         bool utility=displayedDefenses && role!=Vehicle.SeatRole.Passenger;
         vehicleEquipment.SetActive(armed || utility);
-        equippedIcon.transform.parent.gameObject.SetActive(armed);
+        bool primaryDefense=utility && !armed;
+        equippedIcon.transform.parent.gameObject.SetActive(armed || primaryDefense);
+        equippedIcon.gameObject.SetActive(armed);
+        if(primaryDefense)
+        {
+            equippedName.text=defenses.SystemName;
+            equipmentLabel.text="VEHICLE DEFENSE";
+            ammunition.text=defenses.Charges+" / "+defenses.capacity;
+            fireMode.text=defenses.ReadyIn>0 ? defenses.ReadyIn.ToString("F1")+" S  [X]"
+                :defenses.Charges>0 ? "READY  [X]" : "+1 "+defenses.RechargeIn.ToString("F1")+" S  [X]";
+        }
         for(int i=0;i<systemTiles.Count;i++)
         {
             if(!systemTiles[i].gameObject.activeSelf)continue;
             var entry=i<seatSystems.Count?seatSystems[i]:null;
             bool defense=utility && i==seatSystems.Count;
+            if(primaryDefense && defense){systemTiles[i].gameObject.SetActive(false);continue;}
             bool chosen=entry!=null && entry==selected;
             var icon=systemIcons[i];var key=systemKeys[i];var caption=systemCaptions[i];
             icon.gameObject.SetActive(!defense);
@@ -335,8 +348,8 @@ public class ArenaVehicleHud : MonoBehaviour
             }
             else flightPathMarker.gameObject.SetActive(false);
         }
-        var mountedSystems=player.IsMounted?player.MountedVehicle.GetComponent<VehicleWeaponSystems>():null;
-        bool armed = player.IsMounted && (mountedSystems?mountedSystems.Current(player)!=null:equippedIcon.transform.parent.gameObject.activeSelf);
+        // Defense-only primary cards do not turn an unarmed seat into a weapon station.
+        bool armed = player.IsMounted && seatHasWeapon;
         gunnerReadout.gameObject.SetActive(armed && player.MountedVehicle.seats[player.SeatIndex].role==Vehicle.SeatRole.Gunner);
         desiredAim.gameObject.SetActive(armed); actualAim.gameObject.SetActive(armed);
         if (!armed) return;
