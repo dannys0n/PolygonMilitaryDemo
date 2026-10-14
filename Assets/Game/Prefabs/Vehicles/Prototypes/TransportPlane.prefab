@@ -6820,6 +6820,37 @@ Transform:
   - {fileID: 135703643751471790}
   m_Father: {fileID: 3267877727068935616}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &3551514321457210939
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1508220082639921498}
+  m_Layer: 0
+  m_Name: Weapon target
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1508220082639921498
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3551514321457210939}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0.000000055567224, y: 4.7205496, z: -8.100824}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 5267004864618660528}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &3556044784492497941
 GameObject:
   m_ObjectHideFlags: 0
@@ -11569,6 +11600,7 @@ Transform:
   - {fileID: 3829662761100229695}
   - {fileID: 7952955251953044578}
   - {fileID: 5034728001952872666}
+  - {fileID: 1508220082639921498}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!54 &1010680757653157015
@@ -11643,6 +11675,7 @@ MonoBehaviour:
   turret: {fileID: 0}
   destructionEffect: {fileID: 695410771644243590, guid: c07b2e8d0c65dad44bf5eaca660002fc, type: 3}
   cameraTarget: {fileID: 1489629118364485154}
+  targetPoint: {fileID: 1508220082639921498}
   hasRenderedInterior: 1
   cockpitExternalMonitor: 1
   entryPadding: {x: 1.5, y: 1, z: 1.5}

@@ -47,7 +47,12 @@ public sealed class VehicleMissileGuidance : MonoBehaviour
         }
         return bestTarget;
     }
-    public static Vector3 TargetPoint(Vehicle candidate) => candidate.cameraTarget ? candidate.cameraTarget.position : candidate.transform.position;
+    public static Vector3 TargetPoint(Vehicle candidate)
+    {
+        if (!candidate) return Vector3.zero;
+        return candidate.targetPoint ? candidate.targetPoint.position
+            : candidate.transform.TransformPoint(candidate.NavigationBounds.center);
+    }
     public bool CanAcquire(Vehicle source, Vehicle candidate, Ray aim, Ray? launchRay = null)
     {
         if (!source || !candidate || candidate == source || candidate.IsDestroyed || !candidate.IsOccupied) return false;
@@ -86,7 +91,7 @@ public sealed class VehicleMissileGuidance : MonoBehaviour
                 Vector3 offset=candidate.transform.position-body.position;
                 if(offset.magnitude>acquisitionRange || Vector3.Angle(body.rotation*Vector3.forward,offset)>acquisitionAngle)continue;
                 // A decoy must be near the tracked aircraft, not a global invulnerability switch.
-                if(Vector3.Distance(candidate.transform.position,target.cameraTarget.position)>80)continue;
+                if(Vector3.Distance(candidate.transform.position,TargetPoint(target))>80)continue;
                 bool obscured=false;
                 foreach(var hit in Physics.RaycastAll(body.position,offset.normalized,offset.magnitude,Physics.DefaultRaycastLayers,QueryTriggerInteraction.Ignore))
                     if(!hit.transform.IsChildOf(transform) && !hit.transform.IsChildOf(candidate.transform)
@@ -97,7 +102,7 @@ public sealed class VehicleMissileGuidance : MonoBehaviour
                 target=null;initialized=false;return;
             }
         }
-        if(SeekerType==Seeker.Optical && target && GrenadeSmoke.BlocksLine(body.position,target.cameraTarget.position))
+        if(SeekerType==Seeker.Optical && target && GrenadeSmoke.BlocksLine(body.position,TargetPoint(target)))
         {target=null;initialized=false;return;}
         if(guidance==Guidance.CommandLineOfSight && director && GrenadeSmoke.BlocksLine(director.RequestedAimRay.origin,body.position))
         {target=null;initialized=false;return;}
@@ -115,7 +120,7 @@ public sealed class VehicleMissileGuidance : MonoBehaviour
         }
         else if (target && !target.IsDestroyed)
         {
-            point = target.cameraTarget.position;
+            point = TargetPoint(target);
             float time = Vector3.Distance(body.position, point) / Mathf.Max(1, speed);
             point += target.Body.linearVelocity * Mathf.Min(time, 3f);
         }

@@ -65,6 +65,8 @@ public class Vehicle : MonoBehaviour
     public VehicleTurret turret;
     public ParticleSystem destructionEffect;
     public Transform cameraTarget;
+    [Tooltip("Physical aim point used by missile seekers and their lock marker; independent of camera framing.")]
+    public Transform targetPoint;
     [Tooltip("Disable when the model has no rendered cabin. Occupants are hidden and both camera modes use the external view.")]
     public bool hasRenderedInterior = true;
     [Tooltip("Show an external TPS camera monitor in cockpit view, for vehicles with limited windshield visibility.")]
