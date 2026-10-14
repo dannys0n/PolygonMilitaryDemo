@@ -156,7 +156,7 @@ public class VehicleTurret : MonoBehaviour
                 }
             }
         }
-        if((!projectile||projectile.ballistic) && showVisual)BulletTracer.Emit(muzzle.position,found?nearest.point:muzzle.position+muzzle.forward*range,projectile?projectile.speed:vehicle.motor is HelicopterMotor||vehicle.motor is JetMotor?1500f:1000f);
+        if((!projectile||projectile.ballistic) && showVisual)BulletTracer.Emit(muzzle,found?nearest.point:muzzle.position+muzzle.forward*range,projectile?projectile.speed:vehicle.motor is HelicopterMotor||vehicle.motor is JetMotor?1500f:1000f);
         if (projectile)
         {
             var round = Instantiate(projectile, muzzle.position + muzzle.forward * projectile.launchClearance, muzzle.rotation);

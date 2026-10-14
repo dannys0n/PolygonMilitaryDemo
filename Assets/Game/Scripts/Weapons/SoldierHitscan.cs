@@ -192,8 +192,12 @@ public class SoldierHitscan : MonoBehaviour
         if(showShotVisual)
         {
             var loadout=GetComponent<SoldierWeaponLoadout>();
-            var worldMuzzle=loadout&&loadout.ThirdPersonView?loadout.ThirdPersonView.effects.muzzleFlash:null;
-            BulletTracer.Emit(worldMuzzle?worldMuzzle.position:result.origin,result.point);
+            var view=GetComponent<SoldierFirstPersonView>();
+            var weaponView=loadout&&loadout.HasFirstPersonPresentation&&view&&view.firstPerson
+                ?loadout.FirstPersonView:loadout?loadout.ThirdPersonView:null;
+            var muzzle=weaponView?weaponView.effects.muzzleFlash:null;
+            if(muzzle)BulletTracer.Emit(muzzle,result.point);
+            else BulletTracer.Emit(result.origin,result.point);
         }
         if (drawDebug) Debug.DrawLine(result.origin, result.point, Color.yellow, 1f);
         ShotResolved?.Invoke(result);
