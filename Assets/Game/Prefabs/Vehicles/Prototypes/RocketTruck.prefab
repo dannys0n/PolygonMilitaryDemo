@@ -3931,13 +3931,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Vehicle
   instruments: 1
   instrumentReference: 9
-  instrumentReferenceNotes: 'Tentative silhouette-based identification, not a confirmed licensed vehicle. Display adapts available game telemetry; no fuel, oil, turbine or engine simulation is implied.
-
-    HIMARS family reference is approximate. Exact driver''s instrument panel was not established from a verified manual; gauge style and units are a provisional adaptation.
-
-    Model carries 12 exposed tubes, unlike a six-round HIMARS pod. Treat this as a generic 12-tube launcher; exact identity is uncertain.
-
-    Functional capacity follows the tentative real-world family. Additional stations have no authored rendered chair and therefore hide the occupant and use an external view. Existing authored chairs/hand grips are preserved.'
+  instrumentReferenceNotes: 'Generic 12-tube 6x6 rocket-artillery prototype; the POLYGON mesh is not a confirmed real vehicle. HIMARS-like driver instruments remain an approximate reference, not exact identification. HIMARS carries one six-rocket pod; the modeled twelve exposed tubes do not match it. GMLRS uses GPS-aided inertial coordinate guidance, not an aircraft-style seeker lock. This arena prototype retains unguided ballistic HE rockets and does not claim coordinate-guided GMLRS capability. References: https://www.lockheedmartin.com/en-us/products/himars.html ; https://news.lockheedmartin.com/2023-04-27-us-army-awards-production-contract-for-all-weather-gmlrs-rocket'
   displayName: Rocket truck (prototype)
   seatDiagram: {fileID: 21300000, guid: a5f7113df6af55349a2869b8e56556a0, type: 3}
   seatDiagramCenter: {x: 0, y: -0.51599693}
@@ -4129,12 +4123,10 @@ MonoBehaviour:
   forwardLocal: {x: 0, y: 0, z: 1}
   weaponIcon: {fileID: 21300000, guid: 68499448b902d934d9506465f4ef4319, type: 3}
   weaponName: ROCKET BATTERY
-  ammunitionType: SALVO --
+  ammunitionType: HE / AREA FIRE
   range: 4000
   minimumLaserRange: 0
-  referenceNotes: 'Generic prototype director; no verified vehicle-specific sight plate
-
-    Presentation only. No turret authority or ballistic solution is implemented by this component.'
+  referenceNotes: 'Generic area-fire director for a fictional twelve-tube rocket truck, not a verified HIMARS optical sight. Unguided ballistic rockets are operator-aimed without seeker lock. Real HIMARS/GMLRS target-coordinate GPS/INS guidance would need a separate fire-mission feature rather than reusing air-defense lock-on. Manufacturer reference: https://news.lockheedmartin.com/2023-04-27-us-army-awards-production-contract-for-all-weather-gmlrs-rocket'
 --- !u!114 &3614045128566516555
 MonoBehaviour:
   m_ObjectHideFlags: 0
