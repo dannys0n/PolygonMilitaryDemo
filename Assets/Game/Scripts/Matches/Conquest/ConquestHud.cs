@@ -18,9 +18,46 @@ public class ConquestHud : MonoBehaviour
     float nextRefresh;
     Camera viewingCamera;
     ArenaAISpectator spectator;
-    void Start() => spectator=FindAnyObjectByType<ArenaAISpectator>();
+    int presentedPoints=-1;
+    void Start(){spectator=FindAnyObjectByType<ArenaAISpectator>();EnsureObjectiveEntries();}
+    void EnsureObjectiveEntries()
+    {
+        int count=rules.points.Length;
+        if(presentedPoints==count)return;
+        int authoredCount=flagLabels.Length;
+        var labelTemplate=flagLabels[0];var worldTemplate=worldLabels[0];
+        var backingTemplate=flagBackgrounds.Length>0?flagBackgrounds[0]:null;
+        var barTemplate=flagOwnershipBars.Length>0?flagOwnershipBars[0]:null;
+        System.Array.Resize(ref flagLabels,Mathf.Max(count,flagLabels.Length));
+        System.Array.Resize(ref worldLabels,Mathf.Max(count,worldLabels.Length));
+        System.Array.Resize(ref flagBackgrounds,Mathf.Max(count,flagBackgrounds.Length));
+        System.Array.Resize(ref flagOwnershipBars,Mathf.Max(count,flagOwnershipBars.Length));
+        for(int i=0;i<count;i++)
+        {
+            if(!flagLabels[i])flagLabels[i]=Instantiate(labelTemplate,labelTemplate.transform.parent);
+            if(!worldLabels[i])worldLabels[i]=Instantiate(worldTemplate,worldTemplate.transform.parent);
+            if(!flagBackgrounds[i]&&backingTemplate)
+            {
+                flagBackgrounds[i]=Instantiate(backingTemplate,backingTemplate.transform.parent);
+                if(barTemplate)foreach(var image in flagBackgrounds[i].GetComponentsInChildren<Image>(true))
+                    if(image.name==barTemplate.name){flagOwnershipBars[i]=image;break;}
+            }
+            // Keep larger modes readable without changing the five-point layout.
+            if(count>authoredCount)
+            {
+                int columns=Mathf.Min(10,count), row=i/columns, rowCount=Mathf.Min(columns,count-row*columns);
+                Vector2 position=labelTemplate.rectTransform.anchoredPosition;
+                position.x=(i%columns-(rowCount-1)*.5f)*60;position.y=-140-row*42;
+                flagLabels[i].rectTransform.anchoredPosition=position;
+                if(flagBackgrounds[i])flagBackgrounds[i].rectTransform.anchoredPosition=position;
+            }
+            flagLabels[i].transform.SetAsLastSibling();
+        }
+        presentedPoints=count;
+    }
     void LateUpdate()
     {
+        EnsureObjectiveEntries();
         if(Time.unscaledTime>=nextRefresh)
         {
             nextRefresh=Time.unscaledTime+.15f;
@@ -34,13 +71,13 @@ public class ConquestHud : MonoBehaviour
                 else if(observed.player.look.aimCamera.isActiveAndEnabled)viewingCamera=observed.player.look.aimCamera;
             }
             if(!viewingCamera && spectator && spectator.spectatorCamera.isActiveAndEnabled)viewingCamera=spectator.spectatorCamera;
-            foreach(var label in flagLabels)label.gameObject.SetActive(hud.match.IsRunning);
+            for(int i=0;i<flagLabels.Length;i++)if(flagLabels[i])flagLabels[i].gameObject.SetActive(i<rules.points.Length&&hud.match.IsRunning);
             for(int i=0;i<rules.points.Length;i++)
             {
                 var point=rules.points[i];
                 flagLabels[i].text=point.letter+(point.IsContested?" !":"");
                 flagLabels[i].color=point.Owner.HasValue?ConquestCapturePoint.TeamColor(point.Owner):new Color(.82f,.84f,.86f);
-                if(i<flagOwnershipBars.Length)
+                if(i<flagOwnershipBars.Length && flagOwnershipBars[i])
                 {
                     flagOwnershipBars[i].color=point.IsContested?hud.accent:flagLabels[i].color;
                     flagOwnershipBars[i].fillAmount=Mathf.Abs(point.Progress);
@@ -55,8 +92,9 @@ public class ConquestHud : MonoBehaviour
         capturePanel.SetActive(current);
         for(int i=0;i<flagBackgrounds.Length;i++)
         {
-            bool active=rules.points[i]==current;
-            flagBackgrounds[i].gameObject.SetActive(hud.match.IsRunning);
+            if(!flagBackgrounds[i])continue;
+            bool active=i<rules.points.Length && rules.points[i]==current;
+            flagBackgrounds[i].gameObject.SetActive(i<rules.points.Length && hud.match.IsRunning);
             flagBackgrounds[i].color=active?new Color(.16f,.10f,.035f,.86f):new Color(.018f,.018f,.02f,.62f);
         }
         if(current)
