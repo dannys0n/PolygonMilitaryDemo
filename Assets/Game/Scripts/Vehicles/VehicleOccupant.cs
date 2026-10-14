@@ -587,9 +587,17 @@ public class VehicleOccupant : MonoBehaviour
         position = CameraPosition(v, rotation, gunner, aircraft, pilot, cockpit);
     }
 
-    public void PlayVehicleCameraShake()
+    public void PlayVehicleCameraShake(AnimationClip clip = null)
     {
-        vehicleCameraShake["FireShake"].time=0;
+        if (!vehicleCameraShake) return;
+        var state = vehicleCameraShake["FireShake"];
+        if (clip && (state == null || state.clip != clip))
+        {
+            vehicleCameraShake.AddClip(clip, "FireShake");
+            state = vehicleCameraShake["FireShake"];
+        }
+        if (state == null) return;
+        state.time=0;
         vehicleCameraShake.Play("FireShake",PlayMode.StopAll);
     }
     void ResetVehicleCameraShake()

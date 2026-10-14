@@ -769,6 +769,24 @@ MonoBehaviour:
   seatDiagramCenter: {x: 0, y: 0}
   seatDiagramHalfExtent: 3.6982043
   motor: {fileID: 5976936208733314332}
+  jetAssist:
+    assistEnabled: 1
+    maximumBank: 75
+    headingToBank: 1.8
+    assistedBankRate: 100
+    aimResponse: 2
+  helicopterAssist:
+    assistEnabled: 1
+    attitudeSpring: 60
+    attitudeDamping: 16
+    verticalResponse: 2.8
+    positionHoldSpring: 0.6
+    positionHoldDamping: 1.5
+    maxHoldAcceleration: 18
+    reversalTilt: 38
+    reversalSpeedRange: {x: 4, y: 20}
+    movementVelocityResponse: 0.8
+    cyclicResponseTime: 0.1
   turret: {fileID: 412871685692491077}
   destructionEffect: {fileID: 695410771644243590, guid: c07b2e8d0c65dad44bf5eaca660002fc, type: 3}
   cameraTarget: {fileID: 4234112904434023793}
@@ -1169,6 +1187,10 @@ MonoBehaviour:
   rechargeSeconds: 35
   smokeDuration: 10
   automaticForAI: 1
+  flareSalvos: 5
+  flareInterval: 0.16
+  flareEjectionSpeed: {x: 20, y: 26}
+  flareDispersion: 5
 --- !u!1 &2155077309122243850
 GameObject:
   m_ObjectHideFlags: 0
@@ -5831,12 +5853,17 @@ MonoBehaviour:
   controlRole: 1
   projectile: {fileID: 937323468888893390, guid: 4e035ca4be733c14e9d841aedfb23a85, type: 3}
   weaponIcon: {fileID: 21300000, guid: bc998521b992689479af4ee353227a5b, type: 3}
+  launchFlash: {fileID: 2373264575078345310, guid: c4cd12631f3fa8443b953b4dd62becc4, type: 3}
+  cameraShake: {fileID: 7400000, guid: b06213c2ef802284f97df928d44be0c6, type: 2}
   muzzles:
   - {fileID: 3019232634172183533}
   tubeRounds: []
   interval: 3
   capacity: 2
   rechargeInterval: 10
+  rechargeFullMagazine: 0
+  requiresLock: 0
+  lockDuration: 1.25
 --- !u!1 &4967631380190447756
 GameObject:
   m_ObjectHideFlags: 0

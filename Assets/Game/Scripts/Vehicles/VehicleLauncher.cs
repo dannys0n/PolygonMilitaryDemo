@@ -6,6 +6,8 @@ public class VehicleLauncher : MonoBehaviour
     public Vehicle.SeatRole controlRole = Vehicle.SeatRole.Driver;
     public VehicleRocket projectile;
     public Sprite weaponIcon;
+    public ParticleSystem launchFlash;
+    public AnimationClip cameraShake;
     public Transform[] muzzles;
     public GameObject[] tubeRounds = System.Array.Empty<GameObject>();
     public float interval = .2f;
@@ -191,6 +193,13 @@ public class VehicleLauncher : MonoBehaviour
         if(tubeRounds.Length>tubeIndex) tubeRounds[tubeIndex].SetActive(false);
         var rocket = Instantiate(projectile, muzzle.position + muzzle.forward * projectile.launchClearance, muzzle.rotation);
         rocket.Launch(vehicle, pilot.gameObject);
+        if (launchFlash)
+        {
+            var flash = Instantiate(launchFlash, muzzle.position, muzzle.rotation);
+            flash.Emit(1);
+            Destroy(flash.gameObject, .5f);
+        }
+        if (pilot.IsLocal) pilot.PlayVehicleCameraShake(cameraShake);
         if (rocket.TryGetComponent<VehicleMissileGuidance>(out var guidance)) guidance.Initialize(vehicle, RequestedAimRay, this, validatedTarget);
         return true;
     }
