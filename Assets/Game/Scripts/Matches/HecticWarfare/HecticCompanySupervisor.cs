@@ -133,7 +133,8 @@ public class HecticCompanySupervisor : MonoBehaviour
         Vehicle carrier=troop.occupant.IsMounted?troop.occupant.MountedVehicle:troop.GetComponent<HecticPhysicalBoarding>()?.Carrier;
         if(carrier&&carrier.Driver&&carrier.Driver.TryGetComponent<ArenaVehicleAI>(out var pilot))leader=pilot;
         if(!companyOf.TryGetValue(leader,out var c)||!c.objective)return false;
-        goal=c.objective.transform.position;return true;
+        var current=orchestrator?orchestrator.ObjectivePoint(leader.infantry.participant):null;
+        goal=(current?current:c.objective).transform.position;return true;
     }
     public bool HoldDeparture(ArenaVehicleAI driver)
     {
