@@ -47,7 +47,7 @@ public class ArenaVehicleAttackHud : MonoBehaviour
         Ray view=new Ray(camera.transform.position,camera.transform.forward);float range=Range(view,sight.range,vehicle);
         rangeText.text=(range>=sight.range-.1f?">":"")+Mathf.RoundToInt(range).ToString("0000")+" M";
         bool tank=sight.IsDocumentedTankSight;
-        opticalLayer.SetActive(tank&&occupant.CockpitView);
+        opticalLayer.SetActive(tank&&(occupant.CockpitView||occupant.OpticalADSActive));
         string rangeDigits=range<sight.minimumLaserRange||range>=sight.range-.1f?"----":Mathf.RoundToInt(range).ToString("0000");
         rangeText.rectTransform.anchoredPosition=sight.style==VehicleAttackSight.SightStyle.T72?new Vector2(370,190):new Vector2(0,-135);
         rangeText.color=Color.white;

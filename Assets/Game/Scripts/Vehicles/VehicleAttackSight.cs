@@ -10,6 +10,14 @@ public class VehicleAttackSight : MonoBehaviour
     public Vector3 muzzleLocalPosition, forwardLocal=Vector3.forward;
     public Sprite weaponIcon;
     public string weaponName="MAIN GUN", ammunitionType="APFSDS";
+    [Header("Optional unobstructed optical ADS")]
+    [Tooltip("When enabled, holding aim at the gunner station substitutes a stabilized optical view. Normal view is preserved when released.")]
+    public bool useOpticalADS;
+    [Range(1,12)] public float opticalMagnification=8;
+    [Tooltip("Optional authored optical origin. Without one the camera uses a clear point immediately beyond the muzzle.")]
+    public Transform opticalEye;
+    public float OpticalFieldOfView=>2*Mathf.Atan(Mathf.Tan(70*Mathf.Deg2Rad*.5f)/opticalMagnification)*Mathf.Rad2Deg;
+    public Vector3 OpticalPosition=>opticalEye?opticalEye.position:WeaponRay.origin+WeaponRay.direction*.25f;
     public float range=4000;
     public float minimumLaserRange;
     [TextArea(2,5)] public string referenceNotes;

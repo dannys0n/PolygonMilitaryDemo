@@ -268,7 +268,7 @@ public class VehicleOccupant : MonoBehaviour
             }
             if(Input.GetMouseButton(0)) vehicle.turret.TryFire(this);
         }
-        if (vehicleCamera) vehicleCamera.fieldOfView = Input.GetMouseButton(1) && (aircraft || role==Vehicle.SeatRole.Gunner || driverWeapon) ? 50 : 70;
+        if (vehicleCamera) vehicleCamera.fieldOfView = OpticalADSActive ? vehicle.GetComponent<VehicleAttackSight>().OpticalFieldOfView : Input.GetMouseButton(1) && (aircraft || role==Vehicle.SeatRole.Gunner || driverWeapon) ? 50 : 70;
     }
 
     public void Mount(Vehicle vehicle, int seat)
@@ -532,6 +532,7 @@ public class VehicleOccupant : MonoBehaviour
             && !(IsLocal && CockpitView && seat.weaponMountedView);
         foreach(var skin in seatedBody) if(skin){skin.enabled=visible;skin.forceRenderingOff=!visible;skin.shadowCastingMode=UnityEngine.Rendering.ShadowCastingMode.On;}
     }
+    public bool OpticalADSActive { get { var sight=MountedVehicle?MountedVehicle.GetComponent<VehicleAttackSight>():null; return IsMounted && IsLocal && sight && sight.useOpticalADS && sight.IsDocumentedTankSight && sight.DisplaysForSeat(SeatIndex) && Input.GetMouseButton(1) && !Freelook; } }
     void LateUpdate()
     {
         if(IsMounted) UpdateSeatedVisibility();
@@ -546,6 +547,7 @@ public class VehicleOccupant : MonoBehaviour
             rotation = CockpitView ? v.Body.rotation : Quaternion.LookRotation(v.transform.forward,
                 !v.FlightAssistEnabled || Mathf.Abs(Vector3.Dot(v.transform.forward,Vector3.up))>.98f ? v.transform.up : Vector3.up);
         Vector3 desired = CameraPosition(v,rotation,gunner,aircraft,pilot);
+        if(OpticalADSActive){var sight=v.GetComponent<VehicleAttackSight>();desired=sight.OpticalPosition;rotation=Quaternion.LookRotation(sight.WeaponRay.direction,v.transform.up);}
         var shake=vehicleCameraShake.transform;
         vehicleCamera.transform.SetPositionAndRotation(desired+rotation*shake.localPosition,rotation*shake.localRotation);
     }
@@ -614,4 +616,3 @@ public class VehicleOccupant : MonoBehaviour
             Destroy(vehicleCamera.gameObject);
     }
 }
-
