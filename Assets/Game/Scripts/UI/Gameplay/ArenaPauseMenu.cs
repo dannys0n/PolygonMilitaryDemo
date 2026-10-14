@@ -11,6 +11,7 @@ public class ArenaPauseMenu : MonoBehaviour
     ArenaAISpectator spectator;
     TMPro.TMP_Text spectateLabel;
     bool previousSpectatorBlocked;
+    ConquestDeploymentMenu deployment;
     SoldierLocalInput localInput;
     bool inputEnabled;
     CursorLockMode previousCursor;
@@ -20,6 +21,7 @@ public class ArenaPauseMenu : MonoBehaviour
     void Awake()
     {
         localInput = FindAnyObjectByType<SoldierLocalInput>();
+        deployment = FindAnyObjectByType<ConquestDeploymentMenu>();
         spectator = FindAnyObjectByType<ArenaAISpectator>();
         if (spectateButton)
         {
@@ -37,6 +39,7 @@ public class ArenaPauseMenu : MonoBehaviour
     void Update()
     {
         if (transition.IsLoading) return;
+        if(Input.GetKeyDown(KeyCode.Escape) && deployment && deployment.CloseTacticalMap())return;
         var editor=FindAnyObjectByType<ArenaClassEditor>(FindObjectsInactive.Include);
         if(Input.GetKeyDown(KeyCode.Escape) && editor && editor.IsVisible){editor.Close();return;}
         if (Input.GetKeyDown(KeyCode.Escape)) { if (classMenu && classMenu.IsVisible) classMenu.Back(); else if (IsPaused) Resume(); else Pause(); }
