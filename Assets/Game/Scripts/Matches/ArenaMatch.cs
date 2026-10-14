@@ -99,11 +99,6 @@ public class ArenaMatch : MonoBehaviour
             participant.CancelRespawn();
             if (participant.player) participant.player.SetGameplayAllowed(false);
         }
-        if(rules&&rules.HandlesOpening)
-        {
-            RedOpeningPoint=redOpeningSpawn;BlueOpeningPoint=blueOpeningSpawn;
-            IsRunning=true;rules.SpawnOpening();MatchStarted?.Invoke();return;
-        }
         // Plan both complete formations before teleporting anyone. Old positions on a
         // restart must not influence the opening, and partial team starts are rejected.
         if (!ArenaSpawnSelection.TryPlanOpening(this, out var placements, out var red, out var blue))
@@ -172,7 +167,6 @@ public class ArenaMatch : MonoBehaviour
     public bool Spawn(ArenaParticipant participant)
     {
         if (!IsRunning || participant.IsSpectator) return false;
-        if(rules&&rules.TrySpawnDirect(participant,out bool deployed))return deployed;
         Transform spawn;
         bool found = rules ? rules.TryChooseSpawn(participant, spawnHistory, out spawn)
             : ArenaSpawnSelection.TryChoose(this, participant, spawnHistory, out spawn);

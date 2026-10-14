@@ -18,9 +18,6 @@ public class ArenaVehicleAI : MonoBehaviour
     public TravelState State { get; private set; }
     public Vector3 Goal { get; private set; }
     ArenaVehicleScenario scenario;
-    HecticCompanySupervisor company;
-    HecticPhysicalBoarding physicalRider;
-    HecticAirDeploymentInput airDeployment;
     Vehicle reserved;
     Transform reservedEntry;
     int reservedSeat, corner, recoveries;
@@ -35,7 +32,6 @@ public class ArenaVehicleAI : MonoBehaviour
     {
         get
         {
-            if(company)return true;
             var actor=infantry.participant;
             if(actor.match.rules is ConquestRules conquest && conquest.squads)
                 return conquest.squads.IsVehicleSquad(actor);
@@ -54,8 +50,6 @@ public class ArenaVehicleAI : MonoBehaviour
     }
     void Start()
     {
-        company=infantry.participant.match.GetComponent<HecticCompanySupervisor>();
-        if(company){physicalRider=GetComponent<HecticPhysicalBoarding>();if(!physicalRider)physicalRider=gameObject.AddComponent<HecticPhysicalBoarding>();physicalRider.infantry=infantry;physicalRider.supervisor=company;physicalRider.transport=this;}
         occupant.faction = (int)infantry.participant.team;
         nextDecision = Time.time + Random.Range(0f, 2f);
     }
@@ -74,18 +68,8 @@ public class ArenaVehicleAI : MonoBehaviour
                 occupant.Leave(true);
             return;
         }
-        if(!airDeployment)airDeployment=GetComponent<HecticAirDeploymentInput>();
-        if(airDeployment&&airDeployment.IsActive)
-        {
-            // Aircraft deployment owns movement until landing; no competing seat,
-            // company boarding, or terrestrial transport reservation is allowed.
-            CancelBoarding();State=TravelState.Passenger;return;
-        }
-        if(company&&company.TryGoal(this,out var companyGoal))Goal=companyGoal;
-        if(physicalRider&&physicalRider.Carrier){State=TravelState.Passenger;return;}
         if (occupant.IsMounted)
         {
-            if(company&&company.ShouldUnload(this)){occupant.Leave(false);retryAt=Time.time+reuseDelay;return;}
             DriveOrRide();
             return;
         }
@@ -93,12 +77,6 @@ public class ArenaVehicleAI : MonoBehaviour
         {
             State = TravelState.OnFoot;
             retryAt = Time.time + reuseDelay;
-        }
-        if(company&&reserved&&!company.TryBoard(this,out _)){CancelBoarding();return;}
-        if(company&&company.TryBoard(this,out var directive))
-        {
-            if(directive.physical){physicalRider.Begin(directive);return;}
-            if(!reserved){reserved=directive.vehicle;reservedSeat=directive.seat;reservedEntry=directive.entry;reservedForCombat=true;progressAt=Time.time;State=TravelState.Boarding;}
         }
         if (reserved)
         {
@@ -111,7 +89,6 @@ public class ArenaVehicleAI : MonoBehaviour
             if (Vector3.Distance(transform.position, infantry.BoardingTarget.position) < 2.8f && reserved.Board(occupant, reservedSeat))
             {
                 infantry.BoardingTarget = null;
-                if(company)company.FinishBoarding(this);
                 reserved = null;
                 State = TravelState.Driving;
                 boardedAt = progressAt = Time.time;
@@ -272,7 +249,7 @@ public class ArenaVehicleAI : MonoBehaviour
                 occupant.Leave(false);
             return;
         }
-        if (company&&company.HoldDeparture(this) || Time.time - boardedAt < 2f)
+        if (Time.time - boardedAt < 2f)
         {
             v.DriverInput = new VehicleInput { brake = true, lift = -.3f };
             return;

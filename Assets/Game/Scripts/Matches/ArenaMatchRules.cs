@@ -12,10 +12,6 @@ public abstract class ArenaMatchRules : MonoBehaviour
     public abstract void Tick(float deltaTime);
     public abstract bool TryChooseSpawn(ArenaParticipant actor, Dictionary<Transform,float> history, out Transform spawn);
     public abstract void OnSpawned(ArenaParticipant actor, bool wasDead);
-    // Modes with vehicle/airborne deployment bypass the infantry NavMesh placement path.
-    public virtual bool HandlesOpening => false;
-    public virtual void SpawnOpening() { }
-    public virtual bool TrySpawnDirect(ArenaParticipant actor,out bool spawned){spawned=false;return false;}
     public virtual bool NeedsDeployment(ArenaParticipant actor) => false;
     // Null keeps the HUD's nearby-team display for modes without squads.
     public virtual IEnumerable<ArenaParticipant> SquadMembers(ArenaParticipant actor) => null;

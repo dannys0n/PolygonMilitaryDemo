@@ -76,10 +76,6 @@ public class ArenaAIInput : SoldierInputSource
     int lastPatrolIndex = -1;
     bool hasPatrolDestination, targetVisible;
     float aimHoldUntil;
-    HecticPhysicalBoarding physicalBoarding;
-    HecticAirDeploymentInput airDeployment;
-    HecticAIOrchestrator squadCommand;
-    bool checkedCommand;
     int sidearmKillsAtDraw;
     bool sidearmEngagementUsed;
     int burstShots, burstShotLimit;
@@ -208,10 +204,6 @@ public class ArenaAIInput : SoldierInputSource
 
     public override SoldierInputFrame ReadInput()
     {
-        if(!physicalBoarding)physicalBoarding=GetComponent<HecticPhysicalBoarding>();
-        if(!airDeployment)airDeployment=GetComponent<HecticAirDeploymentInput>();
-        if(soldier.actions.enabled&&airDeployment&&airDeployment.TryRead(out var airInput))return airInput;
-        if(soldier.actions.enabled&&physicalBoarding&&physicalBoarding.TryRead(out var physicalInput))return physicalInput;
         RestoreNavigation();
         if (!soldier.actions.enabled || participant.IsAwaitingSpawn || !participant.match.IsRunning || !agent.isOnNavMesh)
         { State = Behavior.Inactive; WantsToSprint = false; return default; }
@@ -246,7 +238,10 @@ public class ArenaAIInput : SoldierInputSource
             direction = GetOpenLook(direction);
             yaw = Mathf.Atan2(direction.x, direction.z) * Mathf.Rad2Deg;
         }
-        float yawError = Mathf.DeltaAngle(life.look.Yaw, yaw), pitchError = up + life.look.Pitch;
+        // TPS cameras have an authored pitch offset; raw look pitch alone points shots below the target.
+        Vector3 aimForward=life.look.aimCamera.transform.forward;
+        float cameraUp=Mathf.Atan2(aimForward.y,new Vector2(aimForward.x,aimForward.z).magnitude)*Mathf.Rad2Deg;
+        float yawError = Mathf.DeltaAngle(life.look.Yaw, yaw), pitchError = up - cameraUp;
         float step = turnSpeed * Time.deltaTime;
         var look = new Vector2(Mathf.Clamp(yawError, -step, step), Mathf.Clamp(pitchError, -step, step));
         bool arrived = HorizontalDistance(transform.position, Destination) <= ArrivalDistance;
@@ -368,22 +363,6 @@ public class ArenaAIInput : SoldierInputSource
     }
     void ChooseMovement(bool visible, float distance, bool needsReload)
     {
-        if(!checkedCommand){squadCommand=participant.match.GetComponent<HecticAIOrchestrator>();checkedCommand=true;}
-        if(squadCommand&&visible&&target)
-        {
-            // The mode's tactical layer is deliberately small: fire, spread into lanes,
-            // and stay on the squad objective. Strategic/company planning is elsewhere.
-            HasCover=false;State=distance>attackRange?Behavior.Approach:Behavior.Strafe;
-            if(needsReload||soldier.actions.IsReloading){SetDestination(transform.position);return;}
-            if(Time.time>=nextReposition)
-            {
-                nextReposition=Time.time+2;
-                if(squadCommand.TryGetCombatDestination(this,lastSeen,out var combatPoint))SetDestination(combatPoint,true);
-                else SetDestination(transform.position,true);
-            }
-            return;
-        }
-
         if (!target)
         {
             HasCover = false;
