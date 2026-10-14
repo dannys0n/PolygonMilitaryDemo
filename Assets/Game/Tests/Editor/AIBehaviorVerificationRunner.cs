@@ -8,7 +8,7 @@ public static class AIBehaviorVerificationRunner
  static TestRunnerApi api;
  const string Progress="C:/Users/2002d/Documents/Codex/2026-09-29/how/work/behavior-tests.txt";
  static AIBehaviorVerificationRunner(){api=ScriptableObject.CreateInstance<TestRunnerApi>();api.RegisterCallbacks(new Results());}
- public static string Run(){if(EditorApplication.isPlaying)return "Leave Play Mode first";SessionState.SetBool("AIBehaviorVerification",true);System.IO.File.WriteAllText(Progress,"START\n");api.Execute(new ExecutionSettings(new Filter{testMode=TestMode.PlayMode,groupNames=new[]{"^(AIBehaviorScenarioTests|VehicleCoreRegressionTests|CombatResourceTests)"}}));return "Running saved-scene behavior and core regression tests";}
+ public static string Run(string groupPattern=null){if(EditorApplication.isPlaying)return "Leave Play Mode first";SessionState.SetBool("AIBehaviorVerification",true);System.IO.File.WriteAllText(Progress,"START\n");api.Execute(new ExecutionSettings(new Filter{testMode=TestMode.PlayMode,groupNames=new[]{groupPattern??"^(AIBehaviorScenarioTests|VehicleCoreRegressionTests|CombatResourceTests)"}}));return "Running saved-scene behavior and core regression tests";}
  sealed class Results:ICallbacks
  {
   public void RunStarted(ITestAdaptor t){}public void TestStarted(ITestAdaptor t){}

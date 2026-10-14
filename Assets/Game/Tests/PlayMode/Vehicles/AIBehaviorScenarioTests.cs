@@ -99,6 +99,32 @@ public class AIBehaviorScenarioTests
   Assert.Greater(Vector3.Distance(initial,vehicle.transform.position),5,"Production driver must move toward the trip destination");
   Assert.AreEqual(0,Get(scenario,"ErrorCount"));
  }
+ [UnityTest] public IEnumerator DynamicGroupBoardsWaitsForFreedSeatAndExits()
+ {
+  yield return Load("AI_Transport_Overflow");var options=(Array)Get(scenario,"VehicleOptions");
+  int index=Array.FindIndex(options.Cast<Component>().ToArray(),v=>v.name=="PickupTechnical");Assert.GreaterOrEqual(index,0);
+  scenario.GetType().GetMethod("SelectVehicle").Invoke(scenario,new object[]{index});yield return new WaitForSeconds(1.5f);
+  var vehicle=(Component)Get(scenario,"Vehicle");int seats=((Array)Get(vehicle,"seats")).Length;
+  for(int i=0;i<seats+1;i++){Command(scenario,"AddPlayer");yield return new WaitForSeconds(.15f);}
+  Command(scenario,"ToggleAllEnterExit");float until=Time.time+25;
+  while(Time.time<until&&MountedActors()<seats)yield return null;
+  Assert.AreEqual(seats,MountedActors(),"Production approach and reservations must fill every seat");
+  Command(scenario,"AddPlayer");yield return new WaitForSeconds(.3f);
+  Assert.AreEqual(seats+2,((IList)Get(scenario,"Actors")).Count,"Adding during an active enter order joins the same request");
+  scenario.GetType().GetMethod("RemovePlayerAt").Invoke(scenario,new object[]{seats+1});yield return null;
+  var actors=(IList)Get(scenario,"Actors");int seatedIndex=Enumerable.Range(0,actors.Count).First(i=>IsMounted(actors[i]));
+  scenario.GetType().GetMethod("RemovePlayerAt").Invoke(scenario,new object[]{seatedIndex});yield return null;
+  until=Time.time+15;while(Time.time<until&&MountedActors()<seats)yield return null;
+  Assert.AreEqual(seats,MountedActors(),"The waiting actor must claim the newly freed seat");
+  Command(scenario,"ToggleAllEnterExit");until=Time.time+20;while(Time.time<until&&MountedActors()>0)yield return null;
+  Assert.AreEqual(0,MountedActors(),"Exit must include driver and gunner");
+  Command(scenario,"ToggleAllEnterExit");yield return new WaitForSeconds(.1f);Command(scenario,"ToggleAllEnterExit");yield return new WaitForSeconds(2);
+  Assert.AreEqual(0,MountedActors(),"Reversing an approach cancels entry");
+  foreach(var seat in (Array)Get(vehicle,"seats"))Assert.IsFalse((bool)(UnityEngine.Object)Get(seat,"reservation"),"Exit must release all pending reservations");
+  Assert.AreEqual(0,Get(scenario,"ErrorCount"));
+ }
+ bool IsMounted(object actor)=>(bool)Get(((Component)actor).GetComponent(T("VehicleOccupant")),"IsMounted");
+ int MountedActors()=>((IList)Get(scenario,"Actors")).Cast<object>().Count(IsMounted);
  void AssertFullCrew()
  {
   int total=0;

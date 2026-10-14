@@ -18,6 +18,34 @@ public class ArenaVehicleAI : MonoBehaviour
     public TravelState State { get; private set; }
     public Vector3 Goal { get; private set; }
     ArenaVehicleScenario scenario;
+    Vehicle orderedVehicle;
+    bool hasTransportOrder, enterOrderedVehicle;
+    public void SetTransportOrder(Vehicle vehicle,bool enter)
+    {
+        CancelBoarding();orderedVehicle=vehicle;hasTransportOrder=vehicle;enterOrderedVehicle=enter;
+        infantry.HoldMovement=hasTransportOrder;nextDecision=0;
+    }
+    bool HandleTransportOrder()
+    {
+        if(!hasTransportOrder)return false;
+        if(!orderedVehicle||orderedVehicle.IsDestroyed){CancelBoarding();return true;}
+        if(occupant.IsMounted)
+        {
+            if(occupant.SeatIndex==0)occupant.MountedVehicle.DriverInput=new VehicleInput{brake=true};
+            if(!enterOrderedVehicle)occupant.Leave(false);
+            return true;
+        }
+        if(!enterOrderedVehicle)return true;
+        if(reserved)return false; // Use the same approach, reservation renewal and Board path as autonomous AI.
+        if(Time.time<nextDecision)return true;nextDecision=Time.time+.25f;
+        int seat=orderedVehicle.FirstAvailableSeat(occupant);
+        if(seat<0||!orderedVehicle.CanExit)return true;
+        var entry=orderedVehicle.NearestEntryPoint(transform.position);
+        if(!ArenaAITactics.Reachable(infantry,entry.position,path,out _,out _)||!orderedVehicle.Reserve(occupant,seat))return true;
+        reserved=orderedVehicle;reservedSeat=seat;reservedEntry=entry;reservedForCombat=true;
+        State=TravelState.Boarding;infantry.BoardingTarget=entry;progressAt=Time.time;
+        return false;
+    }
     Vehicle reserved;
     Transform reservedEntry;
     int reservedSeat, corner, recoveries;
@@ -45,6 +73,7 @@ public class ArenaVehicleAI : MonoBehaviour
 
     public void SetTravelGoal(Vector3 destination)
     {
+        SetTransportOrder(null,false);
         Goal=destination;nextPath=0;corner=0;recoveries=0;landing=false;
         boardedAt=progressAt=Time.time;progressPosition=transform.position;
     }
@@ -73,6 +102,7 @@ public class ArenaVehicleAI : MonoBehaviour
                 occupant.Leave(true);
             return;
         }
+        if(HandleTransportOrder())return;
         if (occupant.IsMounted)
         {
             DriveOrRide();

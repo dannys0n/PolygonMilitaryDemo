@@ -202,6 +202,7 @@ public class ArenaAIInput : SoldierInputSource
             agent.enabled=true;
     }
 
+    public bool HoldMovement { get; set; }
     public override SoldierInputFrame ReadInput()
     {
         RestoreNavigation();
@@ -209,6 +210,7 @@ public class ArenaAIInput : SoldierInputSource
         { State = Behavior.Inactive; WantsToSprint = false; return default; }
         if(soldier.grenades.FlashAlpha>.1f){WantsToSprint=false;return default;}
         agent.nextPosition = transform.position;
+        if(HoldMovement&&!BoardingTarget){agent.ResetPath();WantsToSprint=false;return default;}
         bool visible = UpdatePerception();
         // A visible infantry threat takes priority over scanning for launcher targets.
         if(!BoardingTarget && !visible && Time.time >= aimHoldUntil && TryVehicleAttack(out var vehicleInput))return vehicleInput;
