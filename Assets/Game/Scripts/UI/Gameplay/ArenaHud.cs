@@ -51,9 +51,11 @@ public class ArenaHud : MonoBehaviour
     Vector2[] crosshairRestPositions, spreadRestPositions;
     int streak, multiKill;
     string accentHex;
+    ArenaAISpectator localSpectator;
 
     void Awake()
     {
+        localSpectator=FindAnyObjectByType<ArenaAISpectator>();
         accent = new Color(1f, .55f, .12f);
         accentHex = ColorUtility.ToHtmlStringRGB(accent);
         ArenaHudTheme.StyleLines(transform, filamentLine, accentLineGlow);
@@ -263,8 +265,10 @@ public class ArenaHud : MonoBehaviour
             killerNames[i].text = kills[i].attacker; victimNames[i].text = kills[i].victim;
             killWeapons[i].sprite = kills[i].weapon;
         }
+        var respawningPlayer=localSpectator&&localSpectator.localPlayer&&!localSpectator.ManualSpectating
+            && localSpectator.localPlayer.IsRespawning?localSpectator.localPlayer:player;
         deathStatus.text = !match.IsRunning ? $"{match.Result.ToUpperInvariant()}\nBACKSPACE TO RESTART"
-            : player.IsRespawning ? $"RESPAWN IN {player.RespawnRemaining:F1}s" : "";
+            : respawningPlayer.IsRespawning ? $"RESPAWN IN {respawningPlayer.RespawnRemaining:F1}s" : "";
     }
     void StyleEquipmentIcon(UnityEngine.UI.Image icon, bool selected, float availability = 1f)
     {

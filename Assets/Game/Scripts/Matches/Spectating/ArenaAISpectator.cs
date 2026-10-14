@@ -37,6 +37,7 @@ public class ArenaAISpectator : MonoBehaviour
     UnityEngine.Rendering.ShadowCastingMode[] previousShadows;
     float yaw, pitch;
     public bool ShowControls { get; private set; } = true;
+    public bool IsWatchingDeath => deathWatch;
     public bool IsSpectating => !localPlayer || localDeathView || ManualSpectating;
     public bool ManualSpectating { get; private set; }
     readonly System.Collections.Generic.List<(Renderer mesh, bool enabled)> suspendedMeshes = new();

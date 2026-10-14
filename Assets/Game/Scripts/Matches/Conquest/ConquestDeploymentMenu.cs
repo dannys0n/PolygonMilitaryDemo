@@ -91,7 +91,8 @@ public class ConquestDeploymentMenu : MonoBehaviour
             if(tacticalMap){selected=null;selectedMember=null;}
         }
         if(waiting || !unobstructed)tacticalMap=false;
-        bool show=!participant.IsSpectator && participant.match.IsRunning && waiting && !participant.NeedsClassSelection && !pause.IsPaused && !classMenu.IsVisible;
+        bool show=rules.NeedsDeployment(participant) && (!spectator || !spectator.IsWatchingDeath)
+            && !participant.IsSpectator && participant.match.IsRunning && waiting && !participant.NeedsClassSelection && !pause.IsPaused && !classMenu.IsVisible;
         show|=tacticalMap;
         SetVisible(show);
         if(!show)return;
