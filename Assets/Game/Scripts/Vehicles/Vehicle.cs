@@ -4,6 +4,7 @@ using UnityEngine;
 using UnityEngine.AI;
 
 // Shared seat ownership and lifecycle; motors accept the same commands from humans and AI.
+[DefaultExecutionOrder(-100)]
 [RequireComponent(typeof(Rigidbody))]
 public class Vehicle : MonoBehaviour
 {
@@ -93,7 +94,7 @@ public class Vehicle : MonoBehaviour
     }
     public bool CanExit => !IsDestroyed && Body.linearVelocity.magnitude < 3f && motor.CanDisembark;
     NavMeshObstacle obstacle;
-    VehicleCharacterClearance characterClearance;
+    VehicleCharacterCollision characterCollision;
     Bounds colliderBounds;
     bool colliderBoundsReady;
     // The authored carving box describes the chassis, in vehicle-local coordinates.
@@ -128,10 +129,12 @@ public class Vehicle : MonoBehaviour
     void Awake()
     {
         Body = GetComponent<Rigidbody>();
-        characterClearance=new VehicleCharacterClearance(this);
+        characterCollision = new VehicleCharacterCollision(this);
         obstacle = GetComponent<NavMeshObstacle>();
         Health = maxHealth;
     }
+    void Update() => characterCollision.Sync();
+    public void SyncCharacterCollision() => characterCollision?.Sync();
     void OnEnable()
     {
         Active.Add(this);
@@ -146,7 +149,7 @@ public class Vehicle : MonoBehaviour
     }
     void FixedUpdate()
     {
-        characterClearance.Resolve();
+        characterCollision.Sync();
         if (!IsDestroyed) motor.Simulate(PrepareDriverInput(DriverInput, Driver), Driver);
         // Carving is only useful while parked; a dynamic body never also owns a NavMeshAgent.
         if (obstacle)

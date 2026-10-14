@@ -80,6 +80,18 @@ public class SoldierVehiclePlatform : MonoBehaviour
         bool alreadyCrouched=controller.height<standingHeight-.01f;
         for(int i=0;alreadyCrouched && i<count;i++)
             if(!hits[i].collider.transform.IsChildOf(transform) && hits[i].distance+.35f<standingHeight+.05f)low=true;
+        // A single overhead ray misses roof edges beside the head. Test the whole
+        // proposed standing capsule before growing it into any solid geometry.
+        if (alreadyCrouched && !low)
+        {
+            float margin = controller.skinWidth + .01f;
+            float radius = Mathf.Max(.01f, controller.radius - margin);
+            int characterLayer = LayerMask.NameToLayer("Characters");
+            int mask = characterLayer >= 0 ? ~(1 << characterLayer) : Physics.DefaultRaycastLayers;
+            low = Physics.CheckCapsule(feet + Vector3.up * (controller.radius + margin),
+                feet + Vector3.up * (standingHeight - controller.radius - margin), radius,
+                mask, QueryTriggerInteraction.Ignore);
+        }
         float height=low?Mathf.Max(controller.radius*2,crouchedHeight):standingHeight;
         controller.height=height;
         controller.center=new Vector3(standingCenter.x,bottom+height*.5f,standingCenter.z);
@@ -132,12 +144,6 @@ public class SoldierVehiclePlatform : MonoBehaviour
             previousPoint=transform.position;
             momentum=Vector3.zero;
         }
-    }
-
-    public void DetachFromSupport()
-    {
-        Support=null;
-        momentum=Vector3.zero;
     }
 
     public void ResetSupport()
