@@ -8,7 +8,7 @@ public sealed class VehicleCountermeasures : MonoBehaviour
     public VehicleDecoy flarePrefab, chaffPrefab;
     public GameObject smokePrefab;
     [Min(1)] public int capacity=2;
-    public float cooldown=10, rechargeSeconds=25, smokeDuration=10;
+    public float cooldown=20f/3f, rechargeSeconds=50f/3f, smokeDuration=10;
     public bool automaticForAI=true;
     [Header("Flare release program")]
     [Min(1)] public int flareSalvos=5;
