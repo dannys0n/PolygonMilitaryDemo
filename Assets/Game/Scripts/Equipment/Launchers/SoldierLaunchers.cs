@@ -46,6 +46,12 @@ public class SoldierLaunchers : MonoBehaviour
     InfantryLauncherVisual Held(Transform parent,int layer)
     {
         var model=Instantiate(Equipped.model,parent,false);
+        // Held equipment is presentation, not world collision geometry. Rockets retain their own colliders.
+        foreach(var collider in model.GetComponentsInChildren<Collider>(true))collider.enabled=false;
+        foreach(var body in model.GetComponentsInChildren<Rigidbody>(true))
+        {
+            body.isKinematic=true;body.useGravity=false;body.detectCollisions=false;
+        }
         model.transform.localScale=Vector3.one;
         // Imported rig bones may be scaled; preserve the launcher's world dimensions.
         var scale=parent.lossyScale;model.transform.localScale=new Vector3(1/scale.x,1/scale.y,1/scale.z);
