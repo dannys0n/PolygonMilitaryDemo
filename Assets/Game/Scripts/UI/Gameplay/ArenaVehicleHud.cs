@@ -113,7 +113,8 @@ public class ArenaVehicleHud : MonoBehaviour
             ammunition.text=selectedWeapon.system==VehicleWeaponSystems.FireSystem.Launcher?rack.Missiles+" / "+rack.capacity
                 :selectedWeapon.IsSingleShot?(delay>0?"0 / 1":"1 / 1"):"INF";
             fireMode.text=delay>0?(selectedWeapon.IsSingleShot?"RELOAD ":"")+delay.ToString("F1")+" S":"READY";
-            slotKey.text="LMB";equipmentLabel.text="VEHICLE WEAPON";
+            if(selectedWeapon.requiresRadarSupport)fireMode.text=weaponSystems.SupportStatus(selectedWeapon);
+            slotKey.text=weaponSystems.IsAvailable(selectedWeapon)?"LMB":"";equipmentLabel.text="VEHICLE WEAPON";
         }
         else if(showAttack)
         {
@@ -318,7 +319,8 @@ public class ArenaVehicleHud : MonoBehaviour
             {
                 icon.sprite=equippedIcon.sprite;key.text="LMB";caption.text=equippedName.text;chosen=true;
             }
-            icon.color=new Color(1,1,1,chosen?1:.6f);icon.material=chosen?selectedIconGlow:null;
+            bool available=entry==null || !systems || systems.IsAvailable(entry);
+            icon.color=new Color(1,1,1,!available ? .25f : chosen ? 1 : .6f);icon.material=chosen&&available?selectedIconGlow:null;
             key.color=chosen?accent:Color.white;caption.color=Color.white;
             var background=systemTiles[i].GetComponent<Image>();
             if(background)background.color=chosen?new Color(accent.r,accent.g,accent.b,.12f):new Color(1,1,1,.035f);

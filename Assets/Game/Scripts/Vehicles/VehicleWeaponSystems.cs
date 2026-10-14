@@ -15,6 +15,7 @@ public sealed class VehicleWeaponSystems : MonoBehaviour
         public VehicleRocket projectile;
         public Transform muzzle;
         public float damage = 35, range = 300, roundsPerMinute = 600;
+        public bool requiresRadarSupport;
         public bool explosive;
         public bool ejectCasings;
         public Sprite icon;
@@ -26,6 +27,13 @@ public sealed class VehicleWeaponSystems : MonoBehaviour
     public Weapon[] weapons = Array.Empty<Weapon>();
     int driverSelection, gunnerSelection;
     public event Action Changed;
+    public bool IsAvailable(Weapon weapon) => weapon != null && (!weapon.requiresRadarSupport || VehicleRadarSupport.HasFriendlyRadar(vehicle));
+    public string SupportStatus(Weapon weapon) => weapon != null && weapon.requiresRadarSupport ? (IsAvailable(weapon) ? "RADAR LINKED" : "RADAR REQUIRED") : "";
+    void Update()
+    {
+        foreach (var weapon in weapons)
+            if (weapon.requiresRadarSupport && weapon.launcher) weapon.launcher.enabled = IsAvailable(weapon);
+    }
     void Awake()
     {
         ApplyFirst(Vehicle.SeatRole.Driver);
@@ -90,7 +98,7 @@ public sealed class VehicleWeaponSystems : MonoBehaviour
     public bool TryFire(VehicleOccupant actor)
     {
         var weapon = Current(actor);
-        if (weapon == null) return false;
+        if (!IsAvailable(weapon)) return false;
         if (weapon.system == FireSystem.Launcher) return weapon.launcher.TryFire(actor);
         if (Time.time < weapon.nextShot) return false;
         // Restore this weapon's absolute deadline; other systems reload independently while deselected.

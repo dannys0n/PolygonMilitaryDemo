@@ -1096,6 +1096,7 @@ GameObject:
   - component: {fileID: 3380204320956974524}
   - component: {fileID: 6126971579285819594}
   - component: {fileID: 2751747585279897845}
+  - component: {fileID: 522917199712365443}
   m_Layer: 0
   m_Name: RadarTank
   m_TagString: Untagged
@@ -1465,20 +1466,21 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::VehicleWeaponSystems
   vehicle: {fileID: 2245875611223860633}
-  weapons:
-  - name: VERTICAL SAM
-    system: 1
-    role: 0
-    gun: {fileID: 0}
-    launcher: {fileID: 3308798721033768198}
-    projectile: {fileID: 1153709252507629842, guid: 32355a693e53b4b4ab34387f878194cc, type: 3}
-    muzzle: {fileID: 0}
-    damage: 35
-    range: 300
-    roundsPerMinute: 600
-    explosive: 0
-    ejectCasings: 0
-    icon: {fileID: 21300000, guid: bc998521b992689479af4ee353227a5b, type: 3}
+  weapons: []
+--- !u!114 &522917199712365443
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1954906999793349080}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c98334a361da5bd4eb9646c15485541b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::VehicleRadarSupport
+  vehicle: {fileID: 2245875611223860633}
+  linkRange: 1500
 --- !u!1 &1964736454873171865
 GameObject:
   m_ObjectHideFlags: 0
@@ -3348,7 +3350,6 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 7830125506460918936}
-  - component: {fileID: 3308798721033768198}
   m_Layer: 0
   m_Name: SAM station
   m_TagString: Untagged
@@ -4593,31 +4594,3 @@ MeshRenderer:
   m_SortingOrder: 0
   m_MaskInteraction: 0
   m_AdditionalVertexStreams: {fileID: 0}
---- !u!114 &3308798721033768198
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 5525290069020058808}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 15758ee054fe4464a80e41fe97e37f97, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::VehicleLauncher
-  vehicle: {fileID: 2245875611223860633}
-  controlRole: 0
-  projectile: {fileID: 1153709252507629842, guid: 32355a693e53b4b4ab34387f878194cc, type: 3}
-  weaponIcon: {fileID: 21300000, guid: bc998521b992689479af4ee353227a5b, type: 3}
-  launchFlash: {fileID: 2373264575078345310, guid: c4cd12631f3fa8443b953b4dd62becc4, type: 3}
-  cameraShake: {fileID: 7400000, guid: b06213c2ef802284f97df928d44be0c6, type: 2}
-  muzzles:
-  - {fileID: 4124112575170377539}
-  - {fileID: 2336554639999376689}
-  tubeRounds: []
-  interval: 1
-  capacity: 8
-  rechargeInterval: 5
-  rechargeFullMagazine: 0
-  requiresLock: 0
-  lockDuration: 1.25

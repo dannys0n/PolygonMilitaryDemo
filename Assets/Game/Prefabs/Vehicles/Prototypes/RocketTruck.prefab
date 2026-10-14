@@ -3848,6 +3848,7 @@ GameObject:
   - component: {fileID: 3614045128566516555}
   - component: {fileID: 1682357728537750647}
   - component: {fileID: 6808492820674304344}
+  - component: {fileID: 8764604193484830603}
   m_Layer: 0
   m_Name: RocketTruck
   m_TagString: Untagged
@@ -3958,6 +3959,7 @@ MonoBehaviour:
   turret: {fileID: 0}
   destructionEffect: {fileID: 695410771644243590, guid: c07b2e8d0c65dad44bf5eaca660002fc, type: 3}
   cameraTarget: {fileID: 1714358296928943642}
+  targetPoint: {fileID: 0}
   hasRenderedInterior: 1
   cockpitExternalMonitor: 0
   entryPadding: {x: 1.5, y: 1, z: 1.5}
@@ -4220,9 +4222,62 @@ MonoBehaviour:
     damage: 35
     range: 300
     roundsPerMinute: 600
+    requiresRadarSupport: 0
     explosive: 0
     ejectCasings: 0
     icon: {fileID: 21300000, guid: bc998521b992689479af4ee353227a5b, type: 3}
+  - name: RADAR AA MISSILES
+    system: 1
+    role: 1
+    gun: {fileID: 0}
+    launcher: {fileID: 8764604193484830603}
+    projectile: {fileID: 0}
+    muzzle: {fileID: 0}
+    damage: 35
+    range: 300
+    roundsPerMinute: 600
+    requiresRadarSupport: 1
+    explosive: 0
+    ejectCasings: 0
+    icon: {fileID: 21300000, guid: bc998521b992689479af4ee353227a5b, type: 3}
+--- !u!114 &8764604193484830603
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8493804981205940231}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 15758ee054fe4464a80e41fe97e37f97, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::VehicleLauncher
+  vehicle: {fileID: 8152297768278252287}
+  controlRole: 1
+  projectile: {fileID: 1153709252507629842, guid: 32355a693e53b4b4ab34387f878194cc, type: 3}
+  weaponIcon: {fileID: 21300000, guid: bc998521b992689479af4ee353227a5b, type: 3}
+  launchFlash: {fileID: 2373264575078345310, guid: c4cd12631f3fa8443b953b4dd62becc4, type: 3}
+  cameraShake: {fileID: 7400000, guid: b06213c2ef802284f97df928d44be0c6, type: 2}
+  muzzles:
+  - {fileID: 7997774021174593317}
+  - {fileID: 127321860429061512}
+  - {fileID: 7660571991290706239}
+  - {fileID: 3112493200895812043}
+  - {fileID: 6110432602593294080}
+  - {fileID: 3676344540385984374}
+  - {fileID: 2552764766723107219}
+  - {fileID: 4498351539361733067}
+  - {fileID: 2320295604433813443}
+  - {fileID: 909211219350167550}
+  - {fileID: 264575992956279954}
+  - {fileID: 8164272358859613443}
+  tubeRounds: []
+  interval: 1
+  capacity: 6
+  rechargeInterval: 5
+  rechargeFullMagazine: 0
+  requiresLock: 1
+  lockDuration: 1.25
 --- !u!1 &8580474725640699170
 GameObject:
   m_ObjectHideFlags: 0
