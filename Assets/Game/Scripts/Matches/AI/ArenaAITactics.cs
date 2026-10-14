@@ -71,7 +71,7 @@ public static class ArenaAITactics
         float halfSegment = Mathf.Max(0f, controller.height * .5f - radius);
         foreach (var collider in Physics.OverlapCapsule(center - Vector3.up * halfSegment, center + Vector3.up * halfSegment,
                      radius, Physics.DefaultRaycastLayers, QueryTriggerInteraction.Ignore))
-            if (!collider.transform.IsChildOf(bot.transform) && !(collider is CharacterController)) return false;
+            if (!collider.transform.IsChildOf(bot.transform) && !(SoldierPhysicsBody.IsMotorCollider(collider))) return false;
         if (!NavMesh.CalculatePath(bot.transform.position, point, new NavMeshQueryFilter { agentTypeID = bot.agent.agentTypeID, areaMask = bot.agent.areaMask }, path) || path.status != NavMeshPathStatus.PathComplete) return false;
         var corners = path.corners;
         for (int i = 1; i < corners.Length; i++) length += Vector3.Distance(corners[i - 1], corners[i]);
@@ -95,7 +95,7 @@ public static class ArenaAITactics
         if(GrenadeSmoke.BlocksLine(from,to))return true;
         Vector3 delta = to - from;
         foreach (var hit in Physics.RaycastAll(from, delta.normalized, delta.magnitude, Physics.DefaultRaycastLayers, QueryTriggerInteraction.Ignore))
-            if (!hit.collider.transform.IsChildOf(bot.transform) && !(hit.collider is CharacterController)
+            if (!hit.collider.transform.IsChildOf(bot.transform) && !(SoldierPhysicsBody.IsMotorCollider(hit.collider))
                 && !hit.collider.GetComponentInParent<SoldierHealth>()) return true;
         return false;
     }
@@ -106,7 +106,7 @@ public static class ArenaAITactics
         Vector3 delta = to - from; float closest = delta.magnitude; Collider blocker = null;
         foreach (var hit in Physics.RaycastAll(from, delta.normalized, closest, Physics.DefaultRaycastLayers, QueryTriggerInteraction.Collide))
         {
-            if (hit.collider.transform.IsChildOf(bot.transform) || hit.collider is CharacterController) continue;
+            if (hit.collider.transform.IsChildOf(bot.transform) || SoldierPhysicsBody.IsMotorCollider(hit.collider)) continue;
             if (hit.collider.isTrigger && !hit.collider.GetComponent<SoldierHitRegion>()) continue;
             if (hit.distance <= closest) { closest = hit.distance; blocker = hit.collider; }
         }

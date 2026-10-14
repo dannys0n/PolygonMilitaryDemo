@@ -35,7 +35,7 @@ public sealed class VehicleMissileGuidance : MonoBehaviour
         if (guidance == Guidance.LaserSpot || guidance == Guidance.CommandLineOfSight)
             foreach (var hit in Physics.RaycastAll(aim, acquisitionRange, Physics.DefaultRaycastLayers, QueryTriggerInteraction.Ignore))
                 if (!hit.transform.IsChildOf(source.transform) && !hit.transform.IsChildOf(transform)
-                    && !(hit.collider is CharacterController) && hit.distance < Vector3.Distance(aim.origin, aimPoint)) aimPoint = hit.point;
+                    && !(SoldierPhysicsBody.IsMotorCollider(hit.collider)) && hit.distance < Vector3.Distance(aim.origin, aimPoint)) aimPoint = hit.point;
     }
     // Acquisition and launch share these checks; the lock variant never chooses a new target on launch.
     public Vehicle FindTarget(Vehicle source, Ray aim, Ray? launchRay = null)
@@ -80,7 +80,7 @@ public sealed class VehicleMissileGuidance : MonoBehaviour
         Vector3 offset = point - origin;
         foreach (var hit in Physics.RaycastAll(origin, offset.normalized, offset.magnitude, Physics.DefaultRaycastLayers, QueryTriggerInteraction.Ignore))
             if (!hit.transform.IsChildOf(source.transform) && !hit.transform.IsChildOf(candidate.transform)
-                && !hit.collider.GetComponentInParent<VehicleRocket>() && !(hit.collider is CharacterController)) return false;
+                && !hit.collider.GetComponentInParent<VehicleRocket>() && !(SoldierPhysicsBody.IsMotorCollider(hit.collider))) return false;
         return true;
     }
     void FixedUpdate()
@@ -98,7 +98,7 @@ public sealed class VehicleMissileGuidance : MonoBehaviour
                 bool obscured=false;
                 foreach(var hit in Physics.RaycastAll(body.position,offset.normalized,offset.magnitude,Physics.DefaultRaycastLayers,QueryTriggerInteraction.Ignore))
                     if(!hit.transform.IsChildOf(transform) && !hit.transform.IsChildOf(candidate.transform)
-                        && !hit.transform.IsChildOf(target.transform) && !(hit.collider is CharacterController))
+                        && !hit.transform.IsChildOf(target.transform) && !(SoldierPhysicsBody.IsMotorCollider(hit.collider)))
                     {obscured=true;break;}
                 if(obscured)continue;
                 // Follow the false signature briefly; never reacquire the original aircraft.

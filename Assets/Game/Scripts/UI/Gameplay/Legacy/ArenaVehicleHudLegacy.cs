@@ -186,7 +186,7 @@ public class ArenaVehicleHudLegacy : MonoBehaviour
         float nearest=range;
         foreach(var hit in Physics.RaycastAll(ray,range,Physics.DefaultRaycastLayers,QueryTriggerInteraction.Collide))
         {
-            if(hit.transform.IsChildOf(owner.transform)||hit.collider is CharacterController||hit.collider.GetComponentInParent<VehicleRocket>())continue;
+            if(hit.transform.IsChildOf(owner.transform)||SoldierPhysicsBody.IsMotorCollider(hit.collider)||hit.collider.GetComponentInParent<VehicleRocket>())continue;
             if(hit.collider.isTrigger&&!hit.collider.GetComponent<SoldierHitRegion>())continue;
             nearest=Mathf.Min(nearest,hit.distance);
         }

@@ -35,7 +35,7 @@ public class SoldierHitscan : MonoBehaviour
         {
             Vector3 target=ClosestHit(aim,weapon.range,out var hit)?hit.point:aim.GetPoint(weapon.range);
             var rocket=Instantiate(weapon.rocketProjectile,muzzle.position,Quaternion.LookRotation((target-muzzle.position).normalized));
-            rocket.Launch(gameObject,transform,GetComponent<CharacterController>().velocity);
+            rocket.Launch(gameObject,transform,GetComponent<SoldierMovement>().Velocity);
             var shot=new ShotResult{origin=muzzle.position,point=target};ShotResolved?.Invoke(shot);return shot;
         }
         if(weapon.thrownExplosive)
@@ -161,7 +161,7 @@ public class SoldierHitscan : MonoBehaviour
                     ? origin : collider.ClosestPoint(origin);
                 return true;
             }
-        Vector3 firingOrigin = transform.position + Vector3.up * GetComponent<CharacterController>().height * .75f;
+        Vector3 firingOrigin = transform.position + Vector3.up * GetComponent<SoldierPhysicsBody>().height * .75f;
         Vector3 toMuzzle = origin - firingOrigin;
         if (ClosestHit(new Ray(firingOrigin, toMuzzle), toMuzzle.magnitude, out var hit))
         { cover = hit.collider; point = hit.point; return true; }
@@ -194,7 +194,7 @@ public class SoldierHitscan : MonoBehaviour
     bool IsOwnCollider(Collider collider) => collider.transform.IsChildOf(transform);
 
     bool IsShotCollider(Collider collider) => !IsOwnCollider(collider)
-        && !(collider is CharacterController)
+        && !(SoldierPhysicsBody.IsMotorCollider(collider))
         && (!collider.isTrigger || collider.TryGetComponent<SoldierHitRegion>(out _));
 
     bool ClosestHit(Ray ray, float distance, out RaycastHit closest)

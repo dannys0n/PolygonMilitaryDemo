@@ -396,7 +396,7 @@ public class ArenaVehicleHud : MonoBehaviour
             ? ResolvePoint(actual,Mathf.Min(range,Vector3.Distance(actual.origin,desiredPoint)),vehicle)
             : activeLauncher.PredictedImpactPoint;
         PlaceMarker(actualAim,camera,impact);
-        if(gunner){var direction=activeGun.muzzle.forward;float azimuth=Mathf.Repeat(Mathf.Atan2(direction.x,direction.z)*Mathf.Rad2Deg,360);float elevation=Mathf.Asin(Mathf.Clamp(direction.y,-1,1))*Mathf.Rad2Deg;float zoom=Mathf.Tan(35*Mathf.Deg2Rad)/Mathf.Tan(camera.fieldOfView*.5f*Mathf.Deg2Rad);float relativeYaw=Mathf.DeltaAngle(vehicle.transform.eulerAngles.y,azimuth);float distance=Vector3.Distance(actual.origin,ResolvePoint(actual,range,vehicle));string station=vehicle.instruments==Vehicle.InstrumentLayout.Armored?"WEAPON STATION":"GUN SIGHT";gunnerReadout.text=station+"   RNG "+(distance>=range-.1f?">":"")+Mathf.RoundToInt(distance).ToString("0000")+" M   AZ "+relativeYaw.ToString("+000;-000;000")+"Â°   EL "+elevation.ToString("+00;-00;00")+"Â°   "+zoom.ToString("F1")+"X";}
+        if(gunner){var direction=activeGun.muzzle.forward;float azimuth=Mathf.Repeat(Mathf.Atan2(direction.x,direction.z)*Mathf.Rad2Deg,360);float elevation=Mathf.Asin(Mathf.Clamp(direction.y,-1,1))*Mathf.Rad2Deg;float zoom=Mathf.Tan(35*Mathf.Deg2Rad)/Mathf.Tan(camera.fieldOfView*.5f*Mathf.Deg2Rad);float relativeYaw=Mathf.DeltaAngle(vehicle.transform.eulerAngles.y,azimuth);float distance=Vector3.Distance(actual.origin,ResolvePoint(actual,range,vehicle));string station=vehicle.instruments==Vehicle.InstrumentLayout.Armored?"WEAPON STATION":"GUN SIGHT";gunnerReadout.text=station+"   RNG "+(distance>=range-.1f?">":"")+Mathf.RoundToInt(distance).ToString("0000")+" M   AZ "+relativeYaw.ToString("+000;-000;000")+"°   EL "+elevation.ToString("+00;-00;00")+"°   "+zoom.ToString("F1")+"X";}
     }
     void BuildRoadDashboard()
     {
@@ -474,7 +474,7 @@ public class ArenaVehicleHud : MonoBehaviour
     void UpdateArmoredInstruments(Vehicle v)
     {
         float heading=Mathf.Repeat(v.transform.eulerAngles.y,360);
-        armoredHeading.text=VehicleGroundReadout.FamilyCaption(v)+" / HDG "+HeadingNumber(heading).ToString("000")+"Â°";
+        armoredHeading.text=VehicleGroundReadout.FamilyCaption(v)+" / HDG "+HeadingNumber(heading).ToString("000")+"°";
         bool imperial=ImperialGround(v);
         armoredSpeed.text=Mathf.RoundToInt(VehicleGroundReadout.SpeedKmh(v)*(imperial ? .621371f : 1f))+"<size=14> "+(imperial?"MPH":"KM/H")+"</size>";
         armoredState.text="<color=#FF9637>"+DriveState(v)+"</color>";
@@ -486,7 +486,7 @@ public class ArenaVehicleHud : MonoBehaviour
     void UpdateDroneInstruments(Vehicle v,float altitude)
     {
         float heading=Mathf.Repeat(v.transform.eulerAngles.y,360);
-        droneHeading.text="UAS  /  HDG "+HeadingNumber(heading).ToString("000")+"Â°";
+        droneHeading.text="UAS  /  HDG "+HeadingNumber(heading).ToString("000")+"°";
         droneTelemetry.text="AGL     "+altitude.ToString("0.0")+" M\nGS       "+Vector3.ProjectOnPlane(v.Body.linearVelocity,Vector3.up).magnitude.ToString("0.0")+" M/S\nV/S      "+v.Body.linearVelocity.y.ToString("+0.0;-0.0;0.0")+" M/S\n<color=#FF9637>"+(v.FlightAssistEnabled?"POSITION ASSIST":"MANUAL CONTROL")+"</color>";
     }
     void EnsureSeatMarkers(int count)
@@ -528,7 +528,7 @@ public class ArenaVehicleHud : MonoBehaviour
         float heading = Mathf.Repeat(view.eulerAngles.y,360);
         compass.text = "HDG " + HeadingNumber(heading).ToString("000") + "  " + Cardinal(heading);
         float elevation = Mathf.Asin(Mathf.Clamp(view.forward.y,-1,1)) * Mathf.Rad2Deg;
-        if(metric){metricPitchScale.SetReading(elevation);metricPitchReadout.text="PITCH "+elevation.ToString("+00;-00;00")+"Â°";}
+        if(metric){metricPitchScale.SetReading(elevation);metricPitchReadout.text="PITCH "+elevation.ToString("+00;-00;00")+"°";}
         Vector3 up = view.InverseTransformDirection(Vector3.up);
         float bank = Mathf.Atan2(up.x,up.y) * Mathf.Rad2Deg;
         horizon.localEulerAngles = new Vector3(0,0,-bank);
@@ -549,7 +549,7 @@ public class ArenaVehicleHud : MonoBehaviour
         float nearest=range;
         foreach(var hit in Physics.RaycastAll(ray,range,Physics.DefaultRaycastLayers,QueryTriggerInteraction.Collide))
         {
-            if(hit.transform.IsChildOf(owner.transform)||hit.collider is CharacterController||hit.collider.GetComponentInParent<VehicleRocket>())continue;
+            if(hit.transform.IsChildOf(owner.transform)||SoldierPhysicsBody.IsMotorCollider(hit.collider)||hit.collider.GetComponentInParent<VehicleRocket>())continue;
             if(hit.collider.isTrigger&&!hit.collider.GetComponent<SoldierHitRegion>())continue;
             nearest=Mathf.Min(nearest,hit.distance);
         }

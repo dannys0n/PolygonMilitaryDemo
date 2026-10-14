@@ -3,7 +3,7 @@ using UnityEngine;
 public class SoldierFootIK : MonoBehaviour
 {
     public Animator animator;
-    public CharacterController controller;
+    public SoldierPhysicsBody controller;
     public LayerMask groundLayers = 9;
 
     [Header("Ground placement")]
@@ -187,7 +187,7 @@ public class SoldierFootIK : MonoBehaviour
             RaycastHit hit = groundHits[i];
             // Default-layer scenery is supported without hitting our own capsule or weapon.
             if (hit.collider.transform.IsChildOf(controller.transform)
-                || hit.collider is CharacterController
+                || SoldierPhysicsBody.IsMotorCollider(hit.collider)
                 || Vector3.Angle(Vector3.up, hit.normal) > controller.slopeLimit
                 || hit.distance >= nearest)
                 continue;

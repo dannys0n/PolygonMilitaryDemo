@@ -5314,7 +5314,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::SoldierFootIK
   animator: {fileID: 1956171790106494693}
-  controller: {fileID: 2307601721304991840}
+  controller: {fileID: 7080989189883822841}
   groundLayers:
     serializedVersion: 2
     m_Bits: 9
@@ -8385,7 +8385,6 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 5521066776183980272}
-  - component: {fileID: 2307601721304991840}
   - component: {fileID: 3167560685877921255}
   - component: {fileID: 6869284405060730759}
   - component: {fileID: 8705140395176685010}
@@ -8403,7 +8402,9 @@ GameObject:
   - component: {fileID: 611866372245098089}
   - component: {fileID: 7693777023955115852}
   - component: {fileID: 4984872914982960638}
-  - component: {fileID: 4124356614025158987}
+  - component: {fileID: 5257818602695431076}
+  - component: {fileID: 5850396596054175775}
+  - component: {fileID: 7080989189883822841}
   m_Layer: 0
   m_Name: Player_Polygon
   m_TagString: Untagged
@@ -8430,31 +8431,6 @@ Transform:
   - {fileID: 6069383696898035806}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!143 &2307601721304991840
-CharacterController:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 8863008050220851912}
-  m_Material: {fileID: 0}
-  m_IncludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ExcludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_LayerOverridePriority: 0
-  m_ProvidesContacts: 0
-  m_Enabled: 1
-  serializedVersion: 3
-  m_Height: 1.8
-  m_Radius: 0.4
-  m_SlopeLimit: 45
-  m_StepOffset: 0.3
-  m_SkinWidth: 0.08
-  m_MinMoveDistance: 0
-  m_Center: {x: 0, y: 1, z: 0}
 --- !u!114 &3167560685877921255
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -8468,11 +8444,14 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::SoldierMovement
   animator: {fileID: 1956171790106494693}
-  controller: {fileID: 2307601721304991840}
+  controller: {fileID: 7080989189883822841}
   moveSpeed: 4
   runSpeed: 6
   firstPersonSprintBlendDuration: 0.3
   jumpHeight: 1.2
+  groundAcceleration: 45
+  airAcceleration: 8
+  maximumStepSpeed: 2.5
 --- !u!114 &6869284405060730759
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -8522,7 +8501,7 @@ MonoBehaviour:
   firstPersonRoot: {fileID: 8809735909757720982}
   armsAnimator: {fileID: 1122391470142808133}
   weaponAnimator: {fileID: 0}
-  controller: {fileID: 2307601721304991840}
+  controller: {fileID: 7080989189883822841}
   firstPerson: 1
   firstPersonLayer: 8
   thirdPersonLayer: 9
@@ -8558,7 +8537,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::SoldierMotionComparison
   actions: {fileID: 8705140395176685010}
   characterAnimator: {fileID: 1956171790106494693}
-  controller: {fileID: 2307601721304991840}
+  controller: {fileID: 7080989189883822841}
   view: {fileID: 3857842616418219034}
   weapon: {fileID: 0}
   aimPivot: {fileID: 7142816868448696710}
@@ -8803,7 +8782,7 @@ MonoBehaviour:
   look: {fileID: 6869284405060730759}
   loadout: {fileID: 8866584782723430131}
   view: {fileID: 3857842616418219034}
-  controller: {fileID: 2307601721304991840}
+  controller: {fileID: 7080989189883822841}
 --- !u!114 &7588517055723200184
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -8952,7 +8931,57 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::SoldierFirstPersonBody
   view: {fileID: 3857842616418219034}
   soldier: {fileID: 7588517055723200184}
---- !u!114 &4124356614025158987
+--- !u!54 &5257818602695431076
+Rigidbody:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8863008050220851912}
+  serializedVersion: 5
+  m_Mass: 80
+  m_LinearDamping: 0
+  m_AngularDamping: 0
+  m_CenterOfMass: {x: 0, y: 0, z: 0}
+  m_InertiaTensor: {x: 1, y: 1, z: 1}
+  m_InertiaRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ImplicitCom: 1
+  m_ImplicitTensor: 1
+  m_UseGravity: 1
+  m_IsKinematic: 0
+  m_Interpolate: 1
+  m_Constraints: 112
+  m_CollisionDetection: 2
+--- !u!136 &5850396596054175775
+CapsuleCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8863008050220851912}
+  m_Material: {fileID: 13400000, guid: f09f05f2196734f4b826d620b36eb8d2, type: 2}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 2
+  m_Radius: 0.4
+  m_Height: 1.8
+  m_Direction: 1
+  m_Center: {x: 0, y: 1, z: 0}
+--- !u!114 &7080989189883822841
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -8961,11 +8990,13 @@ MonoBehaviour:
   m_GameObject: {fileID: 8863008050220851912}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 2b8d319cb16b0084ba96bae10d5d9dba, type: 3}
+  m_Script: {fileID: 11500000, guid: c12681513c284d7438eda985a1022a5c, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::SoldierVehiclePlatform
-  maximumTilt: 50
-  crouchedHeight: 1.15
+  m_EditorClassIdentifier: Assembly-CSharp::SoldierPhysicsBody
+  body: {fileID: 5257818602695431076}
+  capsule: {fileID: 5850396596054175775}
+  slopeLimit: 45
+  stepOffset: 0.3
 --- !u!1 &8922792620279565689
 GameObject:
   m_ObjectHideFlags: 0

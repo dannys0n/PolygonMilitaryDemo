@@ -35,7 +35,6 @@ public class VehicleOccupant : MonoBehaviour
     bool[] listenerEnabled;
     bool previousCameraEnabled;
     float lastVehicleYaw, yaw, pitch = 14, flightYaw, flightPitch, exitHeld, hornUntil, freelookYaw, freelookPitch;
-    Vector3 departureVelocity;
     bool interactionConsumed;
     bool cockpitView;
     public bool CockpitView
@@ -84,11 +83,6 @@ public class VehicleOccupant : MonoBehaviour
         }
         if (!IsMounted)
         {
-            if (departureVelocity.sqrMagnitude > .01f && life.controller.enabled)
-            {
-                if (life.controller.isGrounded) departureVelocity = Vector3.zero;
-                else life.controller.Move(departureVelocity * Time.deltaTime);
-            }
             Vehicle best = null;
             int seat = -1;
             float distance = float.PositiveInfinity;
@@ -288,6 +282,7 @@ public class VehicleOccupant : MonoBehaviour
         originalParent = transform.parent;
         life.actions.CancelActions();
         life.movement.ResetMovement();
+        life.controller.enabled=false;
         behaviours.Clear();
         renderers.Clear(); forcedVisibility.Clear();
         shadowModes.Clear();
@@ -353,7 +348,7 @@ public class VehicleOccupant : MonoBehaviour
         vehicleCamera.enabled = vehicleListener.enabled = true;
         lastVehicleYaw = vehicle.transform.eulerAngles.y;
         yaw = flightYaw = seated.role == Vehicle.SeatRole.Passenger ? seated.anchor.eulerAngles.y : lastVehicleYaw;
-        pitch = flightPitch = vehicle.IsAircraft ? 0 : 14; CockpitView = Freelook = false; exitHeld = 0; departureVelocity = Vector3.zero;
+        pitch = flightPitch = vehicle.IsAircraft ? 0 : 14; CockpitView = Freelook = false; exitHeld = 0;
     }
     void SaveDisable(Behaviour b)
     {
@@ -379,7 +374,7 @@ public class VehicleOccupant : MonoBehaviour
             position = seat.exit.position;
             if (IsLocal) position = ExteriorExit(vehicle, seat);
         }
-        departureVelocity = IsLocal ? vehicle.Body.linearVelocity : Vector3.zero;
+        Vector3 departureVelocity=vehicle.Body.GetPointVelocity(position);
         if (force && position == default)
             position = seat.exit.position;
         var agent = GetComponent<NavMeshAgent>();
@@ -410,6 +405,8 @@ public class VehicleOccupant : MonoBehaviour
         if (pair.Key && pair.Key != agent)
             pair.Key.enabled = pair.Value;
         life.movement.ResetMovement();
+        life.controller.enabled=!life.health.IsDead;
+        if(life.controller.enabled)life.controller.body.linearVelocity=departureVelocity;
         if (restoreAgent && validAgentExit && !life.health.IsDead)
             agent.enabled = true;
         if (IsLocal)

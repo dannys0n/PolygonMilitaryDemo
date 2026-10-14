@@ -161,7 +161,7 @@ public class VehicleLauncher : MonoBehaviour
     {
         float distance = range;
         foreach (var hit in Physics.RaycastAll(view, range, Physics.DefaultRaycastLayers, QueryTriggerInteraction.Ignore))
-            if (!hit.transform.IsChildOf(vehicle.transform) && !(hit.collider is CharacterController) && !hit.collider.GetComponentInParent<VehicleRocket>()) distance = Mathf.Min(distance,hit.distance);
+            if (!hit.transform.IsChildOf(vehicle.transform) && !(SoldierPhysicsBody.IsMotorCollider(hit.collider)) && !hit.collider.GetComponentInParent<VehicleRocket>()) distance = Mathf.Min(distance,hit.distance);
         Vector3 direction = (view.GetPoint(distance)-AimRay.origin).normalized;
         Vector3 lateralVelocity = Vector3.ProjectOnPlane(vehicle.Body.linearVelocity,direction);
         float forwardSpeed = Mathf.Sqrt(Mathf.Max(1,projectile.speed*projectile.speed-lateralVelocity.sqrMagnitude));

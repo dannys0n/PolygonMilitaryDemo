@@ -7,7 +7,19 @@ public class SoldierLook : MonoBehaviour
     public Transform aimTarget;
     public Camera aimCamera;
 
-    private float pitch;
+    private float pitch,yaw;
+    private SoldierFirstPersonView view;
+    void Awake()=>view=GetComponent<SoldierFirstPersonView>();
+    public float Yaw=>yaw;
+    void OnEnable()=>yaw=transform.eulerAngles.y;
+    void Update(){ApplyCamera();UpdateAimTarget();}
+    void LateUpdate(){ApplyCamera();UpdateAimTarget();}
+    void ApplyCamera()
+    {
+        // TPS and its subject share the same interpolated heading. FPS keeps raw look input.
+        float cameraYaw=view&&!view.firstPerson?transform.eulerAngles.y:yaw;
+        playerCamera.rotation=Quaternion.Euler(pitch,cameraYaw,0);
+    }
     public float Pitch => pitch;
 
     // Angular mouse/input deltas in degrees; the caller chooses input sensitivity.
@@ -17,7 +29,7 @@ public class SoldierLook : MonoBehaviour
         float mouseX = delta.x;
         float mouseY = delta.y;
 
-        transform.Rotate(0f, mouseX, 0f);
+        yaw+=mouseX;
 
         float turn = Mathf.Clamp(mouseX, -1f, 1f);
         animator.SetFloat("Turn", turn, 0.1f, Time.deltaTime);
@@ -25,7 +37,7 @@ public class SoldierLook : MonoBehaviour
         pitch -= mouseY;
         pitch = Mathf.Clamp(pitch, -80f, 80f);
 
-        playerCamera.localRotation = Quaternion.Euler(pitch, 0f, 0f);
+        ApplyCamera();
 
         UpdateAimTarget();
     }
@@ -39,7 +51,7 @@ public class SoldierLook : MonoBehaviour
     public void ResetLook()
     {
         pitch = 0f;
-        playerCamera.localRotation = Quaternion.identity;
+        yaw=transform.eulerAngles.y;ApplyCamera();
         animator.SetFloat("Turn", 0f);
         UpdateAimTarget();
     }

@@ -6,7 +6,7 @@ public class SoldierWeaponPresentation : MonoBehaviour
 {
     public SoldierActions actions;
     public Animator characterAnimator;
-    public CharacterController controller;
+    public SoldierPhysicsBody controller;
     public SoldierFirstPersonView view;
     public SoldierWeapon weapon;
     public Transform aimPivot;

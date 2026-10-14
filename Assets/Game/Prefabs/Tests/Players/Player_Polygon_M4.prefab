@@ -2782,7 +2782,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::SoldierFootIK
   animator: {fileID: 4350562536122463021}
-  controller: {fileID: 4934183098455661539}
+  controller: {fileID: 4781932021273128325}
   groundLayers:
     serializedVersion: 2
     m_Bits: 9
@@ -8537,6 +8537,7 @@ MonoBehaviour:
   animator: {fileID: 1278801824782152975}
   leftHand: {fileID: 2462916072695160883}
   rightHand: {fileID: 5290807943908552489}
+  gripEnabled: 1
 --- !u!1 &7239086008897673939
 GameObject:
   m_ObjectHideFlags: 0
@@ -8968,13 +8969,15 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 3848330965088969911}
-  - component: {fileID: 4934183098455661539}
   - component: {fileID: 5554693733560442764}
   - component: {fileID: 4750850505173500416}
   - component: {fileID: 8742863648285777331}
   - component: {fileID: 3002189119170684463}
   - component: {fileID: 2458393819195566994}
   - component: {fileID: 2431162339890291714}
+  - component: {fileID: 5837491434043272902}
+  - component: {fileID: 8598984762484620314}
+  - component: {fileID: 4781932021273128325}
   m_Layer: 0
   m_Name: Player_Polygon_M4
   m_TagString: Untagged
@@ -9000,31 +9003,6 @@ Transform:
   - {fileID: 1714256702262565405}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!143 &4934183098455661539
-CharacterController:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 7478055870204400778}
-  m_Material: {fileID: 0}
-  m_IncludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ExcludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_LayerOverridePriority: 0
-  m_ProvidesContacts: 0
-  m_Enabled: 1
-  serializedVersion: 3
-  m_Height: 1.8
-  m_Radius: 0.4
-  m_SlopeLimit: 45
-  m_StepOffset: 0.3
-  m_SkinWidth: 0.08
-  m_MinMoveDistance: 0
-  m_Center: {x: 0, y: 1, z: 0}
 --- !u!114 &5554693733560442764
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -9038,10 +9016,14 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::SoldierMovement
   animator: {fileID: 4350562536122463021}
-  controller: {fileID: 4934183098455661539}
+  controller: {fileID: 4781932021273128325}
   moveSpeed: 4
   runSpeed: 6
+  firstPersonSprintBlendDuration: 0.3
   jumpHeight: 1.2
+  groundAcceleration: 45
+  airAcceleration: 8
+  maximumStepSpeed: 2.5
 --- !u!114 &4750850505173500416
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -9056,7 +9038,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::SoldierLook
   playerCamera: {fileID: 517565939296698431}
   animator: {fileID: 4350562536122463021}
-  sensitivity: 2
   aimTarget: {fileID: 1836320935689663106}
   aimCamera: {fileID: 7622015563952946892}
 --- !u!114 &8742863648285777331
@@ -9074,6 +9055,7 @@ MonoBehaviour:
   animator: {fileID: 4350562536122463021}
   firstPersonView: {fileID: 3002189119170684463}
   movement: {fileID: 5554693733560442764}
+  shooting: {fileID: 0}
 --- !u!114 &3002189119170684463
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -9091,10 +9073,12 @@ MonoBehaviour:
   firstPersonRoot: {fileID: 5161502796032712420}
   armsAnimator: {fileID: 1278801824782152975}
   weaponAnimator: {fileID: 5579530975431267806}
-  controller: {fileID: 4934183098455661539}
+  controller: {fileID: 4781932021273128325}
   firstPerson: 1
   firstPersonLayer: 8
   thirdPersonLayer: 9
+  thirdPersonCameraPosition: {x: 0.63, y: 0, z: -1.091}
+  thirdPersonCameraAngles: {x: 5.702, y: -6.186, z: 0}
 --- !u!114 &2458393819195566994
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -9125,7 +9109,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::SoldierMotionComparison
   actions: {fileID: 8742863648285777331}
   characterAnimator: {fileID: 4350562536122463021}
-  controller: {fileID: 4934183098455661539}
+  controller: {fileID: 4781932021273128325}
   view: {fileID: 3002189119170684463}
   weapon: {fileID: 4432509363551764074}
   aimPivot: {fileID: 6790014133559829689}
@@ -9133,9 +9117,76 @@ MonoBehaviour:
   partsAnimator: {fileID: 2401222662298629836}
   aimTarget: {fileID: 1836320935689663106}
   chestAim: {fileID: 3457311366939920563}
+  weaponAim: {fileID: 0}
   supportHand: {fileID: 6563888696422465607}
   firingHand: {fileID: 7007227138054490935}
   runWeaponFollow: {fileID: 7216427484930469872}
+--- !u!54 &5837491434043272902
+Rigidbody:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7478055870204400778}
+  serializedVersion: 5
+  m_Mass: 80
+  m_LinearDamping: 0
+  m_AngularDamping: 0
+  m_CenterOfMass: {x: 0, y: 0, z: 0}
+  m_InertiaTensor: {x: 1, y: 1, z: 1}
+  m_InertiaRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ImplicitCom: 1
+  m_ImplicitTensor: 1
+  m_UseGravity: 1
+  m_IsKinematic: 0
+  m_Interpolate: 1
+  m_Constraints: 112
+  m_CollisionDetection: 2
+--- !u!136 &8598984762484620314
+CapsuleCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7478055870204400778}
+  m_Material: {fileID: 13400000, guid: f09f05f2196734f4b826d620b36eb8d2, type: 2}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 2
+  m_Radius: 0.4
+  m_Height: 1.8
+  m_Direction: 1
+  m_Center: {x: 0, y: 1, z: 0}
+--- !u!114 &4781932021273128325
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7478055870204400778}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c12681513c284d7438eda985a1022a5c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::SoldierPhysicsBody
+  body: {fileID: 5837491434043272902}
+  capsule: {fileID: 8598984762484620314}
+  slopeLimit: 45
+  stepOffset: 0.3
 --- !u!1 &7531218104012864853
 GameObject:
   m_ObjectHideFlags: 0

@@ -9,7 +9,7 @@ public class SoldierFirstPersonView : MonoBehaviour
     public Transform firstPersonRoot;
     public Animator armsAnimator;
     public Animator weaponAnimator;
-    public CharacterController controller;
+    public SoldierPhysicsBody controller;
     public bool firstPerson = true;
     public int firstPersonLayer = 8;
     public int thirdPersonLayer = 9;

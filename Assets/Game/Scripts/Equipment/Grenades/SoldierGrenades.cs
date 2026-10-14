@@ -76,7 +76,7 @@ public class SoldierGrenades : MonoBehaviour
             Transform held=life.view.firstPerson?firstHeld.transform:thirdHeld.transform;
             Vector3 origin=held.position;
             var projectile=Instantiate(throwing.projectile,origin,held.rotation);
-            projectile.Launch(throwing,gameObject,direction*throwing.throwSpeed+Vector3.up*throwing.upwardSpeed+life.controller.velocity*.5f);
+            projectile.Launch(throwing,gameObject,direction*throwing.throwSpeed+Vector3.up*throwing.upwardSpeed+life.movement.Velocity*.5f);
         }
 
     }

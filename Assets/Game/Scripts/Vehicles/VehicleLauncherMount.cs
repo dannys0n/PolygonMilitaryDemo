@@ -15,7 +15,7 @@ public class VehicleLauncherMount : MonoBehaviour
     {
         float distance = 300f;
         foreach (var hit in Physics.RaycastAll(view, distance, Physics.DefaultRaycastLayers, QueryTriggerInteraction.Ignore))
-            if (!hit.transform.IsChildOf(vehicle.transform) && !(hit.collider is CharacterController))
+            if (!hit.transform.IsChildOf(vehicle.transform) && !(SoldierPhysicsBody.IsMotorCollider(hit.collider)))
                 distance = Mathf.Min(distance, hit.distance);
         Aim(view.GetPoint(distance));
     }

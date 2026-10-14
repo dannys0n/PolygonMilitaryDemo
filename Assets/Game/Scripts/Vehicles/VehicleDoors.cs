@@ -58,7 +58,6 @@ public class VehicleDoors : MonoBehaviour
                 Time.fixedDeltaTime / Mathf.Max(.1f, first.duration));
             if (Mathf.Approximately(next, previous)) return;
             foreach (var door in doors) { door.progress = next; door.open = first.open; Apply(door); }
-            vehicle.SyncCharacterCollision();
             return;
         }
         foreach (var door in doors)
@@ -69,7 +68,6 @@ public class VehicleDoors : MonoBehaviour
             door.progress = next;
             Apply(door);
         }
-        vehicle.SyncCharacterCollision();
     }
     static void Apply(Door door)
     {

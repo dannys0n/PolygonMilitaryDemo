@@ -96,7 +96,6 @@ public class Vehicle : MonoBehaviour
     }
     public bool CanExit => !IsDestroyed && Body.linearVelocity.magnitude < 3f && motor.CanDisembark;
     NavMeshObstacle obstacle;
-    VehicleCharacterCollision characterCollision;
     Bounds colliderBounds;
     bool colliderBoundsReady;
     // The authored carving box describes the chassis, in vehicle-local coordinates.
@@ -131,12 +130,17 @@ public class Vehicle : MonoBehaviour
     void Awake()
     {
         Body = GetComponent<Rigidbody>();
-        characterCollision = new VehicleCharacterCollision(this);
+        int characters=LayerMask.NameToLayer("Characters");
+        foreach(var collider in GetComponentsInChildren<Collider>(true))
+            if(characters>=0 && !(collider is WheelCollider) && collider.attachedRigidbody==Body)
+                collider.excludeLayers &= ~(1<<characters);
+        if(Body.collisionDetectionMode==CollisionDetectionMode.Discrete)
+            Body.collisionDetectionMode=CollisionDetectionMode.Continuous;
         obstacle = GetComponent<NavMeshObstacle>();
         Health = maxHealth;
     }
-    void Update() => characterCollision.Sync();
-    public void SyncCharacterCollision() => characterCollision?.Sync();
+
+
     void OnEnable()
     {
         Active.Add(this);
@@ -151,7 +155,6 @@ public class Vehicle : MonoBehaviour
     }
     void FixedUpdate()
     {
-        characterCollision.Sync();
         if (!IsDestroyed) motor.Simulate(PrepareDriverInput(DriverInput, Driver), Driver);
         // Carving is only useful while parked; a dynamic body never also owns a NavMeshAgent.
         if (obstacle)

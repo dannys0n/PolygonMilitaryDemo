@@ -10,7 +10,7 @@ public class SoldierLife : MonoBehaviour
     public SoldierLook look;
     public SoldierWeaponLoadout loadout;
     public SoldierFirstPersonView view;
-    public CharacterController controller;
+    public SoldierPhysicsBody controller;
     public event System.Action Respawned;
     public event System.Action Respawning;
 
@@ -44,6 +44,7 @@ public class SoldierLife : MonoBehaviour
             movement.ResetMovement();
             view.SetAimRequested(false);
         }
+        controller.enabled=allowed;
         actions.enabled = movement.enabled = look.enabled = loadout.enabled = allowed;
     }
 

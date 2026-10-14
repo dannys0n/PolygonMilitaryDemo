@@ -64,7 +64,7 @@ public class SoldierRagdoll : MonoBehaviour
         life.health.Died -= OnDeath;
         life.Respawning -= RestoreAnimation;
     }
-    void LateUpdate() { if (!IsRagdoll) lastVelocity = life.controller.velocity; }
+    void LateUpdate() { if (!IsRagdoll) lastVelocity = life.controller.Velocity; }
 
     void OnDeath(GameObject source)
     {

@@ -48,7 +48,7 @@ public class VehicleTurret : MonoBehaviour
         float distance = range;
         foreach(var hit in Physics.RaycastAll(view,range,Physics.DefaultRaycastLayers,QueryTriggerInteraction.Collide))
         {
-            if(hit.transform.IsChildOf(vehicle.transform)||hit.collider is CharacterController)continue;
+            if(hit.transform.IsChildOf(vehicle.transform)||SoldierPhysicsBody.IsMotorCollider(hit.collider))continue;
             if(hit.collider.isTrigger&&!hit.collider.GetComponent<SoldierHitRegion>())continue;
             distance=Mathf.Min(distance,hit.distance);
         }
@@ -116,7 +116,7 @@ public class VehicleTurret : MonoBehaviour
         bool found = false;
         foreach (var hit in projectile ? System.Array.Empty<RaycastHit>() : Physics.RaycastAll(muzzle.position, muzzle.forward, range, Physics.DefaultRaycastLayers, QueryTriggerInteraction.Collide))
         {
-            if (hit.transform.IsChildOf(vehicle.transform) || hit.collider is CharacterController)
+            if (hit.transform.IsChildOf(vehicle.transform) || SoldierPhysicsBody.IsMotorCollider(hit.collider))
                 continue;
             if (hit.collider.isTrigger && !hit.collider.GetComponent<SoldierHitRegion>())
                 continue;
