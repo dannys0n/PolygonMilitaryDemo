@@ -23,11 +23,12 @@ public class SoldierWeaponLoadout : MonoBehaviour
         public int ReserveAmmo { get; private set; }
         float nextFireTime;
         public float ReadyAt => nextFireTime;
-        public WeaponState(SoldierWeaponDefinition d) { MagazineAmmo=d.magazineCapacity; ReserveAmmo=d.startingReserveAmmo; }
+        public bool InfiniteOverride { get; set; }
+        public WeaponState(SoldierWeaponDefinition d, int reserveMultiplier=1) { MagazineAmmo=d.magazineCapacity; ReserveAmmo=d.startingReserveAmmo*Mathf.Max(1,reserveMultiplier); }
         public bool TryConsumeRound(float now,SoldierWeaponDefinition d)
         {
-            if ((!d.infiniteAmmunition&&MagazineAmmo<=0)||now<nextFireTime)return false;
-            if(!d.infiniteAmmunition)MagazineAmmo--;
+            if ((!(d.infiniteAmmunition||InfiniteOverride)&&MagazineAmmo<=0)||now<nextFireTime)return false;
+            if(!(d.infiniteAmmunition||InfiniteOverride))MagazineAmmo--;
             nextFireTime=now+60f/Mathf.Max(d.roundsPerMinute,1);return true;
         }
         public bool CanReload(SoldierWeaponDefinition d)=>MagazineAmmo<d.magazineCapacity&&ReserveAmmo>0;
@@ -58,7 +59,7 @@ public class SoldierWeaponLoadout : MonoBehaviour
         var regular = new System.Collections.Generic.List<int>();
         for(int i=0;i<slots.Length;i++){if(!slots[i].definition.isUtility)regular.Add(i);slots[i].state=new WeaponState(slots[i].definition);}
         AvailableSlots=regular.ToArray();
-        Spawn();
+        ResetStates();Spawn();
     }
     void Start(){Bind();presentation.view.RefreshVisuals();presentation.view.SetFirstPerson(presentation.view.firstPerson);}
     void Update()=>RefreshFirstPersonPresentation();
@@ -147,7 +148,17 @@ public class SoldierWeaponLoadout : MonoBehaviour
         for(int i=0;i<indices.Length;i++)if(indices[i]<0||indices[i]>=slots.Length||Array.IndexOf(indices,indices[i])!=i)throw new ArgumentException("Invalid loadout slots.");
         actions.CancelActions();AvailableSlots=(int[])indices.Clone();SetStartingSlot(indices[0]);
     }
-    public void ResetAmmunition(){actions.CancelActions();foreach(var s in slots)s.state=new WeaponState(s.definition);}
+    public void ResetAmmunition(){actions.CancelActions();ResetStates();}
+    void ResetStates()
+    {
+        int primary=AvailableSlots!=null&&AvailableSlots.Length>0?AvailableSlots[0]:-1;
+        for(int i=0;i<slots.Length;i++)slots[i].state=new WeaponState(slots[i].definition,i==primary&&!slots[i].definition.isUtility?3:1);
+    }
+    // Per-life supply override; definitions remain shared and unchanged.
+    public void SetInfiniteUtilityAmmo(bool enabled)
+    {
+        foreach(var slot in slots)if(slot.definition.isUtility&&slot.definition.rocketProjectile)slot.state.InfiniteOverride=enabled;
+    }
     public bool TrySelectWeapon(int index)
     {
         if(index<0||index>=slots.Length)return false;

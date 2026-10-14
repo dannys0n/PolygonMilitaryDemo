@@ -20,7 +20,8 @@ public sealed class VehicleCountermeasures : MonoBehaviour
     public int Charges { get; private set; }
     public int Incoming { get; private set; }
     public float ReadyIn => Mathf.Max(0,nextDeploy-Time.time);
-    public float RechargeIn => Charges<capacity ? Mathf.Max(0,nextRecharge-Time.time) : 0;
+    public bool UnlimitedDeployments => flares;
+    public float RechargeIn => UnlimitedDeployments ? ReadyIn : Charges<capacity ? Mathf.Max(0,nextRecharge-Time.time) : 0;
     public string SystemName => smoke ? "SMOKE" : flares&&chaff ? "FLARE / CHAFF" : flares ? "FLARES" : "CHAFF";
     Vehicle vehicle;
     float nextDeploy,nextRecharge,firstThreat=-1,lastHealth;
@@ -50,6 +51,7 @@ public sealed class VehicleCountermeasures : MonoBehaviour
     }
     void Refill()
     {
+        if(UnlimitedDeployments){Charges=capacity;return;}
         while(Charges<capacity && Time.time>=nextRecharge)
         {Charges++;nextRecharge+=Mathf.Max(.1f,rechargeSeconds);}
     }
@@ -64,8 +66,12 @@ public sealed class VehicleCountermeasures : MonoBehaviour
     {
         Refill();
         if(vehicle.IsDestroyed || Charges<=0 || Time.time<nextDeploy || !(flares||chaff||smoke))return false;
-        if(Charges==capacity)nextRecharge=Time.time+Mathf.Max(.1f,rechargeSeconds);
-        Charges--;nextDeploy=Time.time+Mathf.Max(.1f,cooldown);
+        if(!UnlimitedDeployments)
+        {
+            if(Charges==capacity)nextRecharge=Time.time+Mathf.Max(.1f,rechargeSeconds);
+            Charges--;
+        }
+        nextDeploy=Time.time+Mathf.Max(.1f,UnlimitedDeployments?Mathf.Max(cooldown,rechargeSeconds):cooldown);
         if(flares&&flarePrefab)
         {
             remainingFlareSalvos=Mathf.Max(1,flareSalvos);
