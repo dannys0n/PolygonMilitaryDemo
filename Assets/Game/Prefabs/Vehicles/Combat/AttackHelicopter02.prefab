@@ -158,6 +158,7 @@ GameObject:
   - component: {fileID: 470926342569773407}
   - component: {fileID: 4567892505685801098}
   - component: {fileID: 8739804417620568902}
+  - component: {fileID: 647089601272114613}
   m_Layer: 0
   m_Name: AttackHelicopter02
   m_TagString: Untagged
@@ -185,6 +186,8 @@ Transform:
   - {fileID: 193429426882884154}
   - {fileID: 3132527615718647842}
   - {fileID: 8647610998832222457}
+  - {fileID: 6828417380658214597}
+  - {fileID: 2896587043213377292}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!54 &1286640871238166219
@@ -449,6 +452,36 @@ MonoBehaviour:
     explosive: 0
     ejectCasings: 1
     icon: {fileID: -5948544802483944527, guid: b42deefd30f3b9449a793c3ff7479b69, type: 3}
+--- !u!114 &647089601272114613
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 215953497425549892}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c9cbd31cf1ff10240b84be609e17dcad, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::VehicleCountermeasures
+  flares: 1
+  chaff: 0
+  smoke: 0
+  dispensers:
+  - {fileID: 6828417380658214597}
+  - {fileID: 2896587043213377292}
+  flarePrefab: {fileID: 4817953780451813940, guid: 97b0ab4f80576474e90b301bc8714bb2, type: 3}
+  chaffPrefab: {fileID: 0}
+  smokePrefab: {fileID: 1604516943231475684, guid: a6018400a17f2124b9d7a6aeb101127a, type: 3}
+  capacity: 2
+  cooldown: 10
+  rechargeSeconds: 25
+  smokeDuration: 10
+  automaticForAI: 1
+  flareSalvos: 5
+  flareInterval: 0.16
+  flareEjectionSpeed: {x: 20, y: 26}
+  flareDispersion: 5
 --- !u!1 &393893734691505811
 GameObject:
   m_ObjectHideFlags: 0
@@ -1335,6 +1368,37 @@ Transform:
   m_Children:
   - {fileID: 685492096818221822}
   m_Father: {fileID: 8233310531194067413}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &4108464519498599345
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 6828417380658214597}
+  m_Layer: 0
+  m_Name: Flare dispenser 1
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &6828417380658214597
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4108464519498599345}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0.06426858, y: 0.87834746, z: -0.12343781, w: -0.45731652}
+  m_LocalPosition: {x: -1.05, y: 0.75, z: -1.2}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 6443728801629955970}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &4180054731864850650
 GameObject:
@@ -2407,6 +2471,37 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 2.286178, y: 2.4319212, z: 0.9970472}
   m_Center: {x: 0, y: 0, z: 0}
+--- !u!1 &8697992354641951314
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 2896587043213377292}
+  m_Layer: 0
+  m_Name: Flare dispenser 2
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &2896587043213377292
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8697992354641951314}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0.06426858, y: 0.87834746, z: -0.12343781, w: 0.45731652}
+  m_LocalPosition: {x: 1.05, y: 0.75, z: -1.2}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 6443728801629955970}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &8795599609097843592
 GameObject:
   m_ObjectHideFlags: 0
