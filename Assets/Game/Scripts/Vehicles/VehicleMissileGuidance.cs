@@ -7,9 +7,8 @@ public sealed class VehicleMissileGuidance : MonoBehaviour
     public Seeker seeker;
     public static readonly System.Collections.Generic.List<VehicleMissileGuidance> Active = new System.Collections.Generic.List<VehicleMissileGuidance>();
     public Vehicle Target => target;
-    public VehicleDecoy DecoyTarget => decoy;
+    public bool HasGuidance => initialized;
     public Seeker SeekerType => guidance==Guidance.LaserSpot || guidance==Guidance.CommandLineOfSight ? Seeker.Optical : seeker;
-    VehicleDecoy decoy;
     void OnEnable()=>Active.Add(this);
     void OnDisable()=>Active.Remove(this);
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)] static void ResetRegistry()=>Active.Clear();
@@ -79,8 +78,7 @@ public sealed class VehicleMissileGuidance : MonoBehaviour
     void FixedUpdate()
     {
         if (!initialized || Time.time < launchTime + seekerDelay || !body) return;
-        if(decoy && !decoy.Alive)decoy=null;
-        if(target && !decoy && SeekerType!=Seeker.Optical)
+        if(target && SeekerType!=Seeker.Optical)
         {
             foreach(var candidate in VehicleDecoy.Active)
             {
@@ -95,7 +93,8 @@ public sealed class VehicleMissileGuidance : MonoBehaviour
                         && !hit.transform.IsChildOf(target.transform) && !(hit.collider is CharacterController))
                     {obscured=true;break;}
                 if(obscured)continue;
-                decoy=candidate;target=null;break;
+                // A fooled seeker goes inertial; never chase a flare or reacquire the aircraft.
+                target=null;initialized=false;return;
             }
         }
         if(SeekerType==Seeker.Optical && target && GrenadeSmoke.BlocksLine(body.position,target.cameraTarget.position))
@@ -104,11 +103,10 @@ public sealed class VehicleMissileGuidance : MonoBehaviour
         {target=null;initialized=false;return;}
         if(!target && SeekerType==Seeker.Optical && guidance==Guidance.LaserSpot && GrenadeSmoke.BlocksLine(body.position,aimPoint))
         {initialized=false;return;}
-        if (!target && !decoy && guidance != Guidance.LaserSpot && guidance != Guidance.CommandLineOfSight) return; // Unguided flight on seeker failure.
+        if (!target && guidance != Guidance.LaserSpot && guidance != Guidance.CommandLineOfSight) return; // Unguided flight on seeker failure.
         Vector3 point = aimPoint;
         float speed = body.linearVelocity.magnitude;
-        if(decoy)point=decoy.transform.position;
-        else if (guidance == Guidance.CommandLineOfSight && director)
+        if (guidance == Guidance.CommandLineOfSight && director)
         {
             Ray command = director.RequestedAimRay;
             // SACLOS approximation: correct toward the maintained sight line, not an autonomous seeker.

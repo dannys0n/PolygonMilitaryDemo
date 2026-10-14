@@ -7,6 +7,8 @@ public class VehicleRocket : MonoBehaviour
     public ParticleSystem impactEffect, exhaust;
     public float launchClearance = .4f;
     public bool useGravity;
+    [Tooltip("Detonate at the end of flight; intended for guided missiles with self-destruct.")]
+    public bool explodeOnExpiry;
     public float speed = 65, radius = 4, infantryDamage = 140, vehicleDamage = 350, lifetime = 5;
     Rigidbody body;
     Transform owner;
@@ -53,8 +55,13 @@ public class VehicleRocket : MonoBehaviour
     }
     void Expire()
     {
-        StopExhaust();
-        Destroy(gameObject);
+        if (exploded) return;
+        if (explodeOnExpiry) Explode(body ? body.position : transform.position, Vector3.up);
+        else
+        {
+            StopExhaust();
+            Destroy(gameObject);
+        }
     }
     void FixedUpdate()
     {
