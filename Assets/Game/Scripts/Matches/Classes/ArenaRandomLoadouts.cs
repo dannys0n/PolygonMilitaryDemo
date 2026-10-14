@@ -5,7 +5,6 @@ using UnityEngine;
 // Scene-owned prototype policy. Definitions and saved custom classes remain untouched.
 public class ArenaRandomLoadouts : MonoBehaviour
 {
-    public ArenaWeaponCatalog catalog;
     [Range(0f, 1f)] public float opticChance = .75f;
     [Range(0f, 1f)] public float attachmentChance = .5f;
 
@@ -13,7 +12,8 @@ public class ArenaRandomLoadouts : MonoBehaviour
     {
         var primary = new List<ArenaWeaponCatalog.Entry>();
         var secondary = new List<ArenaWeaponCatalog.Entry>();
-        var source=actor.match.settings.weaponCatalog?actor.match.settings.weaponCatalog:catalog;
+        var source=actor.match.settings.weaponCatalog;
+        if(!source)throw new InvalidOperationException("Assign a weapon catalog in the match settings.");
         foreach (var entry in source.Weapons(actor.match.settings.polishedWeaponsOnly))
         {
             if (Array.FindIndex(actor.player.loadout.slots, slot => slot.definition == entry.weapon) < 0) continue;

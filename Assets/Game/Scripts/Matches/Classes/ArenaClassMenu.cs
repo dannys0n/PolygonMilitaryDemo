@@ -13,7 +13,7 @@ public class ArenaClassMenu : MonoBehaviour
     public Image primaryIcon, secondaryIcon;
     public Sprite rifleSprite, pistolSprite;
     public Button confirm, back, changeClass;
-    public ArenaWeaponCatalog catalog;
+    ArenaWeaponCatalog catalog;
     public Button createClass;
     public Material normalText, selectedText;
     public Material selectionFilament;
@@ -43,7 +43,8 @@ public class ArenaClassMenu : MonoBehaviour
     void Start()
     {
         if (!participant) return;
-        if(participant.match.settings.weaponCatalog)catalog=participant.match.settings.weaponCatalog;
+        catalog=participant.match.settings.weaponCatalog;
+        if(!catalog)throw new System.InvalidOperationException("Assign a weapon catalog in the match settings.");
         RefreshChoices();
         participant.match.MatchEnded += OnMatchEnded;
         if (participant.NeedsClassSelection) Open();
