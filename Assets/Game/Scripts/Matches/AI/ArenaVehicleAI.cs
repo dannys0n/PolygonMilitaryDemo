@@ -20,6 +20,7 @@ public class ArenaVehicleAI : MonoBehaviour
     ArenaVehicleScenario scenario;
     HecticCompanySupervisor company;
     HecticPhysicalBoarding physicalRider;
+    HecticAirDeploymentInput airDeployment;
     Vehicle reserved;
     Transform reservedEntry;
     int reservedSeat, corner, recoveries;
@@ -72,6 +73,13 @@ public class ArenaVehicleAI : MonoBehaviour
             if (occupant.IsMounted)
                 occupant.Leave(true);
             return;
+        }
+        if(!airDeployment)airDeployment=GetComponent<HecticAirDeploymentInput>();
+        if(airDeployment&&airDeployment.IsActive)
+        {
+            // Aircraft deployment owns movement until landing; no competing seat,
+            // company boarding, or terrestrial transport reservation is allowed.
+            CancelBoarding();State=TravelState.Passenger;return;
         }
         if(company&&company.TryGoal(this,out var companyGoal))Goal=companyGoal;
         if(physicalRider&&physicalRider.Carrier){State=TravelState.Passenger;return;}

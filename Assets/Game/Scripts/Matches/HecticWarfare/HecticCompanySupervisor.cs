@@ -48,6 +48,7 @@ public class HecticCompanySupervisor : MonoBehaviour
         foreach(var troop in company.troops)
         {
             if(troop.infantry.life.health.IsDead||troop.infantry.participant.IsAwaitingSpawn)continue;
+            var deployment=troop.GetComponent<HecticAirDeploymentInput>();if(deployment&&deployment.IsActive)continue;
             if(troop.occupant.IsMounted){var v=troop.occupant.MountedVehicle;if(!company.fleet.Contains(v))company.fleet.Add(v);claimed.Add(v);}
             else if(!troop.infantry.IsCombatAlert)waiting.Add(troop);
         }

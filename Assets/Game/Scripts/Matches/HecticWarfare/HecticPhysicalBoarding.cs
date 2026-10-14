@@ -11,6 +11,18 @@ public class HecticPhysicalBoarding : MonoBehaviour
     bool active,inside;
     float nextJump;
     public Vehicle Carrier=>inside&&order.vehicle&&!order.vehicle.IsDestroyed?order.vehicle:null;
+    SoldierLife life;
+    void OnEnable()
+    {
+        life=GetComponent<SoldierLife>();
+        if(life){life.Respawned+=Finish;life.health.Died+=OnDied;}
+    }
+    void OnDisable()
+    {
+        if(life){life.Respawned-=Finish;life.health.Died-=OnDied;}
+        Finish();
+    }
+    void OnDied(GameObject source)=>Finish();
     public void Begin(HecticCompanySupervisor.BoardingOrder value)
     {if(active&&order.vehicle==value.vehicle)return;order=value;active=true;inside=false;}
     public bool TryRead(out SoldierInputFrame input)
@@ -41,6 +53,7 @@ public class HecticPhysicalBoarding : MonoBehaviour
         }
         // Near the threshold NavMesh cannot describe the cargo floor. Intent steers physically.
         infantry.BoardingTarget=null;
+        if(infantry.agent&&infantry.agent.enabled)infantry.agent.enabled=false;
         Vector3 delta=destination-transform.position;
         float yaw=Mathf.Atan2(delta.x,delta.z)*Mathf.Rad2Deg;
         input.lookDelta=new Vector2(Mathf.Clamp(Mathf.DeltaAngle(infantry.life.look.Yaw,yaw),-infantry.turnSpeed*Time.deltaTime,infantry.turnSpeed*Time.deltaTime),0);
@@ -50,5 +63,5 @@ public class HecticPhysicalBoarding : MonoBehaviour
         {input.jump=true;nextJump=Time.time+.8f;}
         return true;
     }
-    void Finish(){active=inside=false;infantry.BoardingTarget=null;if(supervisor&&transport)supervisor.FinishBoarding(transport);}
+    void Finish(){active=inside=false;order=default;if(infantry)infantry.BoardingTarget=null;if(supervisor&&transport)supervisor.FinishBoarding(transport);}
 }
