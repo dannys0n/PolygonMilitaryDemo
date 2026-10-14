@@ -8,8 +8,6 @@ public class SoldierScopeView : MonoBehaviour
 {
     public SoldierFirstPersonView view;
     public SoldierWeaponLoadout loadout;
-    SoldierLaunchers launchers;
-    void Awake()=>launchers=GetComponent<SoldierLaunchers>();
     Camera scopeCamera;
     RenderTexture texture;
     Renderer lens;
@@ -22,7 +20,7 @@ public class SoldierScopeView : MonoBehaviour
         var sights=loadout.EquippedSights;
         var sight=sights?sights.SelectedSight:null;
         var attachment=sights?sights.FirstPersonAttachment:null;
-        bool equippedInViewer=(!launchers || !launchers.IsEquipped) && view.isActiveAndEnabled && view.firstPerson && view.playerCamera.isActiveAndEnabled
+        bool equippedInViewer=view.isActiveAndEnabled && view.firstPerson && view.playerCamera.isActiveAndEnabled
             && loadout.HasFirstPersonPresentation && loadout.FirstPersonView.gameObject.activeInHierarchy
             && sight && sight.pictureInPicture && attachment && attachment.scopeLens
             && attachment.scopeLens.enabled && attachment.scopeLens.gameObject.activeInHierarchy

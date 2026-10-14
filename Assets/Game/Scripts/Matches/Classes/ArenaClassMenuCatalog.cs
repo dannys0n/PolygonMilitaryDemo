@@ -10,6 +10,7 @@ public class ArenaClassMenuCatalog : ScriptableObject
     {
         public string id,name,previewAddress;
         public SoldierWeaponDefinition.WeaponCategory category;
+        public bool isUtility;
         public float damage,rpm;
         public int rounds;
         public Sprite icon;
@@ -44,5 +45,5 @@ public class ArenaClassMenuCatalog : ScriptableObject
     public Part[] parts=Array.Empty<Part>();
     public Weapon FindWeapon(string id)=>Array.Find(weapons,w=>w.id==id);
     public Part FindPart(string id)=>Array.Find(parts,p=>p.id==id);
-    public static bool IsPrimary(Weapon weapon)=>weapon.category!=SoldierWeaponDefinition.WeaponCategory.Pistol&&weapon.category!=SoldierWeaponDefinition.WeaponCategory.Launcher&&weapon.category!=SoldierWeaponDefinition.WeaponCategory.Melee&&weapon.category!=SoldierWeaponDefinition.WeaponCategory.Explosive;
+    public static bool IsPrimary(Weapon weapon)=>!weapon.isUtility&&weapon.category!=SoldierWeaponDefinition.WeaponCategory.Pistol&&weapon.category!=SoldierWeaponDefinition.WeaponCategory.Launcher&&weapon.category!=SoldierWeaponDefinition.WeaponCategory.Melee&&weapon.category!=SoldierWeaponDefinition.WeaponCategory.Explosive;
 }

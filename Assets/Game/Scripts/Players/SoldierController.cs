@@ -9,7 +9,7 @@ public class SoldierController : MonoBehaviour
     public SoldierLook look;
     public SoldierActions actions;
     public SoldierGrenades grenades;
-    public SoldierLaunchers launchers;
+    public SoldierUtilitySlots launchers;
     public SoldierWeaponLoadout loadout;
     public SoldierFirstPersonView view;
 
@@ -28,9 +28,8 @@ public class SoldierController : MonoBehaviour
         }
 
         if (launchers && input.utilitySelection>0) launchers.TryEquip(input.utilitySelection-1);
-        if (launchers && (input.grenadeThrow || input.weaponSelection>0 || input.weaponCycle!=0)) launchers.Unequip();
-        bool utility=launchers && launchers.IsEquipped;
-        if (input.cycleSight && !utility) loadout.TryCycleSight();
+        if (launchers && input.grenadeThrow) launchers.Unequip();
+        if (input.cycleSight) loadout.TryCycleSight();
         if(input.grenadeCycle)grenades.Cycle();
         if(input.grenadeThrow)grenades.TryThrow();
         view.SetAimRequested(input.aim && !grenades.IsThrowing);
@@ -40,8 +39,7 @@ public class SoldierController : MonoBehaviour
 
         if (input.toggleView) view.SetFirstPerson(!view.firstPerson);
         if (input.previewHitReaction) actions.PlayHitReaction();
-        if (utility) { if(input.firePressed)launchers.TryFire(); }
-        else if (input.reload) actions.TryReload();
+        if (input.reload) actions.TryReload();
         else if (actions.fireMode == SoldierActions.FireMode.Automatic ? input.fireHeld : input.firePressed)
             actions.TryFire();
 

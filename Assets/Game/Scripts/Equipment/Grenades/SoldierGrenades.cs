@@ -23,7 +23,7 @@ public class SoldierGrenades : MonoBehaviour
     public bool TryThrow()
     {
         if(!life.actions.enabled||life.health.IsDead||life.actions.IsReloading||life.loadout.IsSwitching||IsThrowing||counts[Selected]==0)return false;
-        var utility=GetComponent<SoldierLaunchers>();if(utility)utility.Unequip();
+        var utility=GetComponent<SoldierUtilitySlots>();if(utility)utility.Unequip();
         throwing=types[Selected];counts[Selected]--;started=Time.time;released=false;IsThrowing=true;
         life.view.CancelAim();
         life.loadout.SetEquippedVisible(false);

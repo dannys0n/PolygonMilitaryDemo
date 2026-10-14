@@ -109,7 +109,7 @@ public class ArenaAIInput : SoldierInputSource
             }
         }
         int available=-1;
-        for(int i=0;i<utility.types.Length;i++)if(utility.Count(i)>0){available=i;break;}
+        for(int i=0;i<utility.utilityWeapons.Length;i++)if(utility.Count(i)>0){available=i;break;}
         if(available<0||!launcherTarget||launcherTarget.IsDestroyed||!launcherTarget.IsOccupied||!VehicleShotClear(launcherTarget,out var point))
         {
             if(utility.IsEquipped){input.weaponSelection=1;return true;}
@@ -123,6 +123,7 @@ public class ArenaAIInput : SoldierInputSource
         float yawError=Mathf.DeltaAngle(transform.eulerAngles.y,yaw),pitchError=pitch+life.look.Pitch,step=turnSpeed*Time.deltaTime;
         input.lookDelta=new Vector2(Mathf.Clamp(yawError,-step,step),Mathf.Clamp(pitchError,-step,step));
         input.utilitySelection=!utility.IsEquipped||utility.Selected!=available?available+1:0;
+        input.reload=utility.IsEquipped && life.loadout.EquippedState.MagazineAmmo==0 && life.loadout.EquippedState.ReserveAmmo>0;
         input.firePressed=utility.IsEquipped&&utility.Selected==available&&utility.Ready&&Mathf.Abs(yawError)<3&&Mathf.Abs(pitchError)<3;
         return true;
     }

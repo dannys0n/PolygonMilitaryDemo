@@ -8,6 +8,7 @@ public class ArenaClassDefinition : ScriptableObject
     public string id;
     public string displayName;
     public SoldierWeaponDefinition primary, secondary;
+    public SoldierWeaponDefinition[] utilities;
     public WeaponSightDefinition primarySight, secondarySight;
     public int[] ResolveSlots(SoldierWeaponLoadout loadout)
     {
@@ -16,6 +17,14 @@ public class ArenaClassDefinition : ScriptableObject
             int slot = System.Array.FindIndex(loadout.slots, s => s.definition == weapon);
             if (slot < 0) throw new System.InvalidOperationException($"Class {displayName}: {weapon.name} is missing from {loadout.name}'s catalog.");
             return slot;
+        }
+        if(primary.isUtility || secondary.isUtility)
+            throw new System.InvalidOperationException("Utility-tagged weapons belong in utility class slots.");
+        if(utilities!=null)foreach(var weapon in utilities)
+        {
+            if(!weapon)continue;
+            if(!weapon.isUtility)throw new System.InvalidOperationException("A utility class slot requires the weapon utility tag.");
+            Find(weapon);
         }
         int[] indices = { Find(primary), Find(secondary) };
         WeaponSightDefinition[] sights = { primarySight, secondarySight };

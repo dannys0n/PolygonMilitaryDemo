@@ -134,6 +134,7 @@ public class ArenaParticipant : MonoBehaviour
             player.loadout.SetClassSights(SelectedClass.primarySight, SelectedClass.secondarySight);
             player.loadout.SetClassAttachments(SelectedClass.primaryAttachments,SelectedClass.secondaryAttachments);
             player.Respawn(position, rotation);
+            var utilities=GetComponent<SoldierUtilitySlots>();if(utilities)utilities.Configure(SelectedClass.utilities);
             GetComponent<SoldierGrenades>().SelectType(SelectedClass.grenadeIndex);
         }
         else

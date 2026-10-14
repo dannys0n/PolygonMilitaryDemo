@@ -8,6 +8,8 @@ public class SoldierWeaponDefinition : ScriptableObject
     [Header("Catalog")]
     public string catalogId,displayName;
     public WeaponCategory category;
+    [Tooltip("May occupy a utility equipment slot while retaining its normal weapon animations, sights and ammunition.")]
+    public bool isUtility;
     public bool infiniteAmmunition;
     public VehicleRocket rocketProjectile;
     public GrenadeDefinition thrownExplosive;

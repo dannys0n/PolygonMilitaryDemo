@@ -23,9 +23,9 @@ public class SoldierFirstPersonView : MonoBehaviour
     public float walkingSpeed => definition.walkingSpeed;
     public Vector3 viewOffset => definition.viewOffset;
     public Vector3 hipFireOffset => definition.hipFireOffset;
-    public float aimFieldOfView => launchers && launchers.IsEquipped ? launchers.Equipped.aimFieldOfView : loadout.EquippedSights && loadout.EquippedSights.SelectedSight
+    public float aimFieldOfView => loadout.EquippedSights && loadout.EquippedSights.SelectedSight
         ? loadout.EquippedSights.SelectedSight.fieldOfView : definition.aimFieldOfView;
-    public float AimSensitivity => launchers && launchers.IsEquipped ? 1f : firstPerson && loadout.EquippedSights && loadout.EquippedSights.SelectedSight
+    public float AimSensitivity => firstPerson && loadout.EquippedSights && loadout.EquippedSights.SelectedSight
         ? Mathf.Lerp(1f, loadout.EquippedSights.SelectedSight.sensitivityMultiplier, aimBlend) : 1f;
     public float aimBlendSpeed => definition.aimBlendSpeed;
     public Vector3 aimOffset => definition.aimOffset;
@@ -65,7 +65,6 @@ public class SoldierFirstPersonView : MonoBehaviour
     public Quaternion CameraRestRotation => firstPerson ? Quaternion.identity : thirdPersonCameraRotation;
 
     private SoldierActions actions;
-    private SoldierLaunchers launchers;
     private SoldierWeaponLoadout loadout;
     private bool aimRequested;
     public bool IsReloading => actions.IsReloading;
@@ -75,7 +74,6 @@ public class SoldierFirstPersonView : MonoBehaviour
         definition = GetComponent<SoldierWeaponPresentation>().weapon.definition;
         movement = GetComponent<SoldierMovement>();
         actions = GetComponent<SoldierActions>();
-        launchers = GetComponent<SoldierLaunchers>();
         loadout = GetComponent<SoldierWeaponLoadout>();
         firstPersonRestRotation = firstPersonRoot.localRotation;
         originalCullingMask = playerCamera.cullingMask;

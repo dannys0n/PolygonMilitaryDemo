@@ -22,6 +22,7 @@ public class SoldierWeaponLoadout : MonoBehaviour
         public int MagazineAmmo { get; private set; }
         public int ReserveAmmo { get; private set; }
         float nextFireTime;
+        public float ReadyAt => nextFireTime;
         public WeaponState(SoldierWeaponDefinition d) { MagazineAmmo=d.magazineCapacity; ReserveAmmo=d.startingReserveAmmo; }
         public bool TryConsumeRound(float now,SoldierWeaponDefinition d)
         {
@@ -54,7 +55,9 @@ public class SoldierWeaponLoadout : MonoBehaviour
     bool equippedVisible=true;
     void Awake()
     {
-        AvailableSlots=new int[slots.Length];for(int i=0;i<slots.Length;i++){AvailableSlots[i]=i;slots[i].state=new WeaponState(slots[i].definition);}
+        var regular = new System.Collections.Generic.List<int>();
+        for(int i=0;i<slots.Length;i++){if(!slots[i].definition.isUtility)regular.Add(i);slots[i].state=new WeaponState(slots[i].definition);}
+        AvailableSlots=regular.ToArray();
         Spawn();
     }
     void Start(){Bind();presentation.view.RefreshVisuals();presentation.view.SetFirstPerson(presentation.view.firstPerson);}
@@ -77,6 +80,8 @@ public class SoldierWeaponLoadout : MonoBehaviour
     static SoldierWeaponView CreateView(SoldierWeaponView prefab,Transform parent)
     {
         var instance=Instantiate(prefab,parent,false);instance.name=prefab.mountName;
+        foreach(var collider in instance.GetComponentsInChildren<Collider>(true))collider.enabled=false;
+        foreach(var body in instance.GetComponentsInChildren<Rigidbody>(true)){body.isKinematic=true;body.detectCollisions=false;}
         instance.transform.SetLocalPositionAndRotation(prefab.mountPosition,prefab.mountRotation);
         instance.transform.localScale=prefab.mountScale;return instance;
     }
@@ -114,7 +119,6 @@ public class SoldierWeaponLoadout : MonoBehaviour
         }
         else {DestroyView(FirstPersonView);FirstPersonView=null;presentation.view.weaponAnimator=null;}
         ConnectViews();ApplySelections();
-        var utility=GetComponent<SoldierLaunchers>();if(utility)utility.RefreshFirstPersonPresentation();
         presentation.view.RefreshVisuals();SetEquippedVisible(equippedVisible);
     }
     void ApplySelections()
@@ -146,8 +150,23 @@ public class SoldierWeaponLoadout : MonoBehaviour
     public void ResetAmmunition(){actions.CancelActions();foreach(var s in slots)s.state=new WeaponState(s.definition);}
     public bool TrySelectWeapon(int index)
     {
-        var utility=GetComponent<SoldierLaunchers>();if(utility&&utility.IsEquipped)utility.Unequip();
-        if(!enabled||index<0||index>=slots.Length||index==selectedSlot||Array.IndexOf(AvailableSlots,index)<0||IsSwitching||actions.IsReloading||actions.IsThrowing)return false;
+        if(index<0||index>=slots.Length)return false;
+        if(slots[index].definition.isUtility)
+        {
+            var utility=GetComponent<SoldierUtilitySlots>();
+            if(!utility)return false;
+            int equipment=Array.IndexOf(utility.utilityWeapons,slots[index].definition);
+            if(equipment<0){if(!utility.SetUtility(0,slots[index].definition))return false;equipment=0;}
+            return utility.TryEquip(equipment);
+        }
+        return TrySwitch(index,false);
+    }
+    public bool TrySelectUtilityWeapon(int index)=>TrySwitch(index,true);
+    bool TrySwitch(int index,bool utility)
+    {
+        if(!enabled||index<0||index>=slots.Length||index==selectedSlot||IsSwitching||actions.IsReloading||actions.IsThrowing)return false;
+        if(utility && !slots[index].definition.isUtility)return false;
+        if(!utility && Array.IndexOf(AvailableSlots,index)<0)return false;
         switchRoutine=StartCoroutine(SwitchWeapon(index));return true;
     }
     IEnumerator SwitchWeapon(int index)
