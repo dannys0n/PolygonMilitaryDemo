@@ -85,7 +85,6 @@ public class HecticCompanySupervisor : MonoBehaviour
                 {
                     var pick=waiting[waiting.Count-1];waiting.RemoveAt(waiting.Count-1);
                     var door=doors.doors[0];if(!door.open)doors.Toggle(0);
-                    var bounds=v.NavigationBounds;
                     boarding[pick]=new BoardingOrder{vehicle=v,seat=-1,physical=true,entry=door.interaction,
                         localDestination=CargoPoint(v,door.interaction,rider),expires=Time.time+embarkTimeout};
                 }
@@ -130,7 +129,8 @@ public class HecticCompanySupervisor : MonoBehaviour
         goal=default;
         // A mixed-squad transport follows its pilot's company; passengers dismount together.
         var leader=troop;
-        if(troop.occupant.IsMounted&&troop.occupant.MountedVehicle.Driver&&troop.occupant.MountedVehicle.Driver.TryGetComponent<ArenaVehicleAI>(out var pilot))leader=pilot;
+        Vehicle carrier=troop.occupant.IsMounted?troop.occupant.MountedVehicle:troop.GetComponent<HecticPhysicalBoarding>()?.Carrier;
+        if(carrier&&carrier.Driver&&carrier.Driver.TryGetComponent<ArenaVehicleAI>(out var pilot))leader=pilot;
         if(!companyOf.TryGetValue(leader,out var c)||!c.objective)return false;
         goal=c.objective.transform.position;return true;
     }

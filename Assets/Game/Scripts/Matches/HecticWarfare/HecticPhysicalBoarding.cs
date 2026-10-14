@@ -28,7 +28,11 @@ public class HecticPhysicalBoarding : MonoBehaviour
             if(!supported&&(transform.position-destination).sqrMagnitude>100){Finish();return false;}
             if(v.Body.linearVelocity.magnitude<3&&supervisor.TryGoal(transport,out var goal)
                 &&(Vector3.ProjectOnPlane(v.transform.position-goal,Vector3.up).sqrMagnitude<supervisor.unloadRadius*supervisor.unloadRadius||infantry.IsCombatAlert))
-            {destination=order.entry.position-v.transform.forward*4;if((transform.position-order.entry.position).sqrMagnitude>20){Finish();return false;}}
+            {
+                Vector3 outward=Vector3.ProjectOnPlane(order.entry.position-v.transform.TransformPoint(order.localDestination),Vector3.up).normalized;
+                destination=order.entry.position+outward*3;
+                if((transform.position-order.entry.position).sqrMagnitude>20){Finish();return false;}
+            }
             else return true;
         }
         else if((transform.position-order.entry.position).sqrMagnitude>16)
