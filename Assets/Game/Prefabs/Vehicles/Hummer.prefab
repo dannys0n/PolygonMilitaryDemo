@@ -4048,6 +4048,24 @@ MonoBehaviour:
   seatDiagramCenter: {x: 0.010131836, y: -0.012149334}
   seatDiagramHalfExtent: 2.4373772
   motor: {fileID: 7749662443089936875}
+  jetAssist:
+    assistEnabled: 1
+    maximumBank: 75
+    headingToBank: 1.8
+    assistedBankRate: 100
+    aimResponse: 2
+  helicopterAssist:
+    assistEnabled: 1
+    attitudeSpring: 60
+    attitudeDamping: 16
+    verticalResponse: 2.8
+    positionHoldSpring: 0.6
+    positionHoldDamping: 1.5
+    maxHoldAcceleration: 18
+    reversalTilt: 38
+    reversalSpeedRange: {x: 4, y: 20}
+    movementVelocityResponse: 0.8
+    cyclicResponseTime: 0.1
   turret: {fileID: 1627803472940609030}
   destructionEffect: {fileID: 695410771644243590, guid: c07b2e8d0c65dad44bf5eaca660002fc, type: 3}
   cameraTarget: {fileID: 63068711675286005}
@@ -4063,6 +4081,7 @@ MonoBehaviour:
     showCharacter: 0
     weaponMountedView: 0
     externalView: 0
+    disembarkInside: 0
     eye: {fileID: 7282305671009475043}
     leftGrip: {fileID: 5456814952908194524}
     rightGrip: {fileID: 8360498766962998763}
@@ -4076,6 +4095,7 @@ MonoBehaviour:
     showCharacter: 0
     weaponMountedView: 0
     externalView: 0
+    disembarkInside: 0
     eye: {fileID: 4512435661786533341}
     leftGrip: {fileID: 8272369524724413935}
     rightGrip: {fileID: 4072146754824907095}
@@ -4089,6 +4109,7 @@ MonoBehaviour:
     showCharacter: 0
     weaponMountedView: 0
     externalView: 0
+    disembarkInside: 0
     eye: {fileID: 4021426138700717619}
     leftGrip: {fileID: 0}
     rightGrip: {fileID: 0}
@@ -4102,6 +4123,7 @@ MonoBehaviour:
     showCharacter: 0
     weaponMountedView: 0
     externalView: 0
+    disembarkInside: 0
     eye: {fileID: 6868898737663503709}
     leftGrip: {fileID: 0}
     rightGrip: {fileID: 0}
@@ -4115,6 +4137,7 @@ MonoBehaviour:
     showCharacter: 0
     weaponMountedView: 0
     externalView: 0
+    disembarkInside: 0
     eye: {fileID: 595642706526917810}
     leftGrip: {fileID: 0}
     rightGrip: {fileID: 0}
@@ -4195,6 +4218,7 @@ MonoBehaviour:
   controlRole: 1
   explosiveVehicleDamage: 0
   impactEffect: {fileID: 0}
+  bulletImpactEffect: {fileID: 2439139833262679887, guid: 241a54bb4879d284a9bc8468045e1289, type: 3}
   projectile: {fileID: 0}
   fixedMount: 0
   ejectCasings: 1

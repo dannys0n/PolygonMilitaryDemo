@@ -13,6 +13,8 @@ public class VehicleTurret : MonoBehaviour
     public Vehicle.SeatRole controlRole = Vehicle.SeatRole.Gunner;
     public bool explosiveVehicleDamage;
     public ParticleSystem impactEffect;
+    [Tooltip("Small-caliber hitscan feedback; explosive rounds retain their cannon/projectile impact.")]
+    public ParticleSystem bulletImpactEffect;
     public VehicleRocket projectile;
     public bool fixedMount;
     public bool ejectCasings = true;
@@ -126,9 +128,10 @@ public class VehicleTurret : MonoBehaviour
         }
         if (found)
         {
-            if(impactEffect)
+            var hitEffect = !explosiveVehicleDamage && bulletImpactEffect ? bulletImpactEffect : impactEffect;
+            if(hitEffect)
             {
-                var effect=Instantiate(impactEffect,nearest.point+nearest.normal*.03f,Quaternion.FromToRotation(Vector3.forward,nearest.normal));
+                var effect=Instantiate(hitEffect,nearest.point+nearest.normal*.03f,Quaternion.FromToRotation(Vector3.forward,nearest.normal));
                 effect.Play(true);
                 float duration=0;
                 foreach(var particles in effect.GetComponentsInChildren<ParticleSystem>(true))

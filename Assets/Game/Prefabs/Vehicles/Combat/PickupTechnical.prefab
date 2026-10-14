@@ -565,6 +565,24 @@ MonoBehaviour:
   seatDiagramCenter: {x: 0, y: -0.17686415}
   seatDiagramHalfExtent: 3.2844062
   motor: {fileID: 1701481860467282284}
+  jetAssist:
+    assistEnabled: 1
+    maximumBank: 75
+    headingToBank: 1.8
+    assistedBankRate: 100
+    aimResponse: 2
+  helicopterAssist:
+    assistEnabled: 1
+    attitudeSpring: 60
+    attitudeDamping: 16
+    verticalResponse: 2.8
+    positionHoldSpring: 0.6
+    positionHoldDamping: 1.5
+    maxHoldAcceleration: 18
+    reversalTilt: 38
+    reversalSpeedRange: {x: 4, y: 20}
+    movementVelocityResponse: 0.8
+    cyclicResponseTime: 0.1
   turret: {fileID: 6124986441500528202}
   destructionEffect: {fileID: 695410771644243590, guid: c07b2e8d0c65dad44bf5eaca660002fc, type: 3}
   cameraTarget: {fileID: 1649675125616040499}
@@ -580,6 +598,7 @@ MonoBehaviour:
     showCharacter: 1
     weaponMountedView: 0
     externalView: 0
+    disembarkInside: 0
     eye: {fileID: 35805492221861061}
     leftGrip: {fileID: 3075362886214844836}
     rightGrip: {fileID: 3973010354134715452}
@@ -593,6 +612,7 @@ MonoBehaviour:
     showCharacter: 1
     weaponMountedView: 1
     externalView: 0
+    disembarkInside: 0
     eye: {fileID: 1762106745257576407}
     leftGrip: {fileID: 8059015952234451330}
     rightGrip: {fileID: 3850022281825139187}
@@ -606,6 +626,7 @@ MonoBehaviour:
     showCharacter: 1
     weaponMountedView: 0
     externalView: 0
+    disembarkInside: 0
     eye: {fileID: 3009972366186721027}
     leftGrip: {fileID: 0}
     rightGrip: {fileID: 0}
@@ -702,6 +723,7 @@ MonoBehaviour:
   controlRole: 1
   explosiveVehicleDamage: 0
   impactEffect: {fileID: 0}
+  bulletImpactEffect: {fileID: 2439139833262679887, guid: 241a54bb4879d284a9bc8468045e1289, type: 3}
   projectile: {fileID: 0}
   fixedMount: 0
   ejectCasings: 1

@@ -4342,6 +4342,24 @@ MonoBehaviour:
   seatDiagramCenter: {x: 0, y: 0.7694583}
   seatDiagramHalfExtent: 5.914359
   motor: {fileID: 3975336535070856059}
+  jetAssist:
+    assistEnabled: 1
+    maximumBank: 75
+    headingToBank: 1.8
+    assistedBankRate: 100
+    aimResponse: 2
+  helicopterAssist:
+    assistEnabled: 1
+    attitudeSpring: 60
+    attitudeDamping: 16
+    verticalResponse: 2.8
+    positionHoldSpring: 0.6
+    positionHoldDamping: 1.5
+    maxHoldAcceleration: 18
+    reversalTilt: 38
+    reversalSpeedRange: {x: 4, y: 20}
+    movementVelocityResponse: 0.8
+    cyclicResponseTime: 0.1
   turret: {fileID: 4680408936488991495}
   destructionEffect: {fileID: 695410771644243590, guid: c07b2e8d0c65dad44bf5eaca660002fc, type: 3}
   cameraTarget: {fileID: 7055269995831252069}
@@ -4548,6 +4566,7 @@ MonoBehaviour:
   controlRole: 1
   explosiveVehicleDamage: 1
   impactEffect: {fileID: 695410771644243590, guid: c07b2e8d0c65dad44bf5eaca660002fc, type: 3}
+  bulletImpactEffect: {fileID: 2439139833262679887, guid: 241a54bb4879d284a9bc8468045e1289, type: 3}
   projectile: {fileID: 5294574436891810865, guid: 6996b4a3b48f16b4e8348919fca4d88d, type: 3}
   fixedMount: 0
   ejectCasings: 0
@@ -4661,6 +4680,10 @@ MonoBehaviour:
   rechargeSeconds: 35
   smokeDuration: 10
   automaticForAI: 1
+  flareSalvos: 5
+  flareInterval: 0.16
+  flareEjectionSpeed: {x: 20, y: 26}
+  flareDispersion: 5
 --- !u!1 &3860510351366812075
 GameObject:
   m_ObjectHideFlags: 0
