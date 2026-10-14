@@ -192,6 +192,7 @@ public class ArenaHud : MonoBehaviour
         weaponName.text = loadout.slots[loadout.selectedSlot].name.ToUpperInvariant();
         ammunition.text = $"{ammo.MagazineAmmo:00}<size=24><color=#B9C0C5> / {ammo.ReserveAmmo:000}</color></size>";
         fireMode.text = player.player.actions.IsReloading ? "RELOADING" : player.player.actions.fireMode == SoldierActions.FireMode.Automatic ? "AUTO" : "SEMI";
+        if(ammo.InfiniteOverride)ammunition.text="\u221e";
         if(loadout.EquippedWeapon.definition.infiniteAmmunition){ammunition.text="∞";fireMode.text="MELEE";}
         int ordinal = System.Array.IndexOf(loadout.AvailableSlots, loadout.selectedSlot);
         rifleIcon.SetActive(ordinal == 0); pistolIcon.SetActive(ordinal > 0);
@@ -215,7 +216,8 @@ public class ArenaHud : MonoBehaviour
             bool selected=launchers.IsEquipped&&launchers.Selected==i;
             launcherIcons[i].sprite=launchers.utilityWeapons[i].icon;
             StyleEquipmentIcon(launcherIcons[i],selected,launchers.Count(i)>0?1:.25f);
-            launcherCounts[i].text=launchers.Count(i)+"  "+(i==0?"[Q]":"[X]");
+            bool infinite=loadout.slots[launchers.Slot(i)].state.InfiniteOverride;
+            launcherCounts[i].text=(infinite?"\u221e":launchers.Count(i).ToString())+"  "+(i==0?"[Q]":"[X]");
             launcherBackgrounds[i].color=selected?new Color(accent.r,accent.g,accent.b,.12f):new Color(1,1,1,.035f);
             StyleEquipmentText(launcherCounts[i],selected);
         }
