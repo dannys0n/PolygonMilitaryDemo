@@ -189,7 +189,7 @@ public class SoldierHitscan : MonoBehaviour
 
     ShotResult Publish(ShotResult result)
     {
-        if(showShotVisual)
+        if(showShotVisual && !(GetComponent<SoldierController>().inputSource is SoldierLocalInput))
         {
             var loadout=GetComponent<SoldierWeaponLoadout>();
             var view=GetComponent<SoldierFirstPersonView>();
