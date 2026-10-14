@@ -532,7 +532,7 @@ public class VehicleOccupant : MonoBehaviour
             && !(IsLocal && CockpitView && seat.weaponMountedView);
         foreach(var skin in seatedBody) if(skin){skin.enabled=visible;skin.forceRenderingOff=!visible;skin.shadowCastingMode=UnityEngine.Rendering.ShadowCastingMode.On;}
     }
-    public bool OpticalADSActive { get { var sight=MountedVehicle?MountedVehicle.GetComponent<VehicleAttackSight>():null; return IsMounted && IsLocal && sight && sight.useOpticalADS && sight.IsDocumentedTankSight && sight.DisplaysForSeat(SeatIndex) && Input.GetMouseButton(1) && !Freelook; } }
+    public bool OpticalADSActive { get { var sight=MountedVehicle?MountedVehicle.GetComponent<VehicleAttackSight>():null; return IsMounted && IsLocal && sight && sight.IsDocumentedTankSight && sight.DisplaysForSeat(SeatIndex) && Input.GetMouseButton(1) && !Freelook; } }
     void LateUpdate()
     {
         if(IsMounted) UpdateSeatedVisibility();
@@ -547,12 +547,14 @@ public class VehicleOccupant : MonoBehaviour
             rotation = CockpitView ? v.Body.rotation : Quaternion.LookRotation(v.transform.forward,
                 !v.FlightAssistEnabled || Mathf.Abs(Vector3.Dot(v.transform.forward,Vector3.up))>.98f ? v.transform.up : Vector3.up);
         Vector3 desired = CameraPosition(v,rotation,gunner,aircraft,pilot);
-        if(OpticalADSActive){var sight=v.GetComponent<VehicleAttackSight>();desired=sight.OpticalPosition;rotation=Quaternion.LookRotation(sight.WeaponRay.direction,v.transform.up);}
         var shake=vehicleCameraShake.transform;
         vehicleCamera.transform.SetPositionAndRotation(desired+rotation*shake.localPosition,rotation*shake.localRotation);
     }
     Vector3 CameraPosition(Vehicle v, Quaternion rotation, bool gunner, bool aircraft, bool pilot, bool? cockpitOverride = null)
     {
+        // ADS changes only the optical origin and magnification; mouse look remains the desired direction.
+        // Both the aim ray and rendered view use this origin, while the barrel marker shows traversal lag.
+        if(OpticalADSActive && cockpitOverride != false)return v.GetComponent<VehicleAttackSight>().OpticalPosition;
         bool cockpit = v.hasRenderedInterior && !v.seats[SeatIndex].externalView && (cockpitOverride ?? CockpitView);
         var station=v.seats[SeatIndex];
         Vector3 target = gunner ? v.turret && v.turret.cameraPoint ? v.turret.cameraPoint.position
