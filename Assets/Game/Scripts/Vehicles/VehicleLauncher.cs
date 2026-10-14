@@ -29,8 +29,9 @@ public class VehicleLauncher : MonoBehaviour
     VehicleWeaponSystems selectedSystems;
     int missiles;
     float nextRecharge;
-    public int Missiles => missiles;
-    public float RechargeRemaining => missiles < capacity ? Mathf.Max(0,nextRecharge-Time.time) : 0;
+    public int Missiles { get { RefreshReload(); return missiles; } }
+    public float RechargeRemaining { get { RefreshReload(); return missiles < capacity ? Mathf.Max(0,nextRecharge-Time.time) : 0; } }
+    void RefreshReload() { if (vehicle && !vehicle.IsDestroyed) Recharge(Time.time); }
     void Awake() { missiles=capacity; nextRecharge=float.PositiveInfinity; }
     void Update()
     {
@@ -166,7 +167,14 @@ public class VehicleLauncher : MonoBehaviour
         float forwardSpeed = Mathf.Sqrt(Mathf.Max(1,projectile.speed*projectile.speed-lateralVelocity.sqrMagnitude));
         return (direction*forwardSpeed-lateralVelocity).normalized;
     }
-    public float ReadyIn => Mathf.Max(Mathf.Max(0,nextShot-Time.time),missiles==0 ? RechargeRemaining : 0);
+    public float ReadyIn
+    {
+        get
+        {
+            RefreshReload();
+            return Mathf.Max(Mathf.Max(0,nextShot-Time.time),missiles==0 ? RechargeRemaining : 0);
+        }
+    }
     public bool TryFire(VehicleOccupant pilot)
     {
         Recharge(Time.time);

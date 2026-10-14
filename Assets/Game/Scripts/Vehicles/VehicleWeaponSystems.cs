@@ -70,6 +70,7 @@ public sealed class VehicleWeaponSystems : MonoBehaviour
         if (weapon.system == FireSystem.Gun && weapon.gun)
         {
             var gun = weapon.gun;
+            gun.SetReadyTime(weapon.nextShot);
             gun.weaponName = weapon.name; gun.damage = weapon.damage; gun.range = weapon.range;
             gun.roundsPerMinute = weapon.roundsPerMinute; gun.explosiveVehicleDamage = weapon.explosive;
             gun.projectile = weapon.projectile; gun.ejectCasings = weapon.ejectCasings;
@@ -92,10 +93,10 @@ public sealed class VehicleWeaponSystems : MonoBehaviour
         if (weapon == null) return false;
         if (weapon.system == FireSystem.Launcher) return weapon.launcher.TryFire(actor);
         if (Time.time < weapon.nextShot) return false;
-        // Each weapon retains its own cadence, so the coax can fire while the main gun reloads.
-        weapon.gun.ResetCadence();
+        // Restore this weapon's absolute deadline; other systems reload independently while deselected.
+        weapon.gun.SetReadyTime(weapon.nextShot);
         bool fired = weapon.gun.TryFire(actor);
-        if (fired) weapon.nextShot = Time.time + 60f / Mathf.Max(1, weapon.roundsPerMinute);
+        if (fired) weapon.nextShot = weapon.gun.NextShotTime;
         return fired;
     }
     public void AimAt(VehicleOccupant actor, Ray view)

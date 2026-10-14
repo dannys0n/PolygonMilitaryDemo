@@ -34,7 +34,8 @@ public class VehicleTurret : MonoBehaviour
     bool aimAtPoint;
     public Vector3 RequestedAimDirection => aimDirection;
     public event System.Action<VehicleOccupant, Vector3> ShotFired;
-    public void ResetCadence() => nextShot = 0;
+    public float NextShotTime => nextShot;
+    public void SetReadyTime(float readyTime) => nextShot = readyTime;
     void Start()
     {
         aimDirection=vehicle.transform.forward;
