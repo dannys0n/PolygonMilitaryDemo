@@ -66,7 +66,7 @@ public class ArenaVehicleAttackHud : MonoBehaviour
             else {scaleLabels[i].text=i==16?"0.5":"2.7";scaleLabels[i].rectTransform.anchoredPosition=i==16?new Vector2(36,42):new Vector2(202,-105);}
         }
         var systems=vehicle.GetComponent<VehicleWeaponSystems>();
-        var selected=systems && vehicle.turret?systems.Current(vehicle.turret.controlRole):null;
+        var selected=systems?systems.Current(occupant):null;
         float reload=selected!=null?selected.ReadyIn:vehicle.turret?vehicle.turret.ReadyIn:0;
         bool single=selected!=null?selected.IsSingleShot:vehicle.turret && vehicle.turret.IsSingleShot;
         string readiness=!sight.Operational?"SAFE":single && reload>0?"RELOAD "+reload.ToString("F1")+" S":"READY";

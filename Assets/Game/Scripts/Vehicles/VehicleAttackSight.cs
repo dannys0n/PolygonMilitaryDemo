@@ -24,6 +24,7 @@ public class VehicleAttackSight : MonoBehaviour
     public bool DisplaysForSeat(int index)
     {
         var seat=vehicle.seats[index];
-        return vehicle.turret?seat.role==vehicle.turret.controlRole:seat.role==Vehicle.SeatRole.Driver||seat.showVehicleInstruments;
+        var launcher=vehicle.GetComponent<VehicleLauncher>();
+        return vehicle.turret ? seat.role==vehicle.turret.controlRole : launcher ? seat.role==launcher.controlRole : seat.role==Vehicle.SeatRole.Driver||seat.showVehicleInstruments;
     }
 }

@@ -360,6 +360,7 @@ public class ArenaVehicleHud : MonoBehaviour
         bool gunner = current!=null?current.system==VehicleWeaponSystems.FireSystem.Gun:vehicle.seats[player.SeatIndex].role == Vehicle.SeatRole.Gunner;
         var activeLauncher=current!=null?current.launcher:vehicle.GetComponent<VehicleLauncher>();
         var activeGun=current!=null?current.gun:vehicle.turret;
+        gunnerReadout.gameObject.SetActive(gunner && activeGun);
         if(!gunner&&!activeLauncher){desiredAim.gameObject.SetActive(false);actualAim.gameObject.SetActive(false);return;}
         actualAim.GetComponent<Graphic>().canvasRenderer.SetAlpha(gunner || activeLauncher.Missiles > 0 ? 1f : .2f);
 

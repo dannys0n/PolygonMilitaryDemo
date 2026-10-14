@@ -189,7 +189,7 @@ public class VehicleOccupant : MonoBehaviour
         if (aircraft && role == Vehicle.SeatRole.Driver && !vehicle.FlightAssistEnabled)
             mouse = Vector2.ClampMagnitude(mouse,1f);
         mouse *= local.sensitivity;
-        bool driverWeapon = role==Vehicle.SeatRole.Driver && ((vehicle.turret && vehicle.turret.controlRole==Vehicle.SeatRole.Driver) || vehicle.GetComponent<VehicleLauncherMount>());
+        bool driverWeapon = role==Vehicle.SeatRole.Driver && (weaponSystems ? weaponSystems.Current(this)!=null : (vehicle.turret && vehicle.turret.controlRole==Vehicle.SeatRole.Driver) || (vehicle.GetComponent<VehicleLauncher>() && vehicle.GetComponent<VehicleLauncher>().controlRole==Vehicle.SeatRole.Driver));
         if ((!aircraft && role == Vehicle.SeatRole.Driver && !driverWeapon) || role == Vehicle.SeatRole.Passenger)
             yaw += Mathf.DeltaAngle(lastVehicleYaw, vehicle.transform.eulerAngles.y);
         lastVehicleYaw = vehicle.transform.eulerAngles.y;
@@ -197,7 +197,11 @@ public class VehicleOccupant : MonoBehaviour
         float lookPitchLimit = vehicle.motor is JetMotor ? 85 : 60;
         pitch = Mathf.Clamp(pitch - mouse.y, -lookPitchLimit, lookPitchLimit);
         if (role == Vehicle.SeatRole.Gunner)
-            pitch = Mathf.Clamp(pitch, -vehicle.turret.pitchLimits.y, -vehicle.turret.pitchLimits.x);
+        {
+            var launcherMount=vehicle.GetComponent<VehicleLauncherMount>();
+            var limits=vehicle.turret ? vehicle.turret.pitchLimits : launcherMount ? launcherMount.pitchLimits : new Vector2(-60,60);
+            pitch = Mathf.Clamp(pitch, -limits.y, -limits.x);
+        }
         if (weaponSystems)
         {
             Quaternion weaponView = aircraft && role==Vehicle.SeatRole.Driver && !vehicle.FlightAssistEnabled && !Freelook
@@ -261,7 +265,7 @@ public class VehicleOccupant : MonoBehaviour
                 }
             }
         }
-        if (!weaponSystems && role == Vehicle.SeatRole.Gunner)
+        if (!weaponSystems && role == Vehicle.SeatRole.Gunner && vehicle.turret)
                 {
             if (!Freelook)
             {
@@ -551,7 +555,9 @@ public class VehicleOccupant : MonoBehaviour
     Vector3 CameraPosition(Vehicle v, Quaternion rotation, bool gunner, bool aircraft, bool pilot, bool? cockpitOverride = null)
     {
         bool cockpit = v.hasRenderedInterior && !v.seats[SeatIndex].externalView && (cockpitOverride ?? CockpitView);
-        Vector3 target = gunner ? v.turret.cameraPoint.position : v.cameraTarget.position;
+        var station=v.seats[SeatIndex];
+        Vector3 target = gunner ? v.turret && v.turret.cameraPoint ? v.turret.cameraPoint.position
+            : station.eye ? station.eye.position : v.cameraTarget.position : v.cameraTarget.position;
         if (pilot && v.FlightAssistEnabled && !cockpit)
             target = v.transform.position + Vector3.up * v.cameraTarget.localPosition.y;
         Vector3 desired;
@@ -578,7 +584,7 @@ public class VehicleOccupant : MonoBehaviour
         bool pilot = aircraft && v.seats[SeatIndex].role == Vehicle.SeatRole.Driver;
         // Local occupants already own the live view; AI view comes from its control intent.
         rotation = IsLocal ? Quaternion.Euler(pitch, yaw, 0)
-            : gunner ? Quaternion.LookRotation(v.turret.RequestedAimDirection, Vector3.up)
+            : gunner ? Quaternion.LookRotation(v.turret ? v.turret.RequestedAimDirection : v.GetComponent<VehicleLauncherMount>() ? v.GetComponent<VehicleLauncherMount>().muzzle.forward : v.transform.forward, Vector3.up)
             : v.seats[SeatIndex].role == Vehicle.SeatRole.Passenger && cockpit ? v.seats[SeatIndex].anchor.rotation
             : aircraft ? Quaternion.Euler(v.DriverInput.viewPitch, v.DriverInput.heading, 0)
             : Quaternion.Euler(cockpit ? 0 : 14, v.transform.eulerAngles.y, 0);
