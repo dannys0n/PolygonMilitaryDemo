@@ -183,6 +183,23 @@ public class Vehicle : MonoBehaviour
         for (int i = 0; i < seats.Length; i++) if (CanBoard(actor, i)) return i;
         return -1;
     }
+    // Human entry prefers vacant seats, then a friendly AI seat in the same authored order.
+    public int FirstEntrySeat(VehicleOccupant actor)
+    {
+        int available=FirstAvailableSeat(actor);if(available>=0)return available;
+        for(int i=0;i<seats.Length;i++)if(CanDisplaceAI(actor,i))return i;
+        return -1;
+    }
+    bool CanDisplaceAI(VehicleOccupant actor,int index)
+    {
+        if(!actor||!actor.IsLocal||actor.IsMounted||actor.life.health.IsDead||IsDestroyed||index<0||index>=seats.Length)return false;
+        var seat=seats[index];var occupant=seat.occupant;
+        if(!seat.anchor||!seat.exit||!occupant||occupant.IsLocal||occupant.life.health.IsDead
+            ||!(occupant.soldier.inputSource is ArenaAIInput))return false;
+        foreach(var other in seats)
+            if(other.occupant&&actor.faction>=0&&other.occupant.faction>=0&&actor.faction!=other.occupant.faction)return false;
+        return true;
+    }
     public Transform NearestEntryPoint(Vector3 position)
     {
         Transform closest = transform;
@@ -226,7 +243,7 @@ public class Vehicle : MonoBehaviour
         Gizmos.DrawWireCube(bounds.center, bounds.size);
         Gizmos.matrix = Matrix4x4.identity;
     }
-    public bool BoardFirstAvailable(VehicleOccupant actor) => Board(actor, FirstAvailableSeat(actor));
+    public bool BoardFirstAvailable(VehicleOccupant actor) => Board(actor, FirstEntrySeat(actor));
     public bool Reserve(VehicleOccupant actor, int index)
     {
         if (!CanBoard(actor, index))
@@ -243,11 +260,13 @@ public class Vehicle : MonoBehaviour
     }
     public bool Board(VehicleOccupant actor, int index)
     {
-        if (!CanBoard(actor, index) || (!actor.IsLocal && Body.linearVelocity.magnitude > 3f)
+        if ((!CanBoard(actor, index) && !CanDisplaceAI(actor,index)) || (!actor.IsLocal && Body.linearVelocity.magnitude > 3f)
             || !IsInsideEntryBox(actor.transform.position))
             return false;
         if (!actor.IsLocal && !motor.CanDisembark)
             return false;
+        // Validate entry before ejecting anyone; a remote/out-of-range request has no side effects.
+        if(seats[index].occupant&&!seats[index].occupant.Leave(true))return false;
         seats[index].reservation = null;
         seats[index].occupant = actor;
         actor.Mount(this, index);

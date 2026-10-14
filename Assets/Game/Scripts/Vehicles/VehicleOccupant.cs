@@ -89,7 +89,7 @@ public class VehicleOccupant : MonoBehaviour
             foreach (var v in Vehicle.Active)
             {
                 if (v.gameObject.scene != gameObject.scene) continue;
-                int available = v.FirstAvailableSeat(this);
+                int available = v.FirstEntrySeat(this);
                 if (available < 0) continue;
                 if (!v.IsInsideEntryBox(transform.position)) continue;
                 float d = Vector3.Distance(transform.position, v.transform.TransformPoint(v.NavigationBounds.center));
@@ -107,7 +107,7 @@ public class VehicleOccupant : MonoBehaviour
                 float d=Vector3.Distance(transform.position,doors.doors[index].interaction.position);
                 if(d<doorDistance){doorDistance=d;doorControl=doors;}
             }
-            Prompt = best ? "HOLD [E] ENTER " + best.displayName + " / " + best.seats[seat].name : "";
+            Prompt = best ? "HOLD [E] " + (best.seats[seat].occupant?"REPLACE AI / ":"ENTER ") + best.displayName + " / " + best.seats[seat].name : "";
             if(doorControl)Prompt += doorControl.operateTogether ? "   TAP [E] DOORS" : "   TAP [E] DOOR";
             if(Cursor.lockState == CursorLockMode.Locked)
             {

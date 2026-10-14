@@ -125,6 +125,45 @@ public class AIBehaviorScenarioTests
  }
  bool IsMounted(object actor)=>(bool)Get(((Component)actor).GetComponent(T("VehicleOccupant")),"IsMounted");
  int MountedActors()=>((IList)Get(scenario,"Actors")).Cast<object>().Count(IsMounted);
+ [UnityTest] public IEnumerator OutsidePlayerCanReplaceFriendlyAIOnlyInFullVehicle()
+ {
+  yield return Load("AI_Transport_Overflow");var options=(Array)Get(scenario,"VehicleOptions");
+  int index=Array.FindIndex(options.Cast<Component>().ToArray(),v=>v.name=="PickupTechnical");
+  scenario.GetType().GetMethod("SelectVehicle").Invoke(scenario,new object[]{index});yield return new WaitForSeconds(1.5f);
+  Command(scenario,"FillSeats");yield return new WaitForSeconds(1);
+  var vehicle=(Component)Get(scenario,"Vehicle");var seats=(Array)Get(vehicle,"seats");
+  foreach(var actor in (IList)Get(scenario,"Actors"))
+  {var component=(Component)actor;component.GetComponent(T("SoldierController")).GetType().GetField("inputSource").SetValue(component.GetComponent(T("SoldierController")),component.GetComponent(T("ArenaAIInput")));}
+  Command(scenario,"AddPlayer");yield return new WaitForSeconds(.3f);
+  var actors=(IList)Get(scenario,"Actors");var player=(Component)actors[actors.Count-1];MakeLocal(player);
+  var occupant=player.GetComponent(T("VehicleOccupant"));var ai=Get(seats.GetValue(0),"occupant");
+  var entry=(Bounds)Get(vehicle,"EntryBounds");
+  player.transform.position=vehicle.transform.TransformPoint(entry.center+Vector3.right*(entry.extents.x+5));Physics.SyncTransforms();
+  Assert.IsFalse((bool)vehicle.GetType().GetMethod("BoardFirstAvailable").Invoke(vehicle,new[]{occupant}),"Outside the entry box cannot eject anyone");
+  Assert.AreEqual(ai,Get(seats.GetValue(0),"occupant"));
+  player.transform.position=vehicle.transform.TransformPoint(entry.center);Physics.SyncTransforms();
+  Assert.AreEqual(0,vehicle.GetType().GetMethod("FirstEntrySeat").Invoke(vehicle,new[]{occupant}),"A full vehicle offers its first AI seat");
+  Assert.IsTrue((bool)vehicle.GetType().GetMethod("BoardFirstAvailable").Invoke(vehicle,new[]{occupant}));
+  Assert.AreEqual(occupant,Get(seats.GetValue(0),"occupant"));Assert.IsFalse((bool)Get(ai,"IsMounted"),"AI is ejected through the ordinary exit lifecycle");
+  // Human occupants must never become displacement candidates.
+  for(int i=0;i<seats.Length;i++)
+  {
+   var seated=(Component)Get(seats.GetValue(i),"occupant");
+   if((bool)Get(seated,"IsLocal"))continue;
+   seated.GetType().GetMethod("Leave").Invoke(seated,new object[]{true});MakeLocal(seated);
+   seated.transform.position=vehicle.transform.TransformPoint(entry.center);
+   Assert.IsTrue((bool)vehicle.GetType().GetMethod("Board").Invoke(vehicle,new object[]{seated,i}));
+  }
+  MakeLocal((Component)ai);
+  Assert.AreEqual(-1,vehicle.GetType().GetMethod("FirstEntrySeat").Invoke(vehicle,new[]{ai}));
+  Assert.IsFalse((bool)vehicle.GetType().GetMethod("BoardFirstAvailable").Invoke(vehicle,new[]{ai}));
+  Assert.AreEqual(0,Get(scenario,"ErrorCount"));
+ }
+ void MakeLocal(Component actor)
+ {
+  var local=(Behaviour)actor.GetComponent(T("SoldierLocalInput"));if(!local)local=(Behaviour)actor.gameObject.AddComponent(T("SoldierLocalInput"));local.enabled=false;
+  var controller=actor.GetComponent(T("SoldierController"));controller.GetType().GetField("inputSource").SetValue(controller,local);
+ }
  void AssertFullCrew()
  {
   int total=0;
