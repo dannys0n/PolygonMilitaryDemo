@@ -632,6 +632,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1904889280676439769}
+  - component: {fileID: 1536757122722278130}
   m_Layer: 0
   m_Name: OpticMount
   m_TagString: Untagged
@@ -654,6 +655,27 @@ Transform:
   m_Children: []
   m_Father: {fileID: 6013236975656839827}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1536757122722278130
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7483760708995023356}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 03e841738b6be124bbe22cf82e6359c7, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::WeaponAttachmentSocket
+  requiredSightSupports: []
+  placements:
+  - attachment: {fileID: 0}
+    sight: {fileID: 11400000, guid: 5afec82beb434b343b579a3e84704f98, type: 2}
+    position: {x: -0.012, y: 0.054, z: -0.045}
+    rotation: {x: 0, y: 0, z: 0, w: 1}
+    scale: {x: 1, y: 1, z: 1}
+  builtInSight: {fileID: 0}
+  builtInSightRenderers: []
 --- !u!1 &7513092392352480427
 GameObject:
   m_ObjectHideFlags: 0

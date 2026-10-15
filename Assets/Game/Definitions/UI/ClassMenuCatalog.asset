@@ -190,6 +190,7 @@ MonoBehaviour:
     - polygon-reflex
     - sight_rmr
     - scope_trijicon
+    - svd-pso-4x
     attachments:
     - sight-riser-25mm
     - angledgripmount_45
@@ -243,7 +244,11 @@ MonoBehaviour:
       supports: []
     - path: AK12Rig/Root/AttachmentSockets/OpticMount
       mount: 5
-      placements: []
+      placements:
+      - part: svd-pso-4x
+        position: {x: -0.012, y: 0.054, z: -0.045}
+        scale: {x: 1, y: 1, z: 1}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
       supports: []
     builtIns:
     - mount: 0
@@ -319,6 +324,7 @@ MonoBehaviour:
     - polygon-reflex
     - sight_rmr
     - scope_trijicon
+    - svd-pso-4x
     attachments:
     - sight-riser-25mm
     - angledgripmount_45
@@ -372,7 +378,15 @@ MonoBehaviour:
       supports: []
     - path: AK_Base/AK12Rig/Root/AttachmentSockets/OpticMount
       mount: 5
-      placements: []
+      placements:
+      - part: scope_1p29
+        position: {x: -0.028, y: -0.058, z: 0}
+        scale: {x: 1, y: 1, z: 1}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+      - part: svd-pso-4x
+        position: {x: -0.012, y: 0.054, z: -0.045}
+        scale: {x: 1, y: 1, z: 1}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
       supports: []
     builtIns:
     - mount: 0
@@ -1421,6 +1435,7 @@ MonoBehaviour:
     - polygon-reflex
     - sight_rmr
     - scope_trijicon
+    - svd-pso-4x
     attachments:
     - sight-riser-25mm
     - angledgripmount_45
@@ -1479,6 +1494,10 @@ MonoBehaviour:
         position: {x: 0.0023061652, y: 0.000000009691707, z: -0.00000021891935}
         scale: {x: 1.0000002, y: 1.0000002, z: 1.0000005}
         rotation: {x: 9.447296e-16, y: 0.03084239, z: -8.8400706e-17, w: 0.99952424}
+      - part: svd-pso-4x
+        position: {x: -0.012, y: 0.054, z: -0.045}
+        scale: {x: 1, y: 1, z: 1}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
       supports: []
     builtIns:
     - mount: 0
