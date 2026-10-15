@@ -38,6 +38,8 @@ public class SoldierWeaponLoadout : MonoBehaviour
     public SoldierMotionGrip firstPersonGripRig;
     public Transform sprintSocket, firstPersonMount, thirdPersonMount;
     public Slot[] slots;
+    [Tooltip("Unlimited ammunition for every equipped weapon on this player, including utility weapons.")]
+    public bool infiniteAmmunition;
     public SoldierWeaponPresentation presentation;
     public SoldierActions actions;
     public int selectedSlot;
@@ -154,12 +156,12 @@ public class SoldierWeaponLoadout : MonoBehaviour
     void ResetStates()
     {
         int primary=AvailableSlots!=null&&AvailableSlots.Length>0?AvailableSlots[0]:-1;
-        for(int i=0;i<slots.Length;i++)slots[i].state=new WeaponState(slots[i].definition,i==primary&&!slots[i].definition.isUtility?3:1);
+        for(int i=0;i<slots.Length;i++)slots[i].state=new WeaponState(slots[i].definition,i==primary&&!slots[i].definition.isUtility?3:1) { InfiniteOverride=infiniteAmmunition };
     }
     // Per-life supply override; definitions remain shared and unchanged.
     public void SetInfiniteUtilityAmmo(bool enabled)
     {
-        foreach(var slot in slots)if(slot.definition.isUtility&&slot.definition.rocketProjectile)slot.state.InfiniteOverride=enabled;
+        foreach(var slot in slots)if(slot.definition.isUtility&&slot.definition.rocketProjectile)slot.state.InfiniteOverride=infiniteAmmunition||enabled;
     }
     public bool TrySelectWeapon(int index)
     {
