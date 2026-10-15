@@ -24,9 +24,9 @@ public class SoldierFirstPersonView : MonoBehaviour
     public Vector3 viewOffset => definition.viewOffset;
     public Vector3 hipFireOffset => definition.hipFireOffset;
     public float aimFieldOfView => loadout.EquippedSights && loadout.EquippedSights.SelectedSight
-        ? loadout.EquippedSights.SelectedSight.fieldOfView : definition.aimFieldOfView;
+        ? loadout.EquippedSights.FieldOfView : definition.aimFieldOfView;
     public float AimSensitivity => firstPerson && loadout.EquippedSights && loadout.EquippedSights.SelectedSight
-        ? Mathf.Lerp(1f, loadout.EquippedSights.SelectedSight.sensitivityMultiplier, aimBlend) : 1f;
+        ? Mathf.Lerp(1f, loadout.EquippedSights.SensitivityMultiplier, aimBlend) : 1f;
     public float aimBlendSpeed => definition.aimBlendSpeed;
     public Vector3 aimOffset => definition.aimOffset;
 

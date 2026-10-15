@@ -29,7 +29,7 @@ public class SoldierController : MonoBehaviour
 
         if (launchers && input.utilitySelection>0) launchers.TryEquip(input.utilitySelection-1);
         if (launchers && input.grenadeThrow) launchers.Unequip();
-        if (input.cycleSight) loadout.TryCycleSight();
+        if (input.cycleSight && !loadout.TryToggleSightMode()) loadout.TryCycleSight();
         if(input.grenadeCycle)grenades.Cycle();
         if(input.grenadeThrow)grenades.TryThrow();
         view.SetAimRequested(input.aim && !grenades.IsThrowing);

@@ -13,6 +13,7 @@ public class SoldierWeaponLoadout : MonoBehaviour
         public SoldierWeaponView firstPersonPrefab, thirdPersonPrefab;
         [NonSerialized] public WeaponState state;
         [NonSerialized] public WeaponSightDefinition selectedSight;
+        [NonSerialized] public bool alternateSight;
         [NonSerialized] public WeaponAttachmentDefinition[] selectedAttachments = Array.Empty<WeaponAttachmentDefinition>();
         public bool Supports(WeaponSightDefinition sight) => thirdPersonPrefab.GetComponent<SoldierWeaponSights>().Supports(sight);
         public bool Supports(WeaponAttachmentDefinition attachment) => thirdPersonPrefab.GetComponent<SoldierWeaponAttachments>().Supports(attachment);
@@ -126,6 +127,7 @@ public class SoldierWeaponLoadout : MonoBehaviour
     {
         var slot=slots[selectedSlot];EquippedSights.Initialize(presentation.view);
         EquippedSights.SetSight(slot.selectedSight?slot.selectedSight:EquippedSights.defaultSight);
+        EquippedSights.SetAlternateSight(slot.alternateSight);
         EquippedAttachments.Apply(slot.selectedAttachments,presentation.view);
     }
     void Bind()
@@ -193,10 +195,18 @@ public class SoldierWeaponLoadout : MonoBehaviour
         if(index<0||index>=slots.Length||IsSwitching||actions.IsReloading||actions.IsThrowing)return false;
         if(index!=selectedSlot){Release();selectedSlot=index;Spawn();}Bind();presentation.view.CancelAim();return true;
     }
-    public bool TryCycleSight(){if(!enabled||!actions.enabled||IsSwitching||actions.IsReloading||actions.IsThrowing)return false;EquippedSights.Cycle();slots[selectedSlot].selectedSight=EquippedSights.SelectedSight;return true;}
-    public void SetSight(WeaponSightDefinition sight){EquippedSights.SetSight(sight);slots[selectedSlot].selectedSight=EquippedSights.SelectedSight;}
+    bool CanChangeSight => enabled && actions.enabled && !IsSwitching && !actions.IsReloading && !actions.IsThrowing;
+    public bool TryToggleSightMode()
+    {
+        if(!CanChangeSight || !EquippedSights.HasAlternateSight)return false;
+        bool changed=EquippedSights.SetAlternateSight(!EquippedSights.AlternateSightActive);
+        if(changed)slots[selectedSlot].alternateSight=EquippedSights.AlternateSightActive;
+        return changed;
+    }
+    public bool TryCycleSight(){if(!CanChangeSight)return false;EquippedSights.Cycle();slots[selectedSlot].selectedSight=EquippedSights.SelectedSight;slots[selectedSlot].alternateSight=false;return true;}
+    public void SetSight(WeaponSightDefinition sight){EquippedSights.SetSight(sight);slots[selectedSlot].selectedSight=EquippedSights.SelectedSight;slots[selectedSlot].alternateSight=EquippedSights.AlternateSightActive;}
     public void SetAttachments(WeaponAttachmentDefinition[] attachments){slots[selectedSlot].selectedAttachments=(WeaponAttachmentDefinition[])attachments.Clone();EquippedAttachments.Apply(attachments,presentation.view);}
-    public void SetClassSights(WeaponSightDefinition primary,WeaponSightDefinition secondary){for(int i=0;i<AvailableSlots.Length;i++)slots[AvailableSlots[i]].selectedSight=i==0?primary:secondary;ApplySelections();}
+    public void SetClassSights(WeaponSightDefinition primary,WeaponSightDefinition secondary){for(int i=0;i<AvailableSlots.Length;i++){var slot=slots[AvailableSlots[i]];slot.selectedSight=i==0?primary:secondary;slot.alternateSight=false;}ApplySelections();}
     public void SetClassAttachments(WeaponAttachmentDefinition[] primary,WeaponAttachmentDefinition[] secondary){for(int i=0;i<AvailableSlots.Length;i++)slots[AvailableSlots[i]].selectedAttachments=(WeaponAttachmentDefinition[])(i==0?primary:secondary).Clone();ApplySelections();}
     public void SetEquippedVisible(bool visible){equippedVisible=visible;if(FirstPersonView)FirstPersonView.gameObject.SetActive(visible);if(ThirdPersonView)ThirdPersonView.gameObject.SetActive(visible);}
     public void EquipCurrentWeapon(){switchRoutine=StartCoroutine(EquipCurrent());}

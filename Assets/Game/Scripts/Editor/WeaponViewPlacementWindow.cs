@@ -21,6 +21,7 @@ public class WeaponViewPlacementWindow : EditorWindow
     readonly HashSet<SoldierWeaponDefinition> changed = new HashSet<SoldierWeaponDefinition>();
     readonly HashSet<Object> changedSights = new HashSet<Object>();
     readonly Dictionary<string, Dictionary<string, Pose>> sightPoints = new Dictionary<string, Dictionary<string, Pose>>();
+    readonly Dictionary<string, Vector2> alternateSightSettings = new Dictionary<string, Vector2>();
 
     [MenuItem("Tools/Game/Weapon View Placement")]
     public static void Open() => GetWindow<WeaponViewPlacementWindow>("Weapon View Placement");
@@ -125,11 +126,18 @@ public class WeaponViewPlacementWindow : EditorWindow
                     var point = root.transform.Find(value.Key);
                     point.SetLocalPositionAndRotation(value.Value.position, value.Value.rotation);
                 }
+                if(alternateSightSettings.TryGetValue(path,out var alternateSettings))
+                {
+                    var attachment=root.GetComponent<WeaponSightAttachment>();
+                    attachment.alternateEyeDistance=alternateSettings.x;
+                    attachment.alternateFieldOfView=alternateSettings.y;
+                }
                 PrefabUtility.SaveAsPrefabAsset(root,path);
             }
             finally { PrefabUtility.UnloadPrefabContents(root); }
         }
         sightPoints.Clear();
+        alternateSightSettings.Clear();
         foreach (var sight in changedSights) if (sight) AssetDatabase.SaveAssetIfDirty(sight);
         changedSights.Clear();
     }
@@ -167,9 +175,13 @@ public class WeaponViewPlacementWindow : EditorWindow
     void DrawSightCalibration(SoldierWeaponSights sights)
     {
         var sight=sights.SelectedSight;
+        EditorGUILayout.ObjectField("Active sight",sight,typeof(WeaponSightDefinition),false);
+        if(sights.HasAlternateSight && GUILayout.Button(sights.AlternateSightActive?"Use primary scope":"Use backup sight"))
+            player.GetComponent<SoldierWeaponLoadout>().TryToggleSightMode();
         var rear=sights.ActiveAimPoint;
         var front=sights.ActiveFrontAimPoint;
-        EditorGUILayout.ObjectField("Active sight",sight,typeof(WeaponSightDefinition),false);
+        bool alternate=sights.AlternateSightActive;
+        var attachment=sights.FirstPersonAttachment;
         EditorGUILayout.HelpBox("Align the rear-to-front line. Rear rotation controls roll; eye distance controls camera spacing. Save writes these points to their reusable weapon or attachment prefab.",MessageType.Info);
         sightPointIndex = GUILayout.Toolbar(sightPointIndex, new[] { "Rear handle", "Front handle" });
         EditorGUILayout.ObjectField("Rear reference",rear,typeof(Transform),true);
@@ -178,10 +190,10 @@ public class WeaponViewPlacementWindow : EditorWindow
         var rearDefinition=sights.ActiveRearIronDefinition;
         var weapon=player.GetComponent<SoldierWeaponPresentation>().weapon.definition;
         var weaponAsset=EditorUtility.IsPersistent(weapon)?weapon:AssetDatabase.LoadAssetAtPath<ArenaWeaponCatalog>("Assets/Game/Definitions/Weapons/Catalogs/WeaponCatalog.asset").FindWeapon(weapon.catalogId);
-        Object distanceAsset=sights.UsesOpticEyeDistance ? sight : rearDefinition ? rearDefinition : (Object)weaponAsset;
+        Object distanceAsset=alternate ? attachment.SourcePrefab : sights.UsesOpticEyeDistance ? sight : rearDefinition ? rearDefinition : (Object)weaponAsset;
         EditorGUILayout.ObjectField("Eye distance owner",distanceAsset,typeof(Object),false);
         float distance=EditorGUILayout.FloatField("Eye distance",sights.EyeDistance);
-        float fov=EditorGUILayout.Slider("ADS field of view",sight.fieldOfView,20f,90f);
+        float fov=EditorGUILayout.Slider("ADS field of view",sights.FieldOfView,20f,90f);
         Vector3 rearPosition=EditorGUILayout.Vector3Field("Rear position",rear.localPosition);
         Vector3 frontPosition=EditorGUILayout.Vector3Field("Front position",front.localPosition);
         Vector3 rotation=EditorGUILayout.Vector3Field("Rear up / roll",rear.localEulerAngles);
@@ -189,10 +201,18 @@ public class WeaponViewPlacementWindow : EditorWindow
         {
             Undo.RecordObject(sight,"Calibrate weapon sight");
             Undo.RecordObjects(new Object[]{rear,front},"Calibrate sight references");
-            if(rearDefinition){Undo.RecordObject(rearDefinition,"Calibrate rear iron distance");rearDefinition.eyeDistance=Mathf.Max(.03f,distance);EditorUtility.SetDirty(rearDefinition);changedSights.Add(rearDefinition);}
+            if(alternate)
+            {
+                Undo.RecordObject(attachment,"Calibrate backup sight");
+                attachment.alternateEyeDistance=Mathf.Max(.03f,distance);
+                attachment.alternateFieldOfView=fov;
+                if(attachment.SourcePrefab)
+                    alternateSightSettings[AssetDatabase.GetAssetPath(attachment.SourcePrefab)]=new Vector2(attachment.alternateEyeDistance,fov);
+            }
+            else if(rearDefinition){Undo.RecordObject(rearDefinition,"Calibrate rear iron distance");rearDefinition.eyeDistance=Mathf.Max(.03f,distance);EditorUtility.SetDirty(rearDefinition);changedSights.Add(rearDefinition);}
             else if(sights.UsesOpticEyeDistance) sight.eyeDistance=Mathf.Max(.03f,distance);
             else {Undo.RecordObject(weaponAsset,"Calibrate built-in iron distance");weapon.builtInIronEyeDistance=weaponAsset.builtInIronEyeDistance=Mathf.Max(.03f,distance);EditorUtility.SetDirty(weaponAsset);changedSights.Add(weaponAsset);}
-            sight.fieldOfView=fov;
+            if(!alternate)sight.fieldOfView=fov;
             rear.SetLocalPositionAndRotation(rearPosition,Quaternion.Euler(rotation));
             front.localPosition=frontPosition;
             EditorUtility.SetDirty(sight);changedSights.Add(sight);
@@ -206,7 +226,10 @@ public class WeaponViewPlacementWindow : EditorWindow
         Transform source;
         var attachment = point.GetComponentInParent<WeaponSightAttachment>();
         if (attachment && attachment.SourcePrefab)
-            source = point == attachment.rearSight ? attachment.SourcePrefab.rearSight : attachment.SourcePrefab.frontSight;
+            source = point == attachment.rearSight ? attachment.SourcePrefab.rearSight
+                : point == attachment.frontSight ? attachment.SourcePrefab.frontSight
+                : point == attachment.alternateRearSight ? attachment.SourcePrefab.alternateRearSight
+                : point == attachment.alternateFrontSight ? attachment.SourcePrefab.alternateFrontSight : null;
         else source = EditorUtility.IsPersistent(point) ? point : PrefabUtility.GetCorrespondingObjectFromOriginalSource(point);
         if (!source && player)
         {

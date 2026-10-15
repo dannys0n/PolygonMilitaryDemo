@@ -28,14 +28,22 @@ public class SoldierWeaponSights : MonoBehaviour
     public Quaternion referenceCameraRotation = Quaternion.identity;
 
     public WeaponSightDefinition SelectedSight { get; private set; }
-    public Transform ActiveAimPoint => firstAttachment && firstAttachment.rearSight ? firstAttachment.rearSight
+    public bool AlternateSightActive { get; private set; }
+    WeaponSightAttachment AimAttachment => firstAttachment ? firstAttachment : thirdAttachment;
+    public bool HasAlternateSight => AimAttachment && AimAttachment.HasAlternateSight;
+    public float FieldOfView => AlternateSightActive ? AimAttachment.alternateFieldOfView : SelectedSight.fieldOfView;
+    public float SensitivityMultiplier => AlternateSightActive ? AimAttachment.alternateSensitivityMultiplier : SelectedSight.sensitivityMultiplier;
+    public bool UsesPictureInPicture => SelectedSight && SelectedSight.pictureInPicture && !AlternateSightActive;
+    public Transform ActiveAimPoint => AlternateSightActive ? AimAttachment.alternateRearSight
+        : firstAttachment && firstAttachment.rearSight ? firstAttachment.rearSight
         : replacementRear ? replacementRear : rearSight;
-    public Transform ActiveFrontAimPoint => firstAttachment && firstAttachment.frontSight ? firstAttachment.frontSight
+    public Transform ActiveFrontAimPoint => AlternateSightActive ? AimAttachment.alternateFrontSight
+        : firstAttachment && firstAttachment.frontSight ? firstAttachment.frontSight
         : replacementFront ? replacementFront : frontSight;
     public WeaponAttachmentDefinition ActiveRearIronDefinition => firstAttachment && firstAttachment.rearSight
         ? null : replacementRear ? replacementRearDefinition : null;
     public bool UsesOpticEyeDistance => firstAttachment && firstAttachment.rearSight;
-    public float EyeDistance => UsesOpticEyeDistance ? SelectedSight.eyeDistance
+    public float EyeDistance => AlternateSightActive ? AimAttachment.alternateEyeDistance : UsesOpticEyeDistance ? SelectedSight.eyeDistance
         : ActiveRearIronDefinition ? ActiveRearIronDefinition.eyeDistance
         : loadout.EquippedWeapon.definition.builtInIronEyeDistance;
     public int Revision { get; private set; }
@@ -61,6 +69,7 @@ public class SoldierWeaponSights : MonoBehaviour
         if (SelectedSight == sight) return;
         Remove(firstAttachment); Remove(thirdAttachment);
         SelectedSight = sight;
+        AlternateSightActive = false;
         if(firstPersonMount && firstPersonMount.TryGetComponent<WeaponAttachmentSocket>(out var firstSocket))firstSocket.SetBuiltInSightVisible(sight);
         if(thirdPersonMount && thirdPersonMount.TryGetComponent<WeaponAttachmentSocket>(out var thirdSocket))thirdSocket.SetBuiltInSightVisible(sight);
         if (sight.prefab)
@@ -80,7 +89,16 @@ public class SoldierWeaponSights : MonoBehaviour
     {
         Remove(firstAttachment); Remove(thirdAttachment);
         firstAttachment=thirdAttachment=null; replacementRear=replacementFront=null;
-        SelectedSight=null; replacementRearDefinition=null; sightLift=0; Revision++;
+        SelectedSight=null; AlternateSightActive=false; replacementRearDefinition=null; sightLift=0; Revision++;
+    }
+
+    public bool SetAlternateSight(bool active)
+    {
+        if (active && !HasAlternateSight) return false;
+        if (AlternateSightActive == active) return true;
+        AlternateSightActive = active;
+        Revision++;
+        return true;
     }
 
     public void Cycle()
