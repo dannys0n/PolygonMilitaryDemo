@@ -205,6 +205,9 @@ public class SoldierFirstPersonView : MonoBehaviour
     public void ApplyWeaponDefinition(SoldierWeaponDefinition selectedDefinition)
     {
         definition = selectedDefinition;
+        float adsDuration=1f/Mathf.Max(.01f,definition.aimBlendSpeed);
+        armsAnimator.SetFloat("AimInSpeed",WeaponAnimationTiming.Speed(armsAnimator,"Retarget_A_FP_PCH_Aim_In_Transition",adsDuration));
+        armsAnimator.SetFloat("AimOutSpeed",WeaponAnimationTiming.Speed(armsAnimator,"Retarget_A_FP_PCH_Aim_Out_Transition",adsDuration));
         ApplyHandVisibility();
         armsAnimator.SetFloat("TacticalSprint", definition.firstPersonSprintStyle == SoldierWeaponDefinition.SprintStyle.Tactical ? 1f : 0f);
 

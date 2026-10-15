@@ -224,6 +224,15 @@ public class SoldierWeaponLoadout : MonoBehaviour
     public void EquipCurrentWeapon(){switchRoutine=StartCoroutine(EquipCurrent());}
     IEnumerator EquipCurrent(){IsSwitching=true;presentation.view.CancelAim();SetEquippedVisible(true);Play("Equip");yield return new WaitForSeconds(EquippedWeapon.definition.equipDuration);IsSwitching=false;switchRoutine=null;}
     public void CancelSwitch(){if(!IsSwitching)return;StopCoroutine(switchRoutine);switchRoutine=null;IsSwitching=false;SetEquippedVisible(true);Play("Empty");}
-    void Play(string state){var arms=presentation.view.armsAnimator;arms.Play(state,arms.GetLayerIndex("WeaponSwitch"),0);var body=presentation.characterAnimator;body.Play(state,body.GetLayerIndex("WeaponSwitch"),0);}
+    void Play(string state)
+    {
+        var arms=presentation.view.armsAnimator;var body=presentation.characterAnimator;
+        var definition=slots[selectedSlot].definition;
+        float duration=state=="Equip"?definition.equipDuration:definition.unequipDuration;
+        arms.SetFloat("WeaponSwitchSpeed",state=="Empty"?1f:WeaponAnimationTiming.Speed(arms,state+"_FirstPerson",duration));
+        body.SetFloat("WeaponSwitchSpeed",state=="Empty"?1f:WeaponAnimationTiming.Speed(body,state+"_ThirdPerson",duration));
+        arms.Play(state,arms.GetLayerIndex("WeaponSwitch"),0);
+        body.Play(state,body.GetLayerIndex("WeaponSwitch"),0);
+    }
     void OnDisable()=>CancelSwitch();
 }
