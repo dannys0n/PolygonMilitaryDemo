@@ -196,7 +196,9 @@ public class Vehicle : MonoBehaviour
         if (obstacle)
         {
             bool parked = Body.linearVelocity.sqrMagnitude < .1f && Body.angularVelocity.sqrMagnitude < .01f;
-            obstacle.enabled = !IsDestroyed && parked;
+            // Unity handles stationary carving versus moving-obstacle avoidance itself.
+            // Disabling here removed the vehicle from navigation during small physical nudges.
+            obstacle.enabled = !IsDestroyed;
             if (parked && Time.time >= nextObstacleFit)
             {
                 nextObstacleFit = Time.time + 1f;

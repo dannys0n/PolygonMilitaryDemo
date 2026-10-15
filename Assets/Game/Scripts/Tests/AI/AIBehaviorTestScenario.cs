@@ -118,21 +118,13 @@ public sealed class AIBehaviorTestScenario : MonoBehaviour
     {
         EnterRequested=enter;
         foreach(var actor in Actors)ApplyTransportOrder(actor);
-        status=EnterRequested?"Enter requested. AI finds/reserves seats and approaches; excess players try physical cargo on vehicles with cargo access.":"Exit requested. AI disembarks through normal exit checks and clears the vehicle.";
+        status=EnterRequested?"Enter requested. AI finds/reserves seats and approaches; excess players wait outside for a free seat.":"Exit requested. AI disembarks through normal exit checks and clears the vehicle.";
     }
     void ApplyTransportOrder(ArenaParticipant actor)
     {
         if(!actor||pendingPlayers.Contains(actor))return;
         actor.GetComponent<ArenaVehicleAI>().SetTransportOrder(Vehicle,EnterRequested);
-        if(EnterRequested)actor.GetComponent<SoldierController>().inputSource=actor.GetComponent<ArenaAIInput>();
-        else
-        {
-            var ai=actor.GetComponent<ArenaVehicleAI>();
-            if(ai.HasPhysicalCargoOrder){actor.GetComponent<SoldierController>().inputSource=actor.GetComponent<ArenaAIInput>();return;}
-            var task=actor.GetComponent<TransportTaskInput>();actor.GetComponent<SoldierController>().inputSource=task;
-            int index=Actors.IndexOf(actor);float angle=index*137.5f*Mathf.Deg2Rad;
-            task.MoveTo(Vehicle.transform.position+new Vector3(Mathf.Cos(angle),0,Mathf.Sin(angle))*(Vehicle.NavigationBounds.extents.magnitude+6));
-        }
+        actor.GetComponent<SoldierController>().inputSource=actor.GetComponent<ArenaAIInput>();
     }
     public void FillSeats()=>StartCoroutine(Fill());
     IEnumerator Fill()
@@ -146,25 +138,7 @@ public sealed class AIBehaviorTestScenario : MonoBehaviour
             var occupant=Actors[i].GetComponent<VehicleOccupant>();occupant.faction=0;
             if(!Vehicle.Board(occupant,i)){status="Seat "+i+" cannot be boarded yet; reset after vehicle settles.";yield break;}
         }
-        pilot=Vehicle.Driver;status="All functional seats occupied. Add two physical riders to test overflow.";
-    }
-    public void AddOverflowRiders()=>StartCoroutine(Overflow());
-    IEnumerator Overflow()
-    {
-        if(!Vehicle||!Vehicle.IsOccupied){status="Fill seats first.";yield break;}
-        var doors=Vehicle.GetComponent<VehicleDoors>();if(!doors||doors.doors.Length==0){status="Vehicle has no cargo access.";yield break;}
-        var door=doors.doors[0];if(!door.open)doors.Toggle(0);
-        int start=Actors.Count;
-        Vector3 entry=door.interaction.position;Vector3 outward=DoorOutward(door);Vector3 across=Vector3.Cross(Vector3.up,outward);
-        for(int i=0;i<2;i++)Spawn(entry+outward*2+across*(i==0?-1:1),start+i);
-        population.SetActive(true);yield return null;
-        for(int i=start;i<Actors.Count;i++)
-        {
-            Actors[i].Respawn(entry+outward*2+across*(i==start?-.7f:.7f),Quaternion.identity);
-            var local=Vehicle.transform.InverseTransformPoint(entry);Vector3 inward=Vehicle.transform.InverseTransformDirection(-outward);Vector3 lane=Vehicle.transform.InverseTransformDirection(across);
-            Actors[i].GetComponent<TransportTaskInput>().Command(TransportTaskInput.Task.BoardCargo,Vehicle,local+inward*1.6f+lane*(i==start?-.45f:.45f));
-        }
-        Running=true;status="Two overflow riders walking/jumping in. Functional seats remain full.";
+        pilot=Vehicle.Driver;status="All functional seats occupied. Extra AI wait for a free seat.";
     }
     public void LoadPlaneCargo()=>StartCoroutine(LoadCargo());
     IEnumerator LoadCargo()
@@ -183,8 +157,8 @@ public sealed class AIBehaviorTestScenario : MonoBehaviour
     }
     public void ExitCargo()
     {
-        if(!Vehicle)return;
-        if(scenario==Scenario.PlaneCargoExit&&!flight){Vehicle.Body.isKinematic=false;Vehicle.Body.collisionDetectionMode=CollisionDetectionMode.ContinuousDynamic;Vehicle.enabled=true;Vehicle.Body.linearVelocity=Vehicle.transform.forward*85;foreach(var actor in Actors)if(!actor.GetComponent<VehicleOccupant>().IsMounted)actor.player.controller.body.linearVelocity=Vehicle.Body.GetPointVelocity(actor.transform.position);flight=true;}
+        if(!Vehicle||scenario!=Scenario.PlaneCargoExit)return;
+        if(!flight){Vehicle.Body.isKinematic=false;Vehicle.Body.collisionDetectionMode=CollisionDetectionMode.ContinuousDynamic;Vehicle.enabled=true;Vehicle.Body.linearVelocity=Vehicle.transform.forward*85;foreach(var actor in Actors)if(!actor.GetComponent<VehicleOccupant>().IsMounted)actor.player.controller.body.linearVelocity=Vehicle.Body.GetPointVelocity(actor.transform.position);flight=true;}
         var doors=Vehicle.GetComponent<VehicleDoors>();if(!doors||doors.doors.Length==0){status="This vehicle has no physical cargo door; use passenger exits.";return;}if(!doors.doors[0].open)doors.ToggleAll();
         var exit=Vehicle.transform.InverseTransformPoint(doors.doors[0].interaction.position+DoorOutward(doors.doors[0])*3)+Vector3.up;
         foreach(var actor in Actors)if(!actor.GetComponent<VehicleOccupant>().IsMounted)
@@ -195,16 +169,15 @@ public sealed class AIBehaviorTestScenario : MonoBehaviour
     public void UnloadPassengers()=>StartCoroutine(Unload());
     IEnumerator Unload()
     {
-        Unloading=true;float deadline=Time.time+20;int index=0;
+        Unloading=true;float deadline=Time.time+20;
         foreach(var actor in Actors)
         {
             var occupant=actor.GetComponent<VehicleOccupant>();
             if(!occupant.IsMounted||Vehicle.seats[occupant.SeatIndex].role!=Vehicle.SeatRole.Passenger)continue;
-            while(occupant.IsMounted&&Time.time<deadline)
-            {
-                if(occupant.Leave(false)){actor.GetComponent<TransportTaskInput>().MoveTo(Vehicle.transform.position+Vehicle.transform.right*(8+index%2*2)+Vehicle.transform.forward*((index/2)*3-6));index++;}
-                yield return new WaitForSeconds(.2f);
-            }
+            var infantry=actor.GetComponent<ArenaAIInput>();infantry.enabled=true;
+            actor.GetComponent<SoldierController>().inputSource=infantry;
+            var ai=actor.GetComponent<ArenaVehicleAI>();ai.enabled=true;ai.SetTransportOrder(Vehicle,false);
+            while(occupant.IsMounted&&Time.time<deadline)yield return new WaitForSeconds(.2f);
         }
         Unloading=false;status="Passenger exits finished; driver and gunner retained.";
     }
@@ -285,8 +258,7 @@ public sealed class AIBehaviorTestScenario : MonoBehaviour
             GUILayout.Label("Group order: "+(EnterRequested?"ENTER / stay seated":"EXIT / stay outside"));
             GUILayout.BeginHorizontal();if(GUILayout.Button("ENTER ALL"))EnterAll();if(GUILayout.Button("EXIT ALL"))ExitAll();GUILayout.EndHorizontal();
             int seated=Actors.Count(a=>a.GetComponent<VehicleOccupant>().IsMounted);
-            int cargo=Actors.Count(a=>a.GetComponent<ArenaVehicleAI>().State==ArenaVehicleAI.TravelState.RidingCargo);
-            GUILayout.Label("Seated: "+seated+" / physical cargo: "+cargo+" / other: "+(Actors.Count-seated-cargo));
+            GUILayout.Label("Seated: "+seated+" / waiting or outside: "+(Actors.Count-seated));
             if(GUILayout.Button("Spawn up to seats + 2 players"))for(int i=Actors.Count;i<Vehicle.seats.Length+2;i++)AddPlayer();
         }
         else if(scenario==Scenario.VehicleCombat){if(GUILayout.Button("Start / restart full-crew engagement"))StartVehicleCombat();GUILayout.Label("Weapon shots: "+ShotsFired);VehicleTelemetry(Vehicle,"Red");VehicleTelemetry(Opponent,"Blue");}

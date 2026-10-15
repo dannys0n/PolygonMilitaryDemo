@@ -27,21 +27,6 @@ public class VehicleDoors : MonoBehaviour
     }
 
     public Door[] doors = Array.Empty<Door>();
-    [Min(0)] public int aiOverflowCapacity=2;
-    readonly System.Collections.Generic.List<VehicleOccupant> overflowRiders=new System.Collections.Generic.List<VehicleOccupant>();
-    public bool TryReserveOverflow(VehicleOccupant actor,out int slot)
-    {
-        for(int i=0;i<overflowRiders.Count;i++)if(overflowRiders[i]==actor){slot=i;return true;}
-        for(int i=0;i<aiOverflowCapacity;i++)
-        {
-            if(i==overflowRiders.Count)overflowRiders.Add(null);
-            var rider=overflowRiders[i];
-            if(!rider||!rider.gameObject.activeInHierarchy||rider.life.health.IsDead){overflowRiders[i]=actor;slot=i;return true;}
-        }
-        slot=-1;return false;
-    }
-    public void ReleaseOverflow(VehicleOccupant actor)
-    {for(int i=0;i<overflowRiders.Count;i++)if(overflowRiders[i]==actor)overflowRiders[i]=null;}
     public bool operateTogether;
     [Min(.5f)] public float interactionRange = 3f;
     Vehicle vehicle;

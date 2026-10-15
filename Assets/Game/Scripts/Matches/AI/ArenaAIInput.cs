@@ -56,7 +56,6 @@ public class ArenaAIInput : SoldierInputSource
     // Optional transport intent supplied by the arena vehicle policy.
     public Transform BoardingTarget { get; set; }
     public Vector3? BoardingApproachPoint { get; set; }
-    ArenaVehicleAI vehicleAI;
     public Behavior State { get; private set; }
     public Vector3 Destination { get; private set; }
     public ArenaParticipant Target => target;
@@ -148,7 +147,7 @@ public class ArenaAIInput : SoldierInputSource
 
     void Awake()
     {
-        queryPath = new NavMeshPath();vehicleAI=GetComponent<ArenaVehicleAI>();
+        queryPath = new NavMeshPath();
         agent.updatePosition = agent.updateRotation = agent.updateUpAxis = false;
         agent.radius=Mathf.Max(agent.radius,life.controller.radius+avoidanceClearance);
     }
@@ -211,7 +210,6 @@ public class ArenaAIInput : SoldierInputSource
     public bool HoldMovement { get; set; }
     public override SoldierInputFrame ReadInput()
     {
-        if(vehicleAI&&vehicleAI.TryReadCargoInput(out var cargoInput))return cargoInput;
         RestoreNavigation();
         if (!soldier.actions.enabled || participant.IsAwaitingSpawn || !participant.match.IsRunning || !agent.isOnNavMesh)
         { State = Behavior.Inactive; WantsToSprint = false; return default; }
@@ -263,9 +261,10 @@ public class ArenaAIInput : SoldierInputSource
             && Mathf.Abs(yawError) < (WantsToSprint ? 30f : 15f);
         // Plan at the speed the shared movement actually admits (grounding and ADS can delay sprint).
         agent.speed = soldier.movement.IsRunning ? soldier.movement.runSpeed : soldier.movement.moveSpeed;
-        Vector3 velocity = arrived ? Vector3.zero : agent.desiredVelocity;
-        // The controller applies yaw before movement.
-        Vector3 local = Quaternion.Inverse(Quaternion.Euler(0f, transform.eulerAngles.y + look.x, 0f))
+        Vector3 velocity = arrived || !agent.hasPath || agent.pathStatus != NavMeshPathStatus.PathComplete
+            ? Vector3.zero : agent.desiredVelocity;
+        // Movement uses the input heading, not the interpolated Rigidbody/render heading.
+        Vector3 local = Quaternion.Inverse(Quaternion.Euler(0f, life.look.Yaw + look.x, 0f))
             * velocity / Mathf.Max(agent.speed, .01f);
         bool fire = visible && wantsAim && distance <= Mathf.Max(attackRange, sightRange) && !busy && !reload && Time.time >= readyAt
             && Mathf.Abs(yawError) < 4f && Mathf.Abs(pitchError) < 4f
@@ -485,6 +484,12 @@ public class ArenaAIInput : SoldierInputSource
             && HorizontalDistance(progressPosition, transform.position) < .2f;
         progressPosition = transform.position; progressAt = Time.time;
         if (!blocked) return;
+        if (BoardingTarget)
+        {
+            // Vehicle AI owns entry selection and retries; combat recovery must not redirect it.
+            SetDestination(BoardingApproachPoint ?? BoardingTarget.position, true);
+            return;
+        }
         HasCover = false; agent.ResetPath(); nextPath = nextReposition = 0f;
         Vector3 threat = target ? lastSeen + Vector3.up * 1.25f : Destination;
         if (ArenaAITactics.FindCombatPosition(this, threat, queryPath, out var point))
