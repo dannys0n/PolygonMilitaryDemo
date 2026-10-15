@@ -127,6 +127,42 @@ public class Vehicle : MonoBehaviour
         }
     }
 
+    float nextObstacleFit;
+    // Keep a conservative rectangular footprint, including wings, tail and open doors.
+    public void FitNavigationObstacle()
+    {
+        if (!Body) Body = GetComponent<Rigidbody>();
+        if (!obstacle) obstacle = GetComponent<NavMeshObstacle>();
+        if (!obstacle) obstacle = gameObject.AddComponent<NavMeshObstacle>();
+        bool found = false;
+        Bounds footprint = default;
+        foreach (var collider in GetComponentsInChildren<Collider>())
+        {
+            if (!collider.enabled || collider.isTrigger || collider.attachedRigidbody != Body) continue;
+            Bounds bounds;
+            bool local = true;
+            if (collider is BoxCollider box) bounds = new Bounds(box.center, box.size);
+            else if (collider is MeshCollider mesh && mesh.sharedMesh) bounds = mesh.sharedMesh.bounds;
+            else { bounds = collider.bounds; local = false; }
+            for (int corner = 0; corner < 8; corner++)
+            {
+                Vector3 point = bounds.center + Vector3.Scale(bounds.extents,
+                    new Vector3((corner & 1) == 0 ? -1 : 1, (corner & 2) == 0 ? -1 : 1, (corner & 4) == 0 ? -1 : 1));
+                if (local) point = collider.transform.TransformPoint(point);
+                point = transform.InverseTransformPoint(point);
+                if (!found) { footprint = new Bounds(point, Vector3.zero); found = true; }
+                else footprint.Encapsulate(point);
+            }
+        }
+        if (!found) return;
+        footprint.Expand(.7f);
+        obstacle.shape = NavMeshObstacleShape.Box;
+        if ((obstacle.center - footprint.center).sqrMagnitude > .0001f) obstacle.center = footprint.center;
+        if ((obstacle.size - footprint.size).sqrMagnitude > .0001f) obstacle.size = footprint.size;
+        obstacle.carving = true;
+        obstacle.carveOnlyStationary = true;
+    }
+
     void Awake()
     {
         Body = GetComponent<Rigidbody>();
@@ -136,7 +172,7 @@ public class Vehicle : MonoBehaviour
                 collider.excludeLayers &= ~(1<<characters);
         if(Body.collisionDetectionMode==CollisionDetectionMode.Discrete)
             Body.collisionDetectionMode=CollisionDetectionMode.Continuous;
-        obstacle = GetComponent<NavMeshObstacle>();
+        FitNavigationObstacle();
         Health = maxHealth;
     }
 
@@ -158,7 +194,15 @@ public class Vehicle : MonoBehaviour
         if (!IsDestroyed) motor.Simulate(PrepareDriverInput(DriverInput, Driver), Driver);
         // Carving is only useful while parked; a dynamic body never also owns a NavMeshAgent.
         if (obstacle)
-            obstacle.enabled = !Driver && Body.linearVelocity.sqrMagnitude < .1f;
+        {
+            bool parked = Body.linearVelocity.sqrMagnitude < .1f && Body.angularVelocity.sqrMagnitude < .01f;
+            obstacle.enabled = !IsDestroyed && parked;
+            if (parked && Time.time >= nextObstacleFit)
+            {
+                nextObstacleFit = Time.time + 1f;
+                FitNavigationObstacle();
+            }
+        }
     }
     public VehicleInput PrepareDriverInput(VehicleInput input, bool powered)
         => motor is JetMotor jet ? jetAssist.ProvideInput(input, jet, powered)

@@ -215,6 +215,35 @@ public class AIBehaviorScenarioTests
    Assert.AreEqual(false,Get(actor.GetComponent(T("ArenaVehicleAI")),"enterOrderedVehicle"),"Spawning actors use the last command, not a stale snapshot");
   Assert.AreEqual(0,Get(scenario,"ErrorCount"));
  }
+ [UnityTest] public IEnumerator OutsideEntryMarkersDoNotStrandBoardingAI()
+ {
+  yield return Load("AI_Transport_Overflow");var options=(Array)Get(scenario,"VehicleOptions");int index=Array.FindIndex(options.Cast<Component>().ToArray(),v=>v.name=="PickupTechnical");
+  scenario.GetType().GetMethod("SelectVehicle").Invoke(scenario,new object[]{index});yield return new WaitForSeconds(1.5f);
+  var vehicle=(Component)Get(scenario,"Vehicle");var exits=((Array)Get(vehicle,"seats")).Cast<object>().Select(s=>(Transform)Get(s,"exit")).ToArray();var positions=exits.Select(e=>e.localPosition).ToArray();
+  try
+  {
+   foreach(var exit in exits)exit.position+=vehicle.transform.right*20;
+   Command(scenario,"AddPlayer");yield return new WaitForSeconds(.2f);Command(scenario,"EnterAll");float until=Time.time+15;
+   while(Time.time<until&&MountedActors()<1)yield return null;
+   Assert.AreEqual(1,MountedActors(),"An exit marker outside the entry volume must not become an unreachable boarding destination");Assert.AreEqual(0,Get(scenario,"ErrorCount"));
+  }
+  finally{for(int i=0;i<exits.Length;i++)if(exits[i])exits[i].localPosition=positions[i];}
+ }
+ [UnityTest] public IEnumerator FullTruckOverfillsThroughProductionCargoAIAndExits()
+ {
+  yield return Load("AI_Transport_Overflow");yield return new WaitForSeconds(1.5f);var vehicle=(Component)Get(scenario,"Vehicle");int seats=((Array)Get(vehicle,"seats")).Length;
+  Command(scenario,"EnterAll");
+  for(int i=0;i<seats+2;i++){Command(scenario,"AddPlayer");yield return new WaitForSeconds(.12f);}
+  float until=Time.time+40;while(Time.time<until&&(MountedActors()<seats||PhysicalRiders()<2))yield return null;
+  Assert.AreEqual(seats,MountedActors(),"All functional seats fill through normal AI approaches");
+  Assert.AreEqual(2,PhysicalRiders(),"Two excess actors walk/jump into the actual cargo space without seating or teleporting");
+  foreach(Component actor in (IList)Get(scenario,"Actors"))Assert.IsInstanceOf(T("ArenaAIInput"),Get(actor.GetComponent(T("SoldierController")),"inputSource"));
+  Command(scenario,"ExitAll");until=Time.time+25;
+  while(Time.time<until&&(MountedActors()>0||PhysicalCargoOrders()>0))yield return null;
+  Assert.AreEqual(0,MountedActors());Assert.AreEqual(0,PhysicalCargoOrders(),"Physical riders must leave through cargo access on Exit All");Assert.AreEqual(0,Get(scenario,"ErrorCount"));
+ }
+ int PhysicalRiders()=>((IList)Get(scenario,"Actors")).Cast<Component>().Count(a=>Get(a.GetComponent(T("ArenaVehicleAI")),"State").ToString()=="RidingCargo");
+ int PhysicalCargoOrders()=>((IList)Get(scenario,"Actors")).Cast<Component>().Count(a=>(bool)Get(a.GetComponent(T("ArenaVehicleAI")),"HasPhysicalCargoOrder"));
  void AssertFullCrew()
  {
   int total=0;

@@ -118,7 +118,7 @@ public sealed class AIBehaviorTestScenario : MonoBehaviour
     {
         EnterRequested=enter;
         foreach(var actor in Actors)ApplyTransportOrder(actor);
-        status=EnterRequested?"Enter requested. AI finds/reserves seats and approaches; excess players wait for availability.":"Exit requested. AI disembarks through normal exit checks and clears the vehicle.";
+        status=EnterRequested?"Enter requested. AI finds/reserves seats and approaches; excess players try physical cargo on vehicles with cargo access.":"Exit requested. AI disembarks through normal exit checks and clears the vehicle.";
     }
     void ApplyTransportOrder(ArenaParticipant actor)
     {
@@ -127,6 +127,8 @@ public sealed class AIBehaviorTestScenario : MonoBehaviour
         if(EnterRequested)actor.GetComponent<SoldierController>().inputSource=actor.GetComponent<ArenaAIInput>();
         else
         {
+            var ai=actor.GetComponent<ArenaVehicleAI>();
+            if(ai.HasPhysicalCargoOrder){actor.GetComponent<SoldierController>().inputSource=actor.GetComponent<ArenaAIInput>();return;}
             var task=actor.GetComponent<TransportTaskInput>();actor.GetComponent<SoldierController>().inputSource=task;
             int index=Actors.IndexOf(actor);float angle=index*137.5f*Mathf.Deg2Rad;
             task.MoveTo(Vehicle.transform.position+new Vector3(Mathf.Cos(angle),0,Mathf.Sin(angle))*(Vehicle.NavigationBounds.extents.magnitude+6));
@@ -283,7 +285,9 @@ public sealed class AIBehaviorTestScenario : MonoBehaviour
             GUILayout.Label("Group order: "+(EnterRequested?"ENTER / stay seated":"EXIT / stay outside"));
             GUILayout.BeginHorizontal();if(GUILayout.Button("ENTER ALL"))EnterAll();if(GUILayout.Button("EXIT ALL"))ExitAll();GUILayout.EndHorizontal();
             int seated=Actors.Count(a=>a.GetComponent<VehicleOccupant>().IsMounted);
-            GUILayout.Label("Seated: "+seated+" / waiting or outside: "+(Actors.Count-seated));
+            int cargo=Actors.Count(a=>a.GetComponent<ArenaVehicleAI>().State==ArenaVehicleAI.TravelState.RidingCargo);
+            GUILayout.Label("Seated: "+seated+" / physical cargo: "+cargo+" / other: "+(Actors.Count-seated-cargo));
+            if(GUILayout.Button("Spawn up to seats + 2 players"))for(int i=Actors.Count;i<Vehicle.seats.Length+2;i++)AddPlayer();
         }
         else if(scenario==Scenario.VehicleCombat){if(GUILayout.Button("Start / restart full-crew engagement"))StartVehicleCombat();GUILayout.Label("Weapon shots: "+ShotsFired);VehicleTelemetry(Vehicle,"Red");VehicleTelemetry(Opponent,"Blue");}
         else if(GUILayout.Button("Start 2 vs 2 infantry combat"))StartCombat();
@@ -292,7 +296,7 @@ public sealed class AIBehaviorTestScenario : MonoBehaviour
         {
             var rider=actor.GetComponent<VehicleOccupant>();
             string label=scenario==Scenario.TransportOverflow
-                ?actor.name+" / "+(rider.IsMounted?rider.MountedVehicle.seats[rider.SeatIndex].name:EnterRequested?actor.GetComponent<ArenaVehicleAI>().State.ToString():"outside")
+                ?actor.name+" / "+(rider.IsMounted?rider.MountedVehicle.seats[rider.SeatIndex].name:EnterRequested?actor.GetComponent<ArenaVehicleAI>().BoardingStatus:"outside")
                 :actor.name+" / "+(actor.health.IsDead?"dead":actor.health.CurrentHealth.ToString("F0"));
             GUILayout.BeginHorizontal();if(GUILayout.Button(label))observer.follow=actor.transform;
             if(scenario==Scenario.TransportOverflow&&GUILayout.Button("Remove",GUILayout.Width(65)))RemovePlayer(actor);GUILayout.EndHorizontal();

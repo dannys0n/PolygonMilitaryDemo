@@ -55,6 +55,8 @@ public class ArenaAIInput : SoldierInputSource
     public float weaponDecisionInterval = 2f;
     // Optional transport intent supplied by the arena vehicle policy.
     public Transform BoardingTarget { get; set; }
+    public Vector3? BoardingApproachPoint { get; set; }
+    ArenaVehicleAI vehicleAI;
     public Behavior State { get; private set; }
     public Vector3 Destination { get; private set; }
     public ArenaParticipant Target => target;
@@ -146,7 +148,7 @@ public class ArenaAIInput : SoldierInputSource
 
     void Awake()
     {
-        queryPath = new NavMeshPath();
+        queryPath = new NavMeshPath();vehicleAI=GetComponent<ArenaVehicleAI>();
         agent.updatePosition = agent.updateRotation = agent.updateUpAxis = false;
         agent.radius=Mathf.Max(agent.radius,life.controller.radius+avoidanceClearance);
     }
@@ -209,6 +211,7 @@ public class ArenaAIInput : SoldierInputSource
     public bool HoldMovement { get; set; }
     public override SoldierInputFrame ReadInput()
     {
+        if(vehicleAI&&vehicleAI.TryReadCargoInput(out var cargoInput))return cargoInput;
         RestoreNavigation();
         if (!soldier.actions.enabled || participant.IsAwaitingSpawn || !participant.match.IsRunning || !agent.isOnNavMesh)
         { State = Behavior.Inactive; WantsToSprint = false; return default; }
@@ -224,7 +227,7 @@ public class ArenaAIInput : SoldierInputSource
             selection = System.Array.IndexOf(soldier.loadout.AvailableSlots, soldier.loadout.selectedSlot) + 1;
         bool reload = soldier.loadout.EquippedState.MagazineAmmo == 0 && soldier.loadout.EquippedState.ReserveAmmo > 0;
         if (BoardingTarget)
-        { State = Behavior.BoardVehicle; SetDestination(BoardingTarget.position); }
+        { State = Behavior.BoardVehicle; SetDestination(BoardingApproachPoint??BoardingTarget.position); }
         else if (Time.time >= recoveryUntil) ChooseMovement(visible, distance, reload);
         RecoverStuckPath();
         if (visible) aimHoldUntil = Time.time + aimHoldDuration;

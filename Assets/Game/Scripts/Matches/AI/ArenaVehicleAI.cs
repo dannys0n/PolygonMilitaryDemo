@@ -8,7 +8,7 @@ public class ArenaVehicleAI : MonoBehaviour
 {
     public enum TravelState
     {
-        OnFoot, Boarding, Driving, Landing, Passenger
+        OnFoot, Boarding, Driving, Landing, Passenger, CargoApproach, CargoBoarding, RidingCargo, CargoExit
     }
     public ArenaAIInput infantry;
     public VehicleOccupant occupant;
@@ -19,21 +19,99 @@ public class ArenaVehicleAI : MonoBehaviour
     public Vector3 Goal { get; private set; }
     ArenaVehicleScenario scenario;
     Vehicle orderedVehicle;
+    public string BoardingStatus { get; private set; }="Idle";
+    public bool HasPhysicalCargoOrder=>cargoPhase>0;
+    VehicleDoors cargoAccess;
+    VehicleDoors.Door cargoDoor;
+    int cargoPhase,cargoSlot;
+    Vector3 cargoGoal,cargoApproach,reservedApproach;
+    Vector3 failedApproach;
+    bool hasFailedApproach;
+    float failedEntryUntil,cargoRetryAt,cargoStarted,nextCargoJump;
+    void ClearCargo()
+    {
+        if(cargoAccess)cargoAccess.ReleaseOverflow(occupant);
+        cargoAccess=null;cargoDoor=null;cargoPhase=0;infantry.BoardingTarget=null;infantry.BoardingApproachPoint=null;
+    }
+    bool BeginCargo(Vehicle vehicle)
+    {
+        if(Time.time<cargoRetryAt)return false;
+        var access=vehicle.GetComponent<VehicleDoors>();if(!access||access.doors.Length==0)return false;
+        VehicleDoors.Door best=null;Vector3 approach=default;float nearest=float.PositiveInfinity;
+        foreach(var door in access.doors)
+        {
+            if(!door.interaction)continue;
+            Vector3 outward=Vector3.ProjectOnPlane(door.interaction.position-vehicle.transform.TransformPoint(vehicle.NavigationBounds.center),Vector3.up).normalized;
+            Vector3 proposed=door.interaction.position+outward*1.5f;proposed.y=GroundHeight(proposed)+.05f;
+            if(!ArenaAITactics.Reachable(infantry,proposed,path,out var point,out float walk)||walk>=nearest)continue;
+            nearest=walk;best=door;approach=point;
+        }
+        if(best==null||!access.TryReserveOverflow(occupant,out cargoSlot))return false;
+        cargoAccess=access;cargoDoor=best;cargoApproach=approach;cargoPhase=1;cargoStarted=Time.time;nextCargoJump=0;
+        Vector3 entry=vehicle.transform.InverseTransformPoint(best.interaction.position);
+        Vector3 inward=Vector3.ProjectOnPlane(vehicle.NavigationBounds.center-entry,Vector3.up).normalized;
+        Vector3 across=Vector3.Cross(Vector3.up,inward);
+        cargoGoal=entry+inward*1.6f+across*((cargoSlot%2==0?-1:1)*(.55f+.9f*(cargoSlot/2)));
+        if(!best.open)access.Toggle(System.Array.IndexOf(access.doors,best));
+        State=TravelState.CargoApproach;BoardingStatus="Approaching cargo door";return true;
+    }
+    void TickCargo()
+    {
+        if(cargoPhase==1)
+        {
+            infantry.BoardingTarget=cargoDoor.interaction;infantry.BoardingApproachPoint=cargoApproach;
+            if(Vector3.ProjectOnPlane(transform.position-cargoApproach,Vector3.up).sqrMagnitude<1)
+            {
+                cargoPhase=2;infantry.BoardingTarget=null;infantry.BoardingApproachPoint=null;
+                if(infantry.agent.enabled)infantry.agent.enabled=false;
+                State=TravelState.CargoBoarding;BoardingStatus="Walking / jumping into cargo";
+            }
+        }
+        if(cargoPhase<3&&Time.time-cargoStarted>18)
+        {ClearCargo();cargoRetryAt=Time.time+3;BoardingStatus="Cargo blocked; retrying";}
+    }
+    public bool TryReadCargoInput(out SoldierInputFrame frame)
+    {
+        frame=default;
+        if(cargoPhase<2||!orderedVehicle||occupant.IsMounted||infantry.life.health.IsDead)return false;
+        var body=infantry.life.controller;bool supported=body.Support==orderedVehicle.Body;
+        if(cargoPhase==4&&!supported&&body.isGrounded){ClearCargo();BoardingStatus="Outside";return true;}
+        Vector3 local=orderedVehicle.transform.InverseTransformPoint(transform.position);
+        if(cargoPhase!=4&&supported&&Vector3.ProjectOnPlane(local-cargoGoal,Vector3.up).sqrMagnitude<.64f)
+        {cargoPhase=3;State=TravelState.RidingCargo;BoardingStatus="Riding physical cargo";return true;}
+        Vector3 goal=cargoGoal;
+        if(cargoPhase==4)
+        {
+            Vector3 entry=orderedVehicle.transform.InverseTransformPoint(cargoDoor.interaction.position);
+            Vector3 outward=Vector3.ProjectOnPlane(entry-orderedVehicle.NavigationBounds.center,Vector3.up).normalized;
+            goal=entry+outward*3;
+        }
+        Vector3 delta=Vector3.ProjectOnPlane(orderedVehicle.transform.TransformPoint(goal)-transform.position,Vector3.up);
+        float yaw=Mathf.Atan2(delta.x,delta.z)*Mathf.Rad2Deg;
+        frame.lookDelta=new Vector2(Mathf.Clamp(Mathf.DeltaAngle(infantry.life.look.Yaw,yaw),-120*Time.deltaTime,120*Time.deltaTime),0);
+        Vector3 move=Quaternion.Inverse(Quaternion.Euler(0,infantry.life.look.Yaw,0))*delta.normalized;frame.move=new Vector2(move.x,move.z);
+        if(cargoPhase!=4&&body.isGrounded&&Time.time>=nextCargoJump){frame.jump=true;nextCargoJump=Time.time+.8f;}
+        return true;
+    }
     bool hasTransportOrder, enterOrderedVehicle;
     public void SetTransportOrder(Vehicle vehicle,bool enter)
     {
         if(hasTransportOrder&&orderedVehicle==vehicle&&enterOrderedVehicle==enter)
         {infantry.HoldMovement=true;nextDecision=0;return;}
-        CancelBoarding();orderedVehicle=vehicle;hasTransportOrder=vehicle;enterOrderedVehicle=enter;
+        CancelBoarding();
+        if(cargoPhase>0&&vehicle==orderedVehicle&&!enter){cargoPhase=4;State=TravelState.CargoExit;BoardingStatus="Exiting physical cargo";}
+        else ClearCargo();
+        orderedVehicle=vehicle;hasTransportOrder=vehicle;enterOrderedVehicle=enter;
         infantry.HoldMovement=hasTransportOrder;nextDecision=0;
     }
     bool HandleTransportOrder()
     {
         if(!hasTransportOrder)return false;
-        if(!orderedVehicle||orderedVehicle.IsDestroyed){CancelBoarding();return true;}
+        if(!orderedVehicle||orderedVehicle.IsDestroyed){CancelBoarding();ClearCargo();BoardingStatus="Vehicle unavailable";return true;}
         if(occupant.IsMounted)
         {
             if(occupant.SeatIndex==0)occupant.MountedVehicle.DriverInput=new VehicleInput{brake=true};
+            BoardingStatus=enterOrderedVehicle?"Seated":"Exiting seat";
             if(!enterOrderedVehicle)occupant.Leave(false);
             return true;
         }
@@ -41,11 +119,23 @@ public class ArenaVehicleAI : MonoBehaviour
         if(reserved)return false; // Use the same approach, reservation renewal and Board path as autonomous AI.
         if(Time.time<nextDecision)return true;nextDecision=Time.time+.25f;
         int seat=orderedVehicle.FirstAvailableSeat(occupant);
-        if(seat<0||!orderedVehicle.CanExit)return true;
-        var entry=ChooseEntry(orderedVehicle);
-        if(!entry||!orderedVehicle.Reserve(occupant,seat))return true;
+        if(cargoPhase>0)
+        {
+            if(seat<0){TickCargo();return true;}
+            ClearCargo();
+        }
+        if(seat<0)
+        {
+            BoardingStatus="Full: waiting for seat or cargo space";
+            if(orderedVehicle.CanExit&&BeginCargo(orderedVehicle))TickCargo();return true;
+        }
+        if(!orderedVehicle.CanExit){BoardingStatus="Waiting for vehicle to stop";return true;}
+        if(orderedVehicle.IsInsideEntryBox(transform.position)&&orderedVehicle.Board(occupant,seat))
+        {BoardingStatus="Seated";return true;}
+        var entry=ChooseEntry(orderedVehicle,out reservedApproach);
+        if(!entry||!orderedVehicle.Reserve(occupant,seat)){BoardingStatus="No reachable entry; retrying";return true;}
         reserved=orderedVehicle;reservedSeat=seat;reservedEntry=entry;reservedForCombat=true;
-        State=TravelState.Boarding;infantry.BoardingTarget=entry;progressAt=Time.time;
+        State=TravelState.Boarding;BoardingStatus="Approaching reserved seat";infantry.BoardingTarget=entry;infantry.BoardingApproachPoint=reservedApproach;progressAt=Time.time;progressPosition=transform.position;
         return false;
     }
     Vehicle reserved;
@@ -91,7 +181,7 @@ public class ArenaVehicleAI : MonoBehaviour
     }
     void OnDisable()
     {
-        CancelBoarding();
+        ClearCargo();CancelBoarding();
         if (occupant.IsMounted)
             occupant.Leave(true);
     }
@@ -122,10 +212,10 @@ public class ArenaVehicleAI : MonoBehaviour
                 CancelBoarding();
                 return;
             }
-            infantry.BoardingTarget = reservedEntry;
+            infantry.BoardingTarget = reservedEntry;infantry.BoardingApproachPoint=reservedApproach;
             if (reserved.IsInsideEntryBox(transform.position) && reserved.Board(occupant, reservedSeat))
             {
-                infantry.BoardingTarget = null;
+                infantry.BoardingTarget = null;infantry.BoardingApproachPoint=null;BoardingStatus="Seated";
                 reserved = null;
                 State = TravelState.Driving;
                 boardedAt = progressAt = Time.time;
@@ -134,8 +224,15 @@ public class ArenaVehicleAI : MonoBehaviour
                 nextPath = 0;
                 landing = false;
             }
-            else if (Time.time - progressAt > 15)
-                CancelBoarding();
+            else if(Vector3.ProjectOnPlane(transform.position-progressPosition,Vector3.up).sqrMagnitude>.09f)
+            {progressAt=Time.time;progressPosition=transform.position;}
+            else if(Time.time-progressAt>3)
+            {
+                failedApproach=reservedApproach;hasFailedApproach=true;failedEntryUntil=Time.time+5;
+                var alternative=ChooseEntry(reserved,out var point);
+                if(alternative){reservedEntry=alternative;reservedApproach=point;progressAt=Time.time;BoardingStatus="Retrying another entry";}
+                else {CancelBoarding();BoardingStatus="Entry blocked; retrying";}
+            }
             return;
         }
         if (Time.time < nextDecision || Time.time < retryAt)
@@ -177,7 +274,7 @@ public class ArenaVehicleAI : MonoBehaviour
                     trip=0;var road=path.corners;
                     for(int i=1;i<road.Length;i++)trip+=Vector3.Distance(road[i-1],road[i]);
                 }
-                if (!ArenaAITactics.Reachable(infantry, v.NearestEntryPoint(transform.position).position, path, out _, out float walk))
+                if (!ChooseEntry(v,out var boardingPoint) || !ArenaAITactics.Reachable(infantry, boardingPoint, path, out _, out float walk))
                     continue;
 
                 if (driver && !crew && !combat && trip < minimumTrip)
@@ -214,31 +311,48 @@ public class ArenaVehicleAI : MonoBehaviour
             return;
         reservedForCombat=combat || crew;
         reserved = choice;
-        reservedEntry = ChooseEntry(choice);
+        reservedEntry = ChooseEntry(choice,out reservedApproach);
         if(!reservedEntry){CancelBoarding();return;}
         reservedSeat = seatIndex;
         Goal = goal;
         State = TravelState.Boarding;
         infantry.BoardingTarget = reservedEntry;
+        infantry.BoardingApproachPoint = reservedApproach;
+        progressPosition = transform.position;
         progressAt = Time.time;
     }
-    Transform ChooseEntry(Vehicle vehicle)
+    Transform ChooseEntry(Vehicle vehicle,out Vector3 approach)
     {
-        Transform best=null;float bestCost=float.PositiveInfinity;
-        foreach(var seat in vehicle.seats)
+        approach=default;
+        float bestCost=float.PositiveInfinity;
+        var bounds=vehicle.EntryBounds;
+        var local=vehicle.transform.InverseTransformPoint(transform.position);
+        float inset=Mathf.Min(Mathf.Max(.3f,infantry.agent.stoppingDistance+.15f),Mathf.Min(bounds.extents.x,bounds.extents.z)*.5f);
+        float left=bounds.min.x+inset,right=bounds.max.x-inset;
+        float back=bounds.min.z+inset,front=bounds.max.z-inset;
+        // Closest point on each edge, followed by samples along every edge for blocked approaches.
+        for(int edge=0;edge<4;edge++)
+        for(int sample=-1;sample<=8;sample++)
         {
-            var entry=seat.exit;if(!entry)continue;
-            if(!ArenaAITactics.Reachable(infantry,entry.position,path,out _,out float walk))continue;
+            bool side=edge<2;
+            float along=sample<0 ? Mathf.Clamp(side?local.z:local.x,side?back:left,side?front:right)
+                : Mathf.Lerp(side?back:left,side?front:right,sample/8f);
+            var candidate=side?new Vector3(edge==0?left:right,0,along):new Vector3(along,0,edge==2?back:front);
+            var proposed=vehicle.transform.TransformPoint(candidate);
+            if(Vector3.ProjectOnPlane(proposed-transform.position,Vector3.up).magnitude>=bestCost)continue;
+            proposed.y=GroundHeight(proposed)+.05f;
+            if(!ArenaAITactics.Reachable(infantry,proposed,path,out var point,out float walk)||!vehicle.IsInsideEntryBox(point))continue;
+            if(hasFailedApproach&&Time.time<failedEntryUntil&&(point-failedApproach).sqrMagnitude<2.25f)continue;
             float cost=walk;
-            foreach(var other in vehicle.seats)
+            foreach(var seat in vehicle.seats)
             {
-                var rider=other.reservation;if(!rider||rider==occupant||Time.time>=other.reservedUntil)continue;
+                var rider=seat.reservation;if(!rider||rider==occupant||Time.time>=seat.reservedUntil)continue;
                 var ai=rider.GetComponent<ArenaVehicleAI>();
-                if(ai&&ai.reservedEntry&&(ai.reservedEntry.position-entry.position).sqrMagnitude<2.25f)cost+=4;
+                if(ai&&ai.reserved&&(ai.reservedApproach-point).sqrMagnitude<2.25f)cost+=4;
             }
-            if(cost<bestCost){bestCost=cost;best=entry;}
+            if(cost<bestCost){bestCost=cost;approach=point;}
         }
-        return best;
+        return bestCost<float.PositiveInfinity?vehicle.transform:null;
     }
     bool ChooseLanding(Vehicle v, out Vector3 goal)
     {
@@ -277,7 +391,7 @@ public class ArenaVehicleAI : MonoBehaviour
             reserved.ReleaseReservation(occupant);
         reserved = null;
         reservedForCombat=false;
-        infantry.BoardingTarget = null;
+        infantry.BoardingTarget = null;infantry.BoardingApproachPoint=null;
         State = TravelState.OnFoot;
         retryAt = Time.time + 3;
     }

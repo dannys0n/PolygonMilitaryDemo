@@ -429,48 +429,63 @@ public class VehicleOccupant : MonoBehaviour
             if (Mathf.Abs(side) > .15f) foreach (var candidate in vehicle.seats)
                 if (candidate.exit && Mathf.Sign(vehicle.transform.InverseTransformPoint(candidate.exit.position).x)==Mathf.Sign(side)) { seat=candidate;break; }
         }
+        // Preserve authored exits when clear, then search outside the full carved footprint.
         for (int i = 0; i < 4; i++)
         {
             Vector3 proposed = seat.exit.position + vehicle.transform.right * (i % 2 == 0 ? 1 : -1) * (i / 2);
-            RaycastHit ground = default;
-            bool found = false;
-            foreach (var hit in Physics.RaycastAll(proposed + Vector3.up * 2, Vector3.down, 4, Physics.DefaultRaycastLayers, QueryTriggerInteraction.Ignore))
-                if (!hit.transform.IsChildOf(vehicle.transform) && (!found || hit.distance < ground.distance))
-                {
-                    ground = hit;
-                    found = true;
-                }
-            if (!found)
-                continue;
-            proposed = ground.point + Vector3.up * .08f;
-            var navigation = GetComponent<NavMeshAgent>();
-            if (!IsLocal && navigation)
-            {
-                // Exit onto this infantry agent's mesh, not just any physical floor.
-                // Reject other floors and distant projections rather than teleporting.
-                if (!NavMesh.SamplePosition(proposed, out var mesh, .75f,
-                    new NavMeshQueryFilter { agentTypeID = navigation.agentTypeID, areaMask = navigation.areaMask })
-                    || Mathf.Abs(mesh.position.y - ground.point.y) > .2f
-                    || Vector3.ProjectOnPlane(mesh.position-proposed, Vector3.up).magnitude > .2f) continue;
-                proposed = new Vector3(proposed.x, mesh.position.y + .08f, proposed.z);
-            }
-            var cc = life.controller;
-            Vector3 center = proposed + cc.center;
-            float half = Mathf.Max(0, cc.height * .5f - cc.radius);
-            bool blocked = false;
-            foreach (var c in Physics.OverlapCapsule(center + Vector3.up * half, center - Vector3.up * half, cc.radius * .95f, Physics.DefaultRaycastLayers, QueryTriggerInteraction.Ignore))
-                if (!c.transform.IsChildOf(transform) && c != ground.collider)
-                {
-                    blocked = true;
-                    break;
-                }
-            if (!blocked)
-            {
-                result = proposed;
-                return true;
-            }
+            if (TryGroundExit(vehicle, proposed, out result)) return true;
         }
+        var bounds = vehicle.NavigationBounds;
+        var local = vehicle.transform.InverseTransformPoint(seat.exit.position);
+        var navigation = GetComponent<NavMeshAgent>();
+        float clearance = Mathf.Max(life.controller.radius, navigation ? navigation.radius : 0f) + .4f;
+        var candidates = new List<Vector3>();
+        for (int edge = 0; edge < 4; edge++)
+        for (int sample = -1; sample <= 8; sample++)
+        {
+            bool side = edge < 2;
+            float along = sample < 0 ? Mathf.Clamp(side ? local.z : local.x, side ? bounds.min.z : bounds.min.x, side ? bounds.max.z : bounds.max.x)
+                : Mathf.Lerp(side ? bounds.min.z : bounds.min.x, side ? bounds.max.z : bounds.max.x, sample / 8f);
+            Vector3 point = side
+                ? new Vector3(edge == 0 ? bounds.min.x - clearance : bounds.max.x + clearance, local.y, along)
+                : new Vector3(along, local.y, edge == 2 ? bounds.min.z - clearance : bounds.max.z + clearance);
+            candidates.Add(vehicle.transform.TransformPoint(point));
+        }
+        candidates.Sort((a,b) => (a-seat.exit.position).sqrMagnitude.CompareTo((b-seat.exit.position).sqrMagnitude));
+        foreach (var proposed in candidates)
+            if (TryGroundExit(vehicle, proposed, out result)) return true;
         return false;
+    }
+    bool TryGroundExit(Vehicle vehicle, Vector3 proposed, out Vector3 result)
+    {
+        result = default;
+        RaycastHit ground = default;
+        bool found = false;
+        float rise = Mathf.Max(2f, vehicle.NavigationBounds.size.y);
+        foreach (var hit in Physics.RaycastAll(proposed + Vector3.up * rise, Vector3.down, rise + 8f,
+                     Physics.DefaultRaycastLayers, QueryTriggerInteraction.Ignore))
+            if (!hit.transform.IsChildOf(vehicle.transform) && !hit.transform.IsChildOf(transform)
+                && !SoldierPhysicsBody.IsMotorCollider(hit.collider) && (!found || hit.distance < ground.distance))
+            { ground = hit; found = true; }
+        if (!found) return false;
+        proposed = ground.point + Vector3.up * .08f;
+        var navigation = GetComponent<NavMeshAgent>();
+        if (!IsLocal && navigation)
+        {
+            if (!NavMesh.SamplePosition(proposed, out var mesh, .75f,
+                    new NavMeshQueryFilter { agentTypeID = navigation.agentTypeID, areaMask = navigation.areaMask })
+                || Mathf.Abs(mesh.position.y - ground.point.y) > .2f
+                || Vector3.ProjectOnPlane(mesh.position - proposed, Vector3.up).magnitude > .2f) return false;
+            proposed = new Vector3(proposed.x, mesh.position.y + .08f, proposed.z);
+        }
+        var cc = life.controller;
+        Vector3 center = proposed + cc.center;
+        float half = Mathf.Max(0, cc.height * .5f - cc.radius);
+        foreach (var c in Physics.OverlapCapsule(center + Vector3.up * half, center - Vector3.up * half,
+                     cc.radius * .95f, Physics.DefaultRaycastLayers, QueryTriggerInteraction.Ignore))
+            if (!c.transform.IsChildOf(transform) && c != ground.collider) return false;
+        result = proposed;
+        return true;
     }
     Vector3 ExteriorExit(Vehicle vehicle, Vehicle.Seat seat)
     {
