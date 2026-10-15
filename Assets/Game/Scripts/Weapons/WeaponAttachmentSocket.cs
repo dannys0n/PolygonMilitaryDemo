@@ -40,10 +40,18 @@ public class WeaponAttachmentSocket : MonoBehaviour
     [Header("Built-in optic housing")]
     public WeaponSightDefinition builtInSight;
     public Renderer[] builtInSightRenderers = System.Array.Empty<Renderer>();
+    [Header("Optic mounting hardware")]
+    [Tooltip("Receiver rails or bridges shown only while a rail-mounted optic is equipped.")]
+    public Renderer[] opticMountRenderers = System.Array.Empty<Renderer>();
+    [Tooltip("Side-mounted optics which bypass this weapon's top rail or bridge.")]
+    public WeaponSightDefinition[] sideMountSights = System.Array.Empty<WeaponSightDefinition>();
     public void SetBuiltInSightVisible(WeaponSightDefinition selected)
     {
         foreach(var renderer in builtInSightRenderers)
             if(renderer)renderer.forceRenderingOff=selected!=builtInSight;
+        bool showMount = selected && selected.prefab && System.Array.IndexOf(sideMountSights, selected) < 0;
+        foreach (var renderer in opticMountRenderers)
+            if (renderer) renderer.forceRenderingOff = !showMount;
     }
 
     public void Place(WeaponAttachmentDefinition attachment, Transform instance)

@@ -78,7 +78,8 @@ public class ArenaWeaponPreview : MonoBehaviour, IDragHandler
             foreach(var renderer in builtInVisibility.Keys)if(renderer)renderer.enabled=builtInVisibility[renderer];
             bool hasOptic=desired.ContainsKey("optic");
             foreach(var builtIn in weapon.builtIns)
-                if((!string.IsNullOrEmpty(builtIn.sight)&&opticId!=builtIn.sight)||attachmentIds.Any(id=>catalog.FindPart(id)?.mount==builtIn.mount)||(hasOptic&&(builtIn.mount==WeaponAttachmentDefinition.MountKind.FrontIron||builtIn.mount==WeaponAttachmentDefinition.MountKind.RearIron)))
+                if(builtIn.opticMountOnly ? !hasOptic || builtIn.excludedSights.Contains(opticId)
+                    : (!string.IsNullOrEmpty(builtIn.sight)&&opticId!=builtIn.sight)||attachmentIds.Any(id=>catalog.FindPart(id)?.mount==builtIn.mount)||(hasOptic&&(builtIn.mount==WeaponAttachmentDefinition.MountKind.FrontIron||builtIn.mount==WeaponAttachmentDefinition.MountKind.RearIron)))
                     foreach(var renderer in builtInVisibility.Keys.Where(r=>r&&builtIn.rendererNames.Contains(r.name)))renderer.enabled=false;
             Frame(changed);dirty=true;
         }

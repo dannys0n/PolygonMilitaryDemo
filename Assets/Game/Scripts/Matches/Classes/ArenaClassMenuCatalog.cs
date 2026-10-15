@@ -40,7 +40,7 @@ public class ArenaClassMenuCatalog : ScriptableObject
     [Serializable] public class Support
     { public string sight,riser; public Vector3 contactPoint,scale; }
     [Serializable] public class BuiltIn
-    { public WeaponAttachmentDefinition.MountKind mount; public string sight; public string[] rendererNames=Array.Empty<string>(); }
+    { public WeaponAttachmentDefinition.MountKind mount; public string sight; public bool opticMountOnly; public string[] excludedSights=Array.Empty<string>(); public string[] rendererNames=Array.Empty<string>(); }
     public ArenaWeaponCatalog source;
     // Preview addresses remain generated; gameplay facts are refreshed from the shared definitions.
     public void RefreshWeaponFacts()

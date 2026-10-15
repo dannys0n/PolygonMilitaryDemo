@@ -1,5 +1,102 @@
 %YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
+--- !u!1 &279128015565856927
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 4050454887123992195}
+  - component: {fileID: 842056003352097227}
+  m_Layer: 0
+  m_Name: BuiltInGrip
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &4050454887123992195
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 279128015565856927}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 894233972866087704}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!137 &842056003352097227
+SkinnedMeshRenderer:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 279128015565856927}
+  m_Enabled: 1
+  m_CastShadows: 1
+  m_ReceiveShadows: 1
+  m_DynamicOccludee: 1
+  m_StaticShadowCaster: 0
+  m_MotionVectors: 1
+  m_LightProbeUsage: 1
+  m_ReflectionProbeUsage: 1
+  m_RayTracingMode: 3
+  m_RayTraceProcedural: 0
+  m_RayTracingAccelStructBuildFlagsOverride: 0
+  m_RayTracingAccelStructBuildFlags: 1
+  m_SmallMeshCulling: 1
+  m_ForceMeshLod: -1
+  m_MeshLodSelectionBias: 0
+  m_RenderingLayerMask: 1
+  m_RendererPriority: 0
+  m_Materials:
+  - {fileID: 2100000, guid: ff619c76ba105884c8f2276629a43de9, type: 2}
+  m_StaticBatchInfo:
+    firstSubMesh: 0
+    subMeshCount: 0
+  m_StaticBatchRoot: {fileID: 0}
+  m_ProbeAnchor: {fileID: 0}
+  m_LightProbeVolumeOverride: {fileID: 0}
+  m_ScaleInLightmap: 1
+  m_ReceiveGI: 1
+  m_PreserveUVs: 0
+  m_IgnoreNormalsForChartDetection: 0
+  m_ImportantGI: 0
+  m_StitchLightmapSeams: 1
+  m_SelectedEditorRenderState: 3
+  m_MinimumChartSize: 4
+  m_AutoUVMaxDistance: 0.5
+  m_AutoUVMaxAngle: 89
+  m_LightmapParameters: {fileID: 0}
+  m_GlobalIlluminationMeshLod: 0
+  m_SortingLayerID: 0
+  m_SortingLayer: 0
+  m_SortingOrder: 0
+  m_MaskInteraction: 0
+  serializedVersion: 2
+  m_Quality: 0
+  m_UpdateWhenOffscreen: 0
+  m_SkinnedMotionVectors: 1
+  m_Mesh: {fileID: 4300000, guid: 44aa935ab67677f45b02466e024d9e0c, type: 2}
+  m_Bones:
+  - {fileID: 5627398546325542733}
+  - {fileID: 8976142874966276163}
+  - {fileID: 5069065209366950037}
+  - {fileID: 2188971201301449092}
+  - {fileID: 2544314252701194975}
+  m_BlendShapeWeights: []
+  m_RootBone: {fileID: 5627398546325542733}
+  m_AABB:
+    m_Center: {x: 0.00007908387, y: 0.0007926493, z: 0.0015604924}
+    m_Extent: {x: 0.00037080626, y: 0.0012628247, z: 0.004633885}
+  m_DirtyAABB: 0
 --- !u!1 &314770386384749275
 GameObject:
   m_ObjectHideFlags: 0
@@ -65,6 +162,7 @@ Transform:
   m_Children:
   - {fileID: 7870472110353408798}
   - {fileID: 745648876186052911}
+  - {fileID: 4050454887123992195}
   m_Father: {fileID: 5614671219546697039}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!137 &5167057710699848015
@@ -119,7 +217,7 @@ SkinnedMeshRenderer:
   m_Quality: 0
   m_UpdateWhenOffscreen: 0
   m_SkinnedMotionVectors: 1
-  m_Mesh: {fileID: 6997236012743576868, guid: f0154324351a2204a934b78c323e8fe8, type: 3}
+  m_Mesh: {fileID: 4300000, guid: 711e476513b916945bfca3c82a823b3c, type: 2}
   m_Bones:
   - {fileID: 5627398546325542733}
   - {fileID: 8976142874966276163}
@@ -598,7 +696,7 @@ Transform:
   m_GameObject: {fileID: 4775437490574065415}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -0.009635573, y: -0.005249102, z: 0.1817104}
+  m_LocalPosition: {x: -0.009276662, y: 0.020856373, z: 0.11618034}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -1005,3 +1103,5 @@ MonoBehaviour:
     position: {x: 0.0023061654, y: 0.000000012409679, z: -0.00000019019818}
     rotation: {x: 9.447296e-16, y: 0.03084239, z: -8.8400885e-17, w: 0.99952424}
     scale: {x: 1.0000002, y: 1.0000002, z: 1.0000005}
+  builtInSight: {fileID: 0}
+  builtInSightRenderers: []

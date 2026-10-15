@@ -63,9 +63,11 @@ public static class ClassMenuPreviewBuilder
                     }
                     sockets.Add(socket);
                 }
-                views.TryGetValue(weapon,out var view);var source=view?view.GetComponent<SoldierWeaponAttachments>():null;
+                views.TryGetValue(weapon,out var view);var source=entry.thirdPersonPrefab?entry.thirdPersonPrefab.GetComponent<SoldierWeaponAttachments>():null;
+                if(!source&&view)source=view.GetComponent<SoldierWeaponAttachments>();
                 var built=source?source.mounts.Select(m=>new ArenaClassMenuCatalog.BuiltIn{mount=m.kind,rendererNames=m.builtInThirdPerson.Where(r=>r).Select(r=>r.name).ToArray()}).ToArray():Array.Empty<ArenaClassMenuCatalog.BuiltIn>();
                 built=built.Concat(entry.basePrefab.GetComponentsInChildren<WeaponAttachmentSocket>(true).Where(s=>s.builtInSight&&s.builtInSightRenderers.Length>0).Select(s=>new ArenaClassMenuCatalog.BuiltIn{mount=WeaponAttachmentDefinition.MountKind.SightRiser,sight=s.builtInSight.id,rendererNames=s.builtInSightRenderers.Where(r=>r).Select(r=>r.name).ToArray()})).ToArray();
+                built=built.Concat(entry.basePrefab.GetComponentsInChildren<WeaponAttachmentSocket>(true).Where(s=>s.opticMountRenderers.Length>0).Select(s=>new ArenaClassMenuCatalog.BuiltIn{mount=WeaponAttachmentDefinition.MountKind.SightRiser,opticMountOnly=true,excludedSights=s.sideMountSights.Where(o=>o).Select(o=>o.id).ToArray(),rendererNames=s.opticMountRenderers.Where(r=>r).Select(r=>r.name).ToArray()})).ToArray();
                 weapons.Add(new ArenaClassMenuCatalog.Weapon{id=weapon.catalogId,name=weapon.displayName,category=weapon.category,isUtility=weapon.isUtility,damage=weapon.damage,rpm=weapon.roundsPerMinute,rounds=weapon.magazineCapacity,icon=weapon.icon,previewAddress=Preview(entry.basePrefab,"weapon-"+weapon.catalogId),defaultSight=entry.defaultSight?entry.defaultSight.id:null,sights=entry.sights.Where(s=>s).Select(s=>s.id).ToArray(),attachments=entry.attachments.Where(a=>a).Select(a=>a.id).ToArray(),sockets=sockets.ToArray(),builtIns=built});
             }
             foreach(var entry in group.entries.ToArray())
