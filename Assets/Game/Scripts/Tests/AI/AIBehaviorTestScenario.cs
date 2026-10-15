@@ -47,7 +47,7 @@ public sealed class AIBehaviorTestScenario : MonoBehaviour
     public void SelectVehicle(int index)
     {
         if(index<0||index>=VehicleOptions.Length)return;
-        vehicleSelection=index;vehiclePrefab=VehicleOptions[index];ResetScenario();observer.follow=Vehicle.transform;
+        vehicleSelection=index;vehiclePrefab=VehicleOptions[index];ResetScenario();
         status="Selected "+Vehicle.displayName+". Add players, then toggle group entry / exit.";
     }
     public void StartTransportTrip()
@@ -58,7 +58,7 @@ public sealed class AIBehaviorTestScenario : MonoBehaviour
             var infantry=actor.GetComponent<ArenaAIInput>();infantry.enabled=true;actor.GetComponent<SoldierController>().inputSource=infantry;
             var ai=actor.GetComponent<ArenaVehicleAI>();ai.enabled=true;ai.SetTravelGoal(transportDestination);
         }
-        observer.follow=Vehicle.transform;Running=true;status="Production vehicle AI driving/flying to the test destination. Passenger exits remain available.";
+        Running=true;status="Production vehicle AI driving/flying to the test destination. Passenger exits remain available.";
     }
     Vector3 DoorOutward(VehicleDoors.Door door)
     {

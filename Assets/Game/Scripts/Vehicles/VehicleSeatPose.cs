@@ -46,7 +46,7 @@ public class VehicleSeatPose : MonoBehaviour
         animator.cullingMode = infantryCulling;
         // Rebind restores infantry layer defaults and clears mounted pose IK.
         animator.Rebind();
-        animator.Update(0f);
+        if (animator.isActiveAndEnabled) animator.Update(0f);
         enabled = false;
     }
 

@@ -59,6 +59,37 @@ public class VehicleOccupant : MonoBehaviour
         if (IsMounted)
             Leave(true);
     }
+    bool dismountQueued, completingDeferredExit;
+    async void DismountAfterHierarchyChange()
+    {
+        if (dismountQueued || !Application.isPlaying) return;
+        dismountQueued = true;
+        try
+        {
+            // Unity forbids reparenting children during their parent's activation callbacks.
+            await Awaitable.NextFrameAsync();
+            if (this && IsMounted)
+            {
+                completingDeferredExit = true;
+                Leave(true);
+            }
+        }
+        catch (System.OperationCanceledException) { } // Play Mode or application shutdown.
+        finally
+        {
+            if (this) { dismountQueued = false; completingDeferredExit = false; }
+        }
+    }
+    void ReleaseSeatOnDestroy()
+    {
+        // Destruction needs ownership cleanup, not a physical dismount of a dying hierarchy.
+        if (!MountedVehicle) return;
+        var vehicle = MountedVehicle;
+        if (SeatIndex >= 0 && SeatIndex < vehicle.seats.Length && vehicle.seats[SeatIndex].occupant == this)
+            vehicle.seats[SeatIndex].occupant = null;
+        vehicle.ReleaseReservation(this);
+        MountedVehicle = null;
+    }
     void OnDamaged(float amount, GameObject source)
     {
         if (life.health.IsDead && IsMounted)
@@ -361,6 +392,11 @@ public class VehicleOccupant : MonoBehaviour
     {
         if (!IsMounted)
             return false;
+        if (!gameObject.activeInHierarchy && !completingDeferredExit)
+        {
+            DismountAfterHierarchyChange();
+            return false;
+        }
         var vehicle = MountedVehicle;
         var seat = vehicle.seats[SeatIndex];
         if (!force && !IsLocal && !vehicle.CanExit)
@@ -388,7 +424,7 @@ public class VehicleOccupant : MonoBehaviour
         vehicle.ReleaseReservation(this);
         if (seat.role == Vehicle.SeatRole.Driver)
             vehicle.DriverInput = default;
-        seatPose.End();
+        if (seatPose) seatPose.End();
         MountedVehicle = null;
         transform.SetParent(originalParent, true);
         transform.SetPositionAndRotation(position, Quaternion.Euler(0, vehicle.transform.eulerAngles.y, 0));
@@ -406,7 +442,8 @@ public class VehicleOccupant : MonoBehaviour
             pair.Key.enabled = pair.Value;
         life.movement.ResetMovement();
         life.controller.enabled=!life.health.IsDead;
-        if(life.controller.enabled)life.controller.body.linearVelocity=departureVelocity;
+        if(life.controller.isActiveAndEnabled && !life.controller.body.isKinematic)
+            life.controller.body.linearVelocity=departureVelocity;
         if (restoreAgent && validAgentExit && !life.health.IsDead)
             agent.enabled = true;
         if (IsLocal)
@@ -629,6 +666,7 @@ public class VehicleOccupant : MonoBehaviour
     }
     void OnDestroy()
     {
+        ReleaseSeatOnDestroy();
         if (vehicleCamera)
             Destroy(vehicleCamera.gameObject);
     }
