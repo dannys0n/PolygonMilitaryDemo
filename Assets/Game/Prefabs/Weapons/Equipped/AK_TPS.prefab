@@ -857,7 +857,10 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 3800143043187981396, guid: 318b61c90502cfd4ebe305c7ce69ba1f, type: 3}
       insertIndex: -1
       addedObject: {fileID: 8429109336312360854}
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 708820125490917984, guid: 318b61c90502cfd4ebe305c7ce69ba1f, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 6526291287454163634}
   m_SourcePrefab: {fileID: 100100000, guid: 318b61c90502cfd4ebe305c7ce69ba1f, type: 3}
 --- !u!4 &34642883031417678 stripped
 Transform:
@@ -889,6 +892,32 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 8058088027479425331, guid: 318b61c90502cfd4ebe305c7ce69ba1f, type: 3}
   m_PrefabInstance: {fileID: 4674306607757680971}
   m_PrefabAsset: {fileID: 0}
+--- !u!1 &5262532297493631787 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 708820125490917984, guid: 318b61c90502cfd4ebe305c7ce69ba1f, type: 3}
+  m_PrefabInstance: {fileID: 4674306607757680971}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &6526291287454163634
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5262532297493631787}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 03e841738b6be124bbe22cf82e6359c7, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::WeaponAttachmentSocket
+  requiredSightSupports: []
+  placements:
+  - attachment: {fileID: 0}
+    sight: {fileID: 11400000, guid: 46b1acc602c5a8e439c25d575a4388b4, type: 2}
+    position: {x: -0.028, y: -0.058, z: 0}
+    rotation: {x: 0, y: 0, z: 0, w: 1}
+    scale: {x: 1, y: 1, z: 1}
+  builtInSight: {fileID: 0}
+  builtInSightRenderers: []
 --- !u!114 &5731476120138969164 stripped
 MonoBehaviour:
   m_CorrespondingSourceObject: {fileID: 1104562999968665863, guid: 318b61c90502cfd4ebe305c7ce69ba1f, type: 3}
