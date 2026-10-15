@@ -9,6 +9,8 @@ public class SoldierWeaponView : MonoBehaviour
         public Transform socket;
         public Renderer[] builtIn;
     }
+    [Tooltip("Loaded rocket model, hidden after firing and restored when reloading.")]
+    public GameObject loadedProjectile;
     public Animator animator;
     public string mountName;
     public Vector3 mountPosition, mountScale=Vector3.one;

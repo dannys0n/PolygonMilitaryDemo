@@ -65,7 +65,17 @@ public class SoldierWeaponLoadout : MonoBehaviour
         ResetStates();Spawn();
     }
     void Start(){Bind();presentation.view.RefreshVisuals();presentation.view.SetFirstPerson(presentation.view.firstPerson);}
-    void Update()=>RefreshFirstPersonPresentation();
+    void Update(){RefreshFirstPersonPresentation();RefreshLoadedProjectiles();}
+    public void RefreshLoadedProjectiles()
+    {
+        if(!ThirdPersonView)return;
+        var definition=slots[selectedSlot].definition;var state=EquippedState;
+        bool loaded=actions.ReloadHasRound || ((definition.infiniteAmmunition||state.InfiniteOverride)
+            ? Time.time>=state.ReadyAt : state.MagazineAmmo>0);
+        if(FirstPersonView && FirstPersonView.loadedProjectile)FirstPersonView.loadedProjectile.SetActive(loaded);
+        if(ThirdPersonView.loadedProjectile)ThirdPersonView.loadedProjectile.SetActive(loaded);
+    }
+    public void PlayWeaponSwitch(string state)=>Play(state);
     void Spawn()
     {
         var slot=slots[selectedSlot];

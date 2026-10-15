@@ -149,6 +149,7 @@ public class SoldierWeaponPresentation : MonoBehaviour
 
     void PlayReload()
     {
+        if(actions.IsSwapReload)return;
         characterAnimator.ResetTrigger("WeaponFire");
         characterAnimator.SetTrigger("CancelWeaponFire");
         characterAnimator.SetTrigger("WeaponReload");
