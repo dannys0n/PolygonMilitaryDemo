@@ -16,6 +16,27 @@ public class WeaponSightAttachment : MonoBehaviour
     [Min(.01f)] public float alternateSensitivityMultiplier = 1f;
     public bool HasAlternateSight => alternateRearSight && alternateFrontSight
         && (alternateFrontSight.position-alternateRearSight.position).sqrMagnitude > .000001f;
+    // Selection-time fitting only; glass and reticle planes are not mounting feet.
+    public static float MountingBaseY(Transform optic)
+    {
+        float bottom = float.PositiveInfinity;
+        var requiredSupport = optic.Find("RequiredSightRiser");
+        foreach (var renderer in optic.GetComponentsInChildren<Renderer>(true))
+        {
+            if (requiredSupport && renderer.transform.IsChildOf(requiredSupport)) continue;
+            string name = renderer.name.ToLowerInvariant();
+            if (name.Contains("glass") || name.Contains("lens") || name.Contains("reticle") || name == "point") continue;
+            if (renderer.sharedMaterial && renderer.sharedMaterial.shader.name == "Game/Scope Surface") continue;
+            var bounds = renderer.localBounds;
+            for (int i = 0; i < 8; i++)
+            {
+                var corner = bounds.center + Vector3.Scale(bounds.extents,
+                    new Vector3((i & 1) == 0 ? -1 : 1, (i & 2) == 0 ? -1 : 1, (i & 4) == 0 ? -1 : 1));
+                bottom = Mathf.Min(bottom, optic.parent.InverseTransformPoint(renderer.transform.TransformPoint(corner)).y);
+            }
+        }
+        return float.IsPositiveInfinity(bottom) ? optic.localPosition.y : bottom;
+    }
 #if UNITY_EDITOR
     // Lets the placement tool save a runtime attachment back to its authoring prefab.
     public WeaponSightAttachment SourcePrefab { get; set; }

@@ -76,6 +76,12 @@ public class ArenaWeaponPreview : MonoBehaviour, IDragHandler
             }
             if(request!=generation)return;
             foreach(var renderer in builtInVisibility.Keys)if(renderer)renderer.enabled=builtInVisibility[renderer];
+            if(parts.TryGetValue("optic",out var fittedOptic) && parts.TryGetValue("SightRiser",out var fittedRiser))
+            {
+                var riser=catalog.FindPart(fittedRiser.id);
+                if(riser!=null && riser.sightLift>0f)
+                    fittedOptic.model.transform.localPosition += Vector3.up*(riser.sightLift-WeaponSightAttachment.MountingBaseY(fittedOptic.model.transform));
+            }
             bool hasOptic=desired.ContainsKey("optic");
             foreach(var builtIn in weapon.builtIns)
                 if(builtIn.opticMountOnly ? !hasOptic || builtIn.excludedSights.Contains(opticId)

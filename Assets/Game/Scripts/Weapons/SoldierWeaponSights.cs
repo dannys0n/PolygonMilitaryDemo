@@ -160,8 +160,13 @@ public class SoldierWeaponSights : MonoBehaviour
         attachment.transform.SetLocalPositionAndRotation(Vector3.zero,Quaternion.identity);
         attachment.transform.localScale=SelectedSight.prefab.transform.localScale;
         if(socket)socket.Place(SelectedSight,attachment.transform);
-        attachment.transform.localPosition += Vector3.up * lift;
-        if (required) attachment.transform.localPosition -= new Vector3(placement.contactPoint.x, placement.contactPoint.y, 0f);
+        if (sightLift > 0f)
+            attachment.transform.localPosition += Vector3.up * (sightLift - WeaponSightAttachment.MountingBaseY(attachment.transform));
+        else
+        {
+            attachment.transform.localPosition += Vector3.up * lift;
+            if (required) attachment.transform.localPosition -= new Vector3(placement.contactPoint.x, placement.contactPoint.y, 0f);
+        }
         var old = attachment.transform.Find("RequiredSightRiser");
         if (old)
         {
@@ -170,7 +175,7 @@ public class SoldierWeaponSights : MonoBehaviour
             if (Application.isPlaying) Destroy(old.gameObject); else DestroyImmediate(old.gameObject);
         }
         // An explicitly equipped riser already supplies the support mesh.
-        if (!required || sightLift >= required.sightLift) return;
+        if (!required || sightLift > 0f) return;
         var support = Instantiate(required.prefab, attachment.transform, false);
         support.name = "RequiredSightRiser";
         support.transform.SetLocalPositionAndRotation(required.positionOffset + Vector3.forward * placement.contactPoint.z - attachment.transform.localPosition,
