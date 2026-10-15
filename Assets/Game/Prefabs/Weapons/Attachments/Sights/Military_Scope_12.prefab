@@ -301,6 +301,68 @@ MeshRenderer:
   m_SortingOrder: 0
   m_MaskInteraction: 0
   m_AdditionalVertexStreams: {fileID: 0}
+--- !u!1 &5809191296385239870
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 237236636542323431}
+  m_Layer: 0
+  m_Name: AlternateFrontSight
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &237236636542323431
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5809191296385239870}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0.0026005395, y: 0, z: 0, w: 0.99999666}
+  m_LocalPosition: {x: 0, y: 0.098771, z: 0.048177}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 4610270150770415105}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &7011890437940185986
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1974753471313772086}
+  m_Layer: 0
+  m_Name: AlternateRearSight
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1974753471313772086
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7011890437940185986}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0.0026005395, y: 0, z: 0, w: 0.99999666}
+  m_LocalPosition: {x: 0, y: 0.099347, z: -0.062569}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 4610270150770415105}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &8151395317388701032
 GameObject:
   m_ObjectHideFlags: 0
@@ -336,6 +398,8 @@ Transform:
   - {fileID: 3870517510870564035}
   - {fileID: 6874259323656704293}
   - {fileID: 6345261947046061559}
+  - {fileID: 1974753471313772086}
+  - {fileID: 237236636542323431}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &1316474347205817980
@@ -353,6 +417,11 @@ MonoBehaviour:
   rearSight: {fileID: 2826470016506590330}
   frontSight: {fileID: 3870517510870564035}
   scopeLens: {fileID: 6834803322883296047}
+  alternateRearSight: {fileID: 1974753471313772086}
+  alternateFrontSight: {fileID: 237236636542323431}
+  alternateEyeDistance: 0.14
+  alternateFieldOfView: 50
+  alternateSensitivityMultiplier: 1
 --- !u!1 &8488464314136343607
 GameObject:
   m_ObjectHideFlags: 0

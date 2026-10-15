@@ -81,6 +81,30 @@ public class WeaponAttachmentTests
         Assert.IsNull(Get(scope,"ScopeTexture"));Assert.IsFalse(((Camera)Get(scope,"ScopeCamera")).enabled);
         Assert.IsTrue((bool)Call(loadout,"TryToggleSightMode"));yield return null;Assert.IsTrue((bool)Get(sights,"UsesPictureInPicture"));Assert.IsNotNull(Get(scope,"ScopeTexture"));
     }
+    [UnityTest] public IEnumerator ConfiguredBackupSightsRemainSelectedAcrossViewAndWeaponSwaps()
+    {
+        int slot=(int)Get(loadout,"selectedSlot");
+        foreach(string name in new[]{"Military_Scope_03","Scope_Trijicon","Military_Scope_12","Scope_ACOG"})
+        {
+            var sights=(Component)Get(loadout,"EquippedSights");
+            var sight=((Array)Get(sights,"compatibleSights")).Cast<Object>().First(s=>s&&Get(s,"prefab")!=null&&((Component)Get(s,"prefab")).name==name);
+            Call(loadout,"SetSight",sight);yield return null;
+            var attachment=(Component)Get(sights,"FirstPersonAttachment");
+            Assert.IsTrue((bool)Get(attachment,"HasAlternateSight"),name);
+            var primary=(Transform)Get(sights,"ActiveAimPoint");var secondary=(Transform)Get(attachment,"alternateRearSight");
+            Assert.Greater(secondary.localPosition.y-primary.localPosition.y,.01f,name);
+            Assert.IsTrue((bool)Call(loadout,"TryToggleSightMode"));Assert.AreEqual(secondary,Get(sights,"ActiveAimPoint"));
+            Call(view,"SetFirstPerson",false);yield return null;Assert.IsTrue((bool)Get(sights,"AlternateSightActive"),name+" TPS");
+            Call(view,"SetFirstPerson",true);yield return null;Assert.IsTrue((bool)Get(sights,"AlternateSightActive"),name+" FPS");
+            Assert.AreEqual(sight,Get(sights,"SelectedSight"));AssertFinite((Transform)Get(sights,"ActiveAimPoint"));
+            Assert.IsFalse((bool)Get(sights,"UsesPictureInPicture"));
+            int other=((int[])Get(loadout,"AvailableSlots")).First(i=>i!=slot);
+            Assert.IsTrue((bool)Call(loadout,"SetStartingSlot",other));yield return null;
+            Assert.IsTrue((bool)Call(loadout,"SetStartingSlot",slot));yield return null;
+            sights=(Component)Get(loadout,"EquippedSights");Assert.AreEqual(sight,Get(sights,"SelectedSight"));Assert.IsTrue((bool)Get(sights,"AlternateSightActive"),name+" weapon swap");
+            Assert.IsTrue((bool)Call(loadout,"TryToggleSightMode"));Assert.IsTrue((bool)Get(sights,"UsesPictureInPicture"));
+        }
+    }
     [UnityTest] public IEnumerator OpticCalibrationDoesNotAccumulateAndPiPOwnershipIsPreserved()
     {
         var slots=(Array)Get(loadout,"slots");int index=Array.FindIndex(slots.Cast<object>().ToArray(),s=>(string)Get(Get(s,"definition"),"displayName")=="AK-47");Call(loadout,"SetStartingSlot",index);yield return null;

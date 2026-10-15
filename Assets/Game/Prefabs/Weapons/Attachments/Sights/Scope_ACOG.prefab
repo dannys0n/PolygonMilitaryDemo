@@ -35,6 +35,8 @@ Transform:
   - {fileID: 6261698830770034663}
   - {fileID: 43265327633818509}
   - {fileID: 8619825984136525637}
+  - {fileID: 3349455637311055589}
+  - {fileID: 3404721164024142096}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &6204255977935361494
@@ -52,6 +54,11 @@ MonoBehaviour:
   rearSight: {fileID: 3446351635112012942}
   frontSight: {fileID: 6261698830770034663}
   scopeLens: {fileID: 6745180036313385396}
+  alternateRearSight: {fileID: 3349455637311055589}
+  alternateFrontSight: {fileID: 3404721164024142096}
+  alternateEyeDistance: 0.12
+  alternateFieldOfView: 50
+  alternateSensitivityMultiplier: 1
 --- !u!1 &858811103054278116
 GameObject:
   m_ObjectHideFlags: 0
@@ -474,6 +481,68 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: -0.000000011175871, y: 0.04691684, z: 0.031566218}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 3977554313425411453}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &6336581369660329717
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 3404721164024142096}
+  m_Layer: 0
+  m_Name: AlternateFrontSight
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &3404721164024142096
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6336581369660329717}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0.000979851, y: 0, z: 0, w: 0.9999995}
+  m_LocalPosition: {x: 0, y: 0.070549, z: 0.057992}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 3977554313425411453}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &6448114210525073011
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 3349455637311055589}
+  m_Layer: 0
+  m_Name: AlternateRearSight
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &3349455637311055589
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6448114210525073011}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0.000979851, y: 0, z: 0, w: 0.9999995}
+  m_LocalPosition: {x: 0, y: 0.07031, z: -0.063965}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
