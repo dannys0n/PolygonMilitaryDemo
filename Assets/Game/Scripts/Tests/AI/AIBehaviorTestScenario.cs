@@ -28,6 +28,7 @@ public sealed class AIBehaviorTestScenario : MonoBehaviour
     public bool Running { get; private set; }
     public int ErrorCount { get; private set; }
     public int CompletedCount {get{int count=0;foreach(var actor in Actors){var task=actor.GetComponent<TransportTaskInput>();if(task&&task.Completed)count++;}return count;}}
+    readonly HashSet<ArenaParticipant> pendingPlayers=new HashSet<ArenaParticipant>();
     GameObject population;
     VehicleOccupant pilot;
     bool flight;
@@ -83,7 +84,7 @@ public sealed class AIBehaviorTestScenario : MonoBehaviour
         // Mounted actors are parented to seat anchors, not the population root.
         foreach(var actor in Actors)if(actor){var rider=actor.GetComponent<VehicleOccupant>();if(rider.IsMounted)rider.Leave(true);actor.gameObject.SetActive(false);Destroy(actor.gameObject);}
         if(population){population.SetActive(false);Destroy(population);}if(Vehicle)Destroy(Vehicle.gameObject);if(Opponent)Destroy(Opponent.gameObject);Opponent=null;
-        Actors.Clear();population=new GameObject("Scenario actors");population.SetActive(false);
+        Actors.Clear();pendingPlayers.Clear();population=new GameObject("Scenario actors");population.SetActive(false);
         if(vehiclePrefab)Vehicle=Instantiate(vehiclePrefab,Vector3.up*.2f,Quaternion.identity);
         ErrorCount=0;status="Ready. Each command can be reset and repeated.";
     }
@@ -93,13 +94,14 @@ public sealed class AIBehaviorTestScenario : MonoBehaviour
         if(!Vehicle)yield break;
         int id=nextActorId++;
         Vector3 position=Vehicle.transform.position+Vehicle.transform.right*(Vehicle.NavigationBounds.extents.x+5)+Vehicle.transform.forward*((id%8-3.5f)*2.4f);
-        var actor=Spawn(position,id);population.SetActive(true);yield return null;
+        var actor=Spawn(position,id);pendingPlayers.Add(actor);population.SetActive(true);yield return null;
+        if(!actor||!Actors.Contains(actor))yield break;
         if(!match.IsRunning)match.BeginMatch();
         if(!ArenaSpawnSelection.TryFindPosition(match,actor,position,out var validPosition))
         {RemovePlayer(actor);status="No valid nearby spawn position; remove a player or select another vehicle.";yield break;}
         actor.SelectClass(match.settings.classes[0]);actor.Respawn(validPosition,Vehicle.transform.rotation);
         actor.GetComponent<ArenaAIInput>().enabled=true;actor.GetComponent<ArenaVehicleAI>().enabled=true;
-        ApplyTransportOrder(actor);Running=true;
+        pendingPlayers.Remove(actor);ApplyTransportOrder(actor);Running=true;
     }
     public void RemovePlayer(){if(Actors.Count>0)RemovePlayer(Actors[Actors.Count-1]);}
     public void RemovePlayerAt(int index){if(index>=0&&index<Actors.Count)RemovePlayer(Actors[index]);}
@@ -108,16 +110,19 @@ public sealed class AIBehaviorTestScenario : MonoBehaviour
         var ai=actor.GetComponent<ArenaVehicleAI>();ai.SetTransportOrder(null,false);
         var rider=actor.GetComponent<VehicleOccupant>();if(rider.IsMounted)rider.Leave(true);
         if(observer.follow==actor.transform)observer.follow=null;
-        Actors.Remove(actor);actor.gameObject.SetActive(false);Destroy(actor.gameObject);
+        pendingPlayers.Remove(actor);Actors.Remove(actor);actor.gameObject.SetActive(false);Destroy(actor.gameObject);
     }
-    public void ToggleAllEnterExit()
+    public void EnterAll()=>SetAllTransportState(true);
+    public void ExitAll()=>SetAllTransportState(false);
+    public void SetAllTransportState(bool enter)
     {
-        EnterRequested=!EnterRequested;
+        EnterRequested=enter;
         foreach(var actor in Actors)ApplyTransportOrder(actor);
         status=EnterRequested?"Enter requested. AI finds/reserves seats and approaches; excess players wait for availability.":"Exit requested. AI disembarks through normal exit checks and clears the vehicle.";
     }
     void ApplyTransportOrder(ArenaParticipant actor)
     {
+        if(!actor||pendingPlayers.Contains(actor))return;
         actor.GetComponent<ArenaVehicleAI>().SetTransportOrder(Vehicle,EnterRequested);
         if(EnterRequested)actor.GetComponent<SoldierController>().inputSource=actor.GetComponent<ArenaAIInput>();
         else
@@ -275,7 +280,8 @@ public sealed class AIBehaviorTestScenario : MonoBehaviour
             GUILayout.Label(Vehicle?Vehicle.displayName:"No vehicle");
             if(GUILayout.Button("Spawn a player"))AddPlayer();
             if(GUILayout.Button("Remove last player"))RemovePlayer();
-            if(GUILayout.Button(EnterRequested?"All players: EXIT vehicle":"All players: ENTER vehicle"))ToggleAllEnterExit();
+            GUILayout.Label("Group order: "+(EnterRequested?"ENTER / stay seated":"EXIT / stay outside"));
+            GUILayout.BeginHorizontal();if(GUILayout.Button("ENTER ALL"))EnterAll();if(GUILayout.Button("EXIT ALL"))ExitAll();GUILayout.EndHorizontal();
             int seated=Actors.Count(a=>a.GetComponent<VehicleOccupant>().IsMounted);
             GUILayout.Label("Seated: "+seated+" / waiting or outside: "+(Actors.Count-seated));
         }

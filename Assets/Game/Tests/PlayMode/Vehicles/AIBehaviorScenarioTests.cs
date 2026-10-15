@@ -106,7 +106,7 @@ public class AIBehaviorScenarioTests
   scenario.GetType().GetMethod("SelectVehicle").Invoke(scenario,new object[]{index});yield return new WaitForSeconds(1.5f);
   var vehicle=(Component)Get(scenario,"Vehicle");int seats=((Array)Get(vehicle,"seats")).Length;
   for(int i=0;i<seats+1;i++){Command(scenario,"AddPlayer");yield return new WaitForSeconds(.15f);}
-  Command(scenario,"ToggleAllEnterExit");float until=Time.time+25;
+  Command(scenario,"EnterAll");float until=Time.time+25;
   while(Time.time<until&&MountedActors()<seats)yield return null;
   Assert.AreEqual(seats,MountedActors(),"Production approach and reservations must fill every seat");
   Command(scenario,"AddPlayer");yield return new WaitForSeconds(.3f);
@@ -116,9 +116,9 @@ public class AIBehaviorScenarioTests
   scenario.GetType().GetMethod("RemovePlayerAt").Invoke(scenario,new object[]{seatedIndex});yield return null;
   until=Time.time+15;while(Time.time<until&&MountedActors()<seats)yield return null;
   Assert.AreEqual(seats,MountedActors(),"The waiting actor must claim the newly freed seat");
-  Command(scenario,"ToggleAllEnterExit");until=Time.time+20;while(Time.time<until&&MountedActors()>0)yield return null;
+  Command(scenario,"ExitAll");until=Time.time+20;while(Time.time<until&&MountedActors()>0)yield return null;
   Assert.AreEqual(0,MountedActors(),"Exit must include driver and gunner");
-  Command(scenario,"ToggleAllEnterExit");yield return new WaitForSeconds(.1f);Command(scenario,"ToggleAllEnterExit");yield return new WaitForSeconds(2);
+  Command(scenario,"EnterAll");yield return new WaitForSeconds(.1f);Command(scenario,"ExitAll");yield return new WaitForSeconds(2);
   Assert.AreEqual(0,MountedActors(),"Reversing an approach cancels entry");
   foreach(var seat in (Array)Get(vehicle,"seats"))Assert.IsFalse((bool)(UnityEngine.Object)Get(seat,"reservation"),"Exit must release all pending reservations");
   Assert.AreEqual(0,Get(scenario,"ErrorCount"));
@@ -177,7 +177,7 @@ public class AIBehaviorScenarioTests
    actors[i].GetType().GetMethod("Respawn",new[]{typeof(Vector3),typeof(Quaternion)}).Invoke(actors[i],new object[]{point,Quaternion.Euler(0,-90,0)});
    var agent=actors[i].GetComponent<UnityEngine.AI.NavMeshAgent>();Assert.GreaterOrEqual(agent.radius,.5f,"Avoidance includes clearance beyond the physical capsule");
   }
-  Command(scenario,"ToggleAllEnterExit");float until=Time.time+20;float deepest=0;
+  Command(scenario,"EnterAll");float until=Time.time+20;float deepest=0;
   while(Time.time<until&&MountedActors()<seats)
   {
    for(int i=0;i<actors.Length;i++)for(int j=i+1;j<actors.Length;j++)
@@ -189,6 +189,31 @@ public class AIBehaviorScenarioTests
    yield return null;
   }
   Assert.AreEqual(seats,MountedActors(),"Approaching agents must fill the vehicle without a doorway deadlock");Assert.Less(deepest,.1f,"Agents must not force their physical capsules deeply through one another");Assert.AreEqual(0,Get(scenario,"ErrorCount"));
+ }
+ [UnityTest] public IEnumerator GroupCommandsOverwriteStateAndNewPlayersInheritLatestOrder()
+ {
+  yield return Load("AI_Transport_Overflow");var options=(Array)Get(scenario,"VehicleOptions");
+  int index=Array.FindIndex(options.Cast<Component>().ToArray(),v=>v.name=="PickupTechnical");scenario.GetType().GetMethod("SelectVehicle").Invoke(scenario,new object[]{index});yield return new WaitForSeconds(1.5f);
+  Command(scenario,"EnterAll");Command(scenario,"EnterAll");
+  Command(scenario,"AddPlayer");Command(scenario,"RemovePlayer"); // Remove before initialization resumes.
+  yield return null;Assert.AreEqual(0,((IList)Get(scenario,"Actors")).Count);
+  Command(scenario,"AddPlayer");Command(scenario,"AddPlayer");
+  yield return new WaitForSeconds(.2f);
+  foreach(Component actor in (IList)Get(scenario,"Actors"))
+   Assert.AreEqual(true,Get(actor.GetComponent(T("ArenaVehicleAI")),"enterOrderedVehicle"),"New actors inherit the existing enter order");
+  for(int i=0;i<10;i++){Command(scenario,"EnterAll");yield return new WaitForSeconds(.1f);}
+  float until=Time.time+15;while(Time.time<until&&MountedActors()<2)yield return null;
+  Assert.AreEqual(2,MountedActors(),"Repeated Enter All must preserve progress and keep seated players inside");
+  Command(scenario,"ExitAll");Command(scenario,"ExitAll");Command(scenario,"AddPlayer");
+  until=Time.time+15;while(Time.time<until&&MountedActors()>0)yield return null;
+  yield return new WaitForSeconds(1);
+  Assert.AreEqual(3,((IList)Get(scenario,"Actors")).Count);Assert.AreEqual(0,MountedActors());
+  foreach(Component actor in (IList)Get(scenario,"Actors"))
+   Assert.AreEqual(false,Get(actor.GetComponent(T("ArenaVehicleAI")),"enterOrderedVehicle"),"New actors inherit Exit All");
+  Command(scenario,"AddPlayer");Command(scenario,"EnterAll");Command(scenario,"ExitAll");yield return new WaitForSeconds(.3f);
+  foreach(Component actor in (IList)Get(scenario,"Actors"))
+   Assert.AreEqual(false,Get(actor.GetComponent(T("ArenaVehicleAI")),"enterOrderedVehicle"),"Spawning actors use the last command, not a stale snapshot");
+  Assert.AreEqual(0,Get(scenario,"ErrorCount"));
  }
  void AssertFullCrew()
  {

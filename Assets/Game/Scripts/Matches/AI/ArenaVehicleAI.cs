@@ -22,6 +22,8 @@ public class ArenaVehicleAI : MonoBehaviour
     bool hasTransportOrder, enterOrderedVehicle;
     public void SetTransportOrder(Vehicle vehicle,bool enter)
     {
+        if(hasTransportOrder&&orderedVehicle==vehicle&&enterOrderedVehicle==enter)
+        {infantry.HoldMovement=true;nextDecision=0;return;}
         CancelBoarding();orderedVehicle=vehicle;hasTransportOrder=vehicle;enterOrderedVehicle=enter;
         infantry.HoldMovement=hasTransportOrder;nextDecision=0;
     }
@@ -85,7 +87,7 @@ public class ArenaVehicleAI : MonoBehaviour
     void Start()
     {
         occupant.faction = (int)infantry.participant.team;
-        nextDecision = Time.time + Random.Range(0f, 2f);
+        nextDecision = hasTransportOrder ? Time.time : Time.time + Random.Range(0f, 2f);
     }
     void OnDisable()
     {
