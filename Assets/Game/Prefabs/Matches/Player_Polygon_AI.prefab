@@ -226,6 +226,9 @@ MonoBehaviour:
   agent: {fileID: 4000602008927823826}
   sightRange: 50
   fieldOfView: 140
+  vehicleFieldOfView: 360
+  nearbyVehicleAwarenessRange: 35
+  avoidanceClearance: 0.12
   attackRange: 22
   turnSpeed: 180
   reactionTime: 0.35
@@ -246,7 +249,7 @@ MonoBehaviour:
   hideDuration: {x: 0.6, y: 1.2}
   peekDuration: {x: 1, y: 2}
   initialAimError: 2.5
-  settledAimError: 0.8
+  settledAimError: 0
   aimSettleTime: 1.5
   aimTrackingTime: 0.18
   aimNoiseInterval: 0.4

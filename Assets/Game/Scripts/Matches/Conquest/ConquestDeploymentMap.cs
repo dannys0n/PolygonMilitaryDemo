@@ -103,7 +103,7 @@ public class ConquestDeploymentMap : MonoBehaviour, IScrollHandler, IBeginDragHa
    p.button.interactable=available;p.image.color=new Color(color.r,color.g,color.b,p.member ? .85f : chosen ? .95f : .7f);p.label.color=chosen?Color.white:color;
   }
   var match=menu.participant.match;
-  if(matchSummary){string flags="";foreach(var point in menu.rules.points){string color=point.Owner==menu.participant.team?"FFAF00":point.Owner.HasValue?"DE7763":"C5CDD2";flags+="<color=#"+color+">"+point.letter+"</color>  ";}matchSummary.text="<color=#FFAF00>"+match.RedScore+"</color>  /  "+match.BlueScore+"  <size=17>"+Mathf.CeilToInt(match.TimeRemaining/60)+" MIN</size>\n<size=17>"+flags+"</size>";}
+  if(matchSummary){string flags="";foreach(var point in menu.rules.points){string color=point.Owner==menu.participant.team?"FFAF00":point.Owner.HasValue?"DE7763":"C5CDD2";flags+="<color=#"+color+">"+point.letter+"</color>  ";}string clock=match.UsesMatchTimer?Mathf.CeilToInt(match.TimeRemaining/60)+" MIN":"NO TIME LIMIT";matchSummary.text="<color=#FFAF00>"+match.RedScore+"</color>  /  "+match.BlueScore+"  <size=17>"+clock+"</size>\n<size=17>"+flags+"</size>";}
   mapTitle.text="TACTICAL MAP  /  "+friendly+" FRIENDLIES   /   WHEEL ZOOM / RMB DRAG / P RESET";
  }
  void UpdatePreview()

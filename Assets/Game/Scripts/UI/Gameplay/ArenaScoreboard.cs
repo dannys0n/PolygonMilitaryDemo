@@ -47,8 +47,7 @@ public class ArenaScoreboard : MonoBehaviour
     public void RefreshRows()
     {
         instructions.text = ResultsVisible ? "MATCH COMPLETE  /  FINAL STANDINGS" : (match.rules ? "HOLD TAB TO VIEW  /  100 PER KILL  /  200 PER CAPTURE" : "HOLD TAB TO VIEW  /  SCROLL EACH TEAM  /  100 POINTS PER ENEMY KILL");
-        int seconds = Mathf.CeilToInt(match.TimeRemaining);
-        matchInfo.text = $"{match.DisplayName}  /  {match.RedScore} : {match.BlueScore}  /  {seconds/60:00}:{seconds%60:00}";
+        matchInfo.text = $"{match.DisplayName}  /  {match.RedScore} : {match.BlueScore}  /  {match.ClockText}";
         UpdateTeam(ArenaParticipant.Team.Red,redContent,redRows,redHeader);
         UpdateTeam(ArenaParticipant.Team.Blue,blueContent,blueRows,blueHeader);
         var presence = GetComponent<ArenaUiPresence>();

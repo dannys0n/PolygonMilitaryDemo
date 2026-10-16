@@ -51,6 +51,10 @@ public class ConquestRules : ArenaMatchRules
                         { actor.Captures++; actor.ObjectiveScore+=200; }
             captureClock=0;
         }
+        TickScoring(deltaTime);
+    }
+    protected virtual void TickScoring(float deltaTime)
+    {
         bleedClock+=Mathf.Max(0,deltaTime);
         while(bleedClock>=bleedInterval && !HasEnded)
         {
@@ -73,7 +77,7 @@ public class ConquestRules : ArenaMatchRules
     public override bool TryChooseSpawn(ArenaParticipant actor, Dictionary<Transform,float> history, out Transform spawn)
     {
         spawn=null;
-        if(TeamScore(actor.team)<=0 || actor.RespawnRemaining>0 || actor.NeedsClassSelection || NeedsDeployment(actor) && !approved.Contains(actor))return false;
+        if(HasEnded || actor.RespawnRemaining>0 || actor.NeedsClassSelection || NeedsDeployment(actor) && !approved.Contains(actor))return false;
         // Dedicated crews return to HQ near vehicle pads instead of repeatedly
         // deploying into the middle of infantry flag fights.
         if(squads && squads.IsVehicleSquad(actor) && actor.GetComponent<ArenaVehicleAI>()

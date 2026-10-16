@@ -20,6 +20,20 @@ public class ArenaVehicleAI : MonoBehaviour
     ArenaVehicleScenario scenario;
     Vehicle orderedVehicle;
     public string BoardingStatus { get; private set; }="Idle";
+    public bool MissionCrew { get; private set; }
+    public bool MissionManaged { get; set; }
+    public bool HoldDeparture { get; set; }
+    public void SetMissionGoal(Vector3 destination,bool crew)
+    {
+        if(hasTransportOrder)SetTransportOrder(null,false);
+        MissionCrew=crew;
+        if((Goal-destination).sqrMagnitude>16){Goal=destination;nextPath=0;landing=false;}
+    }
+    public void ReleaseMission()
+    {
+        MissionCrew=false;HoldDeparture=false;
+        if(hasTransportOrder)SetTransportOrder(null,false);
+    }
     bool exitClearancePending, hasExitGoal;
     Vector3 exitGoal, reservedApproach, failedApproach;
     bool hasFailedApproach;
@@ -104,6 +118,7 @@ public class ArenaVehicleAI : MonoBehaviour
     {
         get
         {
+            if(MissionCrew)return true;
             var actor=infantry.participant;
             if(actor.match.rules is ConquestRules conquest && conquest.squads)
                 return conquest.squads.IsVehicleSquad(actor);
@@ -187,6 +202,7 @@ public class ArenaVehicleAI : MonoBehaviour
             }
             return;
         }
+        if(MissionManaged)return;
         if (Time.time < nextDecision || Time.time < retryAt)
             return;
         nextDecision = Time.time + decisionInterval;
@@ -371,6 +387,7 @@ public class ArenaVehicleAI : MonoBehaviour
                 occupant.Leave(false);
             return;
         }
+        if(HoldDeparture){v.DriverInput=new VehicleInput{brake=true};return;}
         if (Time.time - boardedAt < 2f)
         {
             v.DriverInput = new VehicleInput { brake = true, lift = -.3f };
@@ -387,9 +404,17 @@ public class ArenaVehicleAI : MonoBehaviour
     bool PlanRoad(Vehicle v, Vector3 goal)
     {
         var filter = new NavMeshQueryFilter { agentTypeID = scenario.vehicleAgentType, areaMask = NavMesh.AllAreas };
-        return NavMesh.SamplePosition(v.transform.position, out var from, 5, filter)
-            && NavMesh.SamplePosition(goal, out var to, 6, filter)
-            && NavMesh.CalculatePath(from.position, to.position, filter, path) && path.status == NavMeshPathStatus.PathComplete;
+        float startRadius=Mathf.Max(5,v.NavigationBounds.extents.x+2);
+        if(!NavMesh.SamplePosition(v.transform.position,out var from,startRadius,filter))return false;
+        // Flags can be upstairs or inside infantry-only spaces. A vehicle supports the
+        // nearest accessible perimeter; passengers finish the approach on foot.
+        for(int ring=0;ring<4;ring++)for(int i=0;i<(ring==0?1:8);i++)
+        {
+            var candidate=goal+Quaternion.Euler(0,i*45,0)*Vector3.forward*(ring==0?0:ring==1?8:ring==2?16:24);
+            if(NavMesh.SamplePosition(candidate,out var to,6,filter)
+                && NavMesh.CalculatePath(from.position,to.position,filter,path) && path.status==NavMeshPathStatus.PathComplete)return true;
+        }
+        return false;
     }
     void FlyJet(Vehicle v, JetMotor jet)
     {
@@ -399,13 +424,15 @@ public class ArenaVehicleAI : MonoBehaviour
         int lane=(int)((uint)infantry.participant.GetEntityId().GetHashCode()%4);
         target.y = GroundHeight(target) + 65+lane*25;
         var aerialEnemy=FindVehicleTarget(v,v.turret?v.turret.muzzle.position:v.cameraTarget.position,350,false);
+        Vehicle opposingAircraft=null;
         if(aerialEnemy&&aerialEnemy.TryGetComponent<VehicleOccupant>(out var opponent)&&opponent.IsMounted&&opponent.MountedVehicle.IsAircraft)
-            target=opponent.MountedVehicle.Body.worldCenterOfMass+opponent.MountedVehicle.Body.linearVelocity*1.5f;
+            opposingAircraft=opponent.MountedVehicle;
+        if(opposingAircraft)target=opposingAircraft.Body.worldCenterOfMass+opposingAircraft.Body.linearVelocity*1.5f;
         Vector3 direction = target - v.transform.position;
         float horizontal = Vector3.ProjectOnPlane(direction, Vector3.up).magnitude;
         float heading = Mathf.Atan2(direction.x, direction.z) * Mathf.Rad2Deg;
         // Bank around the objective rather than trying to hover over its exact point.
-        if (horizontal < 180) heading += 65;
+        if (!opposingAircraft && horizontal < 180) heading += 65;
         float pitch = -Mathf.Atan2(direction.y, Mathf.Max(1, horizontal)) * Mathf.Rad2Deg;
         if (jet.Grounded || v.transform.position.y < ground + 30) pitch = -18;
         Vector3 flight=v.Body.linearVelocity.sqrMagnitude>1?v.Body.linearVelocity.normalized:v.transform.forward;
@@ -516,7 +543,8 @@ public class ArenaVehicleAI : MonoBehaviour
         if (v.Health < v.maxHealth * .35f)
             landing = true;
         var launcher = v.GetComponent<VehicleLauncher>();
-        var enemy = launcher && !landing ? FindVehicleTarget(v, launcher.NextShotRay.origin, 150, false) : null;
+        var enemy = !landing && (launcher || v.turret) ? FindVehicleTarget(v, launcher?launcher.NextShotRay.origin:v.turret.muzzle.position, 150, false) : null;
+        if(v.turret && v.turret.controlRole==Vehicle.SeatRole.Driver)UseTurret(v);
         Vector3 travelGoal = Goal;
         if (enemy)
         {
@@ -529,7 +557,7 @@ public class ArenaVehicleAI : MonoBehaviour
         {
             // Armed crew aircraft remain available over the battlefield rather than
             // treating every completed short trip as a reason to land and abandon it.
-            if(IsVehicleCrew && launcher && infantry.participant.match.rules
+            if(IsVehicleCrew && (launcher || v.turret) && infantry.participant.match.rules
                 && infantry.participant.match.rules.TryGetObjective(infantry,out var nextObjective))
                 Goal=nextObjective;
             else landing=true;
@@ -562,7 +590,7 @@ public class ArenaVehicleAI : MonoBehaviour
         }
         if (enemy && !landing && v.transform.position.y - altitude > 4)
         {
-            Vector3 aim = EnemyPoint(enemy) - launcher.NextShotRay.origin;
+            Vector3 aim = EnemyPoint(enemy) - (launcher?launcher.NextShotRay.origin:v.turret.muzzle.position);
             var input = v.DriverInput;
             input.directionalFlight = true;
             input.aim = true;
@@ -571,7 +599,7 @@ public class ArenaVehicleAI : MonoBehaviour
             input.movementHeading = v.transform.eulerAngles.y;
             input.move = Vector2.ClampMagnitude(new Vector2(local.x, local.z) * .08f, .55f);
             v.DriverInput = input;
-            UseRockets(v);
+            if(launcher)UseRockets(v);
         }
         if (!IsVehicleCrew && Time.time - boardedAt > 70 && Time.time - lastVehicleContact > combatHoldTime)
             landing = true;

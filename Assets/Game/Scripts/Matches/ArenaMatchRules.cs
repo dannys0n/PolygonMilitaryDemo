@@ -7,6 +7,8 @@ public abstract class ArenaMatchRules : MonoBehaviour
     public abstract string DisplayName { get; }
     public abstract int ScoreLimit { get; }
     public abstract bool HasEnded { get; }
+    public virtual bool UsesMatchTimer => true;
+    public virtual string ScoreDescription => "TEAM TICKETS";
     public abstract int TeamScore(ArenaParticipant.Team team);
     public abstract void Begin(ArenaMatch match);
     public abstract void Tick(float deltaTime);

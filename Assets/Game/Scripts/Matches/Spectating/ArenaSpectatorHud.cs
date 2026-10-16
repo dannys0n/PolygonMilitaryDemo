@@ -49,8 +49,7 @@ public class ArenaSpectatorHud : MonoBehaviour
         scorePanel.SetActive(!target && !spectator.localPlayer);
         var match = spectator.match;
         redScore.text = match.RedScore.ToString("000"); blueScore.text = match.BlueScore.ToString("000");
-        int seconds = Mathf.CeilToInt(match.TimeRemaining);
-        timer.text = $"{seconds/60:00}:{seconds%60:00}";
+        timer.text = match.ClockText;
         mode.text = match.IsRunning ? $"{match.DisplayName} / {match.TeamSize(ArenaParticipant.Team.Red)} v {match.TeamSize(ArenaParticipant.Team.Blue)}" : match.Result.ToUpperInvariant();
         redProgress.fillAmount = Mathf.Clamp01((float)match.RedScore / match.ScoreLimit);
         blueProgress.fillAmount = Mathf.Clamp01((float)match.BlueScore / match.ScoreLimit);

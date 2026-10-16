@@ -52,6 +52,13 @@ public class JetMotor : VehicleMotor
 
     public override bool CanDisembark => Grounded;
     readonly RaycastHit[] groundHits = new RaycastHit[16];
+    float supportedUntil=float.NegativeInfinity;
+    void OnCollisionStay(Collision collision)
+    {
+        if(collision.collider.GetComponentInParent<SoldierLife>() || collision.collider.GetComponentInParent<Vehicle>())return;
+        for(int i=0;i<collision.contactCount;i++)if(collision.GetContact(i).normal.y>.5f)
+        {supportedUntil=Time.fixedTime+Time.fixedDeltaTime*2;break;}
+    }
 
     void Start()
     {
@@ -174,6 +181,9 @@ public class JetMotor : VehicleMotor
 
     bool IsOnGround()
     {
+        // Some airframes rest on a hull collider before the small gear probes touch.
+        // Real supporting contacts also count as grounded, so a parked aircraft can be boarded.
+        if(Time.fixedTime<=supportedUntil)return true;
         foreach (var gear in landingGear)
         {
             int count = Physics.RaycastNonAlloc(gear.transform.TransformPoint(gear.center), Vector3.down, groundHits,

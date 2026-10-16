@@ -41,10 +41,12 @@ public class ArenaAIInput : SoldierInputSource
     public Vector2 peekDuration = new Vector2(1f, 2f);
     [Header("Aim and bursts")]
     public float initialAimError = 3f;
-    public float settledAimError = 1f;
+    public float settledAimError = 0f;
     public float aimSettleTime = 1.5f;
     public float aimTrackingTime = .18f;
     public float aimNoiseInterval = .4f;
+    public float FocusSeconds => target?Mathf.Max(0,Time.time-acquiredAt):0;
+    public float CurrentAimError => Mathf.Lerp(initialAimError,settledAimError,Mathf.Clamp01(FocusSeconds/Mathf.Max(.01f,aimSettleTime)));
     public Vector2 burstDuration = new Vector2(.5f, 1f);
     public Vector2 burstPause = new Vector2(.35f, .8f);
     public float semiAutoInterval = .25f;
@@ -208,6 +210,7 @@ public class ArenaAIInput : SoldierInputSource
     }
 
     public bool HoldMovement { get; set; }
+    public bool HoldPosition { get; set; }
     public override SoldierInputFrame ReadInput()
     {
         RestoreNavigation();
@@ -245,10 +248,18 @@ public class ArenaAIInput : SoldierInputSource
             direction = GetOpenLook(direction);
             yaw = Mathf.Atan2(direction.x, direction.z) * Mathf.Rad2Deg;
         }
-        // TPS cameras have an authored pitch offset; raw look pitch alone points shots below the target.
-        Vector3 aimForward=life.look.aimCamera.transform.forward;
-        float cameraUp=Mathf.Atan2(aimForward.y,new Vector2(aimForward.x,aimForward.z).magnitude)*Mathf.Rad2Deg;
-        float yawError = Mathf.DeltaAngle(life.look.Yaw, yaw), pitchError = up - cameraUp;
+        // Account for the camera's authored offset on both axes. Use the commanded
+        // heading rather than the interpolated body heading to avoid feedback lag.
+        var camera = life.look.aimCamera.transform;
+        Quaternion cameraOffset = Quaternion.Inverse(life.look.playerCamera.rotation) * camera.rotation;
+        Vector3 commandForward = Quaternion.Euler(life.look.Pitch, life.look.Yaw, 0f) * cameraOffset * Vector3.forward;
+        float cameraYaw = Mathf.Atan2(commandForward.x, commandForward.z) * Mathf.Rad2Deg;
+        float cameraUp = Mathf.Atan2(commandForward.y, new Vector2(commandForward.x, commandForward.z).magnitude) * Mathf.Rad2Deg;
+        float yawError = Mathf.DeltaAngle(faceThreat ? cameraYaw : life.look.Yaw, yaw), pitchError = up - cameraUp;
+        // Only fire once the rendered firing camera has caught up with the command.
+        Vector3 aimForward = camera.forward;
+        float firingYawError = Mathf.DeltaAngle(Mathf.Atan2(aimForward.x, aimForward.z) * Mathf.Rad2Deg, yaw);
+        float firingPitchError = up - Mathf.Atan2(aimForward.y, new Vector2(aimForward.x, aimForward.z).magnitude) * Mathf.Rad2Deg;
         float step = turnSpeed * Time.deltaTime;
         var look = new Vector2(Mathf.Clamp(yawError, -step, step), Mathf.Clamp(pitchError, -step, step));
         bool arrived = HorizontalDistance(transform.position, Destination) <= ArrivalDistance;
@@ -263,11 +274,12 @@ public class ArenaAIInput : SoldierInputSource
         agent.speed = soldier.movement.IsRunning ? soldier.movement.runSpeed : soldier.movement.moveSpeed;
         Vector3 velocity = arrived || !agent.hasPath || agent.pathStatus != NavMeshPathStatus.PathComplete
             ? Vector3.zero : agent.desiredVelocity;
+        if(HoldPosition){velocity=Vector3.zero;WantsToSprint=false;}
         // Movement uses the input heading, not the interpolated Rigidbody/render heading.
         Vector3 local = Quaternion.Inverse(Quaternion.Euler(0f, life.look.Yaw + look.x, 0f))
             * velocity / Mathf.Max(agent.speed, .01f);
         bool fire = visible && wantsAim && distance <= Mathf.Max(attackRange, sightRange) && !busy && !reload && Time.time >= readyAt
-            && Mathf.Abs(yawError) < 4f && Mathf.Abs(pitchError) < 4f
+            && Mathf.Abs(firingYawError) < 4f && Mathf.Abs(firingPitchError) < 4f
             && ArenaAITactics.ClearShot(this, life.look.aimCamera.transform.position, AimPoint(target), target) && InBurst();
         bool pressed = fire && Time.time >= nextSemi;
         if (pressed) nextSemi = Time.time + Mathf.Max(semiAutoInterval, 60f / soldier.actions.roundsPerMinute);
@@ -499,6 +511,9 @@ public class ArenaAIInput : SoldierInputSource
 
     Vector3 GetImperfectAim()
     {
+        // At full focus, do not retain noise from the previous sample or an artificial tracking delay.
+        if(Time.time-acquiredAt>=Mathf.Max(.01f,aimSettleTime) && settledAimError<=0)
+        {aimNoise=desiredNoise=Vector2.zero;trackedAim=AimPoint(target);return trackedAim;}
         // Accuracy as difficulty control: Sergio Ocio, Game AI Pro 3, chapter 33.
         trackedAim = Vector3.Lerp(trackedAim, AimPoint(target), 1f - Mathf.Exp(-Time.deltaTime / Mathf.Max(.01f, aimTrackingTime)));
         if (Time.time >= nextNoise)

@@ -24,6 +24,8 @@ public class ArenaMatch : MonoBehaviour
     public int ScoreLimit => rules ? rules.ScoreLimit : settings.scoreLimit;
     public string DisplayName => rules ? rules.DisplayName : "TEAM DEATHMATCH";
     public float TimeRemaining { get; private set; }
+    public bool UsesMatchTimer => !rules || rules.UsesMatchTimer;
+    public string ClockText { get { int seconds=Mathf.CeilToInt(TimeRemaining); return UsesMatchTimer ? $"{seconds/60:00}:{seconds%60:00}" : "SANDBOX"; } }
     public string Result { get; private set; } = "";
     public event System.Action MatchEnded;
     public event System.Action MatchStarted;
@@ -123,8 +125,8 @@ public class ArenaMatch : MonoBehaviour
         if (!IsRunning) return;
         for (int i = pendingJoins.Count - 1; i >= 0; i--)
             if (Spawn(pendingJoins[i])) pendingJoins.RemoveAt(i);
-        TimeRemaining = Mathf.Max(0f, TimeRemaining - Mathf.Max(0f, deltaTime));
-        if (TimeRemaining == 0f)
+        if (UsesMatchTimer) TimeRemaining = Mathf.Max(0f, TimeRemaining - Mathf.Max(0f, deltaTime));
+        if (UsesMatchTimer && TimeRemaining == 0f)
         {
             EndMatch();
             return;
