@@ -12,6 +12,17 @@ public class ArenaVehicleAI : MonoBehaviour
     }
     public ArenaAIInput infantry;
     public VehicleOccupant occupant;
+    public enum PilotControl { VehicleAssist, DirectInputs }
+    [Header("Pilot input source")]
+    public PilotControl pilotControl;
+    public ArenaDirectPilot directPilot=new ArenaDirectPilot();
+    public void SetPilotControl(PilotControl mode){pilotControl=mode;directPilot.Reset();}
+    void ApplyFlightControl()
+    {
+        if(pilotControl!=PilotControl.DirectInputs || !occupant.IsMounted || occupant.SeatIndex!=0)return;
+        var vehicle=occupant.MountedVehicle;
+        if(vehicle.IsAircraft)vehicle.DriverInput=directPilot.ReadInput(vehicle,vehicle.DriverInput);
+    }
     public float minimumTrip = 26, vehicleSearchRadius = 35, decisionInterval = .6f, reuseDelay = 12;
     public float cruiseSpeed = 12, flightHeight = 13;
     public float combatBoardDistance = 18, combatHoldTime = 8, groundEngagementDistance = 35, airEngagementDistance = 55;
@@ -190,10 +201,11 @@ public class ArenaVehicleAI : MonoBehaviour
         // After clearing the exit, combat takes over from the completed transport order.
         if(hasTransportOrder && !enterOrderedVehicle && !occupant.IsMounted
             && !exitClearancePending && infantry.IsCombatAlert)SetTransportOrder(null,false);
-        if(HandleTransportOrder())return;
+        if(HandleTransportOrder()){ApplyFlightControl();return;}
         if (occupant.IsMounted)
         {
             DriveOrRide();
+            ApplyFlightControl();
             return;
         }
         if (State != TravelState.OnFoot && State != TravelState.Boarding)

@@ -17,7 +17,7 @@ public class JetFlightAssist
     public VehicleInput ProvideInput(VehicleInput input, JetMotor motor, bool powered)
     {
         var body = motor.vehicle.Body;
-        bool active = powered && input.directionalFlight &&
+        bool active = powered && !input.directFlight && input.directionalFlight &&
             (assistEnabled || (motor.vehicle.Driver && !motor.vehicle.Driver.IsLocal));
         if (!active)
         {

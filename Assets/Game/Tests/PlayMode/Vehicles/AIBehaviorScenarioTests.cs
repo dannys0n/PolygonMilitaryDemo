@@ -368,6 +368,56 @@ public class AIBehaviorScenarioTests
    foreach(var saved in counts)saved.launcher.GetType().GetField("missiles",Flags).SetValue(saved.launcher,saved.ammo);
   }
  }
+ [UnityTest] public IEnumerator DirectPilotScenesFlyWithUnmodifiedManualCommands()
+ {
+  foreach(var scene in new[]{"AI_Jet_Dogfight_Direct","AI_Helicopter_Combat_Direct"})
+  {
+   yield return CombatReady(scene);
+   var vehicles=new[]{(Component)Get(scenario,"Vehicle"),(Component)Get(scenario,"Opponent")};
+   foreach(var vehicle in vehicles)vehicle.GetType().GetField("DamageFilter").SetValue(vehicle,new Func<GameObject,bool>(_=>false));
+   yield return new WaitForSeconds(2.5f);
+   Vector3 initial=vehicles[0].transform.position;bool steered=false;float until=Time.time+15;
+   while(Time.time<until)
+   {
+    foreach(var vehicle in vehicles)
+    {
+     var driver=(Component)Get(vehicle,"Driver");Assert.NotNull(driver,scene+" pilot remains seated");
+     var ai=driver.GetComponent(T("ArenaVehicleAI"));Assert.AreEqual("DirectInputs",Get(ai,"pilotControl").ToString());
+     var input=Get(vehicle,"DriverInput");Assert.IsTrue((bool)Get(input,"directFlight"));
+     var prepared=vehicle.GetType().GetMethod("PrepareDriverInput").Invoke(vehicle,new[]{input,(object)true});
+     foreach(string field in new[]{"move","pitchRate","yaw","lift"})Assert.AreEqual(Get(input,field),Get(prepared,field),"Vehicle assist must not rewrite direct AI "+field);
+     steered|=Mathf.Abs((float)Get(input,"pitchRate"))+Mathf.Abs((float)Get(input,"yaw"))+((Vector2)Get(input,"move")).magnitude>.05f;
+    }
+    yield return null;
+   }
+   Assert.IsTrue(steered,"The AI must supply actual manual steering commands");
+   Assert.Greater(Vector3.Distance(initial,vehicles[0].transform.position),5);
+   foreach(var vehicle in vehicles)Assert.Greater(vehicle.transform.position.y,5,scene+" direct pilot must stay airborne");
+   Assert.AreEqual(0,Get(scenario,"ErrorCount"));
+  }
+ }
+ [UnityTest] public IEnumerator PilotComparisonSwitchesBetweenAssistAndDirectInputs()
+ {
+  yield return CombatReady("AI_Jet_Dogfight_Direct");
+  var red=(Component)Get(scenario,"Vehicle");var blue=(Component)Get(scenario,"Opponent");
+  foreach(var vehicle in new[]{red,blue})vehicle.GetType().GetField("DamageFilter").SetValue(vehicle,new Func<GameObject,bool>(_=>false));
+  Command(scenario,"CompareFlightInputs");yield return new WaitForSeconds(2.5f);
+  Assert.IsFalse((bool)Get(Get(red,"DriverInput"),"directFlight"));
+  Assert.IsTrue((bool)Get(Get(blue,"DriverInput"),"directFlight"));
+  Command(scenario,"UseVehicleAssist");yield return null;yield return null;
+  foreach(var vehicle in new[]{red,blue})Assert.IsFalse((bool)Get(Get(vehicle,"DriverInput"),"directFlight"));
+  Command(scenario,"UseDirectInputs");yield return null;yield return null;
+  foreach(var vehicle in new[]{red,blue})
+  {
+   Assert.IsTrue((bool)Get(Get(vehicle,"DriverInput"),"directFlight"));
+   var body=vehicle.GetComponent<Rigidbody>();Vector3 position=body.position,velocity=body.linearVelocity;Quaternion rotation=body.rotation;
+   var ai=((Component)Get(vehicle,"Driver")).GetComponent(T("ArenaVehicleAI"));var pilot=Get(ai,"directPilot");
+   var intent=Get(vehicle,"DriverInput");intent.GetType().GetField("directFlight").SetValue(intent,false);intent.GetType().GetField("directionalFlight").SetValue(intent,true);
+   pilot.GetType().GetMethod("ReadInput").Invoke(pilot,new[]{(object)vehicle,intent});
+   Assert.AreEqual(position,body.position);Assert.AreEqual(velocity,body.linearVelocity);Assert.AreEqual(rotation,body.rotation,"AI input generation must never move the body directly");
+  }
+  Assert.AreEqual(0,Get(scenario,"ErrorCount"));
+ }
  void AssertFullCrew()
  {
   int total=0;

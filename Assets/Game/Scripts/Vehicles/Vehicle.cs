@@ -387,6 +387,8 @@ public struct VehicleInput
     public Vector2 move;
     public float yaw, lift, heading, movementHeading, viewPitch, pitchRate;
     public bool brake, handbrake, boost, directionalFlight, aim;
+    // Raw pitch/roll/pedal/collective commands are already resolved by their input source.
+    public bool directFlight;
 }
 
 public abstract class VehicleMotor : MonoBehaviour

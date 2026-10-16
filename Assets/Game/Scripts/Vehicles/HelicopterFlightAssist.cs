@@ -20,7 +20,7 @@ public class HelicopterFlightAssist
     {
         var vehicle = motor.vehicle;
         var body = vehicle.Body;
-        bool active = powered && (assistEnabled || (vehicle.Driver && !vehicle.Driver.IsLocal));
+        bool active = powered && !input.directFlight && (assistEnabled || (vehicle.Driver && !vehicle.Driver.IsLocal));
         if (!active)
         {
             wasActive = holdingPosition = false;

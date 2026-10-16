@@ -18,6 +18,8 @@ public sealed class AIBehaviorTestScenario : MonoBehaviour
     public Vector3 transportDestination=new Vector3(60,0,80);
     public Vehicle opposingVehiclePrefab;
     public Vehicle groundVehiclePrefab;
+    public ArenaVehicleAI.PilotControl pilotControl;
+    public bool splitPilotControls;
     public Vehicle Opponent { get; private set; }
     public bool CrewReady { get; private set; }
     public int ShotsFired { get; private set; }
@@ -86,7 +88,8 @@ public sealed class AIBehaviorTestScenario : MonoBehaviour
         var actor=g.GetComponent<ArenaParticipant>();actor.match=match;actor.team=team;
         var nav=g.GetComponent<UnityEngine.AI.NavMeshAgent>();if(nav)nav.enabled=false;
         var ai=g.GetComponent<ArenaAIInput>();if(ai)ai.enabled=false;
-        var vehicleAI=g.GetComponent<ArenaVehicleAI>();if(vehicleAI)vehicleAI.enabled=false;
+        var vehicleAI=g.GetComponent<ArenaVehicleAI>();
+        if(vehicleAI){vehicleAI.SetPilotControl(ControlFor(team));vehicleAI.enabled=false;}
         var view=g.GetComponent<SoldierFirstPersonView>();view.firstPerson=false;view.playerCamera.enabled=false;
         var source=g.AddComponent<TransportTaskInput>();g.GetComponent<SoldierController>().inputSource=source;
         g.transform.position=position;Actors.Add(actor);staging.SetActive(true);return actor;
@@ -247,16 +250,36 @@ public sealed class AIBehaviorTestScenario : MonoBehaviour
             if(vehicle.motor is JetMotor jet){jet.startingThrottle=.8f;vehicle.Body.linearVelocity=vehicle.transform.forward*jet.maxSpeed*.7f;}
         }
         CrewReady=true;Running=true;observer.follow=Vehicle.transform;
+        ApplyPilotControls();
         status="Opposing full crews: production targeting, steering, firing and damage. Reset to repeat.";
     }
+    ArenaVehicleAI.PilotControl ControlFor(ArenaParticipant.Team team)=>splitPilotControls && team==ArenaParticipant.Team.Blue
+        ?ArenaVehicleAI.PilotControl.DirectInputs:pilotControl;
+    void ApplyPilotControls()
+    {
+        foreach(var actor in Actors)if(actor && actor.TryGetComponent<ArenaVehicleAI>(out var ai))ai.SetPilotControl(ControlFor(actor.team));
+        if(Vehicle && Vehicle.IsAircraft)Vehicle.FlightAssistEnabled=ControlFor(ArenaParticipant.Team.Red)==ArenaVehicleAI.PilotControl.VehicleAssist;
+        if(Opponent && Opponent.IsAircraft)Opponent.FlightAssistEnabled=ControlFor(ArenaParticipant.Team.Blue)==ArenaVehicleAI.PilotControl.VehicleAssist;
+    }
+    public void UseVehicleAssist(){pilotControl=ArenaVehicleAI.PilotControl.VehicleAssist;splitPilotControls=false;ApplyPilotControls();}
+    public void UseDirectInputs(){pilotControl=ArenaVehicleAI.PilotControl.DirectInputs;splitPilotControls=false;ApplyPilotControls();}
+    public void CompareFlightInputs(){pilotControl=ArenaVehicleAI.PilotControl.VehicleAssist;splitPilotControls=true;ApplyPilotControls();}
     void VehicleTelemetry(Vehicle vehicle,string team)
     {
         if(!vehicle)return;
         int occupied=0;foreach(var seat in vehicle.seats)if(seat.occupant)occupied++;
         GUILayout.Label(team+" "+vehicle.displayName+" | seats "+occupied+"/"+vehicle.seats.Length+" | health "+vehicle.Health.ToString("F0")+" | speed "+vehicle.Body.linearVelocity.magnitude.ToString("F0")+" m/s");
         if(vehicle.Driver && vehicle.Driver.TryGetComponent<ArenaVehicleAI>(out var ai))
+        {
             GUILayout.Label(ai.Maneuver+" / extensions "+ai.ExtensionCount+" / target "+(ai.CombatTarget?ai.CombatTarget.name:"none")
                 +(Opponent && Vehicle?" / separation "+Vector3.Distance(Vehicle.Body.worldCenterOfMass,Opponent.Body.worldCenterOfMass).ToString("F0")+" m":""));
+            if(vehicle.IsAircraft)
+            {
+                var input=vehicle.DriverInput;
+                GUILayout.Label(ai.pilotControl+" | "+(input.directFlight?"ASSIST BYPASSED":"VEHICLE ASSIST")
+                    +"\nPitch "+input.pitchRate.ToString("F2")+" / roll "+(-input.move.x).ToString("F2")+" / yaw "+input.yaw.ToString("F2")+" / lift "+input.lift.ToString("F2"));
+            }
+        }
         if(GUILayout.Button("Follow "+team+" vehicle"))observer.follow=vehicle.transform;
     }
     // Reproducible starting poses only; all subsequent motion comes from production AI/motors.
@@ -310,6 +333,15 @@ public sealed class AIBehaviorTestScenario : MonoBehaviour
         }
         else if(scenario==Scenario.VehicleCombat)
         {
+            if(vehiclePrefab.IsAircraft)
+            {
+                GUILayout.Label(splitPilotControls?"RED: vehicle assist / BLUE: direct AI controls":"AI pilot: "+pilotControl);
+                GUILayout.BeginHorizontal();
+                if(GUILayout.Button("Both assisted"))UseVehicleAssist();
+                if(GUILayout.Button("Both direct"))UseDirectInputs();
+                if(GUILayout.Button("A/B"))CompareFlightInputs();
+                GUILayout.EndHorizontal();
+            }
             if(GUILayout.Button("Start / restart full-crew engagement"))StartVehicleCombat();
             if(vehiclePrefab.IsAircraft && GUILayout.Button("Aircraft vs ground armor"))StartAirGroundCombat();
             if(CrewReady && Vehicle.IsAircraft && GUILayout.Button("Reproduce turning chase / closing pass"))SetAircraftClosePass();
