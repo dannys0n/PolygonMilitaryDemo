@@ -91,7 +91,7 @@ public class ArmoryController : MonoBehaviour
                 refreshAt=0;return;
             }
             if(!module || !module.Supports(target.sight)){status.text="This sight does not fit the equipped weapon.";return;}
-            loadout.SetSight(module.SelectedSight==target.sight?module.defaultSight:target.sight);
+            loadout.SetSight(module.SelectedSight==target.sight?null:target.sight);
             status.text="Sight: "+module.SelectedSight.displayName;
         }
         else if(target.attachment)

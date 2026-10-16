@@ -27,6 +27,7 @@ public class SoldierWeaponSights : MonoBehaviour
     public Vector3 referenceCameraPosition;
     public Quaternion referenceCameraRotation = Quaternion.identity;
 
+    public WeaponSightDefinition BareSight => System.Array.Find(compatibleSights, sight => sight && !sight.prefab);
     public WeaponSightDefinition SelectedSight { get; private set; }
     public bool AlternateSightActive { get; private set; }
     WeaponSightAttachment AimAttachment => firstAttachment ? firstAttachment : thirdAttachment;
@@ -59,12 +60,13 @@ public class SoldierWeaponSights : MonoBehaviour
     {
         owner = view;
         loadout = view.GetComponent<SoldierWeaponLoadout>();
-        if (!SelectedSight) SetSight(defaultSight);
+
     }
 
     public void SetSight(WeaponSightDefinition sight)
     {
-        sight = sight ? sight : defaultSight;
+        sight = sight ? sight : BareSight;
+        if(!sight)throw new System.InvalidOperationException($"{name} has no bare sight configuration.");
         if (!Supports(sight)) throw new System.ArgumentException($"{sight.name} is incompatible with {name}.");
         if (SelectedSight == sight) return;
         Remove(firstAttachment); Remove(thirdAttachment);

@@ -1739,6 +1739,7 @@ MonoBehaviour:
     - polygon-reflex
     - sight_rmr
     - scope_trijicon
+    - built-in-irons
     attachments:
     - angledgripmount_45
     - frontiron
@@ -2458,6 +2459,12 @@ MonoBehaviour:
       opticMountOnly: 0
       excludedSights: []
       rendererNames: []
+    - mount: 5
+      sight: 
+      opticMountOnly: 1
+      excludedSights: []
+      rendererNames:
+      - Mac10.001
   - id: polygon-crowbar
     name: Crowbar
     previewAddress: class-preview/weapon-polygon-crowbar
@@ -2989,6 +2996,7 @@ MonoBehaviour:
     - polygon-reflex
     - sight_rmr
     - scope_trijicon
+    - built-in-irons
     attachments:
     - angledgripmount_45
     - frontiron
@@ -3184,6 +3192,10 @@ MonoBehaviour:
         rotation: {x: 0, y: 0, z: 0, w: 1}
       - part: pack-red_dot_e
         position: {x: 0, y: -0.00862881, z: 0}
+        scale: {x: 1, y: 1, z: 1}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+      - part: m82-built-in-scope
+        position: {x: -0.003157378, y: 0, z: 0}
         scale: {x: 1, y: 1, z: 1}
         rotation: {x: 0, y: 0, z: 0, w: 1}
       supports: []
@@ -4587,6 +4599,7 @@ MonoBehaviour:
     - polygon-reflex
     - sight_rmr
     - scope_trijicon
+    - built-in-irons
     attachments:
     - angledgripmount_45
     - frontiron

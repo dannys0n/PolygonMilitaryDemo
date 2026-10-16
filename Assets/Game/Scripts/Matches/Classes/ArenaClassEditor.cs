@@ -71,7 +71,7 @@ public class ArenaClassEditor : MonoBehaviour
             var context=catalog?catalog.entries.First(e=>e.weapon.catalogId==w.id):null;
             defaultSights[w.id]=context!=null?(context.defaultSight?context.defaultSight.id:null):w.defaultSight;
             var o=new WeaponOptions();
-            o.sights=(context!=null?context.sights.Where(s=>s).Select(s=>s.id):w.sights).Select(menuCatalog.FindPart).Where(p=>p!=null).ToArray();o.sightLabels=Labels(o.sights,"BUILT-IN / DEFAULT");
+            o.sights=(context!=null?context.sights.Where(s=>s).Select(s=>s.id):w.sights).Select(menuCatalog.FindPart).Where(p=>p!=null&&!string.IsNullOrEmpty(p.previewAddress)).ToArray();o.sightLabels=Labels(o.sights,"NO OPTIC / BUILT-IN IRONS");
             o.attachments=new ArenaClassMenuCatalog.Part[primaryAttachments.Length][];o.attachmentLabels=new List<TMP_Dropdown.OptionData>[primaryAttachments.Length];
             var compatible=(context!=null?context.attachments.Where(a=>a).Select(a=>a.id):w.attachments).Select(menuCatalog.FindPart).Where(p=>p!=null).ToArray();
             for(int i=0;i<o.attachments.Length;i++){o.attachments[i]=compatible.Where(p=>p.mount==(WeaponAttachmentDefinition.MountKind)i).ToArray();o.attachmentLabels[i]=Labels(o.attachments[i],"STANDARD / NONE");}
