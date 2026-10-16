@@ -17,10 +17,12 @@ public sealed class AIBehaviorTestScenario : MonoBehaviour
     public bool EnterRequested { get; private set; }
     public Vector3 transportDestination=new Vector3(60,0,80);
     public Vehicle opposingVehiclePrefab;
+    public Vehicle groundVehiclePrefab;
     public Vehicle Opponent { get; private set; }
     public bool CrewReady { get; private set; }
     public int ShotsFired { get; private set; }
     public int VehicleDamageHits { get; private set; }
+    public int AircraftGroundHits { get; private set; }
     public GameObject actorPrefab;
     public BehaviorTestCamera observer;
     public int cargoCount=6;
@@ -40,7 +42,13 @@ public sealed class AIBehaviorTestScenario : MonoBehaviour
     void CountVehicleHit(CombatEvents.ConfirmedDamage hit)
     {
         if(hit.attacker && hit.attacker.GetComponentInParent<ArenaParticipant>()
-            && (Vehicle && hit.target==Vehicle.gameObject || Opponent && hit.target==Opponent.gameObject))VehicleDamageHits++;
+            && (Vehicle && hit.target==Vehicle.gameObject || Opponent && hit.target==Opponent.gameObject))
+        {
+            VehicleDamageHits++;
+            var rider=hit.attacker.GetComponent<VehicleOccupant>();
+            var victim=hit.target.GetComponent<Vehicle>();
+            if(rider && rider.IsMounted && rider.MountedVehicle.IsAircraft && victim && !victim.IsAircraft)AircraftGroundHits++;
+        }
     }
     void Log(string message,string stack,LogType type){if(type==LogType.Exception||type==LogType.Error){ErrorCount++;status=message;}}
     void Start()
@@ -86,7 +94,7 @@ public sealed class AIBehaviorTestScenario : MonoBehaviour
     public void ResetScenario(){StopAllCoroutines();ResetWorld();}
     void ResetWorld()
     {
-        flight=false;Running=false;Unloading=false;EnterRequested=false;nextActorId=0;CrewReady=false;ShotsFired=VehicleDamageHits=0;pilot=null;observer.follow=null;
+        flight=false;Running=false;Unloading=false;EnterRequested=false;nextActorId=0;CrewReady=false;ShotsFired=VehicleDamageHits=AircraftGroundHits=0;pilot=null;observer.follow=null;
         // Mounted actors are parented to seat anchors, not the population root.
         foreach(var actor in Actors)if(actor){var rider=actor.GetComponent<VehicleOccupant>();if(rider.IsMounted)rider.Leave(true);actor.gameObject.SetActive(false);Destroy(actor.gameObject);}
         if(population){population.SetActive(false);Destroy(population);}if(Vehicle)Destroy(Vehicle.gameObject);if(Opponent)Destroy(Opponent.gameObject);Opponent=null;
@@ -196,12 +204,15 @@ public sealed class AIBehaviorTestScenario : MonoBehaviour
         Running=true;status="Two versus two: production perception, bursts, damage, death and ragdolls.";
     }
     public void StartVehicleCombat()=>StartCoroutine(VehicleCombat());
+    public void StartAirGroundCombat()=>StartCoroutine(VehicleCombat(true));
     void CountShot(VehicleOccupant shooter,Vector3 origin)=>ShotsFired++;
-    IEnumerator VehicleCombat()
+    IEnumerator VehicleCombat(bool groundTarget=false)
     {
         ResetWorld();yield return null; // Finish disposing the previous crew before rebuilding.
         if(!Vehicle||!opposingVehiclePrefab){status="Missing combat vehicle prefab.";yield break;}
-        Opponent=Instantiate(opposingVehiclePrefab);
+        var opponentPrefab=groundTarget?groundVehiclePrefab:opposingVehiclePrefab;
+        if(!opponentPrefab){status="Missing ground target prefab.";yield break;}
+        Opponent=Instantiate(opponentPrefab);
         var vehicles=new[]{Vehicle,Opponent};
         bool aircraft=Vehicle.IsAircraft;
         float separation=Vehicle.motor is JetMotor?140:aircraft?55:45;
@@ -209,7 +220,9 @@ public sealed class AIBehaviorTestScenario : MonoBehaviour
         for(int side=0;side<2;side++)
         {
             var vehicle=vehicles[side];
-            vehicle.transform.SetPositionAndRotation(new Vector3(0,height,side==0?-separation:separation),Quaternion.Euler(0,side==0?0:180,0));
+            Vector3 position=groundTarget?(side==0?new Vector3(0,Vehicle.motor is JetMotor?65:30,Vehicle.motor is JetMotor?-210:-80):new Vector3(0,.6f,0))
+                :new Vector3(0,height,side==0?-separation:separation);
+            vehicle.transform.SetPositionAndRotation(position,Quaternion.Euler(0,side==0?0:180,0));
             vehicle.enabled=false;vehicle.Body.collisionDetectionMode=CollisionDetectionMode.Discrete;vehicle.Body.isKinematic=true;
             foreach(var gun in vehicle.GetComponentsInChildren<VehicleTurret>(true))gun.ShotFired+=CountShot;
             foreach(var launcher in vehicle.GetComponentsInChildren<VehicleLauncher>(true))launcher.ShotFired+=CountShot;
@@ -228,6 +241,7 @@ public sealed class AIBehaviorTestScenario : MonoBehaviour
                 // A controlled initial condition, not a boarding test: the complete crew starts seated.
                 vehicle.seats[seat].occupant=occupant;occupant.Mount(vehicle,seat);
                 actor.GetComponent<ArenaVehicleAI>().enabled=true;
+                if(groundTarget)actor.GetComponent<ArenaVehicleAI>().SetMissionGoal(Vector3.zero,true);
             }
             vehicle.Body.isKinematic=false;vehicle.Body.collisionDetectionMode=CollisionDetectionMode.ContinuousDynamic;vehicle.enabled=true;
             if(vehicle.motor is JetMotor jet){jet.startingThrottle=.8f;vehicle.Body.linearVelocity=vehicle.transform.forward*jet.maxSpeed*.7f;}
@@ -297,9 +311,10 @@ public sealed class AIBehaviorTestScenario : MonoBehaviour
         else if(scenario==Scenario.VehicleCombat)
         {
             if(GUILayout.Button("Start / restart full-crew engagement"))StartVehicleCombat();
+            if(vehiclePrefab.IsAircraft && GUILayout.Button("Aircraft vs ground armor"))StartAirGroundCombat();
             if(CrewReady && Vehicle.IsAircraft && GUILayout.Button("Reproduce turning chase / closing pass"))SetAircraftClosePass();
             if(CrewReady && !Vehicle.IsAircraft && GUILayout.Button("Attack vehicle + dismount passengers"))AttackAndDismountPassengers();
-            GUILayout.Label("Weapon shots: "+ShotsFired+" / damaging hits: "+VehicleDamageHits);VehicleTelemetry(Vehicle,"Red");VehicleTelemetry(Opponent,"Blue");
+            GUILayout.Label("Weapon shots: "+ShotsFired+" / damaging hits: "+VehicleDamageHits+" / air-ground hits: "+AircraftGroundHits);VehicleTelemetry(Vehicle,"Red");VehicleTelemetry(Opponent,"Blue");
         }
         else if(GUILayout.Button("Start 2 vs 2 infantry combat"))StartCombat();
         if(GUILayout.Button("Free camera"))observer.follow=null;

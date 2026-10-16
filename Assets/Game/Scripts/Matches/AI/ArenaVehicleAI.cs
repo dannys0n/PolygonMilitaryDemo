@@ -18,15 +18,19 @@ public class ArenaVehicleAI : MonoBehaviour
     [Header("Combat awareness (independent of weapon reach)")]
     [Min(1)] public float groundDetectionRange=90, helicopterDetectionRange=135, jetDetectionRange=260;
     [Min(1)] public float infantryDetectionRange=65;
+    [Min(1)] public float aircraftGroundDetectionRange=220;
     [Header("Aircraft tactics")]
     [Min(1)] public float jetPursuitTime=7, jetExtensionTime=4, jetResetDistance=200;
     [Min(1)] public float helicopterSeparation=32;
-    public enum AirManeuver { Patrol, Pursuit, Extend }
+    public enum AirManeuver { Patrol, Pursuit, Extend, GroundAttack, GroundExtend }
     public AirManeuver Maneuver { get; private set; }
     public int ExtensionCount { get; private set; }
     public ArenaParticipant CombatTarget => vehicleTarget;
     Vehicle trackedAircraft;
     float pursuitStarted, extensionUntil;
+    float lastAircraftContact=float.NegativeInfinity;
+    Vector3 groundAttackPoint;
+    float lastGroundContact=float.NegativeInfinity;
     Vector3 extensionPoint;
     Vector3 lastAircraftPoint, lastVehiclePoint;
     public TravelState State { get; private set; }
@@ -163,7 +167,7 @@ public class ArenaVehicleAI : MonoBehaviour
     void OnDisable()
     {
         CombatEvents.DamageConfirmed-=OnCombatDamage;
-        trackedAircraft=null;Maneuver=AirManeuver.Patrol;vehicleTarget=null;
+        trackedAircraft=null;lastAircraftContact=float.NegativeInfinity;Maneuver=AirManeuver.Patrol;vehicleTarget=null;
         CancelBoarding();
         if (occupant.IsMounted)
             occupant.Leave(true);
@@ -453,14 +457,29 @@ public class ArenaVehicleAI : MonoBehaviour
         if(aerialEnemy&&aerialEnemy.TryGetComponent<VehicleOccupant>(out var opponent)&&opponent.IsMounted&&opponent.MountedVehicle.IsAircraft)
             opposingAircraft=opponent.MountedVehicle;
         if(opposingAircraft)
-        {lastAircraftPoint=opposingAircraft.Body.worldCenterOfMass;target=JetCombatPoint(v,opposingAircraft,jet);}
-        else if(trackedAircraft && !trackedAircraft.IsDestroyed && Time.time-lastVehicleContact<combatHoldTime)
+        {lastAircraftContact=Time.time;lastAircraftPoint=opposingAircraft.Body.worldCenterOfMass;target=JetCombatPoint(v,opposingAircraft,jet);}
+        else if(trackedAircraft && !trackedAircraft.IsDestroyed && Time.time-lastAircraftContact<combatHoldTime)
         {
             if(Maneuver==AirManeuver.Extend && Time.time>=extensionUntil+2)
             {Maneuver=AirManeuver.Pursuit;pursuitStarted=Time.time;}
             target=Maneuver==AirManeuver.Extend?extensionPoint:lastAircraftPoint;
         }
-        else {trackedAircraft=null;Maneuver=AirManeuver.Patrol;}
+        else
+        {
+            trackedAircraft=null;
+            if(Maneuver==AirManeuver.GroundExtend && Time.time<extensionUntil)target=extensionPoint;
+            else
+            {
+                bool armed=v.turret && v.turret.controlRole==Vehicle.SeatRole.Driver
+                    || v.TryGetComponent<VehicleWeaponSystems>(out var weapons) && System.Array.Exists(weapons.weapons,w=>w.role==Vehicle.SeatRole.Driver);
+                var groundEnemy=armed?FindVehicleTarget(v,v.turret?v.turret.muzzle.position:v.cameraTarget.position,aircraftGroundDetectionRange,false):null;
+                if(groundEnemy)
+                {groundAttackPoint=EnemyPoint(groundEnemy);lastGroundContact=Time.time;target=JetGroundAttackPoint(v,jet,groundEnemy);}
+                else if(armed && Time.time-lastGroundContact<15)
+                {target=groundAttackPoint+Vector3.up*65;Maneuver=AirManeuver.GroundAttack;}
+                else Maneuver=AirManeuver.Patrol;
+            }
+        }
         Vector3 direction = target - v.transform.position;
         float horizontal = Vector3.ProjectOnPlane(direction, Vector3.up).magnitude;
         float heading = Mathf.Atan2(direction.x, direction.z) * Mathf.Rad2Deg;
@@ -469,13 +488,37 @@ public class ArenaVehicleAI : MonoBehaviour
         float pitch = -Mathf.Atan2(direction.y, Mathf.Max(1, horizontal)) * Mathf.Rad2Deg;
         if (jet.Grounded || v.transform.position.y < ground + 30) pitch = -18;
         Vector3 flight=v.Body.linearVelocity.sqrMagnitude>1?v.Body.linearVelocity.normalized:v.transform.forward;
-        foreach(var obstacle in Physics.SphereCastAll(v.Body.worldCenterOfMass,3,flight,Mathf.Max(45,jet.Airspeed*2),Physics.DefaultRaycastLayers,QueryTriggerInteraction.Ignore))
+        // A deliberate strafing descent needs a shorter avoidance horizon; the normal
+        // two-second probe otherwise cancels every pass before the cannon can align.
+        float avoidanceDistance=Maneuver==AirManeuver.GroundAttack?Mathf.Max(20,jet.Airspeed*.7f):Mathf.Max(45,jet.Airspeed*2);
+        foreach(var obstacle in Physics.SphereCastAll(v.Body.worldCenterOfMass,3,flight,avoidanceDistance,Physics.DefaultRaycastLayers,QueryTriggerInteraction.Ignore))
             if(!obstacle.transform.IsChildOf(v.transform)){pitch=-25;break;}
         v.DriverInput = new VehicleInput { directionalFlight = true, heading = heading,
-            viewPitch = Mathf.Clamp(pitch, -25, 15), move = new Vector2(0, jet.Airspeed < jet.maxSpeed * .85f ? 1 : -.3f),
+            viewPitch = Mathf.Clamp(pitch, -25, Maneuver==AirManeuver.GroundAttack?40:15), move = new Vector2(0, jet.Airspeed < jet.maxSpeed * .85f ? 1 : -.3f),
             boost = jet.Grounded };
         if (v.turret) UseTurret(v);
         if (v.GetComponent<VehicleLauncher>()) UseRockets(v);
+    }
+    Vector3 JetGroundAttackPoint(Vehicle own,JetMotor jet,ArenaParticipant enemy)
+    {
+        if(Maneuver==AirManeuver.GroundExtend && Time.time<extensionUntil)return extensionPoint;
+        Vector3 point=EnemyPoint(enemy);
+        float horizontal=Vector3.ProjectOnPlane(point-own.transform.position,Vector3.up).magnitude;
+        if(Maneuver!=AirManeuver.GroundAttack)pursuitStarted=Time.time;
+        bool missedPass=Vector3.Angle(own.transform.forward,point-own.transform.position)>65 && Time.time-pursuitStarted>4;
+        if(missedPass || horizontal<Mathf.Max(55,jet.Airspeed*.9f) || own.transform.position.y<GroundHeight(own.transform.position)+35)
+        {
+            Maneuver=AirManeuver.GroundExtend;extensionUntil=Time.time+5;
+            Vector3 escape=Vector3.ProjectOnPlane(own.transform.forward,Vector3.up).normalized;
+            extensionPoint=own.transform.position+escape*Mathf.Max(260,jet.Airspeed*5);
+            extensionPoint.y=Mathf.Max(own.transform.position.y+45,GroundHeight(extensionPoint)+85);
+            return extensionPoint;
+        }
+        Maneuver=AirManeuver.GroundAttack;
+        Vector3 aim=own.turret?LeadProjectile(own,point,EnemyVelocity(enemy),own.turret.muzzle.position,own.turret.projectile):point;
+        // Anticipate the changing sight angle during a fast pass. Weapon aim still uses
+        // the actual ballistic intercept; this only gives the pilot time to align the nose.
+        return aim-own.Body.linearVelocity*.35f;
     }
     Vector3 JetCombatPoint(Vehicle own,Vehicle enemy,JetMotor jet)
     {
@@ -779,7 +822,8 @@ public class ArenaVehicleAI : MonoBehaviour
     {
         float range=v.motor is JetMotor?jetDetectionRange:v.IsAircraft?helicopterDetectionRange:groundDetectionRange;
         var rider=enemy.GetComponent<VehicleOccupant>();
-        if(!rider || !rider.IsMounted)range=Mathf.Min(range,infantryDetectionRange);
+        if(v.IsAircraft && (!rider || !rider.IsMounted || !rider.MountedVehicle.IsAircraft))range=Mathf.Min(range,aircraftGroundDetectionRange);
+        else if(!rider || !rider.IsMounted)range=Mathf.Min(range,infantryDetectionRange);
         return Mathf.Min(weaponRange,range);
     }
     ArenaParticipant FindVehicleTarget(Vehicle v,Vector3 origin,float range,bool gunner,bool aircraftOnly=false)
@@ -802,7 +846,9 @@ public class ArenaVehicleAI : MonoBehaviour
             float distance=direction.magnitude;if(distance>DetectionRange(v,enemy,range))continue;
             var mounted=enemy.GetComponent<VehicleOccupant>();
             if(aircraftOnly && (!mounted || !mounted.IsMounted || !mounted.MountedVehicle.IsAircraft))continue;
-            float score=distance-(mounted&&mounted.IsMounted?range:0);if(score>nearest)continue;
+            float score=distance-(mounted&&mounted.IsMounted?range:0);
+            if(v.IsAircraft && mounted && mounted.IsMounted && mounted.MountedVehicle.IsAircraft)score-=range*2;
+            if(score>nearest)continue;
             if(gunner&&v.turret&&!v.turret.fixedMount)
             {
                 var local=v.turret.yawPivot.parent.InverseTransformDirection(direction);
@@ -832,8 +878,16 @@ public class ArenaVehicleAI : MonoBehaviour
             var target=FindVehicleTarget(v,searchOrigin,range,true);if(!target)return;
             var enemyOccupant=target.GetComponent<VehicleOccupant>();
             bool armored=enemyOccupant&&enemyOccupant.IsMounted;
+            bool groundTarget=!armored || !enemyOccupant.MountedVehicle.IsAircraft;
+            if(v.motor is JetMotor && groundTarget && trackedAircraft && !trackedAircraft.IsDestroyed
+                && Time.time-lastAircraftContact<combatHoldTime)return;
             int choice=0;
-            if(!armored)
+            if(v.IsAircraft)
+            {
+                choice=ChooseAircraftWeapon(v,systems,profiles,target,searchOrigin);
+                if(choice<0)return;
+            }
+            else if(!armored)
             {
                 for(int i=0;i<profiles.Length;i++)if(profiles[i].name.Contains("COAX")){choice=i;break;}
             }
@@ -860,6 +914,33 @@ public class ArenaVehicleAI : MonoBehaviour
         v.turret.Aim(direction);
         if(Vector3.Angle(v.turret.muzzle.forward,direction)<4 && HasLineOfFire(v,enemy,v.turret.muzzle.position,EnemyPoint(enemy)))
             v.turret.TryFire(occupant);
+    }
+    int ChooseAircraftWeapon(Vehicle v,VehicleWeaponSystems systems,VehicleWeaponSystems.Weapon[] profiles,ArenaParticipant target,Vector3 origin)
+    {
+        var rider=target.GetComponent<VehicleOccupant>();
+        bool ground=!rider || !rider.IsMounted || !rider.MountedVehicle.IsAircraft;
+        float distance=Vector3.Distance(origin,EnemyPoint(target));
+        int choice=-1;float best=float.NegativeInfinity;
+        for(int i=0;i<profiles.Length;i++)
+        {
+            var weapon=profiles[i];
+            if(!systems.IsAvailable(weapon) || distance>weapon.range)continue;
+            bool launcher=weapon.system==VehicleWeaponSystems.FireSystem.Launcher;
+            if(launcher)
+            {
+                if(!weapon.launcher || weapon.launcher.Missiles==0)continue;
+                var guidance=weapon.launcher.projectile.GetComponent<VehicleMissileGuidance>();
+                if(ground && guidance && (guidance.guidance==VehicleMissileGuidance.Guidance.AirToAir
+                    || guidance.guidance==VehicleMissileGuidance.Guidance.AirDefence))continue;
+                if(weapon.launcher.requiresLock && (!rider || !rider.IsMounted))continue;
+            }
+            else if(!weapon.gun)continue;
+            // Ground attack prefers loaded explosive systems; air combat keeps the close-range cannon policy.
+            float score=ground?(launcher?40:weapon.explosive?30:10)
+                :launcher && weapon.ReadyIn<=0 && (!(v.motor is JetMotor) || distance>140)?30:launcher?5:20;
+            if(score>best){best=score;choice=i;}
+        }
+        return choice;
     }
     static Vector3 EnemyVelocity(ArenaParticipant enemy)
     {

@@ -323,6 +323,51 @@ public class AIBehaviorScenarioTests
   Assert.IsNull(found,"A 1000m weapon must not detect/retain a target 350m away.");
   Assert.AreEqual(0,Get(scenario,"ErrorCount"));
  }
+ [UnityTest] public IEnumerator AircraftEngageGroundArmorWithoutAnAirOpponent()
+ {
+  foreach(var scene in new[]{"AI_Jet_Dogfight","AI_Helicopter_Combat"})
+  {
+   yield return Load(scene);Command(scenario,"StartAirGroundCombat");
+   float until=Time.time+10;while(Time.time<until&&!(bool)Get(scenario,"CrewReady"))yield return null;
+   Assert.IsTrue((bool)Get(scenario,"CrewReady"));
+   var aircraft=(Component)Get(scenario,"Vehicle");
+   aircraft.GetType().GetField("DamageFilter").SetValue(aircraft,new Func<GameObject,bool>(_=>false));
+   until=Time.time+45;
+   while(Time.time<until&&(int)Get(scenario,"AircraftGroundHits")==0)yield return null;
+   Assert.Greater((int)Get(scenario,"AircraftGroundHits"),0,scene+" must cause real air-to-ground weapon damage");
+   Assert.Greater(aircraft.transform.position.y,8,scene+" must attack without flying into the ground");
+   Assert.AreEqual(0,Get(scenario,"ErrorCount"));
+  }
+ }
+ [UnityTest] public IEnumerator AircraftSelectLoadedGroundExplosivesAndRejectAirOnlyMissiles()
+ {
+  foreach(var scene in new[]{"AI_Jet_Dogfight","AI_Helicopter_Combat"})
+  {
+   yield return Load(scene);Command(scenario,"StartAirGroundCombat");
+   float until=Time.time+10;while(Time.time<until&&!(bool)Get(scenario,"CrewReady"))yield return null;
+   Assert.IsTrue((bool)Get(scenario,"CrewReady"));
+   var vehicle=(Component)Get(scenario,"Vehicle");var opponent=(Component)Get(scenario,"Opponent");
+   var driver=(Component)Get(vehicle,"Driver");var ai=driver.GetComponent(T("ArenaVehicleAI"));var systems=vehicle.GetComponent(T("VehicleWeaponSystems"));
+   var target=((Component)Get(opponent,"Driver")).GetComponent(T("ArenaParticipant"));
+   var weapons=(Array)Get(systems,"weapons");var profiles=weapons.Cast<object>().Where(w=>Get(w,"role").ToString()=="Driver").ToArray();
+   var typed=Array.CreateInstance(weapons.GetType().GetElementType(),profiles.Length);for(int i=0;i<profiles.Length;i++)typed.SetValue(profiles[i],i);
+   var choose=ai.GetType().GetMethod("ChooseAircraftWeapon",Flags);
+   int selected=(int)choose.Invoke(ai,new object[]{vehicle,systems,typed,target,vehicle.transform.position});
+   Assert.GreaterOrEqual(selected,0);var weapon=profiles[selected];
+   var launcher=Get(weapon,"launcher") as Component;
+   if(launcher)
+   {
+    var rocket=(Component)Get(launcher,"projectile");var guidance=rocket.GetComponent(T("VehicleMissileGuidance"));
+    if(guidance)Assert.That(Get(guidance,"guidance").ToString(),Is.Not.EqualTo("AirToAir").And.Not.EqualTo("AirDefence"));
+   }
+   else Assert.IsTrue((bool)Get(weapon,"explosive"),"An explosive cannon is the valid ground fallback for an air-to-air-only missile loadout");
+   var counts=profiles.Select(w=>Get(w,"launcher") as Component).Where(l=>l).Distinct().Select(l=>new{launcher=l,ammo=(int)Get(l,"missiles")}).ToArray();
+   foreach(var saved in counts)saved.launcher.GetType().GetField("missiles",Flags).SetValue(saved.launcher,0);
+   int fallback=(int)choose.Invoke(ai,new object[]{vehicle,systems,typed,target,vehicle.transform.position});
+   Assert.IsTrue(fallback<0||Get(profiles[fallback],"system").ToString()=="Gun","An empty launcher must not prevent another station/weapon from fighting");
+   foreach(var saved in counts)saved.launcher.GetType().GetField("missiles",Flags).SetValue(saved.launcher,saved.ammo);
+  }
+ }
  void AssertFullCrew()
  {
   int total=0;
