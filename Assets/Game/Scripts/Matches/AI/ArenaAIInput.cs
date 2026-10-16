@@ -88,6 +88,7 @@ public class ArenaAIInput : SoldierInputSource
     float combatAlertUntil, heardAt = float.NegativeInfinity, investigationUntil, nextLook;
     Vector3 investigationPoint, openLook;
     bool investigating;
+    float reportedThreatUntil;
     Vehicle launcherTarget;
     float nextVehicleScan;
     [Header("Anti-vehicle utility")]
@@ -159,9 +160,22 @@ public class ArenaAIInput : SoldierInputSource
     void OnShot() { burstShots++; LastCombatTime = Time.time; }
     void OnDamaged(float amount, GameObject source)
     {
-        combatAlertUntil = Time.time + combatReadyDuration;
-        LastCombatTime = Time.time;
-        if (source && !target) Investigate(source.transform.position);
+        combatAlertUntil=Time.time+combatReadyDuration;LastCombatTime=Time.time;
+        NotifyThreat(source);
+    }
+    // Damage/squad reports supply last-known evidence, never permission to shoot through cover.
+    public void NotifyThreat(GameObject source)
+    {
+        var enemy=source ? source.GetComponentInParent<ArenaParticipant>() : null;
+        if(!enemy || enemy.team==participant.team || enemy.match!=participant.match
+            || enemy.health.IsDead || enemy.IsAwaitingSpawn)return;
+        combatAlertUntil=Time.time+combatReadyDuration;LastCombatTime=Time.time;
+        if(targetVisible && target && !target.health.IsDead)return;
+        if(target!=enemy){acquiredAt=Time.time;trackedAim=AimPoint(enemy);aimNoise=desiredNoise=Vector2.zero;}
+        target=enemy;lastSeen=enemy.transform.position;seenAt=Time.time;
+        reportedThreatUntil=Time.time+Mathf.Max(memoryDuration,combatReadyDuration*2);
+        readyAt=Time.time;nextPerception=0;HasCover=false;
+        investigating=false;hasPatrolDestination=false;nextReposition=0;
     }
     void Investigate(Vector3 point)
     {
@@ -174,6 +188,7 @@ public class ArenaAIInput : SoldierInputSource
     void ResetIntent()
     {
         target = null; HasCover = false; State = Behavior.Inactive;
+        reportedThreatUntil=0;
         sidearmEngagementUsed=false;sidearmKillsAtDraw=participant.Kills;
         aimHoldUntil = 0f; burstShots = burstShotLimit = 0; LastCombatTime = float.NegativeInfinity;
         WantsToSprint = false;
@@ -332,13 +347,13 @@ public class ArenaAIInput : SoldierInputSource
                 if (burstUntil == 0f && Time.time >= pauseUntil) burstShots = 0;
             }
             if (target != visible)
-            { HasCover = false; nextCover = Time.time + Random.value; nextReposition = 0f; hasPatrolDestination = false; }
+            { reportedThreatUntil=0;HasCover = false; nextCover = Time.time + Random.value; nextReposition = 0f; hasPatrolDestination = false; }
             target = visible; lastSeen = visible.transform.position; seenAt = Time.time;
             LastCombatTime = Time.time;
             combatAlertUntil = Time.time + combatReadyDuration;
             investigating = false;
         }
-        else if (target && (target.health.IsDead || Time.time - seenAt > memoryDuration))
+        else if (target && (target.health.IsDead || Time.time - seenAt > memoryDuration && Time.time>reportedThreatUntil))
         { target = null; HasCover = false; nextReposition = 0f; }
         targetVisible = visible;
         return targetVisible;

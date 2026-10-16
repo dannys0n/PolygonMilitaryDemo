@@ -120,6 +120,11 @@ public sealed class CombinedArmsOrchestrator : MonoBehaviour
             order.status=ai.HoldDeparture?"Loading crew":"Engage / support objective";
             return;
         }
+        var infantry=actor.GetComponent<ArenaAIInput>();
+        if(infantry.IsCombatAlert && infantry.Target)
+        {
+            Release(order);order.retryAt=Time.time+5;order.status="Engage after dismount";return;
+        }
         if(order.boarded || order.vehicle && (order.vehicle.IsDestroyed || !Friendly(order.vehicle,actor) || order.vehicle.Driver || Time.time-order.assignedAt>boardingTimeout))
         {Release(order);order.retryAt=Time.time+5;}
         if(!order.vehicle && Time.time>=order.retryAt)

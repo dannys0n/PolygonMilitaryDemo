@@ -12,7 +12,7 @@ using UnityEditor.SceneManagement;
 public class AIBehaviorScenarioTests
 {
  const BindingFlags Flags=BindingFlags.Public|BindingFlags.NonPublic|BindingFlags.Instance;
- static Type T(string name)=>AppDomain.CurrentDomain.GetAssemblies().Select(a=>a.GetType(name)).First(t=>t!=null);
+ static Type T(string name)=>UnityEditor.TypeCache.GetTypesDerivedFrom<MonoBehaviour>().First(t=>t.Name==name);
  static object Get(object o,string name){var p=o.GetType().GetProperty(name,Flags);return p!=null?p.GetValue(o):o.GetType().GetField(name,Flags).GetValue(o);}
  static void Command(object o,string name)=>o.GetType().GetMethod(name).Invoke(o,null);
  Component scenario;
@@ -71,6 +71,8 @@ public class AIBehaviorScenarioTests
    Vector3 initial=red.transform.position;yield return new WaitForSeconds(10);
    Assert.Greater(Vector3.Distance(initial,red.transform.position),5,name+" physically flies");
    Assert.Greater((int)Get(scenario,"ShotsFired"),0,name+" must engage with production weapons");
+   until=Time.time+20;while(Time.time<until&&(int)Get(scenario,"VehicleDamageHits")==0)yield return null;
+   Assert.Greater((int)Get(scenario,"VehicleDamageHits"),0,name+" must hit a moving opponent, not just fire into empty space");
    Assert.IsTrue((bool)Get(red,"IsDestroyed")||red.transform.position.y>5,name+" surviving red aircraft remains airborne");Assert.IsTrue((bool)Get(blue,"IsDestroyed")||blue.transform.position.y>5,name+" surviving blue aircraft remains airborne");
    foreach(var actor in (IList)Get(scenario,"Actors"))Assert.IsTrue(((Behaviour)((Component)actor).GetComponent(T("ArenaVehicleAI"))).enabled,"Use the existing production brain");
    Assert.AreEqual(0,Get(scenario,"ErrorCount"));
@@ -251,6 +253,75 @@ public class AIBehaviorScenarioTests
    }
    Assert.AreEqual(0,Get(scenario,"ErrorCount"));
   }
+ }
+ IEnumerator CombatReady(string scene)
+ {
+  yield return Load(scene);Command(scenario,"StartVehicleCombat");
+  float until=Time.time+10;while(Time.time<until&&!(bool)Get(scenario,"CrewReady"))yield return null;
+  Assert.IsTrue((bool)Get(scenario,"CrewReady"));
+ }
+ [UnityTest] public IEnumerator DogfightBreaksTurningStalemateAndReengages()
+ {
+  yield return CombatReady("AI_Jet_Dogfight");
+  var red=(Component)Get(scenario,"Vehicle");var blue=(Component)Get(scenario,"Opponent");
+  // Keep both alive long enough to evaluate the maneuver, without modifying their motors/AI.
+  foreach(var v in new[]{red,blue})v.GetType().GetField("DamageFilter").SetValue(v,new Func<GameObject,bool>(_=>false));
+  Command(scenario,"SetAircraftClosePass");
+  var brains=new[]{red,blue}.Select(v=>((Component)Get(v,"Driver")).GetComponent(T("ArenaVehicleAI"))).ToArray();
+  bool extended=false,reengaged=false;float until=Time.time+45;
+  while(Time.time<until)
+  {
+   extended|=brains.Any(a=>Get(a,"Maneuver").ToString()=="Extend");
+   reengaged|=brains.Any(a=>(int)Get(a,"ExtensionCount")>0&&Get(a,"Maneuver").ToString()=="Pursuit");
+   if(extended&&reengaged)break;yield return null;
+  }
+  Assert.IsTrue(extended,"Jets must break off rather than endlessly chase each other's tails.");
+  Assert.IsTrue(reengaged,"A break-off must be followed by another approach, not permanent fleeing.");
+  Assert.Greater(red.transform.position.y,10);Assert.Greater(blue.transform.position.y,10);
+  Assert.AreEqual(0,Get(scenario,"ErrorCount"));
+ }
+ [UnityTest] public IEnumerator HelicoptersBrakeAndKeepWeaponStandOff()
+ {
+  yield return CombatReady("AI_Helicopter_Combat");
+  var red=(Component)Get(scenario,"Vehicle");var blue=(Component)Get(scenario,"Opponent");
+  foreach(var v in new[]{red,blue})v.GetType().GetField("DamageFilter").SetValue(v,new Func<GameObject,bool>(_=>false));
+  Command(scenario,"SetAircraftClosePass");float minimum=1000,until=Time.time+25;
+  while(Time.time<until)
+  {minimum=Mathf.Min(minimum,Vector3.Distance(red.transform.position,blue.transform.position));yield return null;}
+  Assert.Greater(minimum,22,"Closing attack helicopters must not fly into each other.");
+  Assert.Greater(Vector3.Distance(red.transform.position,blue.transform.position),40,"Pilots must recover a usable weapon stand-off.");
+  Assert.Greater((int)Get(scenario,"ShotsFired"),0,"Separation must retain actual weapon engagement.");
+  Assert.Greater(red.transform.position.y,8);Assert.Greater(blue.transform.position.y,8);
+  Assert.AreEqual(0,Get(scenario,"ErrorCount"));
+ }
+ [UnityTest] public IEnumerator VehicleHitAlertsCrewAndPersistsAfterDismount()
+ {
+  yield return CombatReady("AI_Full_Technical_Combat");
+  var vehicle=(Component)Get(scenario,"Vehicle");var enemy=(Component)Get(scenario,"Opponent");
+  var attacker=(Component)Get(enemy,"Driver");
+  var seats=(Array)Get(vehicle,"seats");var passenger=seats.Cast<object>().First(s=>Get(s,"role").ToString()=="Passenger");
+  var rider=(Component)Get(passenger,"occupant");var ai=rider.GetComponent(T("ArenaAIInput"));
+  vehicle.GetType().GetMethod("ApplyDamage").Invoke(vehicle,new object[]{1f,attacker.gameObject});
+  Assert.IsTrue((bool)Get(ai,"IsCombatAlert"),"A vehicle hit must notify seated passengers, not just the driver.");
+  Assert.AreEqual(attacker.GetComponent(T("ArenaParticipant")),Get(ai,"Target"));
+  rider.GetType().GetMethod("Leave").Invoke(rider,new object[]{true});yield return null;
+  Assert.IsTrue((bool)Get(ai,"IsCombatAlert"),"Combat evidence must survive leaving a vehicle.");
+  Assert.AreEqual(attacker.GetComponent(T("ArenaParticipant")),Get(ai,"Target"));
+  Assert.AreEqual(0,Get(scenario,"ErrorCount"));
+ }
+ [UnityTest] public IEnumerator VehicleDetectionDoesNotUseWeaponMaximumRangeOrKeepStaleDistantTargets()
+ {
+  yield return CombatReady("AI_Tank_Combat");
+  var vehicle=(Component)Get(scenario,"Vehicle");var enemy=(Component)Get(scenario,"Opponent");
+  var driver=(Component)Get(vehicle,"Driver");var ai=driver.GetComponent(T("ArenaVehicleAI"));
+  var target=((Component)Get(enemy,"Driver")).GetComponent(T("ArenaParticipant"));
+  ai.GetType().GetField("vehicleTarget",Flags).SetValue(ai,target);
+  ai.GetType().GetField("nextTargetDecision",Flags).SetValue(ai,Time.time+10);
+  var body=enemy.GetComponent<Rigidbody>();body.position=vehicle.transform.position+Vector3.forward*350;
+  enemy.transform.position=body.position;Physics.SyncTransforms();
+  var found=ai.GetType().GetMethod("FindVehicleTarget",Flags).Invoke(ai,new object[]{vehicle,vehicle.transform.position+Vector3.up*2,1000f,true,false});
+  Assert.IsNull(found,"A 1000m weapon must not detect/retain a target 350m away.");
+  Assert.AreEqual(0,Get(scenario,"ErrorCount"));
  }
  void AssertFullCrew()
  {
