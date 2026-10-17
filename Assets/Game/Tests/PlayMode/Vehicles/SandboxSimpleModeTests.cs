@@ -24,6 +24,34 @@ public class SandboxSimpleModeTests
         .SelectMany(g => g.GetComponentsInChildren(T(name), true)).ToArray();
     Component rules;
     Component[] infantry;
+    [UnityTest] public IEnumerator SpectatorAircraftHudChangesProfileInBothViewsWithoutStaleInstruments()
+    {
+        yield return Load();
+        var spectator=All("ArenaAISpectator").Single();
+        Call(spectator,"SetManualSpectating",true);Call(spectator,"SetInterestMode",false);
+        yield return null;
+        var hud=All("ArenaVehicleHud").Single();
+        var flights=((IEnumerable)Get(rules,"flights")).Cast<object>().ToArray();
+        foreach(string reference in new[]{"F15","Cobra","Su27","LittleBird","F15"})
+        {
+            var flight=flights.First(f=>Get(Get(f,"prefab"),"instrumentReference").ToString()==reference);
+            var pilot=((IEnumerable)Get(flight,"crew")).Cast<Component>().First();
+            Call(spectator,"Follow",pilot);
+            Call(spectator,"ExitPerspective");
+            for(int view=0;view<2;view++)
+            {
+                if(view==1)Call(spectator,"EnterPerspective");
+                yield return null;yield return null;
+                bool jet=reference=="F15"||reference=="Su27",dials=reference=="LittleBird";
+                Assert.AreEqual(!dials,((GameObject)Get(hud,"flightPanel")).activeInHierarchy,reference);
+                Assert.AreEqual(jet,(bool)Get(Get(hud,"fixedWingReadout"),"Visible"),reference);
+                Assert.AreEqual(dials,((GameObject)Get(Get(hud,"referenceInstruments"),"panel")).activeInHierarchy,reference);
+                Assert.AreEqual(reference=="Su27",((Component)Get(hud,"metricPitchScale")).gameObject.activeInHierarchy);
+                if(!dials)StringAssert.StartsWith(jet?"IAS":"GS",(string)Get(Get(hud,"speedReadout"),"text"));
+                if(jet)Assert.IsFalse(((Component)Get(hud,"gunnerReadout")).gameObject.activeInHierarchy,"Fixed jet cannons do not show turret instruments.");
+            }
+        }
+    }
     [UnityTest] public IEnumerator SpectatorInterestSwitchesForQuietTimeDwellAndVarietyWithoutInterruptingDeathWatch()
     {
         yield return Load();

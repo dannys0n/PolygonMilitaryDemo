@@ -408,7 +408,9 @@ public class ArenaVehicleHud : MonoBehaviour
         bool gunner = current!=null?current.system==VehicleWeaponSystems.FireSystem.Gun:vehicle.seats[player.SeatIndex].role == Vehicle.SeatRole.Gunner;
         var activeLauncher=current!=null?current.launcher:vehicle.GetComponent<VehicleLauncher>();
         var activeGun=current!=null?current.gun:vehicle.turret;
-        gunnerReadout.gameObject.SetActive(gunner && activeGun);
+        // A fixed forward cannon is a weapon, not a traversing gunner station.
+        // Jet pilot instruments remain separate from helicopter/ground turret data.
+        gunnerReadout.gameObject.SetActive(gunner && activeGun && !(vehicle.motor is JetMotor));
         if(!gunner&&!activeLauncher){desiredAim.gameObject.SetActive(false);actualAim.gameObject.SetActive(false);return;}
         actualAim.GetComponent<Graphic>().canvasRenderer.SetAlpha(gunner || activeLauncher.Missiles > 0 ? 1f : .2f);
 
