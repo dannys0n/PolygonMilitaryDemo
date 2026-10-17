@@ -28,6 +28,7 @@ public class ArenaAISpectator : MonoBehaviour
     public ArenaParticipant FollowedCharacter { get; private set; }
     Transform followedHead;
     public bool FirstPersonSpectating { get; private set; }
+    public Camera PresentationCamera => FirstPersonSpectating && observedView ? observedView.playerCamera : spectatorCamera;
     SoldierFirstPersonView observedView;
     bool previousFirstPerson, previousCameraEnabled, previousSpectatorEnabled;
     bool previousPostProcessing;
@@ -37,9 +38,37 @@ public class ArenaAISpectator : MonoBehaviour
     UnityEngine.Rendering.ShadowCastingMode[] previousShadows;
     float yaw, pitch;
     public bool ShowControls { get; private set; } = true;
-    public bool IsWatchingDeath => deathWatch;
+    public bool IsWatchingDeath => deathWatch || VehicleRespawnRemaining>0;
+    ArenaParticipant respawnWatchTarget;
+    bool respawnWatchFirstPerson;
+    public float VehicleRespawnRemaining => respawnWatchTarget ? respawnWatchTarget.RespawnRemaining : 0;
     public bool IsSpectating => !localPlayer || localDeathView || ManualSpectating;
     public bool ManualSpectating { get; private set; }
+    public enum FollowFilter { All, Infantry, GroundVehicles, AirborneVehicles }
+    public FollowFilter Filter { get; private set; }
+    bool waitingForFilteredTarget, filteredFirstPerson;
+    public bool WaitingForFilteredTarget => waitingForFilteredTarget;
+    float nextFilteredSearch;
+    public bool MatchesFilter(ArenaParticipant actor)
+    {
+        if (!actor) return false;
+        var occupant = actor.GetComponent<VehicleOccupant>();
+        bool mounted = occupant && occupant.IsMounted && occupant.MountedVehicle;
+        switch (Filter)
+        {
+            case FollowFilter.Infantry: return !mounted;
+            case FollowFilter.GroundVehicles: return mounted && !occupant.MountedVehicle.IsAircraft;
+            case FollowFilter.AirborneVehicles: return mounted && occupant.MountedVehicle.IsAircraft;
+            default: return true;
+        }
+    }
+    public void SetFilter(FollowFilter value)
+    {
+        Filter = value;
+        if (IsSpectating && !deathWatch && (!FollowedCharacter || !MatchesFilter(FollowedCharacter))) CycleCharacter(1);
+    }
+    public void CycleFilter() => SetFilter((FollowFilter)(((int)Filter + 1) % 4));
+    bool CanFollowFiltered(ArenaParticipant actor) => CanFollowAlive(actor) && !actor.IsSpectator && MatchesFilter(actor);
     readonly System.Collections.Generic.List<(Renderer mesh, bool enabled)> suspendedMeshes = new();
     readonly System.Collections.Generic.List<(Collider body, bool enabled)> suspendedColliders = new();
 
@@ -69,7 +98,7 @@ public class ArenaAISpectator : MonoBehaviour
             { suspendedMeshes.Add((mesh, mesh.enabled)); mesh.enabled = false; }
             transform.SetPositionAndRotation(localPlayer.transform.position + Vector3.up * 3f, Quaternion.Euler(15, localPlayer.transform.eulerAngles.y, 0));
             spectatorCamera.enabled = true;
-            CycleCharacter(1);
+            // Enter observation with a free camera; following is an explicit choice.
         }
         else
         {
@@ -116,13 +145,29 @@ public class ArenaAISpectator : MonoBehaviour
     void Update()
     {
         if (!IsSpectating) return;
+        if(respawnWatchTarget)
+        {
+            var target=respawnWatchTarget;
+            if(target==localPlayer && target.RespawnRemaining<=0)respawnWatchTarget=null;
+            else if(target!=localPlayer && CanFollowFiltered(target))
+            {
+                bool perspective=respawnWatchFirstPerson;Follow(target);if(perspective)EnterPerspective();
+            }
+        }
         if (!localPlayer && Input.GetKeyDown(KeyCode.Backspace)) { CancelDeathWatch(); match.BeginMatch(); }
         if (deathWatch && Time.time >= deathWatchUntil) CompleteDeathWatch();
         if (ControlsBlocked) return;
+        if (Input.GetKeyDown(KeyCode.V)) CycleFilter();
+        if (!deathWatch && FollowedCharacter && !CanFollowFiltered(FollowedCharacter)) CycleCharacter(1);
+        if (waitingForFilteredTarget && Time.unscaledTime >= nextFilteredSearch)
+        {
+            nextFilteredSearch = Time.unscaledTime + .5f;
+            CycleCharacter(1);
+        }
         if (Input.GetKeyDown(KeyCode.L)) ShowControls = !ShowControls;
         if (Input.GetKeyDown(KeyCode.F))
         {
-            if (FollowedCharacter) StopFollowing();
+            if (FollowedCharacter || waitingForFilteredTarget) StopFollowing();
             else CycleCharacter(1);
         }
         if (Input.GetKeyDown(KeyCode.X)) CycleCharacter(1);
@@ -157,6 +202,8 @@ public class ArenaAISpectator : MonoBehaviour
 
     public void Follow(ArenaParticipant character)
     {
+        respawnWatchTarget=null;
+        waitingForFilteredTarget = false;
         CancelDeathWatch();
         bool perspective = FirstPersonSpectating;
         if (FollowedCharacter) FollowedCharacter.health.Died -= OnFollowedCharacterDied;
@@ -172,6 +219,8 @@ public class ArenaAISpectator : MonoBehaviour
 
     public void StopFollowing()
     {
+        respawnWatchTarget=null;
+        waitingForFilteredTarget = false;
         CancelDeathWatch();
         if (FollowedCharacter) FollowedCharacter.health.Died -= OnFollowedCharacterDied;
         ReleasePerspective();
@@ -203,7 +252,18 @@ public class ArenaAISpectator : MonoBehaviour
 
     void OnFollowedCharacterDied(GameObject source)
     {
+        if(wasMounted){BeginVehicleRespawnWatch(FollowedCharacter,FirstPersonSpectating);return;}
         BeginDeathWatch(source, FirstPersonSpectating);
+    }
+    void BeginVehicleRespawnWatch(ArenaParticipant actor,bool perspective)
+    {
+        var camera=FirstPersonSpectating && observedView?observedView.playerCamera:spectatorCamera;
+        var position=camera.transform.position;var rotation=camera.transform.rotation;
+        StopFollowing();
+        respawnWatchTarget=actor;respawnWatchFirstPerson=perspective;
+        transform.SetPositionAndRotation(position,rotation);
+        yaw=rotation.eulerAngles.y;pitch=Mathf.DeltaAngle(0,rotation.eulerAngles.x);
+        spectatorCamera.enabled=true;
     }
 
     void BeginDeathWatch(GameObject source, bool perspective)
@@ -225,12 +285,16 @@ public class ArenaAISpectator : MonoBehaviour
 
     void CompleteDeathWatch()
     {
-        var next = !killerDied && CanFollowAlive(pendingKiller) ? pendingKiller : null;
+        var next = !killerDied && CanFollowFiltered(pendingKiller) ? pendingKiller : null;
         if (!next)
             foreach (var actor in match.participants)
-                if (CanFollowAlive(actor) && actor != FollowedCharacter && actor != pendingKiller) { next = actor; break; }
+                if (CanFollowFiltered(actor) && actor != FollowedCharacter && actor != pendingKiller) { next = actor; break; }
         bool perspective = restorePerspective;
-        if (!next) { deathWatchUntil = Time.time + .25f; return; }
+        if (!next)
+        {
+            StopFollowing(); waitingForFilteredTarget = true; filteredFirstPerson = perspective;
+            nextFilteredSearch = Time.unscaledTime + .5f; return;
+        }
         CancelDeathWatch();
         Follow(next);
         if (perspective) EnterPerspective();
@@ -244,6 +308,8 @@ public class ArenaAISpectator : MonoBehaviour
 
     void OnLocalPlayerDied(GameObject source)
     {
+        bool vehicleDeath=localPlayer.match.rules is SandboxConquestRules sandbox
+            && sandbox.PlayerVehicle && sandbox.PlayerVehicle.IsDestroyed;
         localDeathView = true;
         localWasFirstPerson = localPlayer.player.view.firstPerson;
         localInputEnabled = localInput.enabled; localInput.enabled = false;
@@ -252,6 +318,11 @@ public class ArenaAISpectator : MonoBehaviour
         spectatorCamera.enabled = true;
         yaw = localPlayer.transform.eulerAngles.y; pitch = 15f;
         transform.rotation = Quaternion.Euler(pitch, yaw, 0f);
+        if(vehicleDeath)
+        {
+            transform.position=localPlayer.transform.position+Vector3.up*3;
+            BeginVehicleRespawnWatch(localPlayer,localWasFirstPerson);return;
+        }
         Follow(localPlayer);
         BeginDeathWatch(source, localWasFirstPerson);
     }
@@ -397,6 +468,7 @@ public class ArenaAISpectator : MonoBehaviour
 
     void CycleCharacter(int direction)
     {
+        bool perspective = FirstPersonSpectating || waitingForFilteredTarget && filteredFirstPerson;
         var actors = match.participants;
         if (actors.Length == 0) { StopFollowing(); return; }
         int current = System.Array.IndexOf(actors, FollowedCharacter);
@@ -404,9 +476,10 @@ public class ArenaAISpectator : MonoBehaviour
         for (int i = 1; i <= actors.Length; i++)
         {
             var actor = actors[(start + direction * i + actors.Length * 2) % actors.Length];
-            if (CanFollowAlive(actor)) { Follow(actor); return; }
+            if (CanFollowFiltered(actor)) { Follow(actor); if(perspective)EnterPerspective(); return; }
         }
         StopFollowing();
+        waitingForFilteredTarget = true; filteredFirstPerson = perspective;
     }
 
     void LateUpdate()

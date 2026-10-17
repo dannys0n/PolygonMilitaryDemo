@@ -66,12 +66,14 @@ public class ConquestRules : ArenaMatchRules
             if(blue>threshold)redTickets=Mathf.Max(0,redTickets-(blue-threshold)*ticketsPerExtraFlag);
         }
     }
-    public bool CanDeploy(ArenaParticipant actor, ConquestCapturePoint point) => !point || point.Owner==actor.team
+    public virtual bool CanDeploy(ArenaParticipant actor, ConquestCapturePoint point) => !point || point.Owner==actor.team
         && point.Count(actor.team==ArenaParticipant.Team.Red?ArenaParticipant.Team.Blue:ArenaParticipant.Team.Red)==0;
     public void SelectDeployment(ArenaParticipant actor, ConquestCapturePoint point) { deployments[actor]=point;squadDeployments.Remove(actor); }
     public void SelectSquadDeployment(ArenaParticipant actor,ArenaParticipant member){squadDeployments[actor]=member;deployments[actor]=null;}
     public void ApproveDeployment(ArenaParticipant actor) => approved.Add(actor);
     public void CancelDeployment(ArenaParticipant actor) => approved.Remove(actor);
+    protected bool DeploymentApproved(ArenaParticipant actor) => approved.Contains(actor);
+    protected ConquestCapturePoint DeploymentPoint(ArenaParticipant actor) => deployments.TryGetValue(actor,out var point)?point:null;
     public override bool NeedsDeployment(ArenaParticipant actor) => actor.player && actor.GetComponent<SoldierLocalInput>();
     public override IEnumerable<ArenaParticipant> SquadMembers(ArenaParticipant actor) => squads ? squads.Members(actor) : null;
     public override bool TryChooseSpawn(ArenaParticipant actor, Dictionary<Transform,float> history, out Transform spawn)

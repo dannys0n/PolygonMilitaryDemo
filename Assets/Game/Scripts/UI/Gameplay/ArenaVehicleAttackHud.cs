@@ -39,7 +39,7 @@ public class ArenaVehicleAttackHud : MonoBehaviour
     {
         var t=Instantiate(template,panel.transform);t.name=name;t.rectTransform.anchorMin=t.rectTransform.anchorMax=new Vector2(.5f,.5f);t.rectTransform.anchoredPosition=position;t.rectTransform.sizeDelta=size;t.fontSize=font;t.alignment=TextAlignmentOptions.Center;t.text="";t.gameObject.SetActive(true);t.raycastTarget=false;return t;
     }
-    public void Present(VehicleOccupant occupant,VehicleAttackSight sight,Camera camera)
+    public void Present(VehicleOccupant occupant,VehicleAttackSight sight,Camera camera,bool? cockpitOverride=null)
     {
         bool show=sight&&camera&&sight.DisplaysForSeat(occupant.SeatIndex);panel.SetActive(show);if(!show){opticalLayer.SetActive(false);return;}
         var vehicle=sight.vehicle;reticle.style=sight.style;reticle.SetVerticesDirty();
@@ -47,7 +47,7 @@ public class ArenaVehicleAttackHud : MonoBehaviour
         Ray view=new Ray(camera.transform.position,camera.transform.forward);float range=Range(view,sight.range,vehicle);
         rangeText.text=(range>=sight.range-.1f?">":"")+Mathf.RoundToInt(range).ToString("0000")+" M";
         bool tank=sight.IsDocumentedTankSight;
-        opticalLayer.SetActive(tank&&(occupant.CockpitView||occupant.OpticalADSActive));
+        opticalLayer.SetActive(tank&&(cockpitOverride??(occupant.CockpitView||occupant.OpticalADSActive)));
         string rangeDigits=range<sight.minimumLaserRange||range>=sight.range-.1f?"----":Mathf.RoundToInt(range).ToString("0000");
         rangeText.rectTransform.anchoredPosition=sight.style==VehicleAttackSight.SightStyle.T72?new Vector2(370,190):new Vector2(0,-135);
         rangeText.color=Color.white;

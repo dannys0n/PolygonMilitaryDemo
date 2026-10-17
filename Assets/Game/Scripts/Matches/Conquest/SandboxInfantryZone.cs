@@ -8,6 +8,7 @@ public sealed class SandboxInfantryZone : MonoBehaviour
     public BoxCollider respawnBox;
     [Min(1)] public int playersPerTeam=6;
     NavMeshPath path;
+    readonly RaycastHit[] supportHits=new RaycastHit[32];
     void Awake(){path=new NavMeshPath();}
     public bool TryPosition(ArenaParticipant actor,out Vector3 position)
     {
@@ -24,6 +25,19 @@ public sealed class SandboxInfantryZone : MonoBehaviour
             var inBox=respawnBox.transform.InverseTransformPoint(hit.position)-respawnBox.center;
             var half=respawnBox.size*.5f;
             if(Mathf.Abs(inBox.x)>half.x||Mathf.Abs(inBox.y)>half.y||Mathf.Abs(inBox.z)>half.z)continue;
+            // A baked polygon can be below a terrain layer or survive a moved mesh.
+            // Require the highest physical ground here to agree with the NavMesh.
+            Vector3 ray=new Vector3(hit.position.x,respawnBox.bounds.max.y+2,hit.position.z);
+            int count=Physics.RaycastNonAlloc(ray,Vector3.down,supportHits,respawnBox.bounds.size.y+4,Physics.DefaultRaycastLayers,QueryTriggerInteraction.Ignore);
+            if(count==supportHits.Length)continue;
+            RaycastHit support=default;float nearest=float.PositiveInfinity;
+            for(int i=0;i<count;i++)
+            {
+                var physical=supportHits[i];
+                if(physical.collider.GetComponentInParent<ArenaParticipant>() || physical.collider.GetComponentInParent<Vehicle>())continue;
+                if(physical.distance<nearest){nearest=physical.distance;support=physical;}
+            }
+            if(float.IsPositiveInfinity(nearest)||support.normal.y<.5f || Mathf.Abs(support.point.y-hit.position.y)>.5f)continue;
             if(!NavMesh.CalculatePath(hit.position,goal.position,filter,path)||path.status!=NavMeshPathStatus.PathComplete)continue;
             // Check real standing room without importing HQ spawn-history or authored-point rules.
             bool blocked=false;
@@ -34,7 +48,7 @@ public sealed class SandboxInfantryZone : MonoBehaviour
                 if(other!=actor&&!other.health.IsDead&&!other.IsAwaitingSpawn
                     && Vector3.Distance(other.transform.position,hit.position)<2){blocked=true;break;}
             if(blocked)continue;
-            position=hit.position+Vector3.up*.05f;return true;
+            position=new Vector3(hit.position.x,Mathf.Max(hit.position.y,support.point.y)+.05f,hit.position.z);return true;
         }
         return false;
     }

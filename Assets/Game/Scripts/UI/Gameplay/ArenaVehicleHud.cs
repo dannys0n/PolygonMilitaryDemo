@@ -2,7 +2,7 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
-[DefaultExecutionOrder(300)]
+[DefaultExecutionOrder(650)]
 public class ArenaVehicleHud : MonoBehaviour
 {
     public VehicleOccupant player;
@@ -42,6 +42,15 @@ public class ArenaVehicleHud : MonoBehaviour
     TMP_Text metricPitchReadout;
     TMP_Text roadSpeed, roadDetails;
     readonly Color accent=new Color(1,.55f,.12f);
+    ArenaAISpectator spectator;
+    VehicleOccupant controlledPlayer, observedPlayer;
+    ArenaParticipant observedCharacter;
+    public bool IsObserving => spectator && spectator.IsSpectating;
+    public Camera PresentationCamera => IsObserving ? spectator.PresentationCamera
+        : player && player.ActiveVehicleCamera ? player.ActiveVehicleCamera : Camera.main;
+    public bool CockpitPresentation => player && player.IsMounted && player.MountedVehicle.hasRenderedInterior
+        && !player.MountedVehicle.seats[player.SeatIndex].externalView
+        && (IsObserving ? spectator.FirstPersonSpectating : player.CockpitView);
     readonly System.Collections.Generic.List<RectTransform> systemTiles=new System.Collections.Generic.List<RectTransform>();
     readonly System.Collections.Generic.List<Image> systemIcons=new System.Collections.Generic.List<Image>();
     readonly System.Collections.Generic.List<TMP_Text> systemKeys=new System.Collections.Generic.List<TMP_Text>();
@@ -56,6 +65,7 @@ public class ArenaVehicleHud : MonoBehaviour
     readonly System.Collections.Generic.List<VehicleWeaponSystems.Weapon> seatSystems=new System.Collections.Generic.List<VehicleWeaponSystems.Weapon>();
     void Awake()
     {
+        controlledPlayer=player;spectator=FindAnyObjectByType<ArenaAISpectator>();
         ArenaHudTheme.StyleLines(transform, filamentLine, accentLineGlow);
         // Ammunition and weapon identity belong to the shared bottom-right equipment card.
         weapon.gameObject.SetActive(false);
@@ -86,8 +96,20 @@ public class ArenaVehicleHud : MonoBehaviour
     }
     void Update()
     {
+        if(IsObserving)
+        {
+            var followed=spectator.FollowedCharacter;
+            if(observedCharacter!=followed)
+            {
+                observedCharacter=followed;
+                observedPlayer=followed?followed.GetComponent<VehicleOccupant>():null;
+            }
+            player=observedPlayer;
+        }
+        else {player=controlledPlayer;observedCharacter=null;observedPlayer=null;}
+        if(!player){HidePresentation();return;}
         if(!player.IsMounted || !VehicleReferenceInstruments.UsesDials(player.MountedVehicle) || !ShowVehicleInstruments(player.MountedVehicle))referenceInstruments.Present(null,0,false,false);
-        bool mounted=player.IsMounted;prompt.text=mounted?"":player.Prompt;
+        bool mounted=player.IsMounted;prompt.text=mounted||IsObserving?"":player.Prompt;
         bool jetInstruments=mounted && player.MountedVehicle.motor is JetMotor && ShowVehicleInstruments(player.MountedVehicle);
         fixedWingReadout.Present(mounted?player.MountedVehicle:null,jetInstruments);
         telemetry.gameObject.SetActive(!jetInstruments);systemsReadout.gameObject.SetActive(!jetInstruments);
@@ -174,6 +196,7 @@ public class ArenaVehicleHud : MonoBehaviour
         var doorControl=v.GetComponent<VehicleDoors>();
         if(doorControl)rightControls.text += "\nTAP [E]  " + (role==Vehicle.SeatRole.Driver || doorControl.operateTogether ? "DOORS" : "NEARBY DOOR");
         if(v.seats.Length>12)rightControls.text+="\n[PGUP/PGDN] PAGE "+(player.SeatPage+1)+"/"+((v.seats.Length+11)/12);
+        if(IsObserving){controls.text="";rightControls.text="";}
         EnsureSeatMarkers(v.seats.Length);
         crew.fontSize = v.seats.Length > 8 ? 10 : v.seats.Length > 5 ? 12 : 14;
         crew.text="";
@@ -186,7 +209,7 @@ public class ArenaVehicleHud : MonoBehaviour
             seatMarkers[i].color=seatIndex==player.SeatIndex?accent:occupied?Color.white:new Color(1,1,1,.18f);
             seatNumbers[i].color=seatIndex==player.SeatIndex||occupied?Color.black:Color.white;
             seatNumbers[i].text=(seatIndex+1).ToString();
-            string name=occupied?(seat.occupant==player?"YOU":seat.occupant.name):"EMPTY";
+            string name=occupied?(seat.occupant==player?(IsObserving?"WATCHING":"YOU"):seat.occupant.name):"EMPTY";
             crew.text+="<color="+(seatIndex==player.SeatIndex?"#FF8C1F":"#FFFFFF")+">"+(seatIndex+1)+"  "+name+"</color>  <size="+(v.seats.Length>8?10:12)+">"+seat.name.ToUpperInvariant()+"</size>\n";
         }
         float health=v.Health/v.maxHealth;for(int i=0;i<hullSegments.Length;i++)hullSegments[i].color=i<hullSegments.Length*health?Color.white:new Color(1,1,1,.15f);
@@ -210,7 +233,7 @@ public class ArenaVehicleHud : MonoBehaviour
         float altitude=0, nearest=float.PositiveInfinity;
         foreach(var hit in Physics.RaycastAll(v.transform.position,Vector3.down,1000,Physics.DefaultRaycastLayers,QueryTriggerInteraction.Ignore))
             if(!hit.transform.IsChildOf(v.transform)&&!hit.collider.GetComponentInParent<SoldierLife>()&&hit.distance<nearest){nearest=hit.distance;altitude=hit.distance;}
-        if(dials)referenceInstruments.Present(v,altitude,true,player.CockpitView);
+        if(dials)referenceInstruments.Present(v,altitude,true,CockpitPresentation);
         if(dronePanel.activeSelf) UpdateDroneInstruments(v,altitude);
         bool metric=v.instrumentReference==Vehicle.InstrumentReference.Su27;
         var jet=v.motor as JetMotor;
@@ -230,6 +253,17 @@ public class ArenaVehicleHud : MonoBehaviour
         var rockets=v.GetComponent<VehicleLauncher>();
         weapon.text=selectedWeapon!=null?selectedWeapon.name+"  [LMB]  "+ammunition.text
             :rockets?"RKT  [LMB]  "+rockets.Missiles+" / "+rockets.capacity+(rockets.Missiles<rockets.capacity ? "   +1 IN "+rockets.RechargeRemaining.ToString("F1")+" S" : ""):"NO PILOT WEAPON";
+    }
+    void HidePresentation()
+    {
+        prompt.text="";mountedPanel.SetActive(false);vehicleEquipment.SetActive(false);flightPanel.SetActive(false);
+        roadPanel.SetActive(false);armoredPanel.SetActive(false);dronePanel.SetActive(false);
+        infantryEquipment.SetActive(false);infantryCrosshair.SetActive(false);
+        telemetry.gameObject.SetActive(false);systemsReadout.gameObject.SetActive(false);gunnerReadout.gameObject.SetActive(false);
+        desiredAim.gameObject.SetActive(false);actualAim.gameObject.SetActive(false);flightPathMarker.gameObject.SetActive(false);
+        referenceInstruments.Present(null,0,false,false);fixedWingReadout.Present(null,false);
+        attackHud.Present(null,null,null);lockHud.Present(null,null);
+        presentationBlend=0;displayedSystemsVehicle=null;seatHasWeapon=false;
     }
     void UpdateEquipmentSystems(Vehicle vehicle,Vehicle.SeatRole role,VehicleWeaponSystems systems,
         VehicleWeaponSystems.Weapon selected,VehicleCountermeasures defenses,bool armed)
@@ -339,9 +373,10 @@ public class ArenaVehicleHud : MonoBehaviour
     }
     void LateUpdate()
     {
+        if(!player)return;
         var attackSight=player.IsMounted?player.MountedVehicle.GetComponent<VehicleAttackSight>():null;
-        var sightCamera=player.ActiveVehicleCamera?player.ActiveVehicleCamera:Camera.main;
-        attackHud.Present(player,attackSight,sightCamera);
+        var sightCamera=PresentationCamera;
+        attackHud.Present(player,attackSight,sightCamera,IsObserving?CockpitPresentation:(bool?)null);
         lockHud.Present(player,sightCamera);
         if(attackHud.Visible){gunnerReadout.gameObject.SetActive(false);desiredAim.gameObject.SetActive(false);actualAim.gameObject.SetActive(false);flightPathMarker.gameObject.SetActive(false);return;}
         if (player.IsMounted && player.MountedVehicle.IsAircraft && ShowVehicleInstruments(player.MountedVehicle))
@@ -349,7 +384,7 @@ public class ArenaVehicleHud : MonoBehaviour
         flightPathMarker.gameObject.SetActive(player.IsMounted && flightPanel.activeSelf);
         if(flightPathMarker.gameObject.activeSelf)
         {
-            var cam=player.ActiveVehicleCamera ? player.ActiveVehicleCamera : Camera.main;
+            var cam=PresentationCamera;
             if(cam)
             {
                 Vector3 velocity=player.MountedVehicle.Body.linearVelocity;
@@ -366,7 +401,7 @@ public class ArenaVehicleHud : MonoBehaviour
         gunnerReadout.gameObject.SetActive(armed && player.MountedVehicle.seats[player.SeatIndex].role==Vehicle.SeatRole.Gunner);
         desiredAim.gameObject.SetActive(armed); actualAim.gameObject.SetActive(armed);
         if (!armed) return;
-        var vehicle = player.MountedVehicle; Camera camera = player.ActiveVehicleCamera ? player.ActiveVehicleCamera : Camera.main;
+        var vehicle = player.MountedVehicle; Camera camera = PresentationCamera;
         if(!camera){desiredAim.gameObject.SetActive(false);actualAim.gameObject.SetActive(false);return;}
         var systems=vehicle.GetComponent<VehicleWeaponSystems>();
         var current=systems?systems.Current(player):null;
@@ -396,7 +431,7 @@ public class ArenaVehicleHud : MonoBehaviour
             ? ResolvePoint(actual,Mathf.Min(range,Vector3.Distance(actual.origin,desiredPoint)),vehicle)
             : activeLauncher.PredictedImpactPoint;
         PlaceMarker(actualAim,camera,impact);
-        if(gunner){var direction=activeGun.muzzle.forward;float azimuth=Mathf.Repeat(Mathf.Atan2(direction.x,direction.z)*Mathf.Rad2Deg,360);float elevation=Mathf.Asin(Mathf.Clamp(direction.y,-1,1))*Mathf.Rad2Deg;float zoom=Mathf.Tan(35*Mathf.Deg2Rad)/Mathf.Tan(camera.fieldOfView*.5f*Mathf.Deg2Rad);float relativeYaw=Mathf.DeltaAngle(vehicle.transform.eulerAngles.y,azimuth);float distance=Vector3.Distance(actual.origin,ResolvePoint(actual,range,vehicle));string station=vehicle.instruments==Vehicle.InstrumentLayout.Armored?"WEAPON STATION":"GUN SIGHT";gunnerReadout.text=station+"   RNG "+(distance>=range-.1f?">":"")+Mathf.RoundToInt(distance).ToString("0000")+" M   AZ "+relativeYaw.ToString("+000;-000;000")+"�   EL "+elevation.ToString("+00;-00;00")+"�   "+zoom.ToString("F1")+"X";}
+        if(gunner){var direction=activeGun.muzzle.forward;float azimuth=Mathf.Repeat(Mathf.Atan2(direction.x,direction.z)*Mathf.Rad2Deg,360);float elevation=Mathf.Asin(Mathf.Clamp(direction.y,-1,1))*Mathf.Rad2Deg;float zoom=Mathf.Tan(35*Mathf.Deg2Rad)/Mathf.Tan(camera.fieldOfView*.5f*Mathf.Deg2Rad);float relativeYaw=Mathf.DeltaAngle(vehicle.transform.eulerAngles.y,azimuth);float distance=Vector3.Distance(actual.origin,ResolvePoint(actual,range,vehicle));string station=vehicle.instruments==Vehicle.InstrumentLayout.Armored?"WEAPON STATION":"GUN SIGHT";gunnerReadout.text=station+"   RNG "+(distance>=range-.1f?">":"")+Mathf.RoundToInt(distance).ToString("0000")+" M   AZ "+relativeYaw.ToString("+000;-000;000")+"\u00B0   EL "+elevation.ToString("+00;-00;00")+"\u00B0   "+zoom.ToString("F1")+"X";}
     }
     void BuildRoadDashboard()
     {
@@ -474,7 +509,7 @@ public class ArenaVehicleHud : MonoBehaviour
     void UpdateArmoredInstruments(Vehicle v)
     {
         float heading=Mathf.Repeat(v.transform.eulerAngles.y,360);
-        armoredHeading.text=VehicleGroundReadout.FamilyCaption(v)+" / HDG "+HeadingNumber(heading).ToString("000")+"�";
+        armoredHeading.text=VehicleGroundReadout.FamilyCaption(v)+" / HDG "+HeadingNumber(heading).ToString("000")+"\u00B0";
         bool imperial=ImperialGround(v);
         armoredSpeed.text=Mathf.RoundToInt(VehicleGroundReadout.SpeedKmh(v)*(imperial ? .621371f : 1f))+"<size=14> "+(imperial?"MPH":"KM/H")+"</size>";
         armoredState.text="<color=#FF9637>"+DriveState(v)+"</color>";
@@ -486,7 +521,7 @@ public class ArenaVehicleHud : MonoBehaviour
     void UpdateDroneInstruments(Vehicle v,float altitude)
     {
         float heading=Mathf.Repeat(v.transform.eulerAngles.y,360);
-        droneHeading.text="UAS  /  HDG "+HeadingNumber(heading).ToString("000")+"�";
+        droneHeading.text="UAS  /  HDG "+HeadingNumber(heading).ToString("000")+"\u00B0";
         droneTelemetry.text="AGL     "+altitude.ToString("0.0")+" M\nGS       "+Vector3.ProjectOnPlane(v.Body.linearVelocity,Vector3.up).magnitude.ToString("0.0")+" M/S\nV/S      "+v.Body.linearVelocity.y.ToString("+0.0;-0.0;0.0")+" M/S\n<color=#FF9637>"+(v.FlightAssistEnabled?"POSITION ASSIST":"MANUAL CONTROL")+"</color>";
     }
     void EnsureSeatMarkers(int count)
@@ -528,7 +563,7 @@ public class ArenaVehicleHud : MonoBehaviour
         float heading = Mathf.Repeat(view.eulerAngles.y,360);
         compass.text = "HDG " + HeadingNumber(heading).ToString("000") + "  " + Cardinal(heading);
         float elevation = Mathf.Asin(Mathf.Clamp(view.forward.y,-1,1)) * Mathf.Rad2Deg;
-        if(metric){metricPitchScale.SetReading(elevation);metricPitchReadout.text="PITCH "+elevation.ToString("+00;-00;00")+"�";}
+        if(metric){metricPitchScale.SetReading(elevation);metricPitchReadout.text="PITCH "+elevation.ToString("+00;-00;00")+"\u00B0";}
         Vector3 up = view.InverseTransformDirection(Vector3.up);
         float bank = Mathf.Atan2(up.x,up.y) * Mathf.Rad2Deg;
         horizon.localEulerAngles = new Vector3(0,0,-bank);

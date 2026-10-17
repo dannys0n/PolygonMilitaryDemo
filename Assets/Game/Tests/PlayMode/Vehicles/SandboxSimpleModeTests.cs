@@ -75,6 +75,7 @@ public class SandboxSimpleModeTests
         var catalog = Get(settings, "weaponCatalog");
         foreach (var actor in infantry.Select(i => (Component)Get(i, "participant")))
         {
+            if((bool)Get(actor,"IsAwaitingSpawn"))continue; // Local player now chooses deployment before receiving equipment.
             var choice = Get(actor, "SelectedClass"); Assert.NotNull(choice);
             foreach (string weapon in new[] { "primary", "secondary" })
                 Assert.IsTrue((bool)Get(Call(catalog, "Find", Get(choice, weapon)), "polished"));
@@ -87,6 +88,154 @@ public class SandboxSimpleModeTests
         var airCrew = ((IEnumerable)Get(flights[0], "crew")).Cast<Component>().First();
         Assert.IsFalse((bool)Call(infantry[0], "Eligible", airCrew), "Infantry must ignore aircraft crews.");
         Assert.IsFalse((bool)Call(rules, "CanDamage", first, airCrew), "Air combat must not damage the isolated ground battles.");
+    }
+    [UnityTest] public IEnumerator PlayerDeploymentReplacesClassSelectionAndSupportsFlagsVehiclesAndPause()
+    {
+        yield return Load();
+        yield return null;
+        var menu=All("ConquestDeploymentMenu").Single();
+        var actor=(Component)Get(menu,"participant");
+        Assert.IsTrue((bool)Get(menu,"IsVisible"));
+        Assert.IsTrue((bool)Get(actor,"IsAwaitingSpawn"));
+        Assert.IsFalse((bool)Get(actor,"NeedsClassSelection"));
+        Assert.IsFalse((bool)Get(Get(menu,"classMenu"),"IsVisible"));
+        var points=((IEnumerable)Get(rules,"points")).Cast<Component>().ToArray();
+        foreach(var point in points)
+        {
+            if(!(bool)Get(actor,"IsAwaitingSpawn"))Call(menu,"OpenRedeployment");
+            Call(menu,"SelectFlag",point);Call(menu,"RequestDeployment");
+            yield return null;yield return null;
+            Assert.IsFalse((bool)Get(actor,"IsAwaitingSpawn"));
+            Assert.IsFalse((bool)Get(menu,"IsVisible"));
+            Assert.AreEqual(point,Get(actor.GetComponent(T("SandboxInfantryInput")),"objective"));
+            Assert.NotNull(Get(actor,"SelectedClass"));
+        }
+        var pause=Get(menu,"pause");Call(pause,"Pause");
+        Call(Get(menu,"classMenu"),"Open");
+        Assert.IsFalse((bool)Get(pause,"IsPaused"));
+        Assert.IsTrue((bool)Get(menu,"IsVisible"));
+        Assert.IsTrue((bool)Call(menu,"CloseTacticalMap"));
+        var vehicles=((IEnumerable)Get(rules,"deploymentVehicles")).Cast<Component>().ToArray();
+        Assert.Greater(vehicles.Length,0);
+        Component previous=null;
+        foreach(string name in new[]{"PickupTechnical","Jet01","AttackHelicopter01"})
+        {
+            var prefab=vehicles.Single(v=>v.name==name);
+            Call(menu,"OpenRedeployment");Call(menu,"SelectBase");Call(rules,"SelectVehicle",prefab);Call(menu,"RequestDeployment");
+            yield return null;yield return null;
+            var current=(Component)Get(rules,"PlayerVehicle");
+            Assert.IsTrue(current,name+" should spawn at HQ");
+            Assert.IsFalse((bool)Get(menu,"IsVisible"));
+            Assert.IsTrue((bool)Get(actor.GetComponent(T("VehicleOccupant")),"IsMounted"));
+            if(previous)Assert.AreNotSame(previous,current);
+            previous=current;
+            Call(menu,"OpenRedeployment");Call(menu,"CloseTacticalMap");
+            Assert.AreSame(current,Get(rules,"PlayerVehicle"),"Cancel must retain the current vehicle");
+            Assert.IsFalse((bool)Get(Get(menu,"input"),"InputBlocked"));
+        }
+        Call(menu,"OpenRedeployment");Call(menu,"SelectFlag",points[0]);Call(menu,"RequestDeployment");
+        yield return null;yield return null;
+        Assert.IsFalse((bool)Get(actor.GetComponent(T("VehicleOccupant")),"IsMounted"));
+        Assert.IsNull(Get(rules,"PlayerVehicle"));
+        Assert.IsFalse((bool)Get(Get(menu,"input"),"InputBlocked"));
+    }
+    [UnityTest] public IEnumerator SpectatorFiltersCycleAndRecoverWhenMatchingVehiclesBecomeAvailable()
+    {
+        yield return Load();yield return null;
+        var spectator=All("ArenaAISpectator").Single();
+        var filterType=T("ArenaAISpectator").GetNestedType("FollowFilter");
+        Call(spectator,"SetManualSpectating",true);yield return null;
+        var hud=All("ArenaSpectatorHud").Single();
+        hud.GetComponentsInChildren<UnityEngine.UI.Button>(true).Single(b=>b.name=="AIRBORNE VEHICLES").onClick.Invoke();
+        Assert.AreEqual("AirborneVehicles",Get(spectator,"Filter").ToString(),"HUD buttons must apply the follow filter");
+        foreach(string filter in new[]{"Infantry","AirborneVehicles"})
+        {
+            Call(spectator,"SetFilter",Enum.Parse(filterType,filter));
+            for(int i=0;i<6;i++)
+            {
+                Call(spectator,"CycleCharacter",1);
+                var followed=(Component)Get(spectator,"FollowedCharacter");
+                Assert.IsTrue(followed,filter+" should have a living target");
+                Assert.IsTrue((bool)Call(spectator,"MatchesFilter",followed));
+                var rider=followed.GetComponent(T("VehicleOccupant"));
+                Assert.AreEqual(filter=="AirborneVehicles",(bool)Get(rider,"IsMounted"));
+                if(filter=="AirborneVehicles")Assert.IsTrue((bool)Get(Get(rider,"MountedVehicle"),"IsAircraft"));
+            }
+        }
+        Call(spectator,"SetFilter",Enum.Parse(filterType,"GroundVehicles"));
+        Assert.IsNull(Get(spectator,"FollowedCharacter"));
+        Assert.IsTrue((bool)Get(spectator,"WaitingForFilteredTarget"));
+        var prefab=((IEnumerable)Get(rules,"deploymentVehicles")).Cast<Component>().Single(v=>v.name=="PickupTechnical");
+        var vehicle=UnityEngine.Object.Instantiate(prefab,new Vector3(-450,12,0),Quaternion.identity);
+        try
+        {
+            var input=infantry.First(i=>((Behaviour)i).enabled);
+            var rider=input.GetComponent(T("VehicleOccupant"));
+            Set(((Array)Get(vehicle,"seats")).GetValue(0),"occupant",rider);
+            Call(rider,"Mount",vehicle,0);
+            yield return new WaitForSecondsRealtime(.65f);
+            Assert.AreSame(Get(input,"participant"),Get(spectator,"FollowedCharacter"));
+            Assert.IsFalse((bool)Get(spectator,"WaitingForFilteredTarget"));
+            Call(rider,"Leave",true);yield return null;
+            Assert.IsNull(Get(spectator,"FollowedCharacter"),"Dismounting removes a ground-vehicle target");
+            Call(spectator,"SetFilter",Enum.Parse(filterType,"All"));
+            Assert.IsNotNull(Get(spectator,"FollowedCharacter"));
+            Call(spectator,"StopFollowing");
+            Assert.IsFalse((bool)Get(spectator,"WaitingForFilteredTarget"),"Free camera must cancel automatic follow retries");
+        }
+        finally{if(vehicle)UnityEngine.Object.Destroy(vehicle.gameObject);}
+    }
+    [UnityTest] public IEnumerator SpectatorVehicleHudUsesObservedOccupantAndBothPresentationCameras()
+    {
+        yield return Load();yield return null;
+        var spectator=All("ArenaAISpectator").Single();var hud=All("ArenaVehicleHud").Single();
+        Call(spectator,"SetManualSpectating",true);yield return null;
+        Assert.IsNull(Get(hud,"player"));
+        var flight=((IEnumerable)Get(rules,"flights")).Cast<object>().First(f=>Get(f,"battle").ToString()=="Jets");
+        var pilot=((IEnumerable)Get(flight,"crew")).Cast<Component>().First();
+        Call(spectator,"Follow",pilot);yield return null;yield return null;
+        Assert.AreSame(pilot.GetComponent(T("VehicleOccupant")),Get(hud,"player"));
+        Assert.IsTrue(((GameObject)Get(hud,"mountedPanel")).activeInHierarchy);
+        Assert.IsTrue(((GameObject)Get(hud,"vehicleEquipment")).activeInHierarchy);
+        Assert.IsFalse(((GameObject)Get(hud,"infantryEquipment")).activeSelf);
+        Assert.AreSame(Get(spectator,"spectatorCamera"),Get(hud,"PresentationCamera"));
+        Call(spectator,"EnterPerspective");yield return null;
+        Assert.AreSame(Get(Get(Get(pilot,"player"),"view"),"playerCamera"),Get(hud,"PresentationCamera"));
+        var groundPrefab=((IEnumerable)Get(rules,"deploymentVehicles")).Cast<Component>().Single(v=>v.name=="PickupTechnical");
+        var ground=UnityEngine.Object.Instantiate(groundPrefab,new Vector3(-450,8,0),Quaternion.identity);
+        try
+        {
+            var actor=(Component)Get(infantry.First(i=>((Behaviour)i).enabled),"participant");
+            var rider=actor.GetComponent(T("VehicleOccupant"));
+            var seats=(Array)Get(ground,"seats");int gunner=Enumerable.Range(0,seats.Length).First(i=>Get(seats.GetValue(i),"role").ToString()=="Gunner");
+            Set(seats.GetValue(gunner),"occupant",rider);Call(rider,"Mount",ground,gunner);
+            Call(spectator,"Follow",actor);yield return null;yield return null;
+            Assert.AreSame(rider,Get(hud,"player"));Assert.IsTrue(((GameObject)Get(hud,"vehicleEquipment")).activeInHierarchy);
+            Call(rider,"Leave",true);yield return null;yield return null;
+            Assert.IsFalse(((GameObject)Get(hud,"mountedPanel")).activeSelf);
+            Assert.IsTrue(((GameObject)Get(hud,"infantryEquipment")).activeSelf);
+            Call(spectator,"StopFollowing");yield return null;
+            Assert.IsFalse(((GameObject)Get(hud,"vehicleEquipment")).activeSelf);
+        }
+        finally{if(ground)UnityEngine.Object.Destroy(ground.gameObject);}
+    }
+    [UnityTest] public IEnumerator CharacterSpeedLimitAndRectangularBoundaryKillWallsWork()
+    {
+        yield return Load();
+        Assert.AreEqual(3,(float)Get(rules,"vehicleRespawnDelay"));
+        Assert.AreEqual(3,(float)Get(Get(All("ArenaMatch").Single(),"settings"),"respawnDelay"));
+        var input=infantry.First(i=>((Behaviour)i).enabled);((Behaviour)input).enabled=false;
+        var actor=(Component)Get(input,"participant");var body=actor.GetComponent<Rigidbody>();
+        body.position=new Vector3(-450,20,0);body.linearVelocity=Vector3.right*10000;
+        yield return new WaitForFixedUpdate();yield return new WaitForFixedUpdate();
+        Assert.LessOrEqual(body.linearVelocity.magnitude,151,"Native speed limit must contain extreme impulses");
+        Assert.AreEqual(0,body.linearDamping,"Do not add drag to ordinary locomotion");
+        var walls=All("FallKillVolume").Where(v=>!(bool)Get(v,"pollRoster")).ToArray();Assert.AreEqual(4,walls.Length);
+        foreach(var wall in walls)Assert.IsTrue(wall.GetComponent<BoxCollider>().isTrigger);
+        var west=walls.Single(v=>v.name=="West kill wall");
+        body.position=new Vector3(west.transform.position.x,10,west.transform.position.z);body.linearVelocity=Vector3.zero;
+        yield return new WaitForSeconds(.15f);
+        Assert.IsTrue((bool)Get(Get(actor,"health"),"IsDead"),"Crossing a boundary must use normal death/respawn");
     }
     [UnityTest] public IEnumerator InfantryReloadsPrimaryUntilBothMagazineAndReserveAreExhausted()
     {
@@ -109,7 +258,7 @@ public class SandboxSimpleModeTests
         Assert.AreEqual(1, Call(input, "ChooseWeapon"), "A usable primary takes priority over the pistol.");
         Set(primary, "MagazineAmmo", previousMag); Set(primary, "ReserveAmmo", previousReserve); Set(loadout, "selectedSlot", selected);
     }
-    [UnityTest] public IEnumerator DestroyedAircraftImmediatelyReplacesItsEntireCoupledCrew()
+    [UnityTest] public IEnumerator DestroyedAircraftWaitsThenReplacesItsEntireCoupledCrew()
     {
         yield return Load();
         var flight = ((IEnumerable)Get(rules, "flights")).Cast<object>().First(f => Get(f, "battle").ToString() == "Helicopters");
@@ -119,11 +268,21 @@ public class SandboxSimpleModeTests
         var pilot=((IEnumerable)Get(flight,"crew")).Cast<Component>().First();
         var attacker=((IEnumerable)Get(enemyFlight,"crew")).Cast<Component>().First();
         Assert.IsFalse((bool)Call(rules,"CanDamage",pilot,attacker),"A cockpit hit must not bypass the coupled aircraft hull.");
+        Set(rules,"vehicleRespawnDelay",.6f);
+        var spectator=All("ArenaAISpectator").Single();Call(spectator,"SetManualSpectating",true);yield return null;
+        Assert.IsNull(Get(spectator,"FollowedCharacter"),"Spectating starts in free roam");
+        Call(spectator,"Follow",pilot);
         Call(previous, "ApplyDamage", (float)Get(previous, "maxHealth") + 1, null, null);
         Call(rules, "Tick", .02f);
+        Assert.AreSame(previous,Get(flight,"current"),"Do not replace the aircraft before the timer expires");
+        Assert.AreEqual(generation,Get(flight,"respawns"));
+        Assert.IsNull(Get(spectator,"FollowedCharacter"),"Crew death temporarily switches to free roam");
+        Assert.Greater((float)Get(spectator,"VehicleRespawnRemaining"),0);
+        yield return new WaitForSeconds(.75f);
         var replacement = (Component)Get(flight, "current");
         Assert.AreNotSame(previous, replacement);
         Assert.AreEqual(generation + 1, Get(flight, "respawns"));
+        Assert.AreSame(pilot,Get(spectator,"FollowedCharacter"),"Resume the observed crew after its timed replacement");
         foreach (var actor in ((IEnumerable)Get(flight, "crew")).Cast<Component>())
         {
             Assert.IsFalse((bool)Get(Get(actor, "health"), "IsDead"));
@@ -138,6 +297,61 @@ public class SandboxSimpleModeTests
             var target = Get(ai, "Target") as Component;
             if (target) Assert.AreEqual(Get(ai, "battle"), Get(target.GetComponent(T("SandboxAirCombatAI")), "battle"));
         }
+    }
+    [UnityTest] public IEnumerator LocalVehicleDeathUsesFreeCameraUntilDeploymentTimerFinishes()
+    {
+        yield return Load();yield return null;
+        Set(rules,"vehicleRespawnDelay",.6f);
+        var menu=All("ConquestDeploymentMenu").Single();var actor=(Component)Get(menu,"participant");
+        var spectator=All("ArenaAISpectator").Single();
+        var prefab=((IEnumerable)Get(rules,"deploymentVehicles")).Cast<Component>().Single(v=>v.name=="PickupTechnical");
+        Call(rules,"SelectVehicle",prefab);Call(menu,"SelectBase");Call(menu,"RequestDeployment");
+        yield return null;yield return null;
+        var vehicle=Get(rules,"PlayerVehicle");Assert.IsNotNull(vehicle);
+        Call(vehicle,"ApplyDamage",(float)Get(vehicle,"maxHealth"),null,null);
+        yield return null;
+        Assert.IsTrue((bool)Get(spectator,"IsSpectating"));
+        Assert.IsNull(Get(spectator,"FollowedCharacter"));
+        Assert.Greater((float)Get(spectator,"VehicleRespawnRemaining"),0);
+        Assert.IsFalse((bool)Get(menu,"IsVisible"),"The waiting camera should be usable until the timer expires");
+        Assert.IsFalse((bool)Get(spectator,"ControlsBlocked"));
+        yield return new WaitForSeconds(.8f);
+        Assert.IsTrue((bool)Get(menu,"IsVisible"),"Return to deployment selection once the timer finishes");
+        Call(menu,"SelectFlag",((Array)Get(rules,"points")).GetValue(0));Call(menu,"RequestDeployment");
+        yield return null;yield return null;
+        Assert.IsFalse((bool)Get(actor,"IsAwaitingSpawn"));Assert.IsFalse((bool)Get(Get(actor,"health"),"IsDead"));
+        Assert.IsFalse((bool)Get(spectator,"IsSpectating"));
+    }
+    [UnityTest] public IEnumerator InfantrySpawnsStaySupportedAndBelowMapEscapeRespawnsNormally()
+    {
+        yield return Load();
+        foreach(var zone in ((IEnumerable)Get(rules,"infantryZones")).Cast<Component>())
+        {
+            var actor=(Component)Get(infantry.First(i=>((Behaviour)i).enabled&&Get(i,"objective")==Get(zone,"point")),"participant");
+            for(int i=0;i<20;i++)
+            {
+                object[] arguments={actor,Vector3.zero};
+                Assert.IsTrue((bool)zone.GetType().GetMethod("TryPosition").Invoke(zone,arguments));
+                Vector3 p=(Vector3)arguments[1];
+                Assert.IsTrue(Physics.Raycast(p+Vector3.up*.5f,Vector3.down,out _,1.1f,Physics.DefaultRaycastLayers,QueryTriggerInteraction.Ignore),"Spawn must have physical support");
+                actor.GetType().GetMethod("Respawn",new[]{typeof(Vector3),typeof(Quaternion)}).Invoke(actor,new object[]{p,Quaternion.identity});
+                Assert.Less(actor.GetComponent<Rigidbody>().linearVelocity.magnitude,.01f,"Respawn must reset velocity");
+                yield return null;
+            }
+        }
+        var victim=(Component)Get(infantry.First(i=>((Behaviour)i).enabled),"participant");
+        var health=Get(victim,"health");int deaths=(int)Get(victim,"Deaths");
+        var body=victim.GetComponent<Rigidbody>();body.position=new Vector3(0,-1000,0);body.linearVelocity=Vector3.zero;
+        yield return new WaitForSeconds(.4f);
+        Assert.IsTrue((bool)Get(health,"IsDead"),"Safety must catch a body below the entire trigger, without OnTriggerEnter");
+        Assert.AreEqual(deaths+1,Get(victim,"Deaths"));
+        Call(victim,"CancelRespawn");
+        Assert.IsTrue((bool)Call(Get(victim,"match"),"Spawn",victim));
+        Assert.IsFalse((bool)Get(health,"IsDead"));Assert.Greater(body.position.y,-1);
+        ((Behaviour)victim.GetComponent(T("SandboxInfantryInput"))).enabled=false;
+        body.position=new Vector3(-450,12,0);body.linearVelocity=Vector3.down*200;
+        yield return new WaitForSeconds(.3f);
+        Assert.Greater(body.position.y,-1,"Fast downward motion must hit the solid backing");
     }
     [UnityTest] public IEnumerator CannonRoundDamagesWithoutShovingDynamicTarget()
     {

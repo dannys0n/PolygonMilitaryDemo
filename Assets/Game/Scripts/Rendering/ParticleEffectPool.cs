@@ -32,8 +32,10 @@ public static class ParticleEffectPool
                     effect.Initialize(particles, newPool);
                     return effect;
                 },
-                actionOnRelease: effect => effect.gameObject.SetActive(false),
-                actionOnDestroy: effect => Object.Destroy(effect.gameObject),
+                actionOnRelease: effect => { if (effect) effect.gameObject.SetActive(false); },
+                // Scene teardown may already have destroyed the pooled GameObjects
+                // before Unity's pool manager clears its remaining references.
+                actionOnDestroy: effect => { if (effect) Object.Destroy(effect.gameObject); },
                 collectionCheck: true, defaultCapacity: 8, maxSize: MaximumIdlePerPrefab);
             pools.Add(prefab, pool = newPool);
         }

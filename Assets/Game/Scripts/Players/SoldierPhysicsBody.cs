@@ -8,6 +8,9 @@ public sealed class SoldierPhysicsBody : MonoBehaviour
 {
     public Rigidbody body;
     public CapsuleCollider capsule;
+    [Header("Safety")]
+    [Tooltip("High emergency limit in metres per second. Does not add drag or alter normal walking/jumping.")]
+    [Min(1)] public float maximumSpeed=150;
     [Range(0,80)] public float slopeLimit=50;
     [Range(0,.6f)] public float stepOffset=.3f;
     public bool isGrounded { get; private set; }
@@ -44,6 +47,7 @@ public sealed class SoldierPhysicsBody : MonoBehaviour
         if(!body)body=GetComponent<Rigidbody>();if(!capsule)capsule=GetComponent<CapsuleCollider>();
         body.position=transform.position;body.rotation=transform.rotation;
         body.isKinematic=false;body.detectCollisions=true;body.interpolation=RigidbodyInterpolation.Interpolate;
+        body.maxLinearVelocity=Mathf.Max(1,maximumSpeed);
         body.collisionDetectionMode=CollisionDetectionMode.ContinuousDynamic;capsule.enabled=true;
     }
     void OnDisable()

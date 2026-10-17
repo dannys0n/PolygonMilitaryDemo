@@ -12,10 +12,21 @@ public sealed class SandboxConquestRules : ConquestRules
         public ArenaParticipant[] crew;
         [System.NonSerialized] public Vehicle current;
         [System.NonSerialized] public int respawns;
+        [System.NonSerialized] public bool respawning;
+        [System.NonSerialized] public double respawnAt;
     }
     public SandboxInfantryZone[] infantryZones=System.Array.Empty<SandboxInfantryZone>();
     public Flight[] flights=System.Array.Empty<Flight>();
     public Transform airCombatCenter;
+    [Min(0)] public float vehicleRespawnDelay=3;
+    [Header("Player HQ deployment")]
+    public Vehicle[] deploymentVehicles=System.Array.Empty<Vehicle>();
+    public Vehicle SelectedVehicle { get; private set; }
+    public Vehicle PlayerVehicle { get; private set; }
+    public void SelectVehicle(Vehicle prefab)
+    {
+        if(System.Array.IndexOf(deploymentVehicles,prefab)>=0)SelectedVehicle=prefab;
+    }
     [Min(.1f)] public float scoreInterval=1;
     int redScore,blueScore;
     float scoreClock;
@@ -27,13 +38,16 @@ public sealed class SandboxConquestRules : ConquestRules
     public override string ScoreDescription=>"CONTROL SCORE / NO LIMIT";
     public override int ScoreLimit=>Mathf.Max(100,Mathf.Max(redScore,blueScore));
     public override int TeamScore(ArenaParticipant.Team team)=>team==ArenaParticipant.Team.Red?redScore:blueScore;
-    public override bool NeedsDeployment(ArenaParticipant actor)=>false;
+    public override bool NeedsDeployment(ArenaParticipant actor)=>actor && actor.GetComponent<SoldierLocalInput>();
+    public override bool CanDeploy(ArenaParticipant actor,ConquestCapturePoint point)=>!point || System.Array.Exists(infantryZones,z=>z && z.point==point);
     public override void Begin(ArenaMatch match)
     {
+        RetirePlayerVehicle();
+        SelectedVehicle=deploymentVehicles.Length>0?deploymentVehicles[0]:null;
         foreach(var flight in flights)
         {
             if(flight.current){foreach(var actor in flight.crew){var rider=actor.GetComponent<VehicleOccupant>();if(rider.IsMounted)rider.Leave(true);}Destroy(flight.current.gameObject);flight.current=null;}
-            flight.respawns=0;
+            flight.respawns=0;flight.respawning=false;flight.respawnAt=0;
         }
         base.Begin(match);redScore=blueScore=0;scoreClock=0;UpdateAirCenter();
     }
@@ -41,7 +55,8 @@ public sealed class SandboxConquestRules : ConquestRules
     {
         foreach(var f in flights)if(System.Array.IndexOf(f.crew,actor)>=0)return f;return null;
     }
-    public override float RespawnDelay(ArenaParticipant actor)=>CrewFlight(actor)!=null?0:base.RespawnDelay(actor);
+    public override float RespawnDelay(ArenaParticipant actor)=>CrewFlight(actor)!=null
+        || NeedsDeployment(actor)&&PlayerVehicle&&PlayerVehicle.IsDestroyed?vehicleRespawnDelay:base.RespawnDelay(actor);
     public override bool CanDamage(ArenaParticipant victim,ArenaParticipant attacker)
     {
         if(!UsesCustomSpawning)return true;
@@ -60,30 +75,80 @@ public sealed class SandboxConquestRules : ConquestRules
     public override bool TrySpawn(ArenaParticipant actor)
     {
         if(actor.IsSpectator||actor.RespawnRemaining>0)return false;
+        bool local=NeedsDeployment(actor);
+        if(local && !DeploymentApproved(actor))return false;
         var flight=CrewFlight(actor);
         if(flight!=null)
         {
             var rider=actor.GetComponent<VehicleOccupant>();
             if(flight.current&&!flight.current.IsDestroyed&&rider.IsMounted)return true;
-            if(!spawningFlight)SpawnFlight(flight);
+            if(flight.respawns>0 && !flight.respawning)QueueFlight(flight);
+            if(!spawningFlight && (!flight.respawning || Time.timeAsDouble>=flight.respawnAt))SpawnFlight(flight);
             return rider.IsMounted;
         }
+        if(local && !DeploymentPoint(actor))return SpawnPlayerVehicle(actor);
         var input=actor.GetComponent<SandboxInfantryInput>();if(!input)return false;
+        if(local)input.Configure(DeploymentPoint(actor));
         foreach(var zone in infantryZones)if(zone.point==input.objective && zone.TryPosition(actor,out var p))
         {
+            if(local)LeavePlayerVehicle(actor);
             Vector3 toward=zone.point.transform.position-p;toward.y=0;
             actor.Respawn(p,toward.sqrMagnitude>.01f?Quaternion.LookRotation(toward):Quaternion.identity);
             input.Configure(zone.point);
+            if(local)CancelDeployment(actor);
             return !actor.IsAwaitingSpawn;
         }
         return false;
+    }
+    void LeavePlayerVehicle(ArenaParticipant actor)
+    {
+        var rider=actor.GetComponent<VehicleOccupant>();if(rider && rider.IsMounted)rider.Leave(true);
+        RetirePlayerVehicle();
+    }
+    void RetirePlayerVehicle()
+    {
+        if(!PlayerVehicle)return;
+        foreach(var seat in PlayerVehicle.seats)if(seat.occupant)seat.occupant.Leave(true);
+        foreach(var collider in PlayerVehicle.GetComponentsInChildren<Collider>())collider.enabled=false;
+        Destroy(PlayerVehicle.gameObject);PlayerVehicle=null;
+    }
+    bool SpawnPlayerVehicle(ArenaParticipant actor)
+    {
+        var bases=actor.team==ArenaParticipant.Team.Red?redBaseSpawns:blueBaseSpawns;
+        if(!SelectedVehicle || bases.Length==0 || SelectedVehicle.seats.Length==0)return false;
+        var origin=bases[0];
+        // Pads are authored on open ground. Lift by the chassis bounds so tall vehicles
+        // and aircraft land on their wheels instead of intersecting the floor.
+        var bounds=SelectedVehicle.NavigationBounds;
+        Vector3 p=origin.position+Vector3.up*Mathf.Max(.5f,-bounds.min.y+.25f);
+        LeavePlayerVehicle(actor);
+        var v=PlayerVehicle=Instantiate(SelectedVehicle,p,origin.rotation);
+        actor.Respawn(p+Vector3.up*2,origin.rotation);
+        var rider=actor.GetComponent<VehicleOccupant>();rider.faction=(int)actor.team;
+        v.seats[0].occupant=rider;rider.Mount(v,0);
+        CancelDeployment(actor);Physics.SyncTransforms();return true;
     }
     public override void Tick(float dt)
     {
         UpdateAirCenter();
         foreach(var flight in flights)
-            if(flight.current && (flight.current.IsDestroyed || System.Array.Exists(flight.crew,a=>!a||a.health.IsDead)))SpawnFlight(flight);
+        {
+            if(flight.respawns>0 && !flight.respawning && (!flight.current || flight.current.IsDestroyed || System.Array.Exists(flight.crew,a=>!a||a.health.IsDead)))QueueFlight(flight);
+            if(flight.respawning && Time.timeAsDouble>=flight.respawnAt)SpawnFlight(flight);
+        }
         base.Tick(dt);
+    }
+    void QueueFlight(Flight flight)
+    {
+        if(flight.respawning)return;
+        flight.respawning=true;flight.respawnAt=Time.timeAsDouble+vehicleRespawnDelay;
+        if(flight.current)
+        {
+            var ai=flight.current.GetComponent<SandboxAirCombatAI>();if(ai)ai.enabled=false;
+            if(!flight.current.IsDestroyed)flight.current.ApplyDamage(flight.current.maxHealth,null);
+        }
+        foreach(var actor in flight.crew)
+            if(actor && !actor.health.IsDead)actor.health.ApplyDamage(actor.health.maxHealth,null);
     }
     void UpdateAirCenter()
     {
@@ -111,9 +176,11 @@ public sealed class SandboxConquestRules : ConquestRules
                 var actor=source?source.GetComponentInParent<ArenaParticipant>():null;
                 if(!actor)return true;
                 var attacker=CrewFlight(actor);
-                return attacker!=null&&attacker.battle==flight.battle&&attacker.team!=flight.team;
+                return actor.GetComponent<SoldierLocalInput>()?actor.team!=flight.team:
+                    attacker!=null&&attacker.battle==flight.battle&&attacker.team!=flight.team;
             };
             flight.respawns++;
+            flight.respawning=false;
             for(int i=0;i<flight.crew.Length;i++)
             {
                 var actor=flight.crew[i];var rider=actor.GetComponent<VehicleOccupant>();
@@ -140,5 +207,5 @@ public sealed class SandboxConquestRules : ConquestRules
     }
     public override bool TryGetObjective(ArenaAIInput ai,out Vector3 destination)=>base.TryGetObjective(ai,out destination);
     public override void OnSpawned(ArenaParticipant actor,bool wasDead){}
-    void OnDisable(){foreach(var f in flights)if(f.current)Destroy(f.current.gameObject);}
+    void OnDisable(){RetirePlayerVehicle();foreach(var f in flights)if(f.current)Destroy(f.current.gameObject);}
 }

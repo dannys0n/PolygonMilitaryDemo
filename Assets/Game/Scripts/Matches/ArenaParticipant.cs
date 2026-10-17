@@ -14,7 +14,8 @@ public class ArenaParticipant : MonoBehaviour
     Vector3 openingPosition;
     Quaternion openingRotation;
     bool waitingForClass;
-    public bool NeedsClassSelection => player && GetComponent<SoldierLocalInput>() && !SelectedClass;
+    public bool NeedsClassSelection => player && GetComponent<SoldierLocalInput>() && !SelectedClass
+        && !(match && match.rules is SandboxConquestRules);
     public void SelectClass(ArenaClassDefinition choice)
     {
         if (!choice.isCustom && System.Array.IndexOf(match.settings.classes, choice) < 0)

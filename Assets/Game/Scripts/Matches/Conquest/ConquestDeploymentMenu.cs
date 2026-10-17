@@ -23,11 +23,24 @@ public class ConquestDeploymentMenu : MonoBehaviour
     bool visible, requested, previousInputBlocked, previousSpectatorBlocked, restoreOnRestart;
     float nextAttempt;
     bool tacticalMap;
+    bool redeploying;
+    public bool IsSandbox => rules is SandboxConquestRules;
+    public void OpenRedeployment()
+    {
+        if(!IsSandbox || participant.IsSpectator)return;
+        pause.Resume();tacticalMap=false;redeploying=true;requested=false;
+        SelectBase();SetVisible(true);
+    }
+    public void RequestDeployment()
+    {
+        if(tacticalMap || participant.RespawnRemaining>0)return;
+        requested=true;nextAttempt=0;rules.ApproveDeployment(participant);
+    }
     public bool IsTacticalMap => tacticalMap;
     public bool CloseTacticalMap()
     {
-        if(!tacticalMap)return false;
-        tacticalMap=false;SetVisible(false);return true;
+        if(!tacticalMap && !redeploying)return false;
+        tacticalMap=false;redeploying=false;requested=false;rules.CancelDeployment(participant);SetVisible(false);return true;
     }
     public bool IsVisible => visible;
     public ConquestCapturePoint SelectedPoint => selected;
@@ -46,7 +59,7 @@ public class ConquestDeploymentMenu : MonoBehaviour
     {
         panel.SetActive(false);
         baseButton.onClick.AddListener(()=>Select(null));
-        for(int i=0;i<flagButtons.Length;i++)
+        for(int i=0;i<flagButtons.Length && i<rules.points.Length;i++)
         {
             var point=rules.points[i];
             flagButtons[i].onClick.AddListener(()=>Select(point));
@@ -59,9 +72,10 @@ public class ConquestDeploymentMenu : MonoBehaviour
                 SelectSquadmate(squadMembers[index]);
             });
         }
-        deployButton.onClick.AddListener(()=>{requested=true;nextAttempt=0;rules.ApproveDeployment(participant);});
+        deployButton.onClick.AddListener(RequestDeployment);
         classButton.onClick.AddListener(()=>
         {
+            if(IsSandbox){CloseTacticalMap();return;}
             requested=false;rules.CancelDeployment(participant);
             // Hand input ownership back before the class menu takes it.
             SetVisible(false);classMenu.Open();
@@ -70,7 +84,7 @@ public class ConquestDeploymentMenu : MonoBehaviour
     void Start() { participant.match.MatchStarted+=ResetSelection; }
     void ResetSelection()
     {
-        tacticalMap=false;requested=false;Select(null);
+        tacticalMap=false;redeploying=false;requested=false;Select(null);
         if(visible)SetVisible(false);
         if(restoreOnRestart)
         {
@@ -83,7 +97,7 @@ public class ConquestDeploymentMenu : MonoBehaviour
     void LateUpdate()
     {
         bool waiting=participant.health.IsDead || participant.IsAwaitingSpawn;
-        if(!waiting)requested=false;
+        if(!waiting && !redeploying)requested=false;
         bool unobstructed=participant.match.IsRunning && !pause.IsPaused && !classMenu.IsVisible;
         if(Input.GetKeyDown(KeyCode.M) && unobstructed && !waiting)
         {
@@ -93,17 +107,21 @@ public class ConquestDeploymentMenu : MonoBehaviour
         if(waiting || !unobstructed)tacticalMap=false;
         bool show=rules.NeedsDeployment(participant) && (!spectator || !spectator.IsWatchingDeath)
             && !participant.IsSpectator && participant.match.IsRunning && waiting && !participant.NeedsClassSelection && !pause.IsPaused && !classMenu.IsVisible;
-        show|=tacticalMap;
+        show|=tacticalMap || redeploying && unobstructed;
         SetVisible(show);
         if(!show)return;
         deployButton.gameObject.SetActive(!tacticalMap);
-        classButton.gameObject.SetActive(!tacticalMap);
+        classButton.gameObject.SetActive(!tacticalMap && (!IsSandbox || redeploying));
+        if(IsSandbox)classButton.GetComponentInChildren<TMP_Text>().text="RETURN TO BATTLE";
         if(!tacticalMap && (!rules.CanDeploy(participant,selected) || selectedMember && !rules.squads.CanDeploy(participant,selectedMember)))Select(null);
         Cursor.lockState=CursorLockMode.None;Cursor.visible=true;
-        className.text=participant.SelectedClass.displayName;
-        baseButton.GetComponentInChildren<TMP_Text>().text=(selected || selectedMember?"":"> ")+"TEAM BASE";
+        var sandbox=rules as SandboxConquestRules;
+        className.text=IsSandbox ? selected?"INFANTRY / RANDOM POLISHED EQUIPMENT":sandbox.SelectedVehicle?sandbox.SelectedVehicle.displayName.ToUpperInvariant():"SELECT AN HQ VEHICLE" : participant.SelectedClass?participant.SelectedClass.displayName:"";
+        baseButton.GetComponentInChildren<TMP_Text>().text=(selected || selectedMember?"":"> ")+"HQ";
         for(int i=0;i<flagButtons.Length;i++)
         {
+            flagButtons[i].gameObject.SetActive(i<rules.points.Length);
+            if(i>=rules.points.Length)continue;
             var p=rules.points[i];var b=flagButtons[i];
             b.interactable=tacticalMap || rules.CanDeploy(participant,p);
             var label=b.GetComponentInChildren<TMP_Text>();
@@ -122,12 +140,13 @@ public class ConquestDeploymentMenu : MonoBehaviour
         }
         if(rules.squads)className.text+="  /  "+ConquestSquads.SquadName(rules.squads.SquadOf(participant));
         bool ready=participant.RespawnRemaining<=0;
-        deployButton.interactable=ready && !requested;
-        status.text=tacticalMap?"TACTICAL MAP / M OR ESC TO CLOSE":!ready?$"DEPLOY IN {Mathf.CeilToInt(participant.RespawnRemaining)}" : requested?"WAITING FOR A CLEAR SPAWN" : "SELECT BASE, FRIENDLY FLAG, OR SAFE SQUADMATE";
+        deployButton.interactable=ready && !requested && (!sandbox || selected || sandbox.SelectedVehicle);
+        if(!tacticalMap && deployButton.interactable && Input.GetKeyDown(KeyCode.Space))RequestDeployment();
+        status.text=tacticalMap?"TACTICAL MAP / M OR ESC TO CLOSE":!ready?$"DEPLOY IN {Mathf.CeilToInt(participant.RespawnRemaining)}" : requested?"WAITING FOR A CLEAR SPAWN" : IsSandbox?"SELECT A CAPTURE POINT FOR INFANTRY / HQ FOR VEHICLES":"SELECT BASE, FRIENDLY FLAG, OR SAFE SQUADMATE";
         if(!tacticalMap && requested && ready && Time.time>=nextAttempt)
         {
             nextAttempt=Time.time+.5f;
-            if(participant.match.Spawn(participant)){requested=false;SetVisible(false);}
+            if(participant.match.Spawn(participant)){requested=false;redeploying=false;SetVisible(false);}
         }
     }
     void SetVisible(bool value)

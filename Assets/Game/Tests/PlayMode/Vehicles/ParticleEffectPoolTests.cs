@@ -83,6 +83,20 @@ public class ParticleEffectPoolTests
     }
 
     [UnityTest]
+    public IEnumerator ClearingPoolAfterSceneDestroysIdleEffectIsSafe()
+    {
+        var prefab=Template("Scene teardown effect",.02f);
+        var effect=Play(prefab);
+        yield return new WaitForSeconds(.3f);
+        Assert.IsFalse(effect.gameObject.activeSelf);
+        UnityEngine.Object.Destroy(effect.gameObject);yield return null;
+        var pools=(System.Collections.IDictionary)PoolType.GetField("pools",System.Reflection.BindingFlags.Static|System.Reflection.BindingFlags.NonPublic).GetValue(null);
+        var pool=pools[prefab];
+        Assert.DoesNotThrow(()=>pool.GetType().GetMethod("Clear").Invoke(pool,null));
+        UnityEngine.Object.Destroy(prefab.gameObject);
+    }
+
+    [UnityTest]
     public IEnumerator ActualGasTankExplosionReturnsWithoutLosingChildren()
     {
         var prefab = UnityEditor.AssetDatabase.LoadAssetAtPath<GameObject>(

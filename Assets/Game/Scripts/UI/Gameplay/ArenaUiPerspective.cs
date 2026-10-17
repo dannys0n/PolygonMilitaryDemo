@@ -49,8 +49,17 @@ public class ArenaUiPerspective : BaseMeshEffect
     void WarpText(TMP_TextInfo info)
     {
         if (!IsActive() || !plane) return;
-        for (int i = 0; i < info.meshInfo.Length; i++)
-            for (int v = 0; v < info.meshInfo[i].vertexCount; v++)
-                info.meshInfo[i].vertices[v] = Project(info.meshInfo[i].vertices[v]);
+        // TMP keeps spare material entries when changing text/fallback glyphs. Only
+        // the active meshes belong to this rebuild; spare entries can retain a
+        // previous vertex count after their vertex buffer has been resized.
+        int materials = Mathf.Min(info.materialCount, info.meshInfo.Length);
+        for (int i = 0; i < materials; i++)
+        {
+            var mesh = info.meshInfo[i];
+            var vertices = mesh.vertices;
+            if (vertices == null) continue;
+            int count = Mathf.Min(mesh.vertexCount, vertices.Length);
+            for (int v = 0; v < count; v++) vertices[v] = Project(vertices[v]);
+        }
     }
 }

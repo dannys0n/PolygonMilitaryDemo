@@ -43,6 +43,11 @@ public class ArenaClassMenu : MonoBehaviour
     void Start()
     {
         if (!participant) return;
+        if (participant.match.rules is SandboxConquestRules)
+        {
+            changeClass.GetComponentInChildren<TMP_Text>().text="DEPLOYMENT";
+            return;
+        }
         catalog=participant.match.settings.weaponCatalog;
         if(!catalog)throw new System.InvalidOperationException("Assign a weapon catalog in the match settings.");
         RefreshChoices();
@@ -71,6 +76,12 @@ public class ArenaClassMenu : MonoBehaviour
     }
     public void Open()
     {
+        if (participant && participant.match.rules is SandboxConquestRules)
+        {
+            pause.Resume();
+            FindAnyObjectByType<ConquestDeploymentMenu>().OpenRedeployment();
+            return;
+        }
         if (!participant || !participant.match.IsRunning || IsVisible) return;
         pause.Pause(); pause.panel.SetActive(false);
         if (spectator) { previousSpectatorBlocked = spectator.ControlsBlocked; spectator.ControlsBlocked = true; }
