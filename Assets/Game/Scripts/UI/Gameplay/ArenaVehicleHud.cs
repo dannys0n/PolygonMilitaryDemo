@@ -25,6 +25,14 @@ public class ArenaVehicleHud : MonoBehaviour
     public TMP_Text speedReadout, altitudeReadout, systemsReadout, gunnerReadout;
     public RectTransform flightPathMarker;
     float groundAltitude;
+    RaycastHit[] altitudeHits=new RaycastHit[16];
+    Vehicle altitudeVehicle;
+    float nextAltitudeSample, nextReadout;
+    bool refreshReadouts;
+    Vehicle readoutVehicle;
+    VehicleWeaponSystems.Weapon readoutWeapon;
+    int readoutSeat=-1, readoutSeatPage=-1, readoutAmmo=-1;
+    bool readoutReady;
     CanvasGroup mountedFade;
     float presentationBlend;
     GameObject roadPanel, armoredPanel, dronePanel;
@@ -41,6 +49,7 @@ public class ArenaVehicleHud : MonoBehaviour
     VehicleDiagramGraphic hoverCue, metricPitchScale;
     TMP_Text metricPitchReadout;
     TMP_Text roadSpeed, roadDetails;
+    float roadScaleMaximum=float.NaN;
     readonly Color accent=new Color(1,.55f,.12f);
     ArenaAISpectator spectator;
     VehicleOccupant controlledPlayer, observedPlayer;
@@ -115,7 +124,7 @@ public class ArenaVehicleHud : MonoBehaviour
         telemetry.gameObject.SetActive(!jetInstruments);systemsReadout.gameObject.SetActive(!jetInstruments);
         mountedPanel.SetActive(mounted);
         infantryEquipment.SetActive(!mounted);infantryCrosshair.SetActive(!mounted);
-        if(!mounted){flightPanel.SetActive(false);vehicleEquipment.SetActive(false);roadPanel.SetActive(false);armoredPanel.SetActive(false);dronePanel.SetActive(false);presentationBlend=0;displayedSystemsVehicle=null;seatHasWeapon=false;return;}
+        if(!mounted){readoutVehicle=null;flightPanel.SetActive(false);vehicleEquipment.SetActive(false);roadPanel.SetActive(false);armoredPanel.SetActive(false);dronePanel.SetActive(false);presentationBlend=0;displayedSystemsVehicle=null;seatHasWeapon=false;return;}
         presentationBlend=Mathf.MoveTowards(presentationBlend,1,Time.deltaTime/.18f);
         if(mountedFade)mountedFade.alpha=1-Mathf.Pow(1-presentationBlend,3);
         var v=player.MountedVehicle;bool air=v.IsAircraft;var role=v.seats[player.SeatIndex].role;
@@ -127,92 +136,100 @@ public class ArenaVehicleHud : MonoBehaviour
         bool armed = weaponSystems?selectedWeapon!=null:showAttack || (role == Vehicle.SeatRole.Gunner && v.turret) || (air && role == Vehicle.SeatRole.Driver && v.GetComponent<VehicleLauncher>());
         seatHasWeapon=armed;
         vehicleEquipment.SetActive(armed);
-        if(selectedWeapon!=null)
+        var launcherForReadout=selectedWeapon!=null?selectedWeapon.launcher:air?v.GetComponent<VehicleLauncher>():null;
+        int currentAmmo=launcherForReadout?launcherForReadout.Missiles:-1;
+        bool currentReady=selectedWeapon!=null?selectedWeapon.ReadyIn<=0:launcherForReadout?launcherForReadout.ReadyIn<=0:!v.turret||v.turret.ReadyIn<=0;
+        refreshReadouts=readoutVehicle!=v||readoutWeapon!=selectedWeapon||readoutSeat!=player.SeatIndex
+            ||readoutSeatPage!=player.SeatPage||readoutAmmo!=currentAmmo||readoutReady!=currentReady||Time.unscaledTime>=nextReadout;
+        if(refreshReadouts)
         {
-            equippedIcon.sprite=slotIcon.sprite=selectedWeapon.icon;
-            equippedIcon.color=slotIcon.color=Color.white;
-            if(selectedIconGlow)equippedIcon.material=slotIcon.material=selectedIconGlow;
-            equippedName.text=selectedWeapon.name;
-            var rack=selectedWeapon.launcher;
-            float delay=selectedWeapon.ReadyIn;
-            ammunition.text=selectedWeapon.system==VehicleWeaponSystems.FireSystem.Launcher?rack.Missiles+" / "+rack.capacity
-                :selectedWeapon.IsSingleShot?(delay>0?"0 / 1":"1 / 1"):"INF";
-            fireMode.text=delay>0?(selectedWeapon.IsSingleShot?"RELOAD ":"")+delay.ToString("F1")+" S":"READY";
-            if(selectedWeapon.requiresRadarSupport)fireMode.text=weaponSystems.SupportStatus(selectedWeapon);
-            slotKey.text=weaponSystems.IsAvailable(selectedWeapon)?"LMB":"";equipmentLabel.text="VEHICLE WEAPON";
+            readoutVehicle=v;readoutWeapon=selectedWeapon;readoutSeat=player.SeatIndex;readoutSeatPage=player.SeatPage;readoutAmmo=currentAmmo;readoutReady=currentReady;
+            nextReadout=Time.unscaledTime+.1f;
+            if(selectedWeapon!=null)
+            {
+                equippedIcon.sprite=slotIcon.sprite=selectedWeapon.icon;
+                equippedIcon.color=slotIcon.color=Color.white;
+                if(selectedIconGlow)equippedIcon.material=slotIcon.material=selectedIconGlow;
+                equippedName.text=selectedWeapon.name;
+                var rack=selectedWeapon.launcher;
+                float delay=selectedWeapon.ReadyIn;
+                ammunition.text=selectedWeapon.system==VehicleWeaponSystems.FireSystem.Launcher?rack.Missiles+" / "+rack.capacity
+                    :selectedWeapon.IsSingleShot?(delay>0?"0 / 1":"1 / 1"):"INF";
+                fireMode.text=delay>0?(selectedWeapon.IsSingleShot?"RELOAD ":"")+delay.ToString("F1")+" S":"READY";
+                if(selectedWeapon.requiresRadarSupport)fireMode.text=weaponSystems.SupportStatus(selectedWeapon);
+                slotKey.text=weaponSystems.IsAvailable(selectedWeapon)?"LMB":"";equipmentLabel.text="VEHICLE WEAPON";
+            }
+            else if(showAttack)
+            {
+                equippedIcon.sprite=slotIcon.sprite=attackSight.weaponIcon;equippedIcon.color=slotIcon.color=Color.white;
+                if(selectedIconGlow)equippedIcon.material=slotIcon.material=selectedIconGlow;
+                var attackLauncher=v.GetComponent<VehicleLauncher>();
+                equippedName.text=attackSight.weaponName;
+                bool single=v.turret && v.turret.IsSingleShot;
+                float delay=attackLauncher?attackLauncher.ReadyIn:v.turret?v.turret.ReadyIn:0;
+                ammunition.text=attackLauncher?attackLauncher.Missiles+" / "+attackLauncher.capacity:single?(delay>0?"0 / 1":"1 / 1"):attackSight.Operational?"INF":"--";
+                fireMode.text=!attackSight.Operational?"SAFE":delay>0?(single?"RELOAD ":"")+delay.ToString("F1")+" S":single?"READY":"AUTO";
+                slotKey.text=attackSight.Operational?"LMB":"";equipmentLabel.text="VEHICLE WEAPON";
+            }
+            else if (armed)
+            {
+                bool gunner = role == Vehicle.SeatRole.Gunner;
+                var launcher = air && !gunner ? v.GetComponent<VehicleLauncher>() : null;
+                equippedIcon.sprite = slotIcon.sprite = gunner ? v.turret.weaponIcon : launcher.weaponIcon;
+                equippedIcon.color = slotIcon.color = Color.white;
+                if (selectedIconGlow) equippedIcon.material = slotIcon.material = selectedIconGlow;
+                equippedName.text = gunner ? v.turret.weaponName : "ROCKETS";
+                ammunition.text = gunner ? v.turret.IsSingleShot?(v.turret.ReadyIn>0?"0 / 1":"1 / 1"):"INF" : launcher.Missiles + " / " + launcher.capacity;
+                fireMode.text = gunner ? v.turret.IsSingleShot?(v.turret.ReadyIn>0?"RELOAD "+v.turret.ReadyIn.ToString("F1")+" S":"READY"):"AUTO"
+                    : launcher.ReadyIn <= 0 ? "READY" : launcher.ReadyIn.ToString("F1") + " S";
+                slotKey.text = "LMB"; equipmentLabel.text = "VEHICLE WEAPON";
+            }
+            status.text=v.displayName.ToUpperInvariant()+" / "+v.seats[player.SeatIndex].name.ToUpperInvariant()+"    "+Mathf.RoundToInt(v.Body.linearVelocity.magnitude*3.6f)+" KPH";
+            if (player.HornFeedback>0) status.text+="  HORN";
+            var defenses=v.GetComponent<VehicleCountermeasures>();
+            if(defenses && defenses.Incoming>0)status.text+="  <color=#FF9637>MISSILE INCOMING</color>";
+            controls.text=role==Vehicle.SeatRole.Driver?(air?"CLIMB  [SPACE]\nDESCEND  [CTRL]\nMOVE  [WASD]\nAIM ALIGN  [RMB]":"BRAKE / REV  [S]\nACCELERATE  [W]\nBOOST  [SHIFT]\nHANDBRAKE  [Z]\nHORN  [H]"):role==Vehicle.SeatRole.Gunner?"FIRE  [LMB]\nZOOM  [RMB]\nAMMO  INF":v.seats[player.SeatIndex].showVehicleInstruments?(air?"FLIGHT MONITOR":"VEHICLE MONITOR"):"PASSENGER";
+            if (air && role == Vehicle.SeatRole.Driver) controls.text += "\n[T] ASSIST " + (v.FlightAssistEnabled ? "ON" : "OFF");
+            if (v.motor is JetMotor && role == Vehicle.SeatRole.Driver)
+                controls.text = "THROTTLE  [W/S]\nRUDDER  [A/D]\nPITCH / ROLL  [MOUSE]"
+                    + (((JetMotor)v.motor).afterburnerMultiplier>1 ? "\nAFTERBURNER  [SHIFT]" : "")
+                    + "\nBRAKE  [SPACE]\n[T] ASSIST " + (v.FlightAssistEnabled ? "ON" : "OFF");
+            if(weaponSystems && selectedWeapon!=null)
+            {
+                int count=0;foreach(var system in weaponSystems.weapons)if(system.role==role)count++;
+                if(count>1)controls.text+="\n[1-"+count+"] WEAPONS / WHEEL";
+            }
+            if(weaponSystems && System.Array.Exists(weaponSystems.weapons,w=>w.requiresRadarSupport))
+            {
+                bool linked=VehicleRadarSupport.HasFriendlyRadar(v);
+                if(radarStatusVehicle!=v){radarStatusVehicle=v;radarWasLinked=linked;radarStatusChangedAt=float.NegativeInfinity;}
+                else if(linked!=radarWasLinked){radarWasLinked=linked;radarStatusChangedAt=Time.time;}
+                string radio=Time.time-radarStatusChangedAt<2.5f?(linked?"RADAR LINK ACQUIRED":"RADAR LINK LOST"):(linked?"AA RADAR LINK: ONLINE":"AA RADAR LINK: OFFLINE");
+                controls.text+="\n<color="+(linked?"#FF8C1F":"#FFFFFF")+">"+radio+"</color>";
+            }
+            if(!air && role==Vehicle.SeatRole.Driver && showAttack && attackSight.Operational) controls.text += "\nFIRE  [LMB]\nZOOM  [RMB]";
+            UpdateEquipmentSystems(v,role,weaponSystems,selectedWeapon,defenses,armed);
+            int pageSeats=Mathf.Min(12,v.seats.Length-player.SeatPage*12);
+            rightControls.text=(v.hasRenderedInterior&&!v.seats[player.SeatIndex].externalView?"[V]  CAMERA":"EXTERNAL VIEW")+"\n[C]  FREELOOK"+(player.Freelook?" ON":"")+"\nHOLD [E]  EXIT\n"+(pageSeats==1?"[F1]  STATION":"[F1-F"+pageSeats+"]  SEATS");
+            var doorControl=v.GetComponent<VehicleDoors>();
+            if(doorControl)rightControls.text += "\nTAP [E]  " + (role==Vehicle.SeatRole.Driver || doorControl.operateTogether ? "DOORS" : "NEARBY DOOR");
+            if(v.seats.Length>12)rightControls.text+="\n[PGUP/PGDN] PAGE "+(player.SeatPage+1)+"/"+((v.seats.Length+11)/12);
+            if(IsObserving){controls.text="";rightControls.text="";}
+            EnsureSeatMarkers(v.seats.Length);
+            crew.fontSize = v.seats.Length > 8 ? 10 : v.seats.Length > 5 ? 12 : 14;
+            crew.text="";
+            for(int i=0;i<seatMarkers.Length;i++)
+            {
+                int seatIndex=player.SeatPage*12+i;
+                bool exists=seatIndex<v.seats.Length;seatMarkers[i].gameObject.SetActive(exists);if(!exists)continue;
+                var seat=v.seats[seatIndex];bool occupied=seat.occupant;
+                seatMarkers[i].rectTransform.anchoredPosition=v.seatDiagram?seat.diagramPosition:air?new Vector2(0,i==0?26:54):i==1?new Vector2(0,-7):new Vector2(i==0||i==3?-15:15,i<3?20:-30);
+                seatMarkers[i].color=seatIndex==player.SeatIndex?accent:occupied?Color.white:new Color(1,1,1,.18f);
+                seatNumbers[i].color=seatIndex==player.SeatIndex||occupied?Color.black:Color.white;
+                seatNumbers[i].text=(seatIndex+1).ToString();
+            }
+            float health=v.Health/v.maxHealth;for(int i=0;i<hullSegments.Length;i++)hullSegments[i].color=i<hullSegments.Length*health?Color.white:new Color(1,1,1,.15f);
         }
-        else if(showAttack)
-        {
-            equippedIcon.sprite=slotIcon.sprite=attackSight.weaponIcon;equippedIcon.color=slotIcon.color=Color.white;
-            if(selectedIconGlow)equippedIcon.material=slotIcon.material=selectedIconGlow;
-            var attackLauncher=v.GetComponent<VehicleLauncher>();
-            equippedName.text=attackSight.weaponName;
-            bool single=v.turret && v.turret.IsSingleShot;
-            float delay=attackLauncher?attackLauncher.ReadyIn:v.turret?v.turret.ReadyIn:0;
-            ammunition.text=attackLauncher?attackLauncher.Missiles+" / "+attackLauncher.capacity:single?(delay>0?"0 / 1":"1 / 1"):attackSight.Operational?"INF":"--";
-            fireMode.text=!attackSight.Operational?"SAFE":delay>0?(single?"RELOAD ":"")+delay.ToString("F1")+" S":single?"READY":"AUTO";
-            slotKey.text=attackSight.Operational?"LMB":"";equipmentLabel.text="VEHICLE WEAPON";
-        }
-        else if (armed)
-        {
-            bool gunner = role == Vehicle.SeatRole.Gunner;
-            var launcher = air && !gunner ? v.GetComponent<VehicleLauncher>() : null;
-            equippedIcon.sprite = slotIcon.sprite = gunner ? v.turret.weaponIcon : launcher.weaponIcon;
-            equippedIcon.color = slotIcon.color = Color.white;
-            if (selectedIconGlow) equippedIcon.material = slotIcon.material = selectedIconGlow;
-            equippedName.text = gunner ? v.turret.weaponName : "ROCKETS";
-            ammunition.text = gunner ? v.turret.IsSingleShot?(v.turret.ReadyIn>0?"0 / 1":"1 / 1"):"INF" : launcher.Missiles + " / " + launcher.capacity;
-            fireMode.text = gunner ? v.turret.IsSingleShot?(v.turret.ReadyIn>0?"RELOAD "+v.turret.ReadyIn.ToString("F1")+" S":"READY"):"AUTO"
-                : launcher.ReadyIn <= 0 ? "READY" : launcher.ReadyIn.ToString("F1") + " S";
-            slotKey.text = "LMB"; equipmentLabel.text = "VEHICLE WEAPON";
-        }
-        status.text=v.displayName.ToUpperInvariant()+" / "+v.seats[player.SeatIndex].name.ToUpperInvariant()+"    "+Mathf.RoundToInt(v.Body.linearVelocity.magnitude*3.6f)+" KPH";
-        if (player.HornFeedback>0) status.text+="  HORN";
-        var defenses=v.GetComponent<VehicleCountermeasures>();
-        if(defenses && defenses.Incoming>0)status.text+="  <color=#FF9637>MISSILE INCOMING</color>";
-        controls.text=role==Vehicle.SeatRole.Driver?(air?"CLIMB  [SPACE]\nDESCEND  [CTRL]\nMOVE  [WASD]\nAIM ALIGN  [RMB]":"BRAKE / REV  [S]\nACCELERATE  [W]\nBOOST  [SHIFT]\nHANDBRAKE  [Z]\nHORN  [H]"):role==Vehicle.SeatRole.Gunner?"FIRE  [LMB]\nZOOM  [RMB]\nAMMO  INF":v.seats[player.SeatIndex].showVehicleInstruments?(air?"FLIGHT MONITOR":"VEHICLE MONITOR"):"PASSENGER";
-        if (air && role == Vehicle.SeatRole.Driver) controls.text += "\n[T] ASSIST " + (v.FlightAssistEnabled ? "ON" : "OFF");
-        if (v.motor is JetMotor && role == Vehicle.SeatRole.Driver)
-            controls.text = "THROTTLE  [W/S]\nRUDDER  [A/D]\nPITCH / ROLL  [MOUSE]"
-                + (((JetMotor)v.motor).afterburnerMultiplier>1 ? "\nAFTERBURNER  [SHIFT]" : "")
-                + "\nBRAKE  [SPACE]\n[T] ASSIST " + (v.FlightAssistEnabled ? "ON" : "OFF");
-        if(weaponSystems && selectedWeapon!=null)
-        {
-            int count=System.Array.FindAll(weaponSystems.weapons,w=>w.role==role).Length;
-            if(count>1)controls.text+="\n[1-"+count+"] WEAPONS / WHEEL";
-        }
-        if(weaponSystems && System.Array.Exists(weaponSystems.weapons,w=>w.requiresRadarSupport))
-        {
-            bool linked=VehicleRadarSupport.HasFriendlyRadar(v);
-            if(radarStatusVehicle!=v){radarStatusVehicle=v;radarWasLinked=linked;radarStatusChangedAt=float.NegativeInfinity;}
-            else if(linked!=radarWasLinked){radarWasLinked=linked;radarStatusChangedAt=Time.time;}
-            string radio=Time.time-radarStatusChangedAt<2.5f?(linked?"RADAR LINK ACQUIRED":"RADAR LINK LOST"):(linked?"AA RADAR LINK: ONLINE":"AA RADAR LINK: OFFLINE");
-            controls.text+="\n<color="+(linked?"#FF8C1F":"#FFFFFF")+">"+radio+"</color>";
-        }
-        if(!air && role==Vehicle.SeatRole.Driver && showAttack && attackSight.Operational) controls.text += "\nFIRE  [LMB]\nZOOM  [RMB]";
-        UpdateEquipmentSystems(v,role,weaponSystems,selectedWeapon,defenses,armed);
-        int pageSeats=Mathf.Min(12,v.seats.Length-player.SeatPage*12);
-        rightControls.text=(v.hasRenderedInterior&&!v.seats[player.SeatIndex].externalView?"[V]  CAMERA":"EXTERNAL VIEW")+"\n[C]  FREELOOK"+(player.Freelook?" ON":"")+"\nHOLD [E]  EXIT\n"+(pageSeats==1?"[F1]  STATION":"[F1-F"+pageSeats+"]  SEATS");
-        var doorControl=v.GetComponent<VehicleDoors>();
-        if(doorControl)rightControls.text += "\nTAP [E]  " + (role==Vehicle.SeatRole.Driver || doorControl.operateTogether ? "DOORS" : "NEARBY DOOR");
-        if(v.seats.Length>12)rightControls.text+="\n[PGUP/PGDN] PAGE "+(player.SeatPage+1)+"/"+((v.seats.Length+11)/12);
-        if(IsObserving){controls.text="";rightControls.text="";}
-        EnsureSeatMarkers(v.seats.Length);
-        crew.fontSize = v.seats.Length > 8 ? 10 : v.seats.Length > 5 ? 12 : 14;
-        crew.text="";
-        for(int i=0;i<seatMarkers.Length;i++)
-        {
-            int seatIndex=player.SeatPage*12+i;
-            bool exists=seatIndex<v.seats.Length;seatMarkers[i].gameObject.SetActive(exists);if(!exists)continue;
-            var seat=v.seats[seatIndex];bool occupied=seat.occupant;
-            seatMarkers[i].rectTransform.anchoredPosition=v.seatDiagram?seat.diagramPosition:air?new Vector2(0,i==0?26:54):i==1?new Vector2(0,-7):new Vector2(i==0||i==3?-15:15,i<3?20:-30);
-            seatMarkers[i].color=seatIndex==player.SeatIndex?accent:occupied?Color.white:new Color(1,1,1,.18f);
-            seatNumbers[i].color=seatIndex==player.SeatIndex||occupied?Color.black:Color.white;
-            seatNumbers[i].text=(seatIndex+1).ToString();
-            string name=occupied?(seat.occupant==player?(IsObserving?"WATCHING":"YOU"):seat.occupant.name):"EMPTY";
-            crew.text+="<color="+(seatIndex==player.SeatIndex?"#FF8C1F":"#FFFFFF")+">"+(seatIndex+1)+"  "+name+"</color>  <size="+(v.seats.Length>8?10:12)+">"+seat.name.ToUpperInvariant()+"</size>\n";
-        }
-        float health=v.Health/v.maxHealth;for(int i=0;i<hullSegments.Length;i++)hullSegments[i].color=i<hullSegments.Length*health?Color.white:new Color(1,1,1,.15f);
         if(!air)
         {
             flightPanel.SetActive(false);dronePanel.SetActive(false);
@@ -230,9 +247,23 @@ public class ArenaVehicleHud : MonoBehaviour
         flightPanel.SetActive(pilot && !drone && !dials);
         dronePanel.SetActive(pilot && drone);
         if(!pilot)return;
-        float altitude=0, nearest=float.PositiveInfinity;
-        foreach(var hit in Physics.RaycastAll(v.transform.position,Vector3.down,1000,Physics.DefaultRaycastLayers,QueryTriggerInteraction.Ignore))
-            if(!hit.transform.IsChildOf(v.transform)&&!hit.collider.GetComponentInParent<SoldierLife>()&&hit.distance<nearest){nearest=hit.distance;altitude=hit.distance;}
+        if(altitudeVehicle!=v||Time.unscaledTime>=nextAltitudeSample)
+        {
+            altitudeVehicle=v;nextAltitudeSample=Time.unscaledTime+.1f;
+            int count;
+            // A full NonAlloc buffer is not guaranteed to contain the closest hit.
+            // Grow and retry instead of silently dropping the ground in dense scenes.
+            while((count=Physics.RaycastNonAlloc(v.transform.position,Vector3.down,altitudeHits,1000,Physics.DefaultRaycastLayers,QueryTriggerInteraction.Ignore))==altitudeHits.Length)
+                System.Array.Resize(ref altitudeHits,altitudeHits.Length*2);
+            float nearest=float.PositiveInfinity;groundAltitude=0;
+            for(int i=0;i<count;i++)
+            {
+                var hit=altitudeHits[i];
+                if(!hit.transform.IsChildOf(v.transform)&&!hit.collider.GetComponentInParent<SoldierLife>()&&hit.distance<nearest)
+                {nearest=hit.distance;groundAltitude=hit.distance;}
+            }
+        }
+        float altitude=groundAltitude;
         if(dials)referenceInstruments.Present(v,altitude,true,CockpitPresentation);
         if(dronePanel.activeSelf) UpdateDroneInstruments(v,altitude);
         bool metric=v.instrumentReference==Vehicle.InstrumentReference.Su27;
@@ -241,6 +272,7 @@ public class ArenaVehicleHud : MonoBehaviour
         float instrumentSpeed=jet?jet.Airspeed*Mathf.Sqrt(Mathf.Max(0,jet.airDensity)/1.225f):horizontalSpeed;
         float instrumentAltitude=jet?v.Body.position.y-fixedWingReadout.altitudeDatum:altitude;
         float knots=instrumentSpeed*1.943844f;
+        if(!refreshReadouts)return;
         telemetry.text="V/S "+(v.Body.linearVelocity.y*196.8504f).ToString("+0;-0;0")+" FPM";
         speedReadout.text=(jet?"IAS":"GS")+" <size=26>"+Mathf.RoundToInt(metric?instrumentSpeed*3.6f:knots).ToString("000")+"</size> "+(metric?"KM/H":"KT");
         altitudeReadout.text=(jet?"ALT":"AGL")+" <size=26>"+Mathf.RoundToInt(metric?instrumentAltitude:instrumentAltitude*3.28084f).ToString("0000")+"</size> "+(metric?"M":"FT");
@@ -471,7 +503,12 @@ public class ArenaVehicleHud : MonoBehaviour
         bool referenced=vehicle.instrumentReference!=Vehicle.InstrumentReference.Generic;roadGauge.gameObject.SetActive(!referenced);roadDial.gameObject.SetActive(referenced);
         roadGauge.SetSpeed(reading,Mathf.Ceil(motor.maxSpeed*(imperial?2.236936f:3.6f)/20f)*20f);
         roadDial.maximum=VehicleGroundReadout.GaugeMaximum(vehicle,imperial);roadDial.SetValue(reading);
-        for(int i=0;i<roadTicks.Length;i++)roadTicks[i].text=(roadDial.maximum*i/4).ToString("0");
+        if(!refreshReadouts)return;
+        if(roadScaleMaximum!=roadDial.maximum)
+        {
+            roadScaleMaximum=roadDial.maximum;
+            for(int i=0;i<roadTicks.Length;i++)roadTicks[i].text=(roadDial.maximum*i/4).ToString("0");
+        }
         roadSpeed.text=Mathf.RoundToInt(reading)+" <size=12>"+(imperial?"MPH":"KM/H")+"</size>";
         var input=vehicle.DriverInput;
         string drive=DriveState(vehicle);
@@ -510,18 +547,20 @@ public class ArenaVehicleHud : MonoBehaviour
     }
     void UpdateArmoredInstruments(Vehicle v)
     {
+        Vector3 up=v.transform.InverseTransformDirection(Vector3.up);
+        float roll=Mathf.Atan2(up.x,up.y)*Mathf.Rad2Deg;
+        armoredLevel.SetReading(roll);
+        if(!refreshReadouts)return;
         float heading=Mathf.Repeat(v.transform.eulerAngles.y,360);
         armoredHeading.text=VehicleGroundReadout.FamilyCaption(v)+" / HDG "+HeadingNumber(heading).ToString("000")+"\u00B0";
         bool imperial=ImperialGround(v);
         armoredSpeed.text=Mathf.RoundToInt(VehicleGroundReadout.SpeedKmh(v)*(imperial ? .621371f : 1f))+"<size=14> "+(imperial?"MPH":"KM/H")+"</size>";
         armoredState.text="<color=#FF9637>"+DriveState(v)+"</color>";
-        Vector3 up=v.transform.InverseTransformDirection(Vector3.up);
-        float roll=Mathf.Atan2(up.x,up.y)*Mathf.Rad2Deg;
-        armoredLevel.SetReading(roll);
         armoredAttitude.text=VehicleGroundReadout.Station(v);
     }
     void UpdateDroneInstruments(Vehicle v,float altitude)
     {
+        if(!refreshReadouts)return;
         float heading=Mathf.Repeat(v.transform.eulerAngles.y,360);
         droneHeading.text="UAS  /  HDG "+HeadingNumber(heading).ToString("000")+"\u00B0";
         droneTelemetry.text="AGL     "+altitude.ToString("0.0")+" M\nGS       "+Vector3.ProjectOnPlane(v.Body.linearVelocity,Vector3.up).magnitude.ToString("0.0")+" M/S\nV/S      "+v.Body.linearVelocity.y.ToString("+0.0;-0.0;0.0")+" M/S\n<color=#FF9637>"+(v.FlightAssistEnabled?"POSITION ASSIST":"MANUAL CONTROL")+"</color>";

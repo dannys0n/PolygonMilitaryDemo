@@ -30,6 +30,39 @@ public class WeaponAttachmentTests
     }
     [UnityTearDown] public IEnumerator Cleanup(){for(int i=roots.Count-1;i>=0;i--)if(roots[i])Object.Destroy(roots[i]);roots.Clear();yield return null;}
     static void AssertFinite(Transform t){Assert.IsFalse(float.IsNaN(t.position.x)||float.IsInfinity(t.position.x));Assert.Greater(t.lossyScale.sqrMagnitude,0);}
+    [UnityTest] public IEnumerator HiddenFirstPersonAnimationResumesAtCurrentWeaponState()
+    {
+        var camera=(Camera)Get(view,"playerCamera");
+        var arms=(Animator)Get(view,"armsAnimator");
+        var presentation=view.GetComponent(T("SoldierWeaponPresentation"));
+        var parts=(Animator)Get(presentation,"partsAnimator");
+        var body=(Animator)Get(presentation,"characterAnimator");
+        Call(view,"SetFirstPerson",true);
+        for(int i=0;i<3;i++)
+        {
+            camera.enabled=false;yield return null;
+            Assert.IsFalse(arms.enabled,"Unobserved FPS arms must not evaluate.");
+            parts.ResetTrigger("Fire");parts.ResetTrigger("Reload");
+            parts.Play("Reload",0,.35f);parts.Update(0);
+            arms.SetTrigger("Fire"); // A hidden fire request must not replace the live reload.
+            int sourceSwitch=body.GetLayerIndex("WeaponSwitch");
+            body.Play("WeaponSwitch.Unequip",sourceSwitch,.25f);body.Update(0);
+            camera.enabled=true;
+            Call(view,"RefreshCameraAnimation");
+            Assert.IsTrue(arms.enabled);
+            arms.Update(0);
+            var reload=arms.GetCurrentAnimatorStateInfo(0);
+            Assert.IsTrue(reload.IsName("Base Layer.Reload"),"Resume must match current TPS weapon state.");
+            Assert.That(reload.normalizedTime,Is.EqualTo(.35f).Within(.025f));
+            var weaponSwitch=arms.GetCurrentAnimatorStateInfo(arms.GetLayerIndex("WeaponSwitch"));
+            Assert.IsTrue(weaponSwitch.IsName("WeaponSwitch.Unequip"));
+            Assert.That(weaponSwitch.normalizedTime,Is.EqualTo(.25f).Within(.025f));
+            Call(view,"SetFirstPerson",false);yield return null;
+            Assert.IsTrue(arms.enabled,"Rendered TPS camera retains its camera animation.");
+            Call(view,"SetFirstPerson",true);yield return null;
+            AssertFinite(camera.transform);
+        }
+    }
     [UnityTest] public IEnumerator OpticMountStandardsFilterRuntimeAndClassMenuConsistently()
     {
         var catalog=AssetDatabase.LoadAssetAtPath<ScriptableObject>("Assets/Game/Definitions/Weapons/Catalogs/WeaponCatalog.asset");

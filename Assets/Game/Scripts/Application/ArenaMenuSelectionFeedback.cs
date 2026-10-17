@@ -20,6 +20,11 @@ public class ArenaMenuSelectionFeedback : MonoBehaviour, IPointerEnterHandler, I
     public float textGap = 24f;
     bool hovered, focused, pressed, wasHighlighted;
     float highlightAmount, textAmount, revealTime, submitUntil;
+    // List owners can supply selection without fighting the hover presentation's materials.
+    public bool Chosen { get; set; }
+    Material appliedMaterial;
+    Color appliedColor;
+    bool textApplied;
 
     void OnEnable()
     {
@@ -27,6 +32,7 @@ public class ArenaMenuSelectionFeedback : MonoBehaviour, IPointerEnterHandler, I
         submitUntil = 0f;
         focused = false;
         highlightAmount = textAmount = revealTime = 0f;
+        textApplied = false;
         if (highlightLine)
         {
             labels[0].ForceMeshUpdate(true);
@@ -36,7 +42,7 @@ public class ArenaMenuSelectionFeedback : MonoBehaviour, IPointerEnterHandler, I
 
     void Update()
     {
-        bool chosen = selectionIndicator && selectionIndicator.activeSelf;
+        bool chosen = Chosen || selectionIndicator && selectionIndicator.activeSelf;
         if (control is UnityEngine.UI.Toggle toggle) chosen |= toggle.isOn;
         chosen &= control.IsInteractable();
         // A mouse click selects the control in EventSystem without turning hover into persistent keyboard focus.
@@ -47,16 +53,21 @@ public class ArenaMenuSelectionFeedback : MonoBehaviour, IPointerEnterHandler, I
         float step = Time.unscaledDeltaTime / Mathf.Max(.01f, responseTime);
         bool brightText = chosen || highlighted || pressHighlight;
         textAmount = pressHighlight ? 1f : Mathf.MoveTowards(textAmount, brightText ? 1f : 0f, step);
-        foreach (var label in labels)
+        var material = chosen || pressHighlight ? selectedText : normalText;
+        var brightColor = chosen || pressHighlight ? Color.white : new Color(.9f, .9f, .9f);
+        var textColor = Color.Lerp(new Color(.7f, .7f, .7f), brightColor, Mathf.SmoothStep(0, 1, textAmount));
+        if (!textApplied || material != appliedMaterial || textColor != appliedColor)
         {
-            var material = chosen || pressHighlight ? selectedText : normalText;
-            if (label.fontSharedMaterial != material)
+            foreach (var label in labels)
             {
-                label.fontSharedMaterial = material;
-                label.UpdateMeshPadding();
+                if (label.fontSharedMaterial != material)
+                {
+                    label.fontSharedMaterial = material;
+                    label.UpdateMeshPadding();
+                }
+                label.color = textColor;
             }
-            var brightColor = chosen || pressHighlight ? Color.white : new Color(.9f, .9f, .9f);
-            label.color = Color.Lerp(new Color(.7f, .7f, .7f), brightColor, Mathf.SmoothStep(0, 1, textAmount));
+            textApplied = true; appliedMaterial = material; appliedColor = textColor;
         }
         if (!highlightLine) return;
         if (highlighted && !wasHighlighted) revealTime = 0f;
@@ -65,8 +76,9 @@ public class ArenaMenuSelectionFeedback : MonoBehaviour, IPointerEnterHandler, I
         revealTime += Time.unscaledDeltaTime;
         float progress = Mathf.Clamp01(revealTime / Mathf.Max(.01f, sweepDuration));
         float reveal = 1f - Mathf.Pow(1f - progress, 3f);
-        LayoutHighlightLine(reveal);
-        highlightLine.color = new Color(1, 1, 1, Mathf.SmoothStep(0, 1, highlightAmount));
+        if (highlightAmount > 0f) LayoutHighlightLine(reveal);
+        var lineColor = new Color(1, 1, 1, Mathf.SmoothStep(0, 1, highlightAmount));
+        if (highlightLine.color != lineColor) highlightLine.color = lineColor;
     }
 
     public void LayoutHighlightLine(float reveal)

@@ -12,6 +12,8 @@ public class VehicleReferenceInstruments : MonoBehaviour
     VehicleDialGraphic speed, attitude, altitude, rotor, verticalSpeed;
     TMP_Text speedText, altitudeText, rotorText, verticalText, heading, clearance;
     RectTransform attitudeRect, verticalRect;
+    Vehicle displayedVehicle;
+    float nextReadout, scaleMaximum=float.NaN;
     public static bool UsesDials(Vehicle vehicle)=>vehicle.instrumentReference==Vehicle.InstrumentReference.BlackHawk||vehicle.instrumentReference==Vehicle.InstrumentReference.LittleBird;
     public void Build(TMP_Text template)
     {
@@ -50,7 +52,9 @@ public class VehicleReferenceInstruments : MonoBehaviour
     }
     public void Present(Vehicle vehicle,float groundHeight,bool show,bool cockpit)
     {
-        panel.SetActive(show);if(!show)return;
+        panel.SetActive(show);if(!show){displayedVehicle=null;return;}
+        bool refresh=displayedVehicle!=vehicle||Time.unscaledTime>=nextReadout;
+        if(refresh){displayedVehicle=vehicle;nextReadout=Time.unscaledTime+.1f;}
         bool littleBird=vehicle.instrumentReference==Vehicle.InstrumentReference.LittleBird;
         attitudeRect.gameObject.SetActive(!littleBird);verticalRect.gameObject.SetActive(!littleBird);
         speed.rectTransform.anchoredPosition=new Vector2(littleBird?-145:-260,0);rotor.rectTransform.anchoredPosition=new Vector2(littleBird?145:260,0);
@@ -60,9 +64,14 @@ public class VehicleReferenceInstruments : MonoBehaviour
         float feet=(vehicle.Body.position.y-altitudeDatum)*3.28084f,climb=vehicle.Body.linearVelocity.y*196.8504f;
         var motor=(HelicopterMotor)vehicle.motor;float nr=motor.RotorPower*100;
         speed.maximum=littleBird?160:250;
-        for(int i=0;i<speedScale.Length;i++)speedScale[i].text=(speed.maximum*i/4).ToString("0");
+        if(scaleMaximum!=speed.maximum)
+        {
+            scaleMaximum=speed.maximum;
+            for(int i=0;i<speedScale.Length;i++)speedScale[i].text=(speed.maximum*i/4).ToString("0");
+        }
         speed.SetValue(knots);altitude.SetValue(Mathf.Repeat(feet,1000));rotor.SetValue(nr);verticalSpeed.SetValue(climb);
         Vector3 up=vehicle.transform.InverseTransformDirection(Vector3.up);float roll=Mathf.Atan2(up.x,up.y)*Mathf.Rad2Deg;float pitch=Mathf.Asin(Mathf.Clamp(vehicle.transform.forward.y,-1,1))*Mathf.Rad2Deg;attitude.SetAttitude(pitch,roll);
+        if(!refresh)return;
         speedText.text="GS\n"+knots.ToString("0")+" KT";altitudeText.text="ALT\n"+feet.ToString("0")+" FT";rotorText.text="NR\n"+nr.ToString("0")+"%";verticalText.text="V/S\n"+climb.ToString("+0;-0;0")+" FPM";
         clearance.text="AGL "+(groundHeight*3.28084f).ToString("0")+" FT    /    ROTOR "+(motor.rotorRpm*motor.RotorPower).ToString("0")+" RPM";
         int hdg=Mathf.RoundToInt(Mathf.Repeat(vehicle.transform.eulerAngles.y,360))%360;

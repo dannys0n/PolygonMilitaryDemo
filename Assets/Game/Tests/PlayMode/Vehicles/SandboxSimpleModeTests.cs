@@ -343,6 +343,7 @@ public class SandboxSimpleModeTests
     {
         yield return Load();yield return null;
         var spectator=All("ArenaAISpectator").Single();var hud=All("ArenaVehicleHud").Single();
+        Call(spectator,"SetInterestMode",false); // This test explicitly controls the followed target.
         Call(spectator,"SetManualSpectating",true);yield return null;
         Assert.IsNull(Get(hud,"player"));
         var flight=((IEnumerable)Get(rules,"flights")).Cast<object>().First(f=>Get(f,"battle").ToString()=="Jets");

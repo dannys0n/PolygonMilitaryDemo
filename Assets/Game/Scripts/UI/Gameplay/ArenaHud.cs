@@ -290,10 +290,14 @@ public class ArenaHud : MonoBehaviour
         var material=selected?selectedText:normalText;
         if(label.fontSharedMaterial!=material){label.fontSharedMaterial=material;label.UpdateMeshPadding();}
     }
+    readonly List<ArenaParticipant> radarAllies=new List<ArenaParticipant>();
     void UpdateRadar()
     {
-        var allies = match.participants.Where(p => p != player && p.team == player.team && !p.health.IsDead && !p.IsAwaitingSpawn).ToArray();
-        while (radarDots.Count < allies.Length)
+        radarAllies.Clear();
+        foreach(var actor in match.participants)
+            if(actor!=player&&actor.team==player.team&&!actor.health.IsDead&&!actor.IsAwaitingSpawn)radarAllies.Add(actor);
+        var allies=radarAllies;
+        while (radarDots.Count < allies.Count)
         {
             var dot = Instantiate(radarDotTemplate, radarRoot, false); dot.gameObject.SetActive(true); radarDots.Add(dot);
         }
@@ -301,7 +305,7 @@ public class ArenaHud : MonoBehaviour
         var orientation = Quaternion.Inverse(Quaternion.Euler(0, player.transform.eulerAngles.y, 0));
         for (int i = 0; i < radarDots.Count; i++)
         {
-            bool visible = i < allies.Length;
+            bool visible = i < allies.Count;
             if (visible)
             {
                 var delta = orientation * (allies[i].transform.position-player.transform.position);

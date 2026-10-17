@@ -38,6 +38,11 @@ public class SandboxInfantryInput : SoldierInputSource
     Vector2 noise;
     Vector3 goalOffset;
     bool visible;
+    ArenaParticipant firingSightTarget;
+    SoldierWeaponView firingSightWeapon;
+    Vector3 firingSightOrigin, firingSightMuzzle, firingSightPoint;
+    float nextFiringSight;
+    bool firingSightClear;
 
     void Awake()
     {
@@ -77,6 +82,9 @@ public class SandboxInfantryInput : SoldierInputSource
         seenAt = float.NegativeInfinity;
         nextPath = pauseUntil = nextSemi = nextNoise = 0;
         nextScan = Time.time + Random.value * perceptionInterval;
+        firingSightTarget = null;
+        firingSightWeapon = null;
+        nextFiringSight = 0;
         if (agent && agent.enabled && agent.isOnNavMesh)
         {
             agent.ResetPath(); agent.isStopped = false;
@@ -146,7 +154,7 @@ public class SandboxInfantryInput : SoldierInputSource
         Vector3 local = Quaternion.Inverse(Quaternion.Euler(0, life.look.Yaw + look.x, 0)) * velocity / Mathf.Max(.01f, agent.speed);
         bool fire = visible && !busy && !reload && Time.time >= readyAt && Time.time >= pauseUntil
             && Mathf.Abs(Mathf.DeltaAngle(Heading(camera.forward), yaw)) < 4f
-            && Mathf.Abs(Elevation(camera.forward) - pitch) < 4f && ClearShot(target);
+            && Mathf.Abs(Elevation(camera.forward) - pitch) < 4f && FiringLineClear(target);
         bool pressed = fire && Time.time >= nextSemi;
         if (pressed) nextSemi = Time.time + Mathf.Max(semiAutoInterval, 60f / Mathf.Max(1, soldier.actions.roundsPerMinute));
         return new SoldierInputFrame {
@@ -218,6 +226,27 @@ public class SandboxInfantryInput : SoldierInputSource
             if (hit.distance <= closest) { closest = hit.distance; blocker = hit.collider; }
         }
         return !blocker || blocker.GetComponentInParent<ArenaParticipant>() == enemy;
+    }
+    bool FiringLineClear(ArenaParticipant enemy)
+    {
+        var weapon = soldier.loadout.ThirdPersonView;
+        Vector3 origin = life.look.aimCamera.transform.position;
+        var muzzle = soldier.loadout.EquippedMuzzle;
+        Vector3 muzzlePosition = muzzle ? muzzle.position : origin;
+        Vector3 point = AimPoint(enemy);
+        // Perception retains its normal cadence. Only the extra firing permission
+        // ray is cached; every actual shot still performs its own collision query.
+        if (enemy != firingSightTarget || weapon != firingSightWeapon || Time.time >= nextFiringSight
+            || (origin - firingSightOrigin).sqrMagnitude > .0625f
+            || (muzzlePosition - firingSightMuzzle).sqrMagnitude > .0625f
+            || (point - firingSightPoint).sqrMagnitude > .16f)
+        {
+            firingSightTarget = enemy; firingSightWeapon = weapon;
+            firingSightOrigin = origin; firingSightMuzzle = muzzlePosition; firingSightPoint = point;
+            nextFiringSight = Time.time + .06f;
+            firingSightClear = ClearShot(enemy);
+        }
+        return firingSightClear;
     }
     static Vector3 AimPoint(ArenaParticipant enemy) => enemy.transform.position + Vector3.up * 1.25f;
     static float Heading(Vector3 direction) => Mathf.Atan2(direction.x, direction.z) * Mathf.Rad2Deg;

@@ -6,7 +6,7 @@ public class VehicleSeatDiagramGraphic : UnityEngine.UI.MaskableGraphic
     Vehicle vehicle;
     int selectedSeat;
     int seatPage;
-    public void SetVehicle(Vehicle value,int selected,int page=0){vehicle=value;selectedSeat=selected;seatPage=page;SetVerticesDirty();}
+    public void SetVehicle(Vehicle value,int selected,int page=0){if(vehicle==value&&selectedSeat==selected&&seatPage==page)return;vehicle=value;selectedSeat=selected;seatPage=page;SetVerticesDirty();}
     protected override void OnPopulateMesh(UnityEngine.UI.VertexHelper mesh)
     {
         mesh.Clear();if(!vehicle)return;
@@ -30,7 +30,9 @@ public class VehicleSeatDiagramGraphic : UnityEngine.UI.MaskableGraphic
     static void Line(UnityEngine.UI.VertexHelper mesh,Vector2 a,Vector2 b,Color tint)
     {
         Vector2 n=new Vector2(-(b-a).y,(b-a).x).normalized*.55f;int first=mesh.currentVertCount;
-        foreach(var p in new[]{a-n,a+n,b+n,b-n}){var vertex=UnityEngine.UIVertex.simpleVert;vertex.position=p;vertex.color=tint;mesh.AddVert(vertex);}
+        var vertex=UnityEngine.UIVertex.simpleVert;vertex.color=tint;
+        vertex.position=a-n;mesh.AddVert(vertex);vertex.position=a+n;mesh.AddVert(vertex);
+        vertex.position=b+n;mesh.AddVert(vertex);vertex.position=b-n;mesh.AddVert(vertex);
         mesh.AddTriangle(first,first+1,first+2);mesh.AddTriangle(first,first+2,first+3);
     }
 }

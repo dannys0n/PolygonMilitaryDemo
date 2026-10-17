@@ -19,18 +19,19 @@ public class SoldierFirstPersonBody : MonoBehaviour
     MaterialPropertyBlock properties;
     VehicleOccupant occupant;
     Transform collapsedHead, animatedHead;
-    bool headlessActive, initialized;
+    bool headlessActive, initialized, subscribed, copiesActive;
 
     void Awake()
     {
-        properties = new MaterialPropertyBlock();
         occupant = GetComponent<VehicleOccupant>();
         if (soldier.inputSource is SoldierLocalInput) BuildParts();
     }
 
     void BuildParts()
     {
+        if (initialized) return;
         initialized = true;
+        properties = new MaterialPropertyBlock();
         animatedHead = soldier.actions.animator.GetBoneTransform(HumanBodyBones.Head);
         var headObject = new GameObject("First-person hidden head");
         collapsedHead = headObject.transform;
@@ -54,7 +55,7 @@ public class SoldierFirstPersonBody : MonoBehaviour
                         bone => bone && (bone == animatedHead || bone.IsChildOf(animatedHead)) ? collapsedHead : bone);
                     firstPerson.rootBone = renderer.rootBone;
                     firstPerson.localBounds = renderer.localBounds;
-                    firstPerson.updateWhenOffscreen = true;
+                    firstPerson.updateWhenOffscreen = false;
                     firstPerson.quality = renderer.quality;
                     firstPerson.lightProbeUsage = renderer.lightProbeUsage;
                     firstPerson.reflectionProbeUsage = renderer.reflectionProbeUsage;
@@ -62,8 +63,10 @@ public class SoldierFirstPersonBody : MonoBehaviour
                     firstPerson.renderingLayerMask = renderer.renderingLayerMask;
                     firstPerson.shadowCastingMode = ShadowCastingMode.Off;
                     firstPerson.forceRenderingOff = true;
+                    firstPerson.enabled = false;
                     parts.Add(new BodyPart { fullBody = renderer, firstPerson = firstPerson });
                 }
+        if (isActiveAndEnabled) Subscribe();
     }
     public void PrepareForVehicleSpectating()
     {
@@ -72,8 +75,17 @@ public class SoldierFirstPersonBody : MonoBehaviour
 
     void LateUpdate()
     {
-        properties ??= new MaterialPropertyBlock();
         if (!initialized && soldier.inputSource is SoldierLocalInput) BuildParts();
+        if (!initialized) return;
+        bool needed = NeedsBodyCopy();
+        if (!needed)
+        {
+            if (copiesActive)
+                foreach (var part in parts) if (part.firstPerson) part.firstPerson.enabled = false;
+            copiesActive = false;
+            return;
+        }
+        copiesActive = true;
         if (collapsedHead) collapsedHead.SetPositionAndRotation(animatedHead.position, animatedHead.rotation);
         foreach (var part in parts)
         {
@@ -92,8 +104,29 @@ public class SoldierFirstPersonBody : MonoBehaviour
         }
     }
 
+    bool NeedsBodyCopy()
+    {
+        if (occupant && occupant.IsMounted)
+        {
+            var seat = occupant.MountedVehicle.seats[occupant.SeatIndex];
+            if (!occupant.MountedVehicle.hasRenderedInterior || seat.weaponMountedView) return false;
+            var vehicleCamera = occupant.ActiveVehicleCamera;
+            return (soldier.inputSource is SoldierLocalInput && occupant.CockpitView
+                    && vehicleCamera && vehicleCamera.isActiveAndEnabled)
+                || (view.firstPerson && view.playerCamera.isActiveAndEnabled);
+        }
+        return soldier.inputSource is SoldierLocalInput && view.firstPerson && view.playerCamera.isActiveAndEnabled;
+    }
+
     void OnEnable()
     {
+        if (initialized) Subscribe();
+    }
+
+    void Subscribe()
+    {
+        if (subscribed) return;
+        subscribed = true;
         RenderPipelineManager.beginCameraRendering += BeforeCamera;
         RenderPipelineManager.endCameraRendering += AfterCamera;
         Camera.onPreCull += BeforeBuiltInCamera;
@@ -102,11 +135,14 @@ public class SoldierFirstPersonBody : MonoBehaviour
 
     void OnDisable()
     {
+        subscribed = false;
         RenderPipelineManager.beginCameraRendering -= BeforeCamera;
         RenderPipelineManager.endCameraRendering -= AfterCamera;
         Camera.onPreCull -= BeforeBuiltInCamera;
         Camera.onPostRender -= AfterBuiltInCamera;
         SetHeadless(false);
+        foreach (var part in parts) if (part.firstPerson) part.firstPerson.enabled = false;
+        copiesActive = false;
         renderStates.Clear();
     }
 

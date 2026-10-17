@@ -11,20 +11,28 @@ public class VehicleDiagramGraphic : MaskableGraphic
     public float tickStep=20, pixelsPerUnit=2;
     float reading;
     Vector2 hoverVelocity;
-    public void SetHoverVelocity(Vector2 velocity){hoverVelocity=Vector2.ClampMagnitude(velocity*4,45);SetVerticesDirty();}
+    int labelCenter=int.MinValue;
+    float labelStep=float.NaN;
+    Drawing labelDrawing, geometryDrawing;
+    float geometryStep=float.NaN, geometryPixelsPerUnit=float.NaN;
+    static readonly float[] Sides={-1f,1f};
+    static readonly float[] BankDegrees={-60f,-45f,-30f,-20f,-10f,0f,10f,20f,30f,45f,60f};
+    public void SetHoverVelocity(Vector2 velocity){var value=Vector2.ClampMagnitude(velocity*4,45);if(hoverVelocity==value)return;hoverVelocity=value;SetVerticesDirty();}
     public void SetReading(float value)
     {
-        reading = value;
-        SetVerticesDirty();
+        if(reading!=value||geometryDrawing!=drawing||geometryStep!=tickStep||geometryPixelsPerUnit!=pixelsPerUnit)
+        {reading=value;geometryDrawing=drawing;geometryStep=tickStep;geometryPixelsPerUnit=pixelsPerUnit;SetVerticesDirty();}
         float step = drawing == Drawing.Heading ? 30 : tickStep;
         float scale = drawing == Drawing.Heading ? 4 : pixelsPerUnit;
         int center = Mathf.RoundToInt(value / step);
+        bool updateLabels=labelCenter!=center||labelStep!=step||labelDrawing!=drawing;
+        labelCenter=center;labelStep=step;labelDrawing=drawing;
         for (int i=0;i<tickLabels.Length;i++)
         {
             float tick = (center+i-tickLabels.Length/2)*step;
             float offset = (tick-value)*scale;
             bool heading = drawing == Drawing.Heading;
-            tickLabels[i].text = (heading ? Mathf.Repeat(tick,360) : tick).ToString("0");
+            if(updateLabels)tickLabels[i].text = (heading ? Mathf.Repeat(tick,360) : tick).ToString("0");
             tickLabels[i].rectTransform.anchoredPosition = heading ? new Vector2(offset,-18) : new Vector2(drawing==Drawing.Speed?-40:35,offset);
             tickLabels[i].gameObject.SetActive(heading ? Mathf.Abs(offset)<rectTransform.rect.width*.5f-16 : (drawing==Drawing.PitchScale || tick>=0) && Mathf.Abs(offset)<75);
         }
@@ -44,7 +52,7 @@ public class VehicleDiagramGraphic : MaskableGraphic
         }
         else if(drawing==Drawing.HoverCue)
         {
-            foreach(float side in new[]{-1f,1f}){Line(mesh,new Vector2(side*45,-45),new Vector2(side*45,45));Line(mesh,new Vector2(-45,side*45),new Vector2(45,side*45));}
+            foreach(float side in Sides){Line(mesh,new Vector2(side*45,-45),new Vector2(side*45,45));Line(mesh,new Vector2(-45,side*45),new Vector2(45,side*45));}
             Line(mesh,new Vector2(-6,0),new Vector2(6,0));Line(mesh,new Vector2(0,-6),new Vector2(0,6));
             Line(mesh,Vector2.zero,hoverVelocity);
             for(int i=0;i<16;i++){float a=i*Mathf.PI/8,b=(i+1)*Mathf.PI/8;Line(mesh,hoverVelocity+new Vector2(Mathf.Cos(a),Mathf.Sin(a))*4,hoverVelocity+new Vector2(Mathf.Cos(b),Mathf.Sin(b))*4);}
@@ -57,7 +65,7 @@ public class VehicleDiagramGraphic : MaskableGraphic
         }
         else if(drawing==Drawing.Bank)
         {
-            float radius=120;foreach(float degree in new[]{-60f,-45f,-30f,-20f,-10f,0f,10f,20f,30f,45f,60f}){float a=(90-degree)*Mathf.Deg2Rad;Vector2 d=new Vector2(Mathf.Cos(a),Mathf.Sin(a));Line(mesh,d*(radius-8),d*radius);}
+            float radius=120;foreach(float degree in BankDegrees){float a=(90-degree)*Mathf.Deg2Rad;Vector2 d=new Vector2(Mathf.Cos(a),Mathf.Sin(a));Line(mesh,d*(radius-8),d*radius);}
             float angle=(90-reading)*Mathf.Deg2Rad;Vector2 marker=new Vector2(Mathf.Cos(angle),Mathf.Sin(angle))*(radius+12);Line(mesh,marker,marker.normalized*(radius+3));
         }
         else if(drawing==Drawing.VerticalSpeed)
@@ -118,7 +126,9 @@ public class VehicleDiagramGraphic : MaskableGraphic
     void Line(VertexHelper mesh,Vector2 a,Vector2 b)
     {
         Vector2 normal=new Vector2(-(b-a).y,(b-a).x).normalized*.8f;int i=mesh.currentVertCount;
-        foreach(var p in new[]{a-normal,a+normal,b+normal,b-normal}){var v=UIVertex.simpleVert;v.position=p;v.color=color;mesh.AddVert(v);}
+        var v=UnityEngine.UIVertex.simpleVert;v.color=color;
+        v.position=a-normal;mesh.AddVert(v);v.position=a+normal;mesh.AddVert(v);
+        v.position=b+normal;mesh.AddVert(v);v.position=b-normal;mesh.AddVert(v);
         mesh.AddTriangle(i,i+1,i+2);mesh.AddTriangle(i,i+2,i+3);
     }
 }

@@ -9,6 +9,7 @@ public sealed class SandboxInfantryZone : MonoBehaviour
     [Min(1)] public int playersPerTeam=6;
     NavMeshPath path;
     readonly RaycastHit[] supportHits=new RaycastHit[32];
+    Collider[] standingHits=new Collider[32];
     void Awake(){path=new NavMeshPath();}
     public bool TryPosition(ArenaParticipant actor,out Vector3 position)
     {
@@ -41,8 +42,14 @@ public sealed class SandboxInfantryZone : MonoBehaviour
             if(!NavMesh.CalculatePath(hit.position,goal.position,filter,path)||path.status!=NavMeshPathStatus.PathComplete)continue;
             // Check real standing room without importing HQ spawn-history or authored-point rules.
             bool blocked=false;
-            foreach(var c in Physics.OverlapCapsule(hit.position+Vector3.up*.55f,hit.position+Vector3.up*1.5f,.4f,Physics.DefaultRaycastLayers,QueryTriggerInteraction.Ignore))
-                if(!c.transform.IsChildOf(actor.transform)){blocked=true;break;}
+            int standingCount;
+            // A full NonAlloc buffer may omit a blocker. Grow for dense
+            // locations and reuse that capacity for subsequent respawns.
+            while((standingCount=Physics.OverlapCapsuleNonAlloc(hit.position+Vector3.up*.55f,hit.position+Vector3.up*1.5f,.4f,
+                standingHits,Physics.DefaultRaycastLayers,QueryTriggerInteraction.Ignore))==standingHits.Length)
+                System.Array.Resize(ref standingHits,standingHits.Length*2);
+            for(int i=0;i<standingCount;i++)
+                if(!standingHits[i].transform.IsChildOf(actor.transform)){blocked=true;break;}
             if(blocked)continue;
             foreach(var other in actor.match.participants)
                 if(other!=actor&&!other.health.IsDead&&!other.IsAwaitingSpawn

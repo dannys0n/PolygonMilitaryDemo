@@ -10,7 +10,17 @@ public sealed class SandboxDeploymentVehicles : MonoBehaviour
     public GameObject picker;
     public RectTransform content;
     public Button rowTemplate;
-    readonly List<Button> rows=new List<Button>();
+    sealed class Row
+    {
+        public Vehicle vehicle;
+        public TMP_Text label;
+        public Image background;
+        public ArenaMenuSelectionFeedback feedback;
+    }
+    readonly List<Row> rows=new List<Row>();
+    Vehicle selectedVehicle;
+    Material normalText, selectedText;
+    bool refreshSelection=true;
     SandboxConquestRules rules;
     void Start()
     {
@@ -24,20 +34,31 @@ public sealed class SandboxDeploymentVehicles : MonoBehaviour
             row.onClick.RemoveAllListeners();row.onClick.AddListener(()=>rules.SelectVehicle(vehicle));
             var label=row.GetComponentInChildren<TMP_Text>();label.text=vehicle.displayName.ToUpperInvariant();
             var icon=row.transform.Find("Vehicle icon").GetComponent<Image>();icon.sprite=vehicle.seatDiagram;icon.enabled=icon.sprite;
-            row.gameObject.SetActive(true);rows.Add(row);
+            row.gameObject.SetActive(true);
+            rows.Add(new Row { vehicle=vehicle, label=label, background=row.GetComponent<Image>(), feedback=row.GetComponent<ArenaMenuSelectionFeedback>() });
         }
     }
     void LateUpdate()
     {
         if(!rules)return;
-        picker.SetActive(menu.IsVisible && !menu.IsTacticalMap && !menu.SelectedPoint && !menu.SelectedMember);
+        bool visible=menu.IsVisible && !menu.IsTacticalMap && !menu.SelectedPoint && !menu.SelectedMember;
+        if(picker.activeSelf!=visible)picker.SetActive(visible);
+        if(!visible)return;
+        if(!refreshSelection && selectedVehicle==rules.SelectedVehicle
+            && normalText==menu.classMenu.normalText && selectedText==menu.classMenu.selectedText)return;
+        refreshSelection=false;selectedVehicle=rules.SelectedVehicle;
+        normalText=menu.classMenu.normalText;selectedText=menu.classMenu.selectedText;
         for(int i=0;i<rows.Count;i++)
         {
-            bool selected=rules.deploymentVehicles[i]==rules.SelectedVehicle;
-            var row=rows[i];var label=row.GetComponentInChildren<TMP_Text>();
-            label.fontSharedMaterial=selected?menu.classMenu.selectedText:menu.classMenu.normalText;
-            label.color=selected?Color.white:new Color(.75f,.75f,.75f);
-            row.GetComponent<Image>().color=selected?new Color(1,.48f,.12f,.13f):Color.clear;
+            var row=rows[i];bool selected=row.vehicle==selectedVehicle;var label=row.label;
+            if(row.feedback)row.feedback.Chosen=selected;
+            else
+            {
+                var material=selected?selectedText:normalText;
+                if(label.fontSharedMaterial!=material)label.fontSharedMaterial=material;
+                label.color=selected?Color.white:new Color(.75f,.75f,.75f);
+            }
+            row.background.color=selected?new Color(1,.48f,.12f,.13f):Color.clear;
         }
     }
 }

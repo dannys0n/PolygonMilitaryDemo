@@ -5,9 +5,10 @@ public class VehicleDialGraphic : UnityEngine.UI.MaskableGraphic
 {
     public bool attitude;
     public float minimum, maximum=100;
-    float reading, pitch, roll;
-    public void SetValue(float value){reading=value;SetVerticesDirty();}
-    public void SetAttitude(float pitchDegrees,float rollDegrees){pitch=pitchDegrees;roll=rollDegrees;SetVerticesDirty();}
+    float reading, pitch, roll, lastMinimum=float.NaN, lastMaximum=float.NaN;
+    bool lastAttitude;
+    public void SetValue(float value){if(reading==value&&lastMinimum==minimum&&lastMaximum==maximum&&lastAttitude==attitude)return;reading=value;lastMinimum=minimum;lastMaximum=maximum;lastAttitude=attitude;SetVerticesDirty();}
+    public void SetAttitude(float pitchDegrees,float rollDegrees){if(pitch==pitchDegrees&&roll==rollDegrees&&lastAttitude==attitude)return;pitch=pitchDegrees;roll=rollDegrees;lastAttitude=attitude;SetVerticesDirty();}
     protected override void OnPopulateMesh(UnityEngine.UI.VertexHelper mesh)
     {
         mesh.Clear();float radius=Mathf.Min(rectTransform.rect.width,rectTransform.rect.height)*.45f;
@@ -35,7 +36,9 @@ public class VehicleDialGraphic : UnityEngine.UI.MaskableGraphic
     static void Line(UnityEngine.UI.VertexHelper mesh,Vector2 a,Vector2 b,float width,Color tint)
     {
         Vector2 n=new Vector2(-(b-a).y,(b-a).x).normalized*width*.5f;int first=mesh.currentVertCount;
-        foreach(var p in new[]{a-n,a+n,b+n,b-n}){var vertex=UnityEngine.UIVertex.simpleVert;vertex.position=p;vertex.color=tint;mesh.AddVert(vertex);}
+        var vertex=UnityEngine.UIVertex.simpleVert;vertex.color=tint;
+        vertex.position=a-n;mesh.AddVert(vertex);vertex.position=a+n;mesh.AddVert(vertex);
+        vertex.position=b+n;mesh.AddVert(vertex);vertex.position=b-n;mesh.AddVert(vertex);
         mesh.AddTriangle(first,first+1,first+2);mesh.AddTriangle(first,first+2,first+3);
     }
 }

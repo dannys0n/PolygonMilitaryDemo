@@ -18,6 +18,8 @@ public class SoldierRagdoll : MonoBehaviour
     Transform[] bones;
     Vector3[] restPositions;
     Quaternion[] restRotations;
+    Vector3[] deathPositions, bodyPositions;
+    Quaternion[] deathRotations, bodyRotations;
     bool[] driverEnabled;
     bool animatorEnabled;
     RigBuilder[] allRigBuilders;
@@ -39,6 +41,8 @@ public class SoldierRagdoll : MonoBehaviour
         bones = System.Array.FindAll(animator.GetBoneTransform(HumanBodyBones.Hips).GetComponentsInChildren<Transform>(true),
             bone => !bone.IsChildOf(life.loadout.thirdPersonMount));
         restPositions = new Vector3[bones.Length]; restRotations = new Quaternion[bones.Length];
+        deathPositions = new Vector3[bones.Length]; deathRotations = new Quaternion[bones.Length];
+        bodyPositions = new Vector3[bodies.Length]; bodyRotations = new Quaternion[bodies.Length];
         for (int i = 0; i < bones.Length; i++)
         { restPositions[i] = bones[i].localPosition; restRotations[i] = bones[i].localRotation; }
         // Both the body and the FPS arms have rig graphs and grip drivers.
@@ -76,9 +80,8 @@ public class SoldierRagdoll : MonoBehaviour
     {
         if (IsRagdoll) return;
         IsRagdoll = true;
-        var positions = new Vector3[bones.Length]; var rotations = new Quaternion[bones.Length];
         for (int i = 0; i < bones.Length; i++)
-        { positions[i] = bones[i].localPosition; rotations[i] = bones[i].localRotation; }
+        { deathPositions[i] = bones[i].localPosition; deathRotations[i] = bones[i].localRotation; }
         animatorEnabled = animator.enabled;
         for (int i = 0; i < animationDrivers.Length; i++)
         { driverEnabled[i] = animationDrivers[i].enabled; animationDrivers[i].enabled = false; }
@@ -93,11 +96,9 @@ public class SoldierRagdoll : MonoBehaviour
         { builderEnabled[i] = allRigBuilders[i].enabled; allRigBuilders[i].enabled = false; }
         rig.enabled = false; animator.enabled = false; life.controller.enabled = false;
         for (int i = 0; i < bones.Length; i++)
-        { bones[i].localPosition = positions[i]; bones[i].localRotation = rotations[i]; }
+        { bones[i].localPosition = deathPositions[i]; bones[i].localRotation = deathRotations[i]; }
         // Animated bones can have stale kinematic physics poses. Capture the visible
         // world pose before handing ownership to PhysX, including every child body.
-        var bodyPositions = new Vector3[bodies.Length];
-        var bodyRotations = new Quaternion[bodies.Length];
         for (int i = 0; i < bodies.Length; i++)
         { bodyPositions[i] = bodies[i].transform.position; bodyRotations[i] = bodies[i].transform.rotation; }
         heldWeapon = life.loadout.ThirdPersonView.transform;

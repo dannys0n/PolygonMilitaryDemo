@@ -37,6 +37,15 @@ public class SoldierFirstPersonCamera : MonoBehaviour
 
     void LateUpdate()
     {
+        if (!view.NeedsCameraAnimation)
+        {
+            // Hidden AI cameras remain a neutral source of gameplay aim.
+            var hiddenCamera = view.playerCamera.transform;
+            hiddenCamera.SetLocalPositionAndRotation(view.CameraRestPosition, view.CameraRestRotation);
+            bodyAimTarget.position = hiddenCamera.parent.position + hiddenCamera.parent.forward * 10f;
+            look.UpdateAimTarget();
+            return;
+        }
         var profile = loadout.EquippedSights;
         // Use the selected weapon's authored camera baseline after a swap.
         Vector3 idlePosition = profile && profile.cameraReferenceConfigured ? profile.neutralCameraPosition : referencePosition;

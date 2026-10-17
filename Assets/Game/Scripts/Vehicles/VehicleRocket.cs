@@ -130,8 +130,15 @@ public class VehicleRocket : MonoBehaviour
     {
         if(!body || exploded || IgnoreHit(collider))return;
         if(collider.isTrigger && !collider.GetComponent<SoldierHitRegion>())return;
-        Vector3 point=collider.ClosestPoint(body.position);
+        // ClosestPoint does not support terrain or concave scene meshes. Recover
+        // their actual surface from this step's travel instead of logging on impact.
+        bool meshSurface=collider is TerrainCollider || collider is MeshCollider mesh && !mesh.convex;
+        Vector3 point=meshSurface?body.position:collider.ClosestPoint(body.position);
         Vector3 normal=body.position-point;
+        Vector3 travel=body.position-previous;
+        if(meshSurface && travel.sqrMagnitude>.000001f
+            && collider.Raycast(new Ray(previous,travel.normalized),out var hit,travel.magnitude+.05f))
+        {point=hit.point;normal=hit.normal;}
         if(normal.sqrMagnitude<.0001f)normal=-body.linearVelocity;
         Explode(point,normal.sqrMagnitude>.0001f?normal.normalized:Vector3.up);
     }

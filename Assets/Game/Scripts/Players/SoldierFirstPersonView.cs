@@ -55,6 +55,14 @@ public class SoldierFirstPersonView : MonoBehaviour
     public bool IsEquipping => loadout.IsSwitching;
     public bool WantsToAim { get; private set; }
     private SoldierMovement movement;
+    private SoldierLife life;
+    private UnityEngine.Animations.Rigging.RigBuilder armsRig;
+    private SoldierWeaponPresentation presentation;
+    private bool cameraAnimationSuspended;
+    private bool savedArmsEnabled, savedRigEnabled, savedGripEnabled;
+    // TPS still consumes AimBlend, but an unobserved soldier needs no FPS graph.
+    public bool NeedsCameraAnimation => playerCamera && playerCamera.isActiveAndEnabled
+        && (!life || !life.health.IsDead);
 
     private int locomotionLayer;
     private int aimTransitionLayer;
@@ -73,6 +81,9 @@ public class SoldierFirstPersonView : MonoBehaviour
     {
         definition = GetComponent<SoldierWeaponPresentation>().weapon.definition;
         movement = GetComponent<SoldierMovement>();
+        life = GetComponent<SoldierLife>();
+        armsRig = armsAnimator.GetComponent<UnityEngine.Animations.Rigging.RigBuilder>();
+        presentation = GetComponent<SoldierWeaponPresentation>();
         actions = GetComponent<SoldierActions>();
         loadout = GetComponent<SoldierWeaponLoadout>();
         firstPersonRestRotation = firstPersonRoot.localRotation;
@@ -123,7 +134,69 @@ public class SoldierFirstPersonView : MonoBehaviour
         playerCamera.fieldOfView = originalFieldOfView;
     }
 
-    private void Update() => UpdateAim();
+    private void Update()
+    {
+        RefreshCameraAnimation();
+        UpdateAim();
+    }
+
+    void RefreshCameraAnimation()
+    {
+        // Death and seated poses own their enable/restore state.
+        if (life && life.health.IsDead) return;
+        bool wanted = NeedsCameraAnimation;
+        var grip = loadout.firstPersonGripRig;
+        if (!wanted && !cameraAnimationSuspended)
+        {
+            savedArmsEnabled = armsAnimator.enabled;
+            savedRigEnabled = armsRig && armsRig.enabled;
+            savedGripEnabled = grip && grip.enabled;
+            armsAnimator.enabled = false;
+            if (armsRig) armsRig.enabled = false;
+            if (grip) grip.enabled = false;
+            cameraAnimationSuspended = true;
+        }
+        else if (wanted && cameraAnimationSuspended)
+        {
+            armsAnimator.enabled = savedArmsEnabled;
+            if (armsRig) armsRig.enabled = savedRigEnabled;
+            if (grip) grip.enabled = savedGripEnabled;
+            cameraAnimationSuspended = false;
+            if (armsAnimator.enabled) SynchronizeCameraAnimation();
+        }
+    }
+
+    void SynchronizeCameraAnimation()
+    {
+        // Paused FPS graphs must not replay old triggers when observation changes.
+        armsAnimator.ResetTrigger("Fire");
+        armsAnimator.ResetTrigger("Reload");
+        var body = presentation.characterAnimator;
+        armsAnimator.SetFloat("RunBlend", body.GetFloat("RunBlend"));
+        armsAnimator.SetFloat("WeaponSwitchSpeed", body.GetFloat("WeaponSwitchSpeed"));
+        var parts = presentation.partsAnimator;
+        var state = CurrentState(parts, 0);
+        string baseState = state.shortNameHash == Animator.StringToHash("Reload") ? "Reload"
+            : state.shortNameHash == Animator.StringToHash("Fire") ? "Fire" : "Idle";
+        armsAnimator.Play("Base Layer." + baseState, 0, state.normalizedTime);
+        SynchronizeLayer(body, "WeaponSwitch", "Empty", "Equip", "Unequip");
+        SynchronizeLayer(body, "Grenade", "Empty", "Throw");
+    }
+
+    static AnimatorStateInfo CurrentState(Animator source, int layer)
+        => source.IsInTransition(layer) ? source.GetNextAnimatorStateInfo(layer) : source.GetCurrentAnimatorStateInfo(layer);
+
+    void SynchronizeLayer(Animator source, string layerName, params string[] states)
+    {
+        int sourceLayer = source.GetLayerIndex(layerName), targetLayer = armsAnimator.GetLayerIndex(layerName);
+        if (sourceLayer < 0 || targetLayer < 0) return;
+        var state = CurrentState(source, sourceLayer);
+        string selected = states[0];
+        foreach (var candidate in states)
+            if (state.shortNameHash == Animator.StringToHash(candidate)) { selected = candidate; break; }
+        armsAnimator.SetLayerWeight(targetLayer, source.GetLayerWeight(sourceLayer));
+        armsAnimator.Play(layerName + "." + selected, targetLayer, state.normalizedTime);
+    }
 
     public void SetAimRequested(bool requested)
     {
@@ -139,8 +212,11 @@ public class SoldierFirstPersonView : MonoBehaviour
         if (EditorPlacementAim.HasValue) aiming = EditorPlacementAim.Value;
 #endif
         aimBlend = Mathf.MoveTowards(aimBlend, aiming ? 1f : 0f, aimBlendSpeed * Time.deltaTime);
-        armsAnimator.SetBool("Aim", aiming);
-        armsAnimator.SetFloat("AimBlend", aimBlend);
+        if (NeedsCameraAnimation)
+        {
+            armsAnimator.SetBool("Aim", aiming);
+            armsAnimator.SetFloat("AimBlend", aimBlend);
+        }
         if (firstPerson) playerCamera.fieldOfView = Mathf.Lerp(originalFieldOfView, aimFieldOfView, aimBlend);
         ApplyPlacement(PlacementAimBlend);
     }
@@ -186,6 +262,7 @@ public class SoldierFirstPersonView : MonoBehaviour
 
     private void UpdateMotion()
     {
+        if (!NeedsCameraAnimation) return;
         armsAnimator.SetFloat("TacticalSprint", definition.firstPersonSprintStyle == SoldierWeaponDefinition.SprintStyle.Tactical ? 1f : 0f);
         // Use actual movement so walking bob stops against walls and in the air.
         Vector3 velocity = controller.velocity;
