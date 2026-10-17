@@ -79,6 +79,7 @@ public static class WeaponAttachmentAuthoring
                         var target=view.opticMount.GetComponent<WeaponAttachmentSocket>();
                         if(!target)target=view.opticMount.gameObject.AddComponent<WeaponAttachmentSocket>();
                         target.supportedSightMounts=source.supportedSightMounts;
+                        target.maximumSightFootprint=source.maximumSightFootprint;
                         target.builtInSight=source.builtInSight;
                     }
                     PrefabUtility.SaveAsPrefabAsset(root,path);count++;

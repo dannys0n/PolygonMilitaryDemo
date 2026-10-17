@@ -6,6 +6,9 @@ public class WeaponSightDefinition : ScriptableObject
     [System.Flags] public enum MountStandard { None=0, Picatinny=1, AKSideRail=2, SUSAT=4, Dedicated=8 }
     [Tooltip("Mechanical interface on this optic. A matching receiver socket or its authored adapter is required.")]
     public MountStandard mountStandard = MountStandard.Picatinny;
+    public enum RailFootprint { Compact, Standard, Long }
+    [Tooltip("Mounting space and housing clearance required by this optic, independently of magnification.")]
+    public RailFootprint railFootprint = RailFootprint.Standard;
     public string id;
     public string displayName;
     [Tooltip("Leave empty to use the weapon's built-in iron sight point.")]

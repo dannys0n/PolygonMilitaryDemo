@@ -52,6 +52,21 @@ public class WeaponAttachmentTests
         var native=all.Single(s=>(string)Get(s,"id")=="aug-built-in-sight");
         Assert.IsTrue((bool)Call(Module("Steyr AUG A1"),"Supports",native));
         Assert.IsFalse((bool)Call(Module("M4"),"Supports",native));
+        var longScope=all.Single(s=>s.name=="Military_Scope_15");
+        var combatScope=all.Single(s=>s.name=="Scope_ACOG");
+        foreach(string name in new[]{"M16A2","AKM","AK-74","Benelli M3","M32","MP5K-PDW","P90","Steyr AUG A1","SVD","TAR-21"})
+        {
+            Assert.IsFalse((bool)Call(Module(name),"Supports",longScope),name+" must reject a long scope mounting footprint.");
+            Assert.IsTrue((bool)Call(Module(name),"Supports",combatScope),name+" still supports compact combat optics.");
+        }
+        foreach(string name in new[]{"M1911","MAC-10","SPAS-12","TEC-9","Vz. 61 Skorpion"})
+        {
+            Assert.IsFalse((bool)Call(Module(name),"Supports",longScope),name);
+            Assert.IsFalse((bool)Call(Module(name),"Supports",combatScope),name+" has only a compact mounting area.");
+            Assert.IsTrue((bool)Call(Module(name),"Supports",rail),name);
+        }
+        foreach(string name in new[]{"M4","M16A4","MK18","AK-12","HK416","M249","M82","MPX","SCAR-H","KRISS Vector CRB"})
+            Assert.IsTrue((bool)Call(Module(name),"Supports",longScope),name+" has enough supported rail for the long mount.");
         var menu=AssetDatabase.LoadAssetAtPath<ScriptableObject>("Assets/Game/Definitions/UI/ClassMenuCatalog.asset");
         foreach(var entry in entries)
         {
@@ -69,6 +84,11 @@ public class WeaponAttachmentTests
         var selected=Get(equipped,"SelectedSight");
         for(int i=0;i<40;i++){Call(equipped,"Cycle");Assert.IsTrue((bool)Call(equipped,"Supports",Get(equipped,"SelectedSight")));}
         Call(equipped,"SetSight",selected);yield return null;
+        int m16=Array.FindIndex(slots,s=>(string)Get(Get(s,"definition"),"displayName")=="M16A2");
+        Call(actions,"CancelActions");Assert.IsTrue((bool)Call(loadout,"SetStartingSlot",m16));yield return null;
+        equipped=(Component)Get(loadout,"EquippedSights");
+        rejected=Assert.Throws<TargetInvocationException>(()=>Call(equipped,"SetSight",longScope));
+        Assert.IsInstanceOf<ArgumentException>(rejected.InnerException);
     }
     static void AssertAttachmentPose(object definition,Transform mount,Transform instance)
     {

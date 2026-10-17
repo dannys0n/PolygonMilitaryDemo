@@ -7,11 +7,16 @@ public class WeaponAttachmentSocket : MonoBehaviour
     [Header("Optic compatibility")]
     [Tooltip("Interfaces provided by this receiver and its authored optic-mount hardware.")]
     public WeaponSightDefinition.MountStandard supportedSightMounts = WeaponSightDefinition.MountStandard.Picatinny;
+    [Tooltip("Largest generic rail optic supported by the visible rail/adapter and surrounding clearance.")]
+    public WeaponSightDefinition.RailFootprint maximumSightFootprint = WeaponSightDefinition.RailFootprint.Long;
     public bool SupportsSight(WeaponSightDefinition sight)
     {
         if(!sight || !sight.prefab)return true;
         if(sight.mountStandard==WeaponSightDefinition.MountStandard.Dedicated)return sight==builtInSight;
-        return (supportedSightMounts & sight.mountStandard)!=0;
+        if((supportedSightMounts & sight.mountStandard)==0)return false;
+        // Side-mounted optics have their own hardware and do not occupy the top rail.
+        return (sight.mountStandard & WeaponSightDefinition.MountStandard.Picatinny)==0
+            || sight.railFootprint<=maximumSightFootprint;
     }
     [System.Serializable] public struct Placement
     {
