@@ -24,6 +24,51 @@ public class SandboxSimpleModeTests
         .SelectMany(g => g.GetComponentsInChildren(T(name), true)).ToArray();
     Component rules;
     Component[] infantry;
+    [UnityTest] public IEnumerator EachTeamHasOneLockOnJetAndAIAcquiresBeforeLaunching()
+    {
+        yield return Load();
+        var flights=((IEnumerable)Get(rules,"flights")).Cast<object>().Where(f=>Get(f,"battle").ToString()=="Jets").ToArray();
+        foreach(string team in new[]{"Red","Blue"})
+        {
+            var side=flights.Where(f=>Get(f,"team").ToString()==team).ToArray();
+            Assert.AreEqual(2,side.Length);
+            Assert.AreEqual(1,side.Count(f=>(bool)Get(((Component)Get(f,"current")).GetComponentInChildren(T("VehicleLauncher")),"requiresLock")));
+        }
+        foreach(var flight in ((IEnumerable)Get(rules,"flights")).Cast<object>())
+        {
+            var v=(Component)Get(flight,"current");
+            ((Behaviour)v.GetComponent(T("SandboxAirCombatAI"))).enabled=false;
+            v.GetComponent<Rigidbody>().isKinematic=true;
+            var countermeasures=v.GetComponent(T("VehicleCountermeasures"));if(countermeasures)((Behaviour)countermeasures).enabled=false;
+        }
+        var source=flights.First(f=>Get(f,"team").ToString()=="Red" && (bool)Get(((Component)Get(f,"current")).GetComponentInChildren(T("VehicleLauncher")),"requiresLock"));
+        var target=flights.First(f=>Get(f,"team").ToString()=="Blue");
+        var aircraft=(Component)Get(source,"current");var opposing=(Component)Get(target,"current");
+        aircraft.transform.SetPositionAndRotation(new Vector3(0,1000,0),Quaternion.identity);
+        opposing.transform.SetPositionAndRotation(new Vector3(0,1000,250),Quaternion.identity);
+        foreach(var f in flights.Where(f=>f!=source&&f!=target))((Component)Get(f,"current")).transform.position=new Vector3(2000,1000,2000);
+        Physics.SyncTransforms();
+        var ai=aircraft.GetComponent(T("SandboxAirCombatAI"));var opponent=opposing.GetComponent(T("SandboxAirCombatAI"));
+        Set(ai,"enemy",opponent);
+        var pilot=((IEnumerable)Get(source,"crew")).Cast<Component>().First().GetComponent(T("VehicleOccupant"));
+        var launcher=aircraft.GetComponentInChildren(T("VehicleLauncher"));
+        Set(launcher,"lockDuration",.15f);
+        int rounds=(int)Get(launcher,"Missiles");
+        Call(ai,"FireStation",pilot);
+        Assert.AreEqual(rounds,Get(launcher,"Missiles"),"AI cannot launch before obtaining the normal player seeker lock.");
+        float until=Time.time+1;
+        while((int)Get(launcher,"Missiles")==rounds&&Time.time<until)
+        {Call(ai,"FireStation",pilot);yield return null;}
+        Assert.Less((int)Get(launcher,"Missiles"),rounds,"AI should acquire and fire a guided missile at an aligned enemy.");
+        Assert.IsTrue((bool)Get(launcher,"IsLocked"));
+        var systems=aircraft.GetComponent(T("VehicleWeaponSystems"));
+        var guidance=T("VehicleMissileGuidance").GetField("Active").GetValue(null) as IList;
+        Assert.IsTrue(guidance.Cast<Component>().Any(m=>(UnityEngine.Object)Get(m,"Target")==opposing),"Missile must track the validated hostile aircraft.");
+        Set(launcher,"missiles",0);Set(launcher,"nextRecharge",Time.time+10);
+        Call(ai,"FireStation",pilot);
+        var current=systems.GetType().GetMethods(Flags).Single(m=>m.Name=="Current"&&m.GetParameters()[0].ParameterType.Name=="VehicleOccupant").Invoke(systems,new object[]{pilot});
+        Assert.AreEqual("Gun",Get(current,"system").ToString(),"Empty missile racks must fall back to the cannon.");
+    }
     [UnityTest] public IEnumerator FriendlyMarkersFollowViewedTeamAndHideSelfEnemiesAndOffscreenPlayers()
     {
         yield return Load();

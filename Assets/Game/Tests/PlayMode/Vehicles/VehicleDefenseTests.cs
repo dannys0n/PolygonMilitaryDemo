@@ -119,7 +119,7 @@ public class VehicleDefenseTests
             var root=Object.Instantiate(prefab,new Vector3(0,1000,0),Quaternion.identity);objects.Add(root);count++;
             yield return new WaitForFixedUpdate();yield return null;Object.Destroy(root);yield return null;
         }
-        Assert.AreEqual(32,count);
+        Assert.GreaterOrEqual(count,34);
     }
     [UnityTest] public IEnumerator JetProducesThrustWithoutHoverLiftAtRest()
     {

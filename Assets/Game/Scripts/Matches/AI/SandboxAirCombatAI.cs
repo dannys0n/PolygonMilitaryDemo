@@ -199,6 +199,10 @@ public sealed class SandboxAirCombatAI : MonoBehaviour
         Vector3 aim = selected.launcher ? physicalPoint : Lead(physicalPoint, muzzle.position, selected.projectile);
         Vector3 direction = aim - muzzle.position;
         systems.AimAt(actor, new Ray(muzzle.position, direction.normalized));
+        // AI holds the same seeker lock as a player; never fire a stale lock at
+        // another aircraft or repeatedly issue rejected fire inputs while acquiring.
+        if(selected.launcher && selected.launcher.requiresLock
+            && (!selected.launcher.IsLocked || selected.launcher.LockTarget!=enemy.vehicle))return;
         float angle = selected.launcher ? 20 : battle == Battle.Jets ? 22 : 12;
         if (Vector3.Angle(muzzle.forward, direction) <= angle && ClearShot(muzzle.position, physicalPoint)) systems.TryFire(actor);
     }
