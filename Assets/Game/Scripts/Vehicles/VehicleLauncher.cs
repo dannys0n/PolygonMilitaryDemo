@@ -200,13 +200,12 @@ public class VehicleLauncher : MonoBehaviour
         int tubeIndex=barrel++ % muzzles.Length;
         var muzzle = muzzles[tubeIndex];
         if(tubeRounds.Length>tubeIndex) tubeRounds[tubeIndex].SetActive(false);
-        var rocket = Instantiate(projectile, muzzle.position + muzzle.forward * projectile.launchClearance, muzzle.rotation);
+        var rocket = ProjectilePool.Spawn(projectile, muzzle.position + muzzle.forward * projectile.launchClearance, muzzle.rotation);
         rocket.Launch(vehicle, pilot.gameObject, weaponIcon);
         if (launchFlash)
         {
-            var flash = Instantiate(launchFlash, muzzle.position, muzzle.rotation);
+            var flash = ParticleEffectPool.Play(launchFlash, muzzle.position, muzzle.rotation);
             flash.Emit(1);
-            Destroy(flash.gameObject, .5f);
         }
         if (pilot.IsLocal) pilot.PlayVehicleCameraShake(cameraShake);
         if (rocket.TryGetComponent<VehicleMissileGuidance>(out var guidance)) guidance.Initialize(vehicle, RequestedAimRay, this, validatedTarget);

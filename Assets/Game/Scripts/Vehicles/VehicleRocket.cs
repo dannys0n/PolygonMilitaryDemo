@@ -20,6 +20,25 @@ public class VehicleRocket : MonoBehaviour
     Vector3 previous;
     bool exploded;
     float expiresAt=float.PositiveInfinity;
+    bool defaultExplodeOnExpiry;
+    bool cached;
+    Collider[] projectileColliders;
+    Renderer[] projectileRenderers;
+    void Awake()
+    {
+        if(cached)return;
+        cached=true;
+        defaultExplodeOnExpiry=explodeOnExpiry;
+        projectileColliders=GetComponentsInChildren<Collider>(true);
+        projectileRenderers=GetComponentsInChildren<Renderer>(true);
+    }
+    public void ResetForReuse()
+    {
+        Awake();
+        exploded=false; owner=null; source=null; damageIcon=null;
+        expiresAt=float.PositiveInfinity;
+        explodeOnExpiry=defaultExplodeOnExpiry; showImpactVisual=true;
+    }
     public float RemainingLifetime => Mathf.Max(0,expiresAt-Time.time);
     public void LimitRemainingLifetime(float seconds, bool detonate = false)
     {
@@ -43,35 +62,39 @@ public class VehicleRocket : MonoBehaviour
         body.useGravity = useGravity;
         previous = transform.position;
         body.linearVelocity = transform.forward * speed + inheritedVelocity;
-        var projectileColliders = GetComponentsInChildren<Collider>(true);
         // Damage comes from the swept hit/explosion, never a high-speed rigidbody impulse.
         // Solid cannon rounds could shove an aircraft hard enough to cause a second crash kill.
         foreach(var collider in projectileColliders)collider.isTrigger=true;
         if (owner)
             foreach (var c in owner.GetComponentsInChildren<Collider>(true))
                 foreach (var projectileCollider in projectileColliders)
-                    Physics.IgnoreCollision(projectileCollider, c);
+                    ProjectilePool.IgnoreCollision(this, projectileCollider, c);
         // Ballistic rounds are not interceptors; ignore other rounds as well as owner volleys.
         foreach (var other in active)
             if (other && (ballistic || other.ballistic || (owner && other.owner == owner)))
-                foreach (var otherCollider in other.GetComponentsInChildren<Collider>(true))
+                foreach (var otherCollider in other.projectileColliders)
                     foreach (var projectileCollider in projectileColliders)
-                        Physics.IgnoreCollision(projectileCollider, otherCollider);
+                        ProjectilePool.IgnoreCollision(this, projectileCollider, otherCollider);
         active.Add(this);
         if(ballistic)
         {
-            foreach(var renderer in GetComponentsInChildren<Renderer>(true))renderer.enabled=false;
+            foreach(var renderer in projectileRenderers)renderer.enabled=false;
             if(exhaust)exhaust.Stop(true,ParticleSystemStopBehavior.StopEmittingAndClear);
         }
         else if (exhaust) exhaust.Play(true);
         expiresAt=Time.time+Mathf.Max(.01f,lifetime);
     }
-    void StopExhaust()
+    void ReturnToPool()
     {
-        if (!exhaust || ballistic) return;
-        exhaust.transform.SetParent(null,true);
-        exhaust.Stop(true,ParticleSystemStopBehavior.StopEmitting);
-        Destroy(exhaust.gameObject,exhaust.main.startLifetime.constantMax+1f);
+        active.Remove(this);
+        float tail=0;
+        if (exhaust && !ballistic)
+        {
+            exhaust.Stop(true,ParticleSystemStopBehavior.StopEmitting);
+            foreach(var particles in exhaust.GetComponentsInChildren<ParticleSystem>(true))
+                tail=Mathf.Max(tail,particles.main.startLifetime.constantMax);
+        }
+        ProjectilePool.Release(this,tail);
     }
     void Expire()
     {
@@ -79,8 +102,8 @@ public class VehicleRocket : MonoBehaviour
         if (explodeOnExpiry) Explode(body ? body.position : transform.position, Vector3.up);
         else
         {
-            StopExhaust();
-            Destroy(gameObject);
+            exploded=true;
+            ReturnToPool();
         }
     }
     void FixedUpdate()
@@ -134,17 +157,8 @@ public class VehicleRocket : MonoBehaviour
         ExplosionDamage.Apply(point,normal,radius,infantryDamage,vehicleDamage,source,transform,damageIcon);
         if(showImpactVisual && impactEffect)
         {
-        var effect = Instantiate(impactEffect,point+normal*.03f,Quaternion.FromToRotation(Vector3.forward,normal));
-        effect.Play(true);
-        float effectDuration=0;
-        foreach(var particles in effect.GetComponentsInChildren<ParticleSystem>(true))
-        {
-            var settings=particles.main;
-            effectDuration=Mathf.Max(effectDuration,settings.startDelay.constantMax+settings.duration+settings.startLifetime.constantMax);
+            ParticleEffectPool.Play(impactEffect,point+normal*.03f,Quaternion.FromToRotation(Vector3.forward,normal));
         }
-        Destroy(effect.gameObject,effectDuration+1f);
-        }
-        StopExhaust();
-        Destroy(gameObject);
+        ReturnToPool();
     }
 }

@@ -140,15 +140,7 @@ public class VehicleTurret : MonoBehaviour
             var hitEffect = !explosiveVehicleDamage && bulletImpactEffect ? bulletImpactEffect : impactEffect;
             if(hitEffect && showVisual)
             {
-                var effect=Instantiate(hitEffect,nearest.point+nearest.normal*.03f,Quaternion.FromToRotation(Vector3.forward,nearest.normal));
-                effect.Play(true);
-                float duration=0;
-                foreach(var particles in effect.GetComponentsInChildren<ParticleSystem>(true))
-                {
-                    var main=particles.main;
-                    duration=Mathf.Max(duration,main.startDelay.constantMax+main.duration+main.startLifetime.constantMax);
-                }
-                Destroy(effect.gameObject,duration+1f);
+                ParticleEffectPool.Play(hitEffect,nearest.point+nearest.normal*.03f,Quaternion.FromToRotation(Vector3.forward,nearest.normal));
             }
             var region = nearest.collider.GetComponent<SoldierHitRegion>();
             if (region)
@@ -172,7 +164,7 @@ public class VehicleTurret : MonoBehaviour
         }
         if (projectile)
         {
-            var round = Instantiate(projectile, muzzle.position + muzzle.forward * projectile.launchClearance, Quaternion.LookRotation(shotDirection,muzzle.up));
+            var round = ProjectilePool.Spawn(projectile, muzzle.position + muzzle.forward * projectile.launchClearance, Quaternion.LookRotation(shotDirection,muzzle.up));
             if(round.ballistic)round.showImpactVisual=showVisual;
             round.Launch(vehicle, gunner.gameObject, weaponIcon);
         }

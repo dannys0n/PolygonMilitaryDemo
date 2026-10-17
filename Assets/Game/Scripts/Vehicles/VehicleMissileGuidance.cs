@@ -10,7 +10,11 @@ public sealed class VehicleMissileGuidance : MonoBehaviour
     public bool HasGuidance => initialized;
     public Seeker SeekerType => guidance==Guidance.LaserSpot || guidance==Guidance.CommandLineOfSight ? Seeker.Optical : seeker;
     void OnEnable()=>Active.Add(this);
-    void OnDisable()=>Active.Remove(this);
+    void OnDisable()
+    {
+        Active.Remove(this);
+        initialized=false; target=null; decoy=null; director=null; diverted=false;
+    }
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)] static void ResetRegistry()=>Active.Clear();
     public enum Guidance { AirToAir, LaserSpot, AirDefence, CommandLineOfSight }
     public Guidance guidance;

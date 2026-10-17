@@ -36,14 +36,14 @@ public class SoldierHitscan : MonoBehaviour
         if(weapon.rocketProjectile)
         {
             Vector3 target=ClosestHit(aim,weapon.range,out var hit)?hit.point:aim.GetPoint(weapon.range);
-            var rocket=Instantiate(weapon.rocketProjectile,muzzle.position,Quaternion.LookRotation((target-muzzle.position).normalized));
+            var rocket=ProjectilePool.Spawn(weapon.rocketProjectile,muzzle.position,Quaternion.LookRotation((target-muzzle.position).normalized));
             rocket.Launch(gameObject,transform,GetComponent<SoldierMovement>().Velocity);
             var shot=new ShotResult{origin=muzzle.position,point=target};ShotResolved?.Invoke(shot);return shot;
         }
         if(weapon.thrownExplosive)
         {
             var definition=weapon.thrownExplosive;
-            var grenade=Instantiate(definition.projectile,muzzle.position,aimCamera.transform.rotation);
+            var grenade=ProjectilePool.Spawn(definition.projectile,muzzle.position,aimCamera.transform.rotation);
             grenade.Launch(definition,gameObject,aim.direction*definition.throwSpeed+Vector3.up*definition.upwardSpeed);
             var shot=new ShotResult{origin=muzzle.position,point=aim.GetPoint(weapon.range)};ShotResolved?.Invoke(shot);return shot;
         }

@@ -75,7 +75,7 @@ public class SoldierGrenades : MonoBehaviour
             var camera=life.look.aimCamera;Vector3 direction=camera.transform.forward;
             Transform held=life.view.firstPerson?firstHeld.transform:thirdHeld.transform;
             Vector3 origin=held.position;
-            var projectile=Instantiate(throwing.projectile,origin,held.rotation);
+            var projectile=ProjectilePool.Spawn(throwing.projectile,origin,held.rotation);
             projectile.Launch(throwing,gameObject,direction*throwing.throwSpeed+Vector3.up*throwing.upwardSpeed+life.movement.Velocity*.5f);
         }
 

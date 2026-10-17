@@ -24,8 +24,7 @@ public class VehicleDestructionEffects : MonoBehaviour
         StopAllCoroutines();
         if(smoke)
         {
-            smoke.Stop(true,ParticleSystemStopBehavior.StopEmitting);
-            Destroy(smoke.gameObject,smoke.main.startLifetime.constantMax+1f);
+            ParticleEffectPool.Stop(smoke);
             smoke=null;
         }
     }
@@ -50,8 +49,7 @@ public class VehicleDestructionEffects : MonoBehaviour
     }
     IEnumerator Sequence()
     {
-        smoke=Instantiate(blackSmoke,Origin,Quaternion.FromToRotation(Vector3.forward,Vector3.up));
-        smoke.transform.localScale=Vector3.one*smokeScale;smoke.Play(true);
+        smoke=ParticleEffectPool.Play(blackSmoke,Origin,Quaternion.FromToRotation(Vector3.forward,Vector3.up),Vector3.one*smokeScale,persistent:true);
         yield return new WaitForSeconds(Mathf.Max(0,firstExplosionTime));
         Explosion(secondaryExplosion,secondaryScale);
         yield return new WaitForSeconds(Mathf.Max(0,secondExplosionTime-firstExplosionTime));
@@ -61,14 +59,6 @@ public class VehicleDestructionEffects : MonoBehaviour
     }
     void Explosion(ParticleSystem prefab,float scale)
     {
-        var effect=Instantiate(prefab,Origin,Quaternion.FromToRotation(Vector3.forward,Vector3.up));
-        effect.transform.localScale=Vector3.one*scale;effect.Play(true);
-        float duration=0;
-        foreach(var particle in effect.GetComponentsInChildren<ParticleSystem>(true))
-        {
-            var main=particle.main;
-            duration=Mathf.Max(duration,main.startDelay.constantMax+main.duration+main.startLifetime.constantMax);
-        }
-        Destroy(effect.gameObject,duration+1f);
+        ParticleEffectPool.Play(prefab,Origin,Quaternion.FromToRotation(Vector3.forward,Vector3.up),Vector3.one*scale);
     }
 }

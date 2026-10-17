@@ -4,20 +4,18 @@ using UnityEngine;
 public class GrenadeProjectile : MonoBehaviour
 {
     GrenadeDefinition definition;GameObject owner;
+    void OnDisable(){CancelInvoke();definition=null;owner=null;}
     public void Launch(GrenadeDefinition data,GameObject source,Vector3 velocity)
     {
         definition=data;owner=source;
         var body=GetComponent<Rigidbody>();body.isKinematic=false;body.linearVelocity=velocity;body.angularVelocity=Random.onUnitSphere*8;
-        foreach(var collider in source.GetComponentsInChildren<Collider>(true))Physics.IgnoreCollision(GetComponent<Collider>(),collider);
+        foreach(var collider in source.GetComponentsInChildren<Collider>(true))ProjectilePool.IgnoreCollision(this,GetComponent<Collider>(),collider);
         Invoke(nameof(Detonate),data.fuse);
     }
     void Detonate()
     {
         GetComponent<Collider>().enabled=false;
-        var effect=Instantiate(definition.effect,transform.position,Quaternion.Euler(definition.effectRotation));
-        effect.transform.localScale=Vector3.one*definition.effectScale;effect.Play(true);
-        float duration=0;foreach(var ps in effect.GetComponentsInChildren<ParticleSystem>(true)){var main=ps.main;duration=Mathf.Max(duration,main.startDelay.constantMax+main.duration+main.startLifetime.constantMax);}
-        Destroy(effect.gameObject,duration+1);
+        ParticleEffectPool.Play(definition.effect,transform.position,Quaternion.Euler(definition.effectRotation),Vector3.one*definition.effectScale);
         if(definition.kind==GrenadeDefinition.GrenadeKind.Frag)
             ExplosionDamage.Apply(transform.position,Vector3.up,definition.radius,definition.infantryDamage,definition.vehicleDamage,owner,transform);
         else if(definition.kind==GrenadeDefinition.GrenadeKind.Flashbang)
@@ -35,6 +33,6 @@ public class GrenadeProjectile : MonoBehaviour
                 actor.ApplyFlash(strength,definition.flashDuration);
             }
         }
-        Destroy(gameObject);
+        ProjectilePool.Release(this);
     }
 }
