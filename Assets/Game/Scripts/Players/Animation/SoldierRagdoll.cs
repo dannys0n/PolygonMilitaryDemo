@@ -12,6 +12,8 @@ public class SoldierRagdoll : MonoBehaviour
     public Collider[] bodyColliders;
     public Behaviour[] animationDrivers;
     public float fallImpulse = 1.5f;
+    [Tooltip("Extra forward impulse on the chest for stationary deaths, as a multiple of fallImpulse.")]
+    [Min(0)] public float stationaryToppleMultiplier = 5f;
     public bool IsRagdoll { get; private set; }
     Transform[] bones;
     Vector3[] restPositions;
@@ -27,9 +29,13 @@ public class SoldierRagdoll : MonoBehaviour
     Vector3 weaponScale;
     Quaternion weaponRotation;
     Vector3 lastVelocity;
+    Rigidbody chestBody;
 
     void Awake()
     {
+        var chest = animator.GetBoneTransform(HumanBodyBones.Chest);
+        if (!chest) chest = animator.GetBoneTransform(HumanBodyBones.Spine);
+        if (chest) chestBody = chest.GetComponent<Rigidbody>();
         bones = System.Array.FindAll(animator.GetBoneTransform(HumanBodyBones.Hips).GetComponentsInChildren<Transform>(true),
             bone => !bone.IsChildOf(life.loadout.thirdPersonMount));
         restPositions = new Vector3[bones.Length]; restRotations = new Quaternion[bones.Length];
@@ -48,7 +54,7 @@ public class SoldierRagdoll : MonoBehaviour
         constraints = found.ToArray();
         constraintEnabled = new bool[constraints.Length]; constraintWeights = new float[constraints.Length];
         SetPhysics(false);
-        // Reapply for each instance, including prefab variants.
+        // Joint limits constrain the pose; avoid extra self-collision contacts.
         for (int i = 0; i < bodyColliders.Length; i++)
             for (int j = i + 1; j < bodyColliders.Length; j++)
                 Physics.IgnoreCollision(bodyColliders[i], bodyColliders[j]);
@@ -106,6 +112,14 @@ public class SoldierRagdoll : MonoBehaviour
         if (direction.sqrMagnitude < .01f) direction = -transform.forward;
         foreach (var body in bodies) body.linearVelocity = lastVelocity;
         bodies[0].AddForce(direction * fallImpulse, ForceMode.Impulse);
+        if (chestBody && lastVelocity.sqrMagnitude < .25f && fallImpulse > 0)
+        {
+            // A pelvis-only nudge lets an idle body crumple vertically. Push above
+            // its centre of mass so gravity carries it into a forward fall.
+            Vector3 forward = Vector3.ProjectOnPlane(transform.forward, Vector3.up).normalized;
+            forward = (forward + transform.right * Random.Range(-.12f, .12f)).normalized;
+            chestBody.AddForce(forward * (fallImpulse * stationaryToppleMultiplier), ForceMode.Impulse);
+        }
     }
 
     void SetPhysics(bool active)
