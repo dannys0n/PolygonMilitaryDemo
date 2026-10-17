@@ -46,7 +46,14 @@ public class ArenaClassMenuCatalog : ScriptableObject
     public void RefreshWeaponFacts()
     {
         if(!source)return;
-        foreach(var item in weapons){var definition=source.FindWeapon(item.id);if(!definition)continue;item.name=definition.displayName;item.category=definition.category;item.isUtility=definition.isUtility;item.damage=definition.damage;item.rpm=definition.roundsPerMinute;item.rounds=definition.magazineCapacity;item.icon=definition.icon;}
+        foreach(var item in weapons)
+        {
+            var definition=source.FindWeapon(item.id);if(!definition)continue;
+            item.name=definition.displayName;item.category=definition.category;item.isUtility=definition.isUtility;item.damage=definition.damage;item.rpm=definition.roundsPerMinute;item.rounds=definition.magazineCapacity;item.icon=definition.icon;
+            var entry=source.Find(definition);
+            item.sights=Array.ConvertAll(Array.FindAll(entry.sights,s=>s),s=>s.id);
+            item.defaultSight=entry.defaultSight?entry.defaultSight.id:null;
+        }
     }
     public Weapon[] weapons=Array.Empty<Weapon>();
     public Part[] parts=Array.Empty<Part>();

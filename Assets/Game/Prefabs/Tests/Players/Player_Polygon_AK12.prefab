@@ -6208,7 +6208,6 @@ MonoBehaviour:
   jumpHeight: 1.2
   groundAcceleration: 45
   airAcceleration: 8
-  maximumStepSpeed: 2.5
 --- !u!114 &7013163042219475740
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -6370,6 +6369,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::SoldierPhysicsBody
   body: {fileID: 4500688194890068938}
   capsule: {fileID: 3787869954142969123}
+  maximumSpeed: 150
   slopeLimit: 45
   stepOffset: 0.3
 --- !u!1 &6834753064600508304
@@ -7299,7 +7299,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 7926468188957458678}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: b45b8d2859bb41749a5142c39c43faf2, type: 3}
   m_Name: 
@@ -7321,6 +7321,8 @@ MonoBehaviour:
   liftFadeStart: 0.04
   liftFadeEnd: 0.18
   drawDebug: 0
+  fullQualityDistance: 40
+  fadeOutDistance: 65
 --- !u!1 &7959501686873706888
 GameObject:
   m_ObjectHideFlags: 0

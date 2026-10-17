@@ -5308,7 +5308,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 5712737728252446945}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: b45b8d2859bb41749a5142c39c43faf2, type: 3}
   m_Name: 
@@ -5330,6 +5330,8 @@ MonoBehaviour:
   liftFadeStart: 0.04
   liftFadeEnd: 0.18
   drawDebug: 0
+  fullQualityDistance: 40
+  fadeOutDistance: 65
 --- !u!1 &5772962493974233581
 GameObject:
   m_ObjectHideFlags: 0
@@ -8730,6 +8732,7 @@ MonoBehaviour:
     definition: {fileID: 11400000, guid: 5436a94cd83dd2f41be2eb332bce1b2d, type: 2}
     firstPersonPrefab: {fileID: 8837847267141164816, guid: a4135b6f82eb0284abce9ade4f459c32, type: 3}
     thirdPersonPrefab: {fileID: 1824009113543223257, guid: 949799bd6f7059041bf2f0f33d481e27, type: 3}
+  infiniteAmmunition: 0
   presentation: {fileID: 200064873301141975}
   actions: {fileID: 8705140395176685010}
   selectedSlot: 0
@@ -8995,6 +8998,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::SoldierPhysicsBody
   body: {fileID: 5257818602695431076}
   capsule: {fileID: 5850396596054175775}
+  maximumSpeed: 150
   slopeLimit: 45
   stepOffset: 0.3
 --- !u!114 &6068726658172382737

@@ -4,6 +4,15 @@ using UnityEngine;
 // The default socket pose still handles attachments without a calibration.
 public class WeaponAttachmentSocket : MonoBehaviour
 {
+    [Header("Optic compatibility")]
+    [Tooltip("Interfaces provided by this receiver and its authored optic-mount hardware.")]
+    public WeaponSightDefinition.MountStandard supportedSightMounts = WeaponSightDefinition.MountStandard.Picatinny;
+    public bool SupportsSight(WeaponSightDefinition sight)
+    {
+        if(!sight || !sight.prefab)return true;
+        if(sight.mountStandard==WeaponSightDefinition.MountStandard.Dedicated)return sight==builtInSight;
+        return (supportedSightMounts & sight.mountStandard)!=0;
+    }
     [System.Serializable] public struct Placement
     {
         public WeaponAttachmentDefinition attachment;
@@ -49,7 +58,7 @@ public class WeaponAttachmentSocket : MonoBehaviour
     {
         foreach(var renderer in builtInSightRenderers)
             if(renderer)renderer.forceRenderingOff=selected!=builtInSight;
-        bool showMount = selected && selected.prefab && System.Array.IndexOf(sideMountSights, selected) < 0;
+        bool showMount = selected && selected.prefab && selected.mountStandard!=WeaponSightDefinition.MountStandard.AKSideRail && System.Array.IndexOf(sideMountSights, selected) < 0;
         foreach (var renderer in opticMountRenderers)
             if (renderer) renderer.forceRenderingOff = !showMount;
     }

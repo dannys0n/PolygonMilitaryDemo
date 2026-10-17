@@ -30,6 +30,46 @@ public class WeaponAttachmentTests
     }
     [UnityTearDown] public IEnumerator Cleanup(){for(int i=roots.Count-1;i>=0;i--)if(roots[i])Object.Destroy(roots[i]);roots.Clear();yield return null;}
     static void AssertFinite(Transform t){Assert.IsFalse(float.IsNaN(t.position.x)||float.IsInfinity(t.position.x));Assert.Greater(t.lossyScale.sqrMagnitude,0);}
+    [UnityTest] public IEnumerator OpticMountStandardsFilterRuntimeAndClassMenuConsistently()
+    {
+        var catalog=AssetDatabase.LoadAssetAtPath<ScriptableObject>("Assets/Game/Definitions/Weapons/Catalogs/WeaponCatalog.asset");
+        var entries=((Array)Get(catalog,"entries")).Cast<object>().Where(e=>((Array)Get(e,"sights")).Length>0).ToArray();
+        var all=AssetDatabase.FindAssets("t:WeaponSightDefinition",new[]{"Assets/Game"}).Select(g=>AssetDatabase.LoadAssetAtPath<ScriptableObject>(AssetDatabase.GUIDToAssetPath(g))).ToArray();
+        object Entry(string name)=>entries.Single(e=>(string)Get(Get(e,"weapon"),"displayName")==name);
+        Component Module(string name)=>((Component)Get(Entry(name),"thirdPersonPrefab")).GetComponent(T("SoldierWeaponSights"));
+        var pso=all.Single(s=>(string)Get(s,"id")=="svd-pso-4x");
+        var side=all.Single(s=>(string)Get(s,"id")=="scope_1p29");
+        var rail=all.Single(s=>(string)Get(s,"id")=="polygon-reflex");
+        var susat=all.Single(s=>(string)Get(s,"id")=="military_scope_10");
+        Assert.IsFalse((bool)Call(Module("M4"),"Supports",pso));
+        Assert.IsFalse((bool)Call(Module("M4"),"Supports",side));
+        Assert.IsFalse((bool)Call(Module("M4"),"Supports",susat));
+        Assert.IsTrue((bool)Call(Module("M4"),"Supports",rail));
+        foreach(string name in new[]{"AKM","AK-12","AK-74","SVD"})
+        {Assert.IsTrue((bool)Call(Module(name),"Supports",pso),name);Assert.IsTrue((bool)Call(Module(name),"Supports",side),name);}
+        Assert.IsFalse((bool)Call(Module("MK23"),"Supports",rail),"An authored transform alone is not a pistol rail.");
+        Assert.IsTrue((bool)Call(Module("M1911"),"Supports",rail),"The M1911's authored optic bridge remains supported.");
+        var native=all.Single(s=>(string)Get(s,"id")=="aug-built-in-sight");
+        Assert.IsTrue((bool)Call(Module("Steyr AUG A1"),"Supports",native));
+        Assert.IsFalse((bool)Call(Module("M4"),"Supports",native));
+        var menu=AssetDatabase.LoadAssetAtPath<ScriptableObject>("Assets/Game/Definitions/UI/ClassMenuCatalog.asset");
+        foreach(var entry in entries)
+        {
+            var definition=Get(entry,"weapon");var module=((Component)Get(entry,"thirdPersonPrefab")).GetComponent(T("SoldierWeaponSights"));
+            foreach(var sight in (Array)Get(entry,"sights"))Assert.IsTrue((bool)Call(module,"Supports",sight),(string)Get(definition,"displayName"));
+            var item=((Array)Get(menu,"weapons")).Cast<object>().Single(w=>(string)Get(w,"id")== (string)Get(definition,"catalogId"));
+            CollectionAssert.AreEquivalent(((Array)Get(entry,"sights")).Cast<object>().Select(s=>(string)Get(s,"id")).ToArray(),(string[])Get(item,"sights"));
+        }
+        var slots=((Array)Get(loadout,"slots")).Cast<object>().ToArray();
+        int m4=Array.FindIndex(slots,s=>(string)Get(Get(s,"definition"),"displayName")=="M4");
+        Call(actions,"CancelActions");Call(loadout,"SetStartingSlot",m4);yield return null;
+        var equipped=(Component)Get(loadout,"EquippedSights");
+        var rejected=Assert.Throws<TargetInvocationException>(()=>Call(equipped,"SetSight",pso));
+        Assert.IsInstanceOf<ArgumentException>(rejected.InnerException);
+        var selected=Get(equipped,"SelectedSight");
+        for(int i=0;i<40;i++){Call(equipped,"Cycle");Assert.IsTrue((bool)Call(equipped,"Supports",Get(equipped,"SelectedSight")));}
+        Call(equipped,"SetSight",selected);yield return null;
+    }
     static void AssertAttachmentPose(object definition,Transform mount,Transform instance)
     {
         var expected=Matrix4x4.TRS((Vector3)Get(definition,"positionOffset"),Quaternion.Euler((Vector3)Get(definition,"rotationOffset")),(Vector3)Get(definition,"scale"));

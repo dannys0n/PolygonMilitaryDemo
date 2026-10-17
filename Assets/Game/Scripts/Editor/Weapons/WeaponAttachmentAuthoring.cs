@@ -47,6 +47,49 @@ public static class WeaponAttachmentAuthoring
                 finally{PrefabUtility.UnloadPrefabContents(root);}
             }
         }
+        SyncSightCompatibility();
+        return count;
+    }
+    [MenuItem("Tools/Game/Sync Optic Compatibility")]
+    public static void SyncSightCompatibilityMenu()=>SyncSightCompatibility();
+    public static int SyncSightCompatibility()
+    {
+        if(EditorApplication.isPlaying)throw new InvalidOperationException("Edit Mode required");
+        var catalog=AssetDatabase.LoadAssetAtPath<ArenaWeaponCatalog>("Assets/Game/Definitions/Weapons/Catalogs/WeaponCatalog.asset");
+        var all=AssetDatabase.FindAssets("t:WeaponSightDefinition",new[]{"Assets/Game"})
+            .Select(g=>AssetDatabase.LoadAssetAtPath<WeaponSightDefinition>(AssetDatabase.GUIDToAssetPath(g))).Where(s=>s).ToArray();
+        int count=0;
+        foreach(var entry in catalog.entries.Where(e=>e.basePrefab&&e.sights.Length>0))
+        {
+            var source=entry.basePrefab.GetComponentsInChildren<WeaponAttachmentSocket>(true).FirstOrDefault(s=>s.name=="OpticMount");
+            var bare=entry.sights.FirstOrDefault(s=>s&&!s.prefab);
+            if(!bare)throw new InvalidOperationException(entry.weapon.name+" has no bare sight.");
+            entry.sights=new[]{bare}.Concat(all.Where(s=>s.prefab&&source&&source.SupportsSight(s))).Distinct().ToArray();
+            if(!entry.defaultSight||!entry.sights.Contains(entry.defaultSight))entry.defaultSight=bare;
+            foreach(var prefab in new[]{entry.firstPersonPrefab,entry.thirdPersonPrefab}.Where(p=>p).Distinct())
+            {
+                var path=AssetDatabase.GetAssetPath(prefab);var root=PrefabUtility.LoadPrefabContents(path);
+                try
+                {
+                    var sights=root.GetComponent<SoldierWeaponSights>();
+                    if(sights){sights.compatibleSights=entry.sights;sights.defaultSight=entry.defaultSight;}
+                    var view=root.GetComponent<SoldierWeaponView>();
+                    if(source&&view.opticMount)
+                    {
+                        var target=view.opticMount.GetComponent<WeaponAttachmentSocket>();
+                        if(!target)target=view.opticMount.gameObject.AddComponent<WeaponAttachmentSocket>();
+                        target.supportedSightMounts=source.supportedSightMounts;
+                        target.builtInSight=source.builtInSight;
+                    }
+                    PrefabUtility.SaveAsPrefabAsset(root,path);count++;
+                }
+                finally{PrefabUtility.UnloadPrefabContents(root);}
+            }
+        }
+        EditorUtility.SetDirty(catalog);
+        var menu=AssetDatabase.LoadAssetAtPath<ArenaClassMenuCatalog>(ClassMenuPreviewBuilder.CatalogAsset);
+        if(menu){menu.RefreshWeaponFacts();EditorUtility.SetDirty(menu);}
+        AssetDatabase.SaveAssets();
         return count;
     }
 }

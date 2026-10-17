@@ -78,6 +78,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 03e841738b6be124bbe22cf82e6359c7, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::WeaponAttachmentSocket
+  supportedSightMounts: 1
   requiredSightSupports: []
   placements:
   - attachment: {fileID: 0}
@@ -85,6 +86,10 @@ MonoBehaviour:
     position: {x: 0.0023061656, y: 5.602795e-10, z: -0.000000178421}
     rotation: {x: 2.8879358e-15, y: 0.030842384, z: -5.0902266e-17, w: 0.99952424}
     scale: {x: 1, y: 1.0000001, z: 1.0000004}
+  builtInSight: {fileID: 11400000, guid: 7c67b5d02f14e054f820e429ddc6e3e6, type: 2}
+  builtInSightRenderers: []
+  opticMountRenderers: []
+  sideMountSights: []
 --- !u!1 &763213951071287821
 GameObject:
   m_ObjectHideFlags: 0
@@ -382,8 +387,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 03e841738b6be124bbe22cf82e6359c7, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::WeaponAttachmentSocket
+  supportedSightMounts: 1
   requiredSightSupports: []
   placements: []
+  builtInSight: {fileID: 0}
+  builtInSightRenderers: []
+  opticMountRenderers: []
+  sideMountSights: []
 --- !u!1 &3358441046136503781
 GameObject:
   m_ObjectHideFlags: 0

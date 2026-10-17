@@ -138,7 +138,10 @@ public class SoldierWeaponLoadout : MonoBehaviour
     void ApplySelections()
     {
         var slot=slots[selectedSlot];EquippedSights.Initialize(presentation.view);
-        EquippedSights.SetSight(slot.selectedSight?slot.selectedSight:EquippedSights.defaultSight);
+        var sight=slot.selectedSight?slot.selectedSight:EquippedSights.defaultSight;
+        if(!EquippedSights.Supports(sight))sight=EquippedSights.BareSight;
+        slot.selectedSight=sight;
+        EquippedSights.SetSight(sight);
         EquippedSights.SetAlternateSight(slot.alternateSight);
         EquippedAttachments.Apply(slot.selectedAttachments,presentation.view);
     }

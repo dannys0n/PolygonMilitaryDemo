@@ -54,7 +54,15 @@ public class SoldierWeaponSights : MonoBehaviour
     WeaponSightAttachment firstAttachment, thirdAttachment;
     float sightLift;
 
-    public bool Supports(WeaponSightDefinition sight) => !sight || System.Array.IndexOf(compatibleSights, sight) >= 0;
+    public bool Supports(WeaponSightDefinition sight)
+    {
+        if(!sight)return true;
+        if(System.Array.IndexOf(compatibleSights,sight)<0)return false;
+        if(!sight.prefab)return true;
+        var mount=thirdPersonMount?thirdPersonMount:firstPersonMount;
+        return mount && mount.TryGetComponent<WeaponAttachmentSocket>(out var socket)
+            ? socket.SupportsSight(sight) : sight.mountStandard==WeaponSightDefinition.MountStandard.Picatinny;
+    }
 
     public void Initialize(SoldierFirstPersonView view)
     {
@@ -106,7 +114,11 @@ public class SoldierWeaponSights : MonoBehaviour
     public void Cycle()
     {
         int index = System.Array.IndexOf(compatibleSights, SelectedSight);
-        SetSight(compatibleSights[(index + 1) % compatibleSights.Length]);
+        for(int i=1;i<=compatibleSights.Length;i++)
+        {
+            var next=compatibleSights[(index+i)%compatibleSights.Length];
+            if(next && Supports(next)){SetSight(next);return;}
+        }
     }
 
     static void Remove(WeaponSightAttachment attachment)
