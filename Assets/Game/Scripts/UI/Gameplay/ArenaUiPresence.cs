@@ -35,7 +35,7 @@ public class ArenaUiPresence : MonoBehaviour
         {
             // Gameplay aiming feedback stays exact and does not drift with decorative UI.
             foreach (Transform child in transform)
-                if (child is RectTransform rect && child.name != "Crosshair" && child.name != "Hit Marker" && child.name != "Match Status") AddPanel(rect);
+                if (child is RectTransform rect && child.name != "Crosshair" && child.name != "Hit Marker" && child.name != "Match Status" && child.name != "Friendly Markers") AddPanel(rect);
         }
         else if (scoreboard)
         {

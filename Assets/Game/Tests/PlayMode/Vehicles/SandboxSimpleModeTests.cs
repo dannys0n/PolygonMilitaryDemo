@@ -24,6 +24,39 @@ public class SandboxSimpleModeTests
         .SelectMany(g => g.GetComponentsInChildren(T(name), true)).ToArray();
     Component rules;
     Component[] infantry;
+    [UnityTest] public IEnumerator FriendlyMarkersFollowViewedTeamAndHideSelfEnemiesAndOffscreenPlayers()
+    {
+        yield return Load();
+        var spectator=All("ArenaAISpectator").Single();
+        Call(spectator,"SetManualSpectating",true);Call(spectator,"SetInterestMode",false);
+        var actors=infantry.Select(i=>(Component)Get(i,"participant")).ToArray();
+        var viewer=actors.First(a=>Get(a,"team").ToString()=="Red");
+        var friendly=actors.First(a=>a!=viewer&&Get(a,"team").ToString()=="Red");
+        var enemy=actors.First(a=>Get(a,"team").ToString()=="Blue");
+        Time.timeScale=0;
+        Call(spectator,"Follow",viewer);Call(spectator,"EnterPerspective");yield return null;
+        var markers=All("ArenaFriendlyMarkers").Single();
+        var camera=(Camera)Get(spectator,"PresentationCamera");
+        var animator=(Animator)Get(Get(Get(friendly,"player"),"actions"),"animator");
+        Vector3 head=animator.GetBoneTransform(HumanBodyBones.Head).position;
+        camera.transform.SetPositionAndRotation(head+Vector3.back*10,Quaternion.identity);
+        Call(markers,"LateUpdate");
+        Assert.IsTrue((bool)Call(markers,"IsVisible",friendly));
+        Assert.IsFalse((bool)Call(markers,"IsVisible",viewer));
+        Assert.IsFalse((bool)Call(markers,"IsVisible",enemy));
+        var root=(RectTransform)Get(markers,"root");
+        Assert.AreEqual(0,root.GetComponentsInChildren(T("ArenaUiPerspective"),true).Length,"World markers cannot inherit decorative HUD tilt or look lag.");
+        camera.transform.rotation=Quaternion.Euler(0,180,0);Call(markers,"LateUpdate");
+        Assert.IsFalse((bool)Call(markers,"IsVisible",friendly),"Behind-camera markers must be hidden.");
+        camera.transform.rotation=Quaternion.identity;
+        friendly.gameObject.SetActive(false);Call(markers,"LateUpdate");
+        Assert.IsFalse((bool)Call(markers,"IsVisible",friendly));friendly.gameObject.SetActive(true);
+        Call(spectator,"Follow",enemy);Call(spectator,"EnterPerspective");yield return null;
+        camera=(Camera)Get(spectator,"PresentationCamera");
+        camera.transform.SetPositionAndRotation(head+Vector3.back*10,Quaternion.identity);Call(markers,"LateUpdate");
+        Assert.IsFalse((bool)Call(markers,"IsVisible",friendly),"Changing spectator teams must immediately change friendly identification.");
+        Time.timeScale=1;
+    }
     [UnityTest] public IEnumerator SpectatorAircraftHudChangesProfileInBothViewsWithoutStaleInstruments()
     {
         yield return Load();

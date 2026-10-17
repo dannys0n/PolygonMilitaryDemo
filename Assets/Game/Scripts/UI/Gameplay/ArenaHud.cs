@@ -59,6 +59,9 @@ public class ArenaHud : MonoBehaviour
         accent = new Color(1f, .55f, .12f);
         accentHex = ColorUtility.ToHtmlStringRGB(accent);
         ArenaHudTheme.StyleLines(transform, filamentLine, accentLineGlow);
+        var friendlyMarkers=GetComponent<ArenaFriendlyMarkers>();
+        if(!friendlyMarkers)friendlyMarkers=gameObject.AddComponent<ArenaFriendlyMarkers>();
+        friendlyMarkers.hud=this;
         crosshairRestPositions = crosshairSegments.Select(s => s.rectTransform.anchoredPosition).ToArray();
         spreadRestPositions = spreadCrosshairSegments.Select(s => s.rectTransform.anchoredPosition).ToArray();
     }
