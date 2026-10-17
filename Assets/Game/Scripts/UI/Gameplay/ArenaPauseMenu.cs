@@ -13,6 +13,7 @@ public class ArenaPauseMenu : MonoBehaviour
     bool previousSpectatorBlocked;
     ConquestDeploymentMenu deployment;
     SoldierLocalInput localInput;
+    ArenaClassEditor classEditor;
     bool inputEnabled;
     CursorLockMode previousCursor;
     bool previousVisible;
@@ -23,6 +24,7 @@ public class ArenaPauseMenu : MonoBehaviour
         localInput = FindAnyObjectByType<SoldierLocalInput>();
         deployment = FindAnyObjectByType<ConquestDeploymentMenu>();
         spectator = FindAnyObjectByType<ArenaAISpectator>();
+        classEditor = FindAnyObjectByType<ArenaClassEditor>(FindObjectsInactive.Include);
         if (spectateButton)
         {
             spectateButton.gameObject.SetActive(spectator && spectator.localPlayer);
@@ -39,10 +41,14 @@ public class ArenaPauseMenu : MonoBehaviour
     void Update()
     {
         if (transition.IsLoading) return;
-        if(Input.GetKeyDown(KeyCode.Escape) && deployment && deployment.CloseTacticalMap())return;
-        var editor=FindAnyObjectByType<ArenaClassEditor>(FindObjectsInactive.Include);
-        if(Input.GetKeyDown(KeyCode.Escape) && editor && editor.IsVisible){editor.Close();return;}
-        if (Input.GetKeyDown(KeyCode.Escape)) { if (classMenu && classMenu.IsVisible) classMenu.Back(); else if (IsPaused) Resume(); else Pause(); }
+        if(Input.GetKeyDown(KeyCode.Escape))
+        {
+            if(deployment && deployment.CloseTacticalMap())return;
+            // The editor can be created lazily; only retry lookup on a real input event.
+            if(!classEditor)classEditor=FindAnyObjectByType<ArenaClassEditor>(FindObjectsInactive.Include);
+            if(classEditor && classEditor.IsVisible){classEditor.Close();return;}
+            if(classMenu && classMenu.IsVisible)classMenu.Back();else if(IsPaused)Resume();else Pause();
+        }
         if (IsPaused) { Cursor.lockState = CursorLockMode.None; Cursor.visible = true; }
     }
     public void Pause()

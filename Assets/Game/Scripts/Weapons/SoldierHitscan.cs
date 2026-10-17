@@ -9,6 +9,8 @@ public class SoldierHitscan : MonoBehaviour
     public bool drawDebug;
     int visualShot;
     bool showShotVisual;
+    RaycastHit[] queryHits = new RaycastHit[32];
+    Collider[] overlapHits = new Collider[32];
     public event System.Action<ShotResult> ShotResolved;
     // Optional local world interactions may consume a shot before damage/projectiles.
     public event System.Func<Ray, bool> ShotInteraction;
@@ -106,9 +108,11 @@ public class SoldierHitscan : MonoBehaviour
         float halfRange = weapon.range * .5f;
         // One broadphase query encloses the cone; the actual hit test is its radius at target depth.
         float radius = Mathf.Sqrt(halfRange * halfRange + weapon.range * weapon.range * slope * slope);
-        foreach (var collider in Physics.OverlapSphere(aim.GetPoint(halfRange), radius,
-                     hitLayers, QueryTriggerInteraction.Collide))
+        int count=CombatQueries.OverlapSphere(aim.GetPoint(halfRange),radius,
+            ProjectileCollision.WithoutProjectiles(hitLayers),QueryTriggerInteraction.Collide,ref overlapHits);
+        for(int i=0;i<count;i++)
         {
+            var collider=overlapHits[i];
             if (!IsShotCollider(collider)) continue;
             var region = collider.GetComponent<SoldierHitRegion>();
             var vehicle = region ? null : collider.GetComponentInParent<Vehicle>();
@@ -153,8 +157,11 @@ public class SoldierHitscan : MonoBehaviour
 
     bool TryMuzzleBlock(Vector3 origin, out Collider cover, out Vector3 point)
     {
-        foreach (var collider in Physics.OverlapSphere(origin, muzzleClearance,
-                     hitLayers, QueryTriggerInteraction.Collide))
+        int count=CombatQueries.OverlapSphere(origin,muzzleClearance,
+            ProjectileCollision.WithoutProjectiles(hitLayers),QueryTriggerInteraction.Collide,ref overlapHits);
+        for(int i=0;i<count;i++)
+        {
+            var collider=overlapHits[i];
             if (IsShotCollider(collider))
             {
                 cover = collider;
@@ -164,6 +171,7 @@ public class SoldierHitscan : MonoBehaviour
                     ? origin : collider.ClosestPoint(origin);
                 return true;
             }
+        }
         Vector3 firingOrigin = transform.position + Vector3.up * GetComponent<SoldierPhysicsBody>().height * .75f;
         Vector3 toMuzzle = origin - firingOrigin;
         if (ClosestHit(new Ray(firingOrigin, toMuzzle), toMuzzle.magnitude, out var hit))
@@ -214,8 +222,10 @@ public class SoldierHitscan : MonoBehaviour
     {
         closest = default;
         bool found = false;
-        foreach (RaycastHit hit in Physics.RaycastAll(ray, distance, hitLayers, QueryTriggerInteraction.Collide))
+        int count=CombatQueries.Raycast(ray,distance,ProjectileCollision.WithoutProjectiles(hitLayers),QueryTriggerInteraction.Collide,ref queryHits);
+        for(int i=0;i<count;i++)
         {
+            var hit=queryHits[i];
             if (!IsShotCollider(hit.collider) || (found && hit.distance >= closest.distance)) continue;
             closest = hit;
             found = true;

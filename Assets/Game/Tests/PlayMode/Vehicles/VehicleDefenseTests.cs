@@ -40,9 +40,14 @@ public class VehicleDefenseTests
         var root=Root(name);root.SetActive(false);root.transform.position=position;
         var body=root.AddComponent<Rigidbody>();body.useGravity=false;
         var v=(Behaviour)root.AddComponent(T("Vehicle"));v.enabled=false;
+        // Aircraft classification now follows the motor, not the decorative instrument preset.
+        var motor=(Behaviour)root.AddComponent(T("JetMotor"));motor.enabled=false;Set(v,"motor",motor);Set(motor,"vehicle",v);
         var seat=Activator.CreateInstance(T("Vehicle").GetNestedType("Seat"));
         var actorRoot=Root(name+" operator");actorRoot.SetActive(false);
         var actor=actorRoot.AddComponent(T("VehicleOccupant"));Set(actor,"faction",faction);
+        var soldier=(Behaviour)actorRoot.AddComponent(T("SoldierController"));soldier.enabled=false;Set(actor,"soldier",soldier);
+        var life=(Behaviour)actorRoot.AddComponent(T("SoldierLife"));life.enabled=false;
+        Set(life,"health",actorRoot.AddComponent(T("SoldierHealth")));Set(actor,"life",life);
         seat.GetType().GetField("occupant").SetValue(seat,actor);
         foreach(string n in new[]{"anchor","exit","eye"})seat.GetType().GetField(n).SetValue(seat,root.transform);
         var seats=Array.CreateInstance(seat.GetType(),1);seats.SetValue(seat,0);Set(v,"seats",seats);
@@ -55,7 +60,7 @@ public class VehicleDefenseTests
         var root=Root("Seeker");root.transform.position=new Vector3(0,1000,5);
         var body=root.AddComponent<Rigidbody>();body.useGravity=false;body.linearVelocity=Vector3.forward*30;
         var m=root.AddComponent(T("VehicleMissileGuidance"));EnumField(m,"seeker",seeker);EnumField(m,"guidance",guidance);Set(m,"seekerDelay",0f);
-        Call(m,"Initialize",source,new Ray(new Vector3(0,1000,0),Vector3.forward),null);
+        Call(m,"Initialize",source,new Ray(new Vector3(0,1000,0),Vector3.forward),null,null);
         Assert.AreEqual(target,Get(m,"Target"),"Seeker must acquire the hostile vehicle");return m;
     }
     Component Decoy(string signature)
@@ -71,11 +76,11 @@ public class VehicleDefenseTests
         foreach(var g in objects)if(g)Object.Destroy(g);objects.Clear();vehicles.Clear();yield return null;
     }
     [UnityTest] public IEnumerator InfraredSeekerFollowsFlare()
-    {var m=Missile("Infrared","AirToAir",out _);var d=Decoy("Infrared");yield return new WaitForFixedUpdate();yield return new WaitForFixedUpdate();Assert.AreEqual(d,Get(m,"DecoyTarget"));Assert.IsNull(Get(m,"Target"));}
+    {var m=Missile("Infrared","AirToAir",out _);var d=Decoy("Infrared");yield return new WaitForFixedUpdate();yield return new WaitForFixedUpdate();Assert.AreEqual(d,Get(m,"decoy"));Assert.IsNull(Get(m,"Target"));}
     [UnityTest] public IEnumerator InfraredSeekerIgnoresChaff()
     {var m=Missile("Infrared","AirToAir",out var target);Decoy("Radar");yield return new WaitForFixedUpdate();yield return new WaitForFixedUpdate();Assert.AreEqual(target,Get(m,"Target"));}
     [UnityTest] public IEnumerator RadarSeekerFollowsChaff()
-    {var m=Missile("Radar","AirDefence",out _);var d=Decoy("Radar");yield return new WaitForFixedUpdate();yield return new WaitForFixedUpdate();Assert.AreEqual(d,Get(m,"DecoyTarget"));}
+    {var m=Missile("Radar","AirDefence",out _);var d=Decoy("Radar");yield return new WaitForFixedUpdate();yield return new WaitForFixedUpdate();Assert.AreEqual(d,Get(m,"decoy"));}
     [UnityTest] public IEnumerator RadarSeekerIgnoresFlare()
     {var m=Missile("Radar","AirDefence",out var target);Decoy("Infrared");yield return new WaitForFixedUpdate();yield return new WaitForFixedUpdate();Assert.AreEqual(target,Get(m,"Target"));}
     [UnityTest] public IEnumerator OpticalGuidanceIgnoresAircraftDecoys()

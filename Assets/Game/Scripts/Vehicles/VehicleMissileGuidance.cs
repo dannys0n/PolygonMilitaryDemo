@@ -28,6 +28,7 @@ public sealed class VehicleMissileGuidance : MonoBehaviour
     float launchTime;
     bool initialized;
     VehicleLauncher director;
+    RaycastHit[] queryHits=new RaycastHit[16];
     public void Initialize(Vehicle source, Ray aim, VehicleLauncher launcher = null, Vehicle validatedTarget = null)
     {
         body = GetComponent<Rigidbody>(); launchTime = Time.time; initialized = true;
@@ -37,9 +38,15 @@ public sealed class VehicleMissileGuidance : MonoBehaviour
         target = launcher && launcher.requiresLock ? validatedTarget : FindTarget(source, aim);
         // Laser designation strikes the selected visible surface when no vehicle was acquired.
         if (guidance == Guidance.LaserSpot || guidance == Guidance.CommandLineOfSight)
-            foreach (var hit in Physics.RaycastAll(aim, acquisitionRange, Physics.DefaultRaycastLayers, QueryTriggerInteraction.Ignore))
+        {
+            int count=CombatQueries.Raycast(aim,acquisitionRange,ProjectileCollision.WithoutProjectiles(Physics.DefaultRaycastLayers),QueryTriggerInteraction.Ignore,ref queryHits);
+            for(int i=0;i<count;i++)
+            {
+                var hit=queryHits[i];
                 if (!hit.transform.IsChildOf(source.transform) && !hit.transform.IsChildOf(transform)
                     && !(SoldierPhysicsBody.IsMotorCollider(hit.collider)) && hit.distance < Vector3.Distance(aim.origin, aimPoint)) aimPoint = hit.point;
+            }
+        }
     }
     // Acquisition and launch share these checks; the lock variant never chooses a new target on launch.
     public Vehicle FindTarget(Vehicle source, Ray aim, Ray? launchRay = null)
@@ -79,12 +86,17 @@ public sealed class VehicleMissileGuidance : MonoBehaviour
         if (!HasLineOfSight(source, candidate, aim.origin, point)) return false;
         return !launchRay.HasValue || HasLineOfSight(source, candidate, launchRay.Value.origin, point);
     }
-    static bool HasLineOfSight(Vehicle source, Vehicle candidate, Vector3 origin, Vector3 point)
+    bool HasLineOfSight(Vehicle source, Vehicle candidate, Vector3 origin, Vector3 point)
     {
         Vector3 offset = point - origin;
-        foreach (var hit in Physics.RaycastAll(origin, offset.normalized, offset.magnitude, Physics.DefaultRaycastLayers, QueryTriggerInteraction.Ignore))
+        int count=CombatQueries.Raycast(new Ray(origin,offset.normalized),offset.magnitude,
+            ProjectileCollision.WithoutProjectiles(Physics.DefaultRaycastLayers),QueryTriggerInteraction.Ignore,ref queryHits);
+        for(int i=0;i<count;i++)
+        {
+            var hit=queryHits[i];
             if (!hit.transform.IsChildOf(source.transform) && !hit.transform.IsChildOf(candidate.transform)
                 && !hit.collider.GetComponentInParent<VehicleRocket>() && !(SoldierPhysicsBody.IsMotorCollider(hit.collider))) return false;
+        }
         return true;
     }
     void FixedUpdate()
@@ -100,10 +112,15 @@ public sealed class VehicleMissileGuidance : MonoBehaviour
                 // A decoy must be near the tracked aircraft, not a global invulnerability switch.
                 if(Vector3.Distance(candidate.transform.position,TargetPoint(target))>80)continue;
                 bool obscured=false;
-                foreach(var hit in Physics.RaycastAll(body.position,offset.normalized,offset.magnitude,Physics.DefaultRaycastLayers,QueryTriggerInteraction.Ignore))
+                int count=CombatQueries.Raycast(new Ray(body.position,offset.normalized),offset.magnitude,
+                    ProjectileCollision.WithoutProjectiles(Physics.DefaultRaycastLayers),QueryTriggerInteraction.Ignore,ref queryHits);
+                for(int i=0;i<count;i++)
+                {
+                    var hit=queryHits[i];
                     if(!hit.transform.IsChildOf(transform) && !hit.transform.IsChildOf(candidate.transform)
                         && !hit.transform.IsChildOf(target.transform) && !(SoldierPhysicsBody.IsMotorCollider(hit.collider)))
                     {obscured=true;break;}
+                }
                 if(obscured)continue;
                 // Follow the false signature briefly; never reacquire the original aircraft.
                 target=null;decoy=candidate;diverted=true;aimPoint=candidate.transform.position;

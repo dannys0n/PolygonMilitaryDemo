@@ -21,6 +21,9 @@ public class SoldierFootIK : MonoBehaviour
     [Min(0f)] public float liftFadeStart = 0.04f;
     [Min(0.01f)] public float liftFadeEnd = 0.18f;
     public bool drawDebug;
+    [Header("Cosmetic distance quality")]
+    [Min(0)] public float fullQualityDistance=40;
+    [Min(1)] public float fadeOutDistance=65;
 
     private readonly RaycastHit[] groundHits = new RaycastHit[16];
     private FootState left;
@@ -62,6 +65,8 @@ public class SoldierFootIK : MonoBehaviour
 
         // Running owns the entire body pose, including pelvis and feet.
         float correctionWeight = 1f - animator.GetLayerWeight(animator.GetLayerIndex("SprintBody"));
+        correctionWeight *= FootIkViewDistance.Weight(controller.transform.position,fullQualityDistance,
+            Mathf.Max(fullQualityDistance+1,fadeOutDistance));
         if (correctionWeight <= 0f)
         {
             animator.SetIKPositionWeight(AvatarIKGoal.LeftFoot, 0f);

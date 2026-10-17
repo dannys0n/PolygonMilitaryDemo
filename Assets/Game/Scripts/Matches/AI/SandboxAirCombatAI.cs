@@ -155,12 +155,13 @@ public sealed class SandboxAirCombatAI : MonoBehaviour
     Vector3 AvoidObstacle(Vector3 position, Vector3 desired)
     {
         Vector3 direction = vehicle.Body.linearVelocity.sqrMagnitude > 4 ? vehicle.Body.linearVelocity.normalized : vehicle.transform.forward;
-        int count = Physics.SphereCastNonAlloc(position, 5, direction, hits, Mathf.Max(55, vehicle.Body.linearVelocity.magnitude * 2), Physics.DefaultRaycastLayers, QueryTriggerInteraction.Ignore);
+        int count = Physics.SphereCastNonAlloc(position, 5, direction, hits, Mathf.Max(55, vehicle.Body.linearVelocity.magnitude * 2), ProjectileCollision.WithoutProjectiles(Physics.DefaultRaycastLayers), QueryTriggerInteraction.Ignore);
         for (int i = 0; i < count; i++)
         {
             var hit = hits[i];
-            if (hit.transform.IsChildOf(vehicle.transform) || hit.collider.GetComponentInParent<VehicleRocket>() || hit.collider.GetComponentInParent<VehicleOccupant>()) continue;
-            if (hit.collider.GetComponentInParent<Vehicle>()) continue; // Predictive separation owns aircraft avoidance.
+            var collider=hit.collider;
+            if (collider.transform.IsChildOf(vehicle.transform) || collider.GetComponentInParent<VehicleOccupant>()) continue;
+            if (collider.GetComponentInParent<Vehicle>()) continue; // Predictive separation owns aircraft avoidance.
             return position + Vector3.up * 160 + vehicle.transform.forward * 80;
         }
         return desired;

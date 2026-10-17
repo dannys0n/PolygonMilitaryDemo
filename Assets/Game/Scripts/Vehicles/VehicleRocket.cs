@@ -1,4 +1,3 @@
-using System.Collections.Generic;
 using UnityEngine;
 
 [RequireComponent(typeof(Rigidbody))]
@@ -24,6 +23,8 @@ public class VehicleRocket : MonoBehaviour
     bool cached;
     Collider[] projectileColliders;
     Renderer[] projectileRenderers;
+    RaycastHit[] sweepHits = new RaycastHit[8];
+    float exhaustTail;
     void Awake()
     {
         if(cached)return;
@@ -31,6 +32,10 @@ public class VehicleRocket : MonoBehaviour
         defaultExplodeOnExpiry=explodeOnExpiry;
         projectileColliders=GetComponentsInChildren<Collider>(true);
         projectileRenderers=GetComponentsInChildren<Renderer>(true);
+        if(exhaust)
+            foreach(var particles in exhaust.GetComponentsInChildren<ParticleSystem>(true))
+                exhaustTail=Mathf.Max(exhaustTail,particles.main.startLifetime.constantMax);
+        ProjectileCollision.ConfigureColliders(projectileColliders);
     }
     public void ResetForReuse()
     {
@@ -45,10 +50,6 @@ public class VehicleRocket : MonoBehaviour
         expiresAt=Mathf.Min(expiresAt,Time.time+Mathf.Max(0,seconds));
         explodeOnExpiry|=detonate;
     }
-    static readonly HashSet<VehicleRocket> active = new HashSet<VehicleRocket>();
-    [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
-    static void ResetRegistry() => active.Clear();
-    void OnDisable() => active.Remove(this);
     public void Launch(Vehicle vehicle, GameObject shooter, Sprite weaponIcon = null)
     {
         Launch(shooter, vehicle.transform, vehicle.Body.GetPointVelocity(transform.position), weaponIcon);
@@ -64,18 +65,6 @@ public class VehicleRocket : MonoBehaviour
         body.linearVelocity = transform.forward * speed + inheritedVelocity;
         // Damage comes from the swept hit/explosion, never a high-speed rigidbody impulse.
         // Solid cannon rounds could shove an aircraft hard enough to cause a second crash kill.
-        foreach(var collider in projectileColliders)collider.isTrigger=true;
-        if (owner)
-            foreach (var c in owner.GetComponentsInChildren<Collider>(true))
-                foreach (var projectileCollider in projectileColliders)
-                    ProjectilePool.IgnoreCollision(this, projectileCollider, c);
-        // Ballistic rounds are not interceptors; ignore other rounds as well as owner volleys.
-        foreach (var other in active)
-            if (other && (ballistic || other.ballistic || (owner && other.owner == owner)))
-                foreach (var otherCollider in other.projectileColliders)
-                    foreach (var projectileCollider in projectileColliders)
-                        ProjectilePool.IgnoreCollision(this, projectileCollider, otherCollider);
-        active.Add(this);
         if(ballistic)
         {
             foreach(var renderer in projectileRenderers)renderer.enabled=false;
@@ -86,13 +75,11 @@ public class VehicleRocket : MonoBehaviour
     }
     void ReturnToPool()
     {
-        active.Remove(this);
         float tail=0;
         if (exhaust && !ballistic)
         {
             exhaust.Stop(true,ParticleSystemStopBehavior.StopEmitting);
-            foreach(var particles in exhaust.GetComponentsInChildren<ParticleSystem>(true))
-                tail=Mathf.Max(tail,particles.main.startLifetime.constantMax);
+            tail=exhaustTail;
         }
         ProjectilePool.Release(this,tail);
     }
@@ -114,11 +101,16 @@ public class VehicleRocket : MonoBehaviour
         RaycastHit nearest = default;
         float distance = delta.magnitude;
         bool found = false;
-        foreach (var hit in Physics.RaycastAll(previous,delta.normalized,delta.magnitude,Physics.DefaultRaycastLayers,QueryTriggerInteraction.Ignore))
+        int count=CombatQueries.Raycast(new Ray(previous,delta.normalized),distance,
+            ProjectileCollision.WithoutProjectiles(Physics.DefaultRaycastLayers),QueryTriggerInteraction.Ignore,ref sweepHits);
+        for(int i=0;i<count;i++)
+        {
+            var hit=sweepHits[i];
             if (!IgnoreHit(hit.collider) && hit.distance <= distance)
             {
                 nearest = hit; distance = hit.distance; found = true;
             }
+        }
         if (found)
         {
             Explode(nearest.point,nearest.normal);
@@ -145,9 +137,7 @@ public class VehicleRocket : MonoBehaviour
     }
     bool IgnoreHit(Collider collider)
     {
-        if (collider.transform.IsChildOf(transform) || (owner && collider.transform.IsChildOf(owner))) return true;
-        var round = collider.GetComponentInParent<VehicleRocket>();
-        return round && (ballistic || round.ballistic || (owner && round.owner == owner));
+        return collider.transform.IsChildOf(transform) || (owner && collider.transform.IsChildOf(owner));
     }
     void Explode(Vector3 point,Vector3 normal)
     {
