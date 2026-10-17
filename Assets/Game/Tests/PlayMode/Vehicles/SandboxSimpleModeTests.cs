@@ -24,6 +24,54 @@ public class SandboxSimpleModeTests
         .SelectMany(g => g.GetComponentsInChildren(T(name), true)).ToArray();
     Component rules;
     Component[] infantry;
+    [UnityTest] public IEnumerator SpectatorInterestSwitchesForQuietTimeDwellAndVarietyWithoutInterruptingDeathWatch()
+    {
+        yield return Load();
+        var spectator = All("ArenaAISpectator").Single();
+        Assert.IsTrue((bool)Get(spectator, "InterestMode"), "Interest mode starts enabled.");
+        Call(spectator, "SetManualSpectating", true);
+        Set(spectator, "ControlsBlocked", false);
+        Call(spectator, "SetInterestMode", true);
+        var director = spectator.GetComponent(T("ArenaSpectatorInterest"));
+        // Drive the director deterministically while gameplay continues normally.
+        ((Behaviour)director).enabled = false;
+        Call(director, "SetEnabled", true);
+        var actors = All("ArenaParticipant").Where(a => (bool)Call(spectator, "CanFollowFiltered", a)).ToArray();
+        var foot = actors.Where(a => !((bool)Get(a.GetComponent(T("VehicleOccupant")), "IsMounted"))).Take(3).ToArray();
+        Assert.AreEqual(3, foot.Length);
+        Call(spectator, "Follow", foot[0]);
+        float now = Time.time;
+        Set(director, "lastActionAt", now - 3.1f);
+        // Clear historical shots so this specifically exercises the quiet timeout.
+        foreach (var actor in actors) Set(actor, "<LastShotTime>k__BackingField", float.NegativeInfinity);
+        Call(director, "Tick", now);
+        Assert.AreNotEqual(foot[0], Get(spectator, "FollowedCharacter"));
+        Call(spectator, "Follow", foot[0]);
+        Call(foot[0], "RecordShotAt", foot[0].transform.position);
+        Set(director, "followedAt", now - 15.1f);
+        Call(director, "Tick", now);
+        Assert.AreNotEqual(foot[0], Get(spectator, "FollowedCharacter"), "Even active targets have a maximum dwell.");
+        Call(spectator, "Follow", foot[0]);
+        Call(spectator, "Follow", foot[1]);
+        Call(spectator, "Follow", foot[2]);
+        var varied = (Component)Call(director, "Choose", now);
+        Assert.IsTrue((bool)Get(varied.GetComponent(T("VehicleOccupant")), "IsMounted"), "Fourth selection must change unit type when available.");
+        Set(director, "lastActionAt", now - 4);
+        Set(director, "followedAt", now - 20);
+        Set(spectator, "deathWatch", true);
+        Call(director, "Tick", now);
+        Assert.AreEqual(foot[2], Get(spectator, "FollowedCharacter"), "Existing death camera must finish first.");
+        Set(spectator, "deathWatch", false);
+        var filterType = Get(spectator, "Filter").GetType();
+        Call(spectator, "SetFilter", Enum.Parse(filterType, "Infantry"));
+        var filtered = (Component)Call(director, "Choose", now);
+        Assert.IsFalse((bool)Get(filtered.GetComponent(T("VehicleOccupant")), "IsMounted"));
+        Call(spectator, "SetInterestMode", false);
+        var held = Get(spectator, "FollowedCharacter");
+        Call(director, "Tick", now + 30);
+        Assert.AreEqual(held, Get(spectator, "FollowedCharacter"));
+        yield return null;
+    }
     IEnumerator Load()
     {
         yield return EditorSceneManager.LoadSceneAsyncInPlayMode("Assets/Game/Scenes/Gameplay/MilitaryBase/MilitaryBase_Sandbox.unity", new LoadSceneParameters(LoadSceneMode.Single));

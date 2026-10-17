@@ -22,8 +22,12 @@ public class ArenaVehicleScenario : MonoBehaviour
         match.MatchEnded -= OnEnded;
         Vehicle.Spawned -= Configure;
         foreach (var vehicle in Vehicle.Active)
-            if (vehicle.gameObject.scene == gameObject.scene && vehicle.turret)
-                vehicle.turret.ShotFired -= OnVehicleShot;
+            if (vehicle.gameObject.scene == gameObject.scene)
+            {
+                if (vehicle.turret) vehicle.turret.ShotFired -= OnVehicleShot;
+                foreach (var launcher in vehicle.GetComponentsInChildren<VehicleLauncher>(true))
+                    launcher.ShotFired -= OnVehicleShot;
+            }
         OnEnded();
     }
 
@@ -43,6 +47,11 @@ public class ArenaVehicleScenario : MonoBehaviour
         {
             vehicle.turret.ShotFired -= OnVehicleShot;
             vehicle.turret.ShotFired += OnVehicleShot;
+        }
+        foreach (var launcher in vehicle.GetComponentsInChildren<VehicleLauncher>(true))
+        {
+            launcher.ShotFired -= OnVehicleShot;
+            launcher.ShotFired += OnVehicleShot;
         }
         vehicle.DamageFilter = source =>
         {

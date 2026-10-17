@@ -68,7 +68,17 @@ public class ArenaAISpectator : MonoBehaviour
         if (IsSpectating && !deathWatch && (!FollowedCharacter || !MatchesFilter(FollowedCharacter))) CycleCharacter(1);
     }
     public void CycleFilter() => SetFilter((FollowFilter)(((int)Filter + 1) % 4));
-    bool CanFollowFiltered(ArenaParticipant actor) => CanFollowAlive(actor) && !actor.IsSpectator && MatchesFilter(actor);
+    public bool CanFollowFiltered(ArenaParticipant actor) => CanFollowAlive(actor) && !actor.IsSpectator && MatchesFilter(actor);
+    ArenaSpectatorInterest interest;
+    public bool InterestMode => interest && interest.Enabled;
+    public void SetInterestMode(bool value) => interest.SetEnabled(value);
+    void Awake()
+    {
+        interest = GetComponent<ArenaSpectatorInterest>();
+        if (!interest) interest = gameObject.AddComponent<ArenaSpectatorInterest>();
+        interest.spectator = this;
+        interest.SetEnabled(true);
+    }
     readonly System.Collections.Generic.List<(Renderer mesh, bool enabled)> suspendedMeshes = new();
     readonly System.Collections.Generic.List<(Collider body, bool enabled)> suspendedColliders = new();
 
@@ -157,6 +167,7 @@ public class ArenaAISpectator : MonoBehaviour
         if (!localPlayer && Input.GetKeyDown(KeyCode.Backspace)) { CancelDeathWatch(); match.BeginMatch(); }
         if (deathWatch && Time.time >= deathWatchUntil) CompleteDeathWatch();
         if (ControlsBlocked) return;
+        if (Input.GetKeyDown(KeyCode.I)) SetInterestMode(!InterestMode);
         if (Input.GetKeyDown(KeyCode.V)) CycleFilter();
         if (!deathWatch && FollowedCharacter && !CanFollowFiltered(FollowedCharacter)) CycleCharacter(1);
         if (waitingForFilteredTarget && Time.unscaledTime >= nextFilteredSearch)
@@ -167,6 +178,7 @@ public class ArenaAISpectator : MonoBehaviour
         if (Input.GetKeyDown(KeyCode.L)) ShowControls = !ShowControls;
         if (Input.GetKeyDown(KeyCode.F))
         {
+            SetInterestMode(false);
             if (FollowedCharacter || waitingForFilteredTarget) StopFollowing();
             else CycleCharacter(1);
         }
@@ -209,6 +221,7 @@ public class ArenaAISpectator : MonoBehaviour
         if (FollowedCharacter) FollowedCharacter.health.Died -= OnFollowedCharacterDied;
         ReleasePerspective();
         FollowedCharacter = character;
+        interest.RecordFollow(character);
         FollowedCharacter.health.Died += OnFollowedCharacterDied;
         followedHead = character.player.actions.animator.GetBoneTransform(HumanBodyBones.Head);
         ShowFollowHud(character);

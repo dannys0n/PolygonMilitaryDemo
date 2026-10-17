@@ -21,6 +21,7 @@ public class ArenaSpectatorHud : MonoBehaviour
     string accentHex;
     UnityEngine.UI.Button[] filterButtons;
     TMP_Text[] filterLabels;
+    TMP_Text interestLabel;
     RectTransform caption,filterBar;
     Vector2 captionPosition,captionSize,captionMin,captionMax,captionPivot,titleSize,controlsSize;
     bool vehicleCaption;
@@ -32,6 +33,16 @@ public class ArenaSpectatorHud : MonoBehaviour
         captionPosition=caption.anchoredPosition;captionSize=caption.sizeDelta;captionMin=caption.anchorMin;captionMax=caption.anchorMax;captionPivot=caption.pivot;
         titleSize=title.rectTransform.sizeDelta;controlsSize=controls.rectTransform.sizeDelta;
         BuildFilters();
+        interestLabel = Instantiate(title, caption);
+        interestLabel.name = "Spectator interest mode";
+        interestLabel.fontSize = 16; interestLabel.alignment = TextAlignmentOptions.Center;
+        interestLabel.rectTransform.anchorMin = interestLabel.rectTransform.anchorMax = new Vector2(.5f,.5f);
+        interestLabel.rectTransform.anchoredPosition = new Vector2(0,94);
+        interestLabel.rectTransform.sizeDelta = new Vector2(500,28);
+        interestLabel.raycastTarget = true;
+        var interestButton = interestLabel.gameObject.AddComponent<Button>();
+        interestButton.targetGraphic = interestLabel;
+        interestButton.onClick.AddListener(() => { if(!spectator.ControlsBlocked)spectator.SetInterestMode(!spectator.InterestMode); });
         monitorTexture = new RenderTexture(monitorWidth, monitorWidth, 24, RenderTextureFormat.ARGB32)
             { name = "Spectator alternate perspective", filterMode = FilterMode.Bilinear };
         monitorTexture.Create();
@@ -93,6 +104,7 @@ public class ArenaSpectatorHud : MonoBehaviour
         var occupant=target?target.GetComponent<VehicleOccupant>():null;
         bool mounted=occupant&&occupant.IsMounted;
         LayoutCaption(mounted);
+        interestLabel.text = spectator.InterestMode ? $"<color=#{accentHex}>INTEREST MODE ON</color>  /  I" : "INTEREST MODE OFF  /  I";
         for(int i=0;i<filterButtons.Length;i++)
         {
             bool selected = (int)spectator.Filter == i;
