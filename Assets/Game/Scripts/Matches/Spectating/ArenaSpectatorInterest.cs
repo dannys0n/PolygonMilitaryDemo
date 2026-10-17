@@ -76,6 +76,7 @@ public sealed class ArenaSpectatorInterest : MonoBehaviour
         bool differentTypeExists = false, differentVehicleExists = false;
         var current = spectator.FollowedCharacter;
         var currentMount = Mount(current);
+        int consecutiveLimit = lastType == 0 ? 5 : 3;
         foreach (var actor in spectator.match.participants)
         {
             if (actor == current || !spectator.CanFollowFiltered(actor)) continue;
@@ -85,7 +86,7 @@ public sealed class ArenaSpectatorInterest : MonoBehaviour
         foreach (var actor in spectator.match.participants)
         {
             if (actor == current || !spectator.CanFollowFiltered(actor)) continue;
-            if (consecutive >= 3 && differentTypeExists && UnitType(actor) == lastType) continue;
+            if (consecutive >= consecutiveLimit && differentTypeExists && UnitType(actor) == lastType) continue;
             if (differentVehicleExists && currentMount && Mount(actor) == currentMount) continue;
             float activityAge = Mathf.Max(0, now - ActionAt(actor));
             float novelty = watchedAt.TryGetValue(actor, out float watched) ? Mathf.Clamp(now - watched, 0, 60) : 60;
