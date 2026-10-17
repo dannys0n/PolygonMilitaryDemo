@@ -88,12 +88,20 @@ public class SoldierRagdoll : MonoBehaviour
         rig.enabled = false; animator.enabled = false; life.controller.enabled = false;
         for (int i = 0; i < bones.Length; i++)
         { bones[i].localPosition = positions[i]; bones[i].localRotation = rotations[i]; }
+        // Animated bones can have stale kinematic physics poses. Capture the visible
+        // world pose before handing ownership to PhysX, including every child body.
+        var bodyPositions = new Vector3[bodies.Length];
+        var bodyRotations = new Quaternion[bodies.Length];
+        for (int i = 0; i < bodies.Length; i++)
+        { bodyPositions[i] = bodies[i].transform.position; bodyRotations[i] = bodies[i].transform.rotation; }
         heldWeapon = life.loadout.ThirdPersonView.transform;
         weaponParent = heldWeapon.parent; weaponPosition = heldWeapon.localPosition; weaponRotation = heldWeapon.localRotation;
         weaponScale = heldWeapon.localScale;
         heldWeapon.SetParent(animator.GetBoneTransform(HumanBodyBones.RightHand), true);
         Physics.SyncTransforms();
         SetPhysics(true);
+        for (int i = 0; i < bodies.Length; i++)
+        { bodies[i].position = bodyPositions[i]; bodies[i].rotation = bodyRotations[i]; }
         Vector3 direction = source ? Vector3.ProjectOnPlane(transform.position - source.transform.position, Vector3.up).normalized : -transform.forward;
         if (direction.sqrMagnitude < .01f) direction = -transform.forward;
         foreach (var body in bodies) body.linearVelocity = lastVelocity;
@@ -105,6 +113,9 @@ public class SoldierRagdoll : MonoBehaviour
         foreach (var collider in bodyColliders) collider.enabled = active;
         foreach (var body in bodies)
         {
+            // Interpolation belongs to the simulated corpse. Leaving it on while
+            // kinematic lets old physics poses overwrite the animated skeleton.
+            body.interpolation = active ? RigidbodyInterpolation.Interpolate : RigidbodyInterpolation.None;
             if (!body.isKinematic) { body.linearVelocity = Vector3.zero; body.angularVelocity = Vector3.zero; }
             // Hit-region triggers can share these rigidbodies while the soldier is alive.
             body.isKinematic = !active; body.detectCollisions = true;
