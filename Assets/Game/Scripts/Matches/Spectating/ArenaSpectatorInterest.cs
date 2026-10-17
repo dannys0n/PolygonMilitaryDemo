@@ -9,7 +9,7 @@ public sealed class ArenaSpectatorInterest : MonoBehaviour
     readonly Dictionary<GameObject, float> damagedAt = new();
     readonly Dictionary<ArenaParticipant, float> watchedAt = new();
     ArenaParticipant tracked;
-    int lastType = -1, consecutive;
+    int lastType = -1, consecutive, perspectiveSwaps;
     float followedAt, lastActionAt, nextCheck;
 
     void OnEnable() => CombatEvents.DamageConfirmed += OnDamage;
@@ -55,19 +55,29 @@ public sealed class ArenaSpectatorInterest : MonoBehaviour
     {
         Enabled = value;
         if (!value) return;
-        tracked = null; lastType = -1; consecutive = 0;
+        tracked = null; lastType = -1; consecutive = perspectiveSwaps = 0;
         watchedAt.Clear(); damagedAt.Clear(); nextCheck = 0;
         if (spectator.FollowedCharacter) RecordFollow(spectator.FollowedCharacter);
     }
-    public void RecordFollow(ArenaParticipant actor)
+    public void EndFollowOnDeath()
     {
-        if (!Enabled || !actor || actor == tracked) return;
+        // A respawn can reuse the same participant. Its next life is a new
+        // follow, while the camera cadence and unit-type streak carry on.
+        tracked = null;
+    }
+    public bool RecordFollow(ArenaParticipant actor)
+    {
+        if (!Enabled || !actor || actor == tracked) return false;
+        // Initial acquisition is not a swap. Keep this cadence independent of
+        // unit-type streaks, including switches after the death camera finishes.
+        bool alternatePerspective = lastType >= 0 && ++perspectiveSwaps % 3 == 0;
         tracked = actor;
         int type = UnitType(actor);
         consecutive = type == lastType ? consecutive + 1 : 1;
         lastType = type;
         followedAt = lastActionAt = Time.time;
         watchedAt[actor] = Time.time;
+        return alternatePerspective;
     }
     public ArenaParticipant Choose(float now)
     {

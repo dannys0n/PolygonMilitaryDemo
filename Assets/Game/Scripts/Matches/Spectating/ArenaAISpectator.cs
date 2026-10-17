@@ -161,7 +161,7 @@ public class ArenaAISpectator : MonoBehaviour
             if(target==localPlayer && target.RespawnRemaining<=0)respawnWatchTarget=null;
             else if(target!=localPlayer && CanFollowFiltered(target))
             {
-                bool perspective=respawnWatchFirstPerson;Follow(target);if(perspective)EnterPerspective();
+                FollowWithPerspective(target, respawnWatchFirstPerson);
             }
         }
         if (!localPlayer && Input.GetKeyDown(KeyCode.Backspace)) { CancelDeathWatch(); match.BeginMatch(); }
@@ -213,20 +213,22 @@ public class ArenaAISpectator : MonoBehaviour
     }
 
     public void Follow(ArenaParticipant character)
+        => FollowWithPerspective(character, FirstPersonSpectating);
+
+    void FollowWithPerspective(ArenaParticipant character, bool perspective)
     {
         respawnWatchTarget=null;
         waitingForFilteredTarget = false;
         CancelDeathWatch();
-        bool perspective = FirstPersonSpectating;
         if (FollowedCharacter) FollowedCharacter.health.Died -= OnFollowedCharacterDied;
         ReleasePerspective();
         FollowedCharacter = character;
-        interest.RecordFollow(character);
+        bool alternatePerspective = interest.RecordFollow(character);
         FollowedCharacter.health.Died += OnFollowedCharacterDied;
         followedHead = character.player.actions.animator.GetBoneTransform(HumanBodyBones.Head);
         ShowFollowHud(character);
         PreparePerspective();
-        FirstPersonSpectating = perspective;
+        FirstPersonSpectating = perspective ^ alternatePerspective;
         RouteCameras();
     }
 
@@ -265,6 +267,7 @@ public class ArenaAISpectator : MonoBehaviour
 
     void OnFollowedCharacterDied(GameObject source)
     {
+        interest.EndFollowOnDeath();
         if(wasMounted){BeginVehicleRespawnWatch(FollowedCharacter,FirstPersonSpectating);return;}
         BeginDeathWatch(source, FirstPersonSpectating);
     }
@@ -309,8 +312,7 @@ public class ArenaAISpectator : MonoBehaviour
             nextFilteredSearch = Time.unscaledTime + .5f; return;
         }
         CancelDeathWatch();
-        Follow(next);
-        if (perspective) EnterPerspective();
+        FollowWithPerspective(next, perspective);
     }
 
     void CancelDeathWatch()
@@ -489,7 +491,7 @@ public class ArenaAISpectator : MonoBehaviour
         for (int i = 1; i <= actors.Length; i++)
         {
             var actor = actors[(start + direction * i + actors.Length * 2) % actors.Length];
-            if (CanFollowFiltered(actor)) { Follow(actor); if(perspective)EnterPerspective(); return; }
+            if (CanFollowFiltered(actor)) { FollowWithPerspective(actor, perspective); return; }
         }
         StopFollowing();
         waitingForFilteredTarget = true; filteredFirstPerson = perspective;
