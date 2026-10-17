@@ -124,8 +124,8 @@ public class ArenaHud : MonoBehaviour
     }
     void OnKill(ArenaParticipant attacker, ArenaParticipant victim)
     {
-        Sprite weapon = attacker.player ? attacker.player.loadout.EquippedWeapon.definition.icon : rifleSprite;
-        // Projectiles can land after the shooter has returned to the rifle.
+        Sprite weapon = victim.health.LastDamageIcon;
+        if (!weapon) weapon = attacker.player ? attacker.player.loadout.EquippedWeapon.definition.icon : rifleSprite;
 
         string a = Escape(attacker.name), v = Escape(victim.name);
         kills.Insert(0, (a, v, weapon, Time.time + 7f));

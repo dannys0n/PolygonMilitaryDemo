@@ -18,9 +18,12 @@ public sealed class AIBehaviorTestScenario : MonoBehaviour
     public Vector3 transportDestination=new Vector3(60,0,80);
     public Vehicle opposingVehiclePrefab;
     public Vehicle groundVehiclePrefab;
-    public ArenaVehicleAI.PilotControl pilotControl;
+    public ArenaVehicleAI.PilotControl pilotControl=ArenaVehicleAI.PilotControl.VehicleDefault;
     public bool splitPilotControls;
     public Vehicle Opponent { get; private set; }
+    [Range(2,4)] public int combatVehicleCount=2;
+    public readonly List<Vehicle> CombatVehicles=new List<Vehicle>();
+    Vector2 panelScroll;
     public bool CrewReady { get; private set; }
     public int ShotsFired { get; private set; }
     public int VehicleDamageHits { get; private set; }
@@ -44,7 +47,7 @@ public sealed class AIBehaviorTestScenario : MonoBehaviour
     void CountVehicleHit(CombatEvents.ConfirmedDamage hit)
     {
         if(hit.attacker && hit.attacker.GetComponentInParent<ArenaParticipant>()
-            && (Vehicle && hit.target==Vehicle.gameObject || Opponent && hit.target==Opponent.gameObject))
+            && (Vehicle && hit.target==Vehicle.gameObject || CombatVehicles.Any(v=>v && hit.target==v.gameObject)))
         {
             VehicleDamageHits++;
             var rider=hit.attacker.GetComponent<VehicleOccupant>();
@@ -100,7 +103,9 @@ public sealed class AIBehaviorTestScenario : MonoBehaviour
         flight=false;Running=false;Unloading=false;EnterRequested=false;nextActorId=0;CrewReady=false;ShotsFired=VehicleDamageHits=AircraftGroundHits=0;pilot=null;observer.follow=null;
         // Mounted actors are parented to seat anchors, not the population root.
         foreach(var actor in Actors)if(actor){var rider=actor.GetComponent<VehicleOccupant>();if(rider.IsMounted)rider.Leave(true);actor.gameObject.SetActive(false);Destroy(actor.gameObject);}
-        if(population){population.SetActive(false);Destroy(population);}if(Vehicle)Destroy(Vehicle.gameObject);if(Opponent)Destroy(Opponent.gameObject);Opponent=null;
+        if(population){population.SetActive(false);Destroy(population);}
+        foreach(var v in CombatVehicles)if(v && v!=Vehicle)Destroy(v.gameObject);
+        CombatVehicles.Clear();if(Vehicle)Destroy(Vehicle.gameObject);Opponent=null;
         Actors.Clear();pendingPlayers.Clear();population=new GameObject("Scenario actors");population.SetActive(false);
         if(vehiclePrefab)Vehicle=Instantiate(vehiclePrefab,Vector3.up*.2f,Quaternion.identity);
         ErrorCount=0;status="Ready. Each command can be reset and repeated.";
@@ -216,15 +221,23 @@ public sealed class AIBehaviorTestScenario : MonoBehaviour
         var opponentPrefab=groundTarget?groundVehiclePrefab:opposingVehiclePrefab;
         if(!opponentPrefab){status="Missing ground target prefab.";yield break;}
         Opponent=Instantiate(opponentPrefab);
-        var vehicles=new[]{Vehicle,Opponent};
+        CombatVehicles.Add(Vehicle);CombatVehicles.Add(Opponent);
+        int count=Mathf.Clamp(combatVehicleCount,2,4);
+        for(int i=2;i<count;i++)CombatVehicles.Add(Instantiate(i%2==0?vehiclePrefab:opponentPrefab));
+        var vehicles=CombatVehicles.ToArray();
         bool aircraft=Vehicle.IsAircraft;
-        float separation=Vehicle.motor is JetMotor?140:aircraft?55:45;
+        // Opposing jets begin 400m apart, just inside their 450m combat acquisition range.
+        float separation=aircraft?200:45;
         float height=Vehicle.motor is JetMotor?100:aircraft?25:.6f;
-        for(int side=0;side<2;side++)
+        for(int slot=0;slot<vehicles.Length;slot++)
         {
-            var vehicle=vehicles[side];
-            Vector3 position=groundTarget?(side==0?new Vector3(0,Vehicle.motor is JetMotor?65:30,Vehicle.motor is JetMotor?-210:-80):new Vector3(0,.6f,0))
+            int side=slot%2, rank=slot/2;
+            var vehicle=vehicles[slot];
+            Vector3 position=groundTarget?(side==0?new Vector3(0,Vehicle.motor is JetMotor?65:30,Vehicle.motor is JetMotor?-350:-140):new Vector3(0,.6f,0))
                 :new Vector3(0,height,side==0?-separation:separation);
+            // Paired opposing lanes leave room for wings, rotors and fully crewed ground vehicles.
+            float laneWidth=Vehicle.motor is JetMotor?90:aircraft?60:30;
+            if(count>2)position.x+=(rank-.5f)*laneWidth;
             vehicle.transform.SetPositionAndRotation(position,Quaternion.Euler(0,side==0?0:180,0));
             vehicle.enabled=false;vehicle.Body.collisionDetectionMode=CollisionDetectionMode.Discrete;vehicle.Body.isKinematic=true;
             foreach(var gun in vehicle.GetComponentsInChildren<VehicleTurret>(true))gun.ShotFired+=CountShot;
@@ -251,16 +264,19 @@ public sealed class AIBehaviorTestScenario : MonoBehaviour
         }
         CrewReady=true;Running=true;observer.follow=Vehicle.transform;
         ApplyPilotControls();
-        status="Opposing full crews: production targeting, steering, firing and damage. Reset to repeat.";
+        status=count+" vehicles ("+((count+1)/2)+" red vs "+(count/2)+" blue), full crews. Reset to repeat.";
     }
     ArenaVehicleAI.PilotControl ControlFor(ArenaParticipant.Team team)=>splitPilotControls && team==ArenaParticipant.Team.Blue
         ?ArenaVehicleAI.PilotControl.DirectInputs:pilotControl;
     void ApplyPilotControls()
     {
         foreach(var actor in Actors)if(actor && actor.TryGetComponent<ArenaVehicleAI>(out var ai))ai.SetPilotControl(ControlFor(actor.team));
-        if(Vehicle && Vehicle.IsAircraft)Vehicle.FlightAssistEnabled=ControlFor(ArenaParticipant.Team.Red)==ArenaVehicleAI.PilotControl.VehicleAssist;
-        if(Opponent && Opponent.IsAircraft)Opponent.FlightAssistEnabled=ControlFor(ArenaParticipant.Team.Blue)==ArenaVehicleAI.PilotControl.VehicleAssist;
+        if(Vehicle && Vehicle.IsAircraft)Vehicle.FlightAssistEnabled=UsesAssist(ArenaParticipant.Team.Red);
+        if(Opponent && Opponent.IsAircraft)Opponent.FlightAssistEnabled=UsesAssist(ArenaParticipant.Team.Blue);
+        for(int i=2;i<CombatVehicles.Count;i++)if(CombatVehicles[i] && CombatVehicles[i].IsAircraft)
+            CombatVehicles[i].FlightAssistEnabled=UsesAssist(i%2==0?ArenaParticipant.Team.Red:ArenaParticipant.Team.Blue);
     }
+    bool UsesAssist(ArenaParticipant.Team team)=>ControlFor(team)==ArenaVehicleAI.PilotControl.VehicleAssist;
     public void UseVehicleAssist(){pilotControl=ArenaVehicleAI.PilotControl.VehicleAssist;splitPilotControls=false;ApplyPilotControls();}
     public void UseDirectInputs(){pilotControl=ArenaVehicleAI.PilotControl.DirectInputs;splitPilotControls=false;ApplyPilotControls();}
     public void CompareFlightInputs(){pilotControl=ArenaVehicleAI.PilotControl.VehicleAssist;splitPilotControls=true;ApplyPilotControls();}
@@ -287,11 +303,12 @@ public sealed class AIBehaviorTestScenario : MonoBehaviour
     {
         if(!CrewReady || !Vehicle.IsAircraft || !Opponent)return;
         bool jet=Vehicle.motor is JetMotor;
-        for(int i=0;i<2;i++)
+        for(int i=0;i<CombatVehicles.Count;i++)
         {
-            var v=i==0?Vehicle:Opponent;
-            Vector3 position=jet?new Vector3(i*35,110,i*60):new Vector3(0,45,i==0?-40:40);
-            Quaternion rotation=Quaternion.Euler(0,jet?0:i==0?0:180,0);
+            var v=CombatVehicles[i];if(!v || !v.IsAircraft || v.IsDestroyed || !v.Driver)continue;
+            int side=i%2, rank=i/2;
+            Vector3 position=jet?new Vector3(side*35+rank*90,110,side*60):new Vector3(rank*60,45,side==0?-40:40);
+            Quaternion rotation=Quaternion.Euler(0,jet?0:side==0?0:180,0);
             v.Body.position=position;v.Body.rotation=rotation;
             v.transform.SetPositionAndRotation(position,rotation);
             v.Body.linearVelocity=rotation*Vector3.forward*(jet?((JetMotor)v.motor).maxSpeed*.75f:8);
@@ -317,7 +334,7 @@ public sealed class AIBehaviorTestScenario : MonoBehaviour
     }
     void OnGUI()
     {
-        GUILayout.BeginArea(new Rect(12,12,390,Screen.height-24),GUI.skin.box);GUILayout.Label(scenario.ToString());GUILayout.Label(status);GUILayout.Label("Actors: "+Actors.Count+" / completed: "+CompletedCount+" / runtime errors: "+ErrorCount);
+        GUILayout.BeginArea(new Rect(12,12,390,Screen.height-24),GUI.skin.box);panelScroll=GUILayout.BeginScrollView(panelScroll);GUILayout.Label(scenario.ToString());GUILayout.Label(status);GUILayout.Label("Actors: "+Actors.Count+" / completed: "+CompletedCount+" / runtime errors: "+ErrorCount);
         if(GUILayout.Button("Reset scenario"))ResetScenario();
         if(scenario==Scenario.PlaneCargoExit){if(GUILayout.Button("Load plane cargo (hold setup)"))LoadPlaneCargo();if(GUILayout.Button("Start flight and exit cargo"))ExitCargo();}
         else if(scenario==Scenario.TransportOverflow)
@@ -333,6 +350,8 @@ public sealed class AIBehaviorTestScenario : MonoBehaviour
         }
         else if(scenario==Scenario.VehicleCombat)
         {
+            GUILayout.Label("Vehicles on next start");
+            combatVehicleCount=2+GUILayout.SelectionGrid(Mathf.Clamp(combatVehicleCount,2,4)-2,new[]{"2 (1v1)","3 (2v1)","4 (2v2)"},3);
             if(vehiclePrefab.IsAircraft)
             {
                 GUILayout.Label(splitPilotControls?"RED: vehicle assist / BLUE: direct AI controls":"AI pilot: "+pilotControl);
@@ -347,6 +366,7 @@ public sealed class AIBehaviorTestScenario : MonoBehaviour
             if(CrewReady && Vehicle.IsAircraft && GUILayout.Button("Reproduce turning chase / closing pass"))SetAircraftClosePass();
             if(CrewReady && !Vehicle.IsAircraft && GUILayout.Button("Attack vehicle + dismount passengers"))AttackAndDismountPassengers();
             GUILayout.Label("Weapon shots: "+ShotsFired+" / damaging hits: "+VehicleDamageHits+" / air-ground hits: "+AircraftGroundHits);VehicleTelemetry(Vehicle,"Red");VehicleTelemetry(Opponent,"Blue");
+            for(int i=2;i<CombatVehicles.Count;i++)VehicleTelemetry(CombatVehicles[i],i%2==0?"Red 2":"Blue 2");
         }
         else if(GUILayout.Button("Start 2 vs 2 infantry combat"))StartCombat();
         if(GUILayout.Button("Free camera"))observer.follow=null;
@@ -359,7 +379,7 @@ public sealed class AIBehaviorTestScenario : MonoBehaviour
             GUILayout.BeginHorizontal();if(GUILayout.Button(label))observer.follow=actor.transform;
             if(scenario==Scenario.TransportOverflow&&GUILayout.Button("Remove",GUILayout.Width(65)))RemovePlayer(actor);GUILayout.EndHorizontal();
         }
-        GUILayout.EndArea();
+        GUILayout.EndScrollView();GUILayout.EndArea();
         if(scenario==Scenario.TransportOverflow&&VehicleOptions.Length>0)
         {
             GUILayout.BeginArea(new Rect(414,12,290,Mathf.Min(560,Screen.height-24)),GUI.skin.box);

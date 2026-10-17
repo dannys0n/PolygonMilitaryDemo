@@ -43,11 +43,16 @@ public sealed class ArenaDirectPilot
         Vector3 levelUp=Vector3.ProjectOnPlane(Vector3.up,vehicle.transform.forward);
         float roll=levelUp.sqrMagnitude>.001f?Vector3.SignedAngle(levelUp,vehicle.transform.up,vehicle.transform.forward):0;
         float bank=-Mathf.Clamp(headingError*1.3f,-maximumBank,maximumBank);
+        // Once the target is ahead, unload the bank and center with the elevator/rudder.
+        // Larger pursuit turns and collision avoidance retain normal bank authority.
+        if(input.aim && Mathf.Abs(headingError)<25)bank*=.25f;
         float pitchError=-Mathf.Atan2(local.y,new Vector2(local.x,local.z).magnitude)*Mathf.Rad2Deg;
         float yawError=Mathf.Atan2(local.x,local.z)*Mathf.Rad2Deg;
         if(Mathf.Abs(headingError)>145)yawError=Mathf.Abs(yawError)*turnSide;
-        input.pitchRate=Axis(pitchError,angular.x,motor.pitchRate);
-        input.yaw=Axis(yawError,angular.y,motor.Grounded?motor.groundSteeringRate:motor.yawRate);
+        float response=input.aim?2.5f:1.5f;
+        float damping=input.aim?.7f:rateDamping;
+        input.pitchRate=Mathf.Clamp((pitchError*angleResponse*response-angular.x*damping)/Mathf.Max(1,motor.pitchRate),-1,1);
+        input.yaw=Mathf.Clamp((yawError*angleResponse*response-angular.y*damping)/Mathf.Max(1,motor.Grounded?motor.groundSteeringRate:motor.yawRate),-1,1);
         input.move.x=motor.Grounded?0:-Axis(Mathf.DeltaAngle(roll,bank),angular.z,motor.rollRate);
         if(motor.Grounded && motor.Airspeed<motor.rotationSpeed)input.pitchRate=0;
         return input;
@@ -59,6 +64,12 @@ public sealed class ArenaDirectPilot
         Quaternion heading=Quaternion.Euler(0,input.movementHeading,0);
         Vector3 velocity=heading*new Vector3(input.move.x,0,input.move.y)*motor.maxSpeed;
         Vector3 acceleration=Vector3.ProjectOnPlane(velocity-body.linearVelocity,Vector3.up)*velocityResponse;
+        Vector3 localVelocity=Quaternion.Inverse(body.rotation)*body.linearVelocity;
+        // Account for the motor's drag when choosing cyclic; sustained forward flight
+        // needs a small forward tilt as well as collective to support the tilted rotor.
+        Vector3 drag=vehicle.transform.forward*localVelocity.z*(motor.forwardDrag+Mathf.Abs(localVelocity.z)*motor.quadraticDrag)
+            +vehicle.transform.right*localVelocity.x*(motor.sidewaysDrag+Mathf.Abs(localVelocity.x)*motor.quadraticDrag);
+        acceleration+=Vector3.ProjectOnPlane(drag,Vector3.up);
         acceleration=Vector3.ClampMagnitude(acceleration,gravity*Mathf.Tan(motor.maxTilt*Mathf.Deg2Rad));
         Vector3 local=Quaternion.Inverse(Quaternion.Euler(0,input.heading,0))*acceleration;
         float pitch=Mathf.Atan2(local.z,gravity)*Mathf.Rad2Deg;

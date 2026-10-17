@@ -16,6 +16,7 @@ public class VehicleRocket : MonoBehaviour
     Rigidbody body;
     Transform owner;
     GameObject source;
+    Sprite damageIcon;
     Vector3 previous;
     bool exploded;
     float expiresAt=float.PositiveInfinity;
@@ -29,19 +30,23 @@ public class VehicleRocket : MonoBehaviour
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
     static void ResetRegistry() => active.Clear();
     void OnDisable() => active.Remove(this);
-    public void Launch(Vehicle vehicle, GameObject shooter)
+    public void Launch(Vehicle vehicle, GameObject shooter, Sprite weaponIcon = null)
     {
-        Launch(shooter, vehicle.transform, vehicle.Body.GetPointVelocity(transform.position));
+        Launch(shooter, vehicle.transform, vehicle.Body.GetPointVelocity(transform.position), weaponIcon);
     }
-    public void Launch(GameObject shooter, Transform ignoredOwner, Vector3 inheritedVelocity)
+    public void Launch(GameObject shooter, Transform ignoredOwner, Vector3 inheritedVelocity, Sprite weaponIcon = null)
     {
         owner = ignoredOwner;
         source = shooter;
+        damageIcon = weaponIcon;
         body = GetComponent<Rigidbody>();
         body.useGravity = useGravity;
         previous = transform.position;
         body.linearVelocity = transform.forward * speed + inheritedVelocity;
         var projectileColliders = GetComponentsInChildren<Collider>(true);
+        // Damage comes from the swept hit/explosion, never a high-speed rigidbody impulse.
+        // Solid cannon rounds could shove an aircraft hard enough to cause a second crash kill.
+        foreach(var collider in projectileColliders)collider.isTrigger=true;
         if (owner)
             foreach (var c in owner.GetComponentsInChildren<Collider>(true))
                 foreach (var projectileCollider in projectileColliders)
@@ -106,6 +111,15 @@ public class VehicleRocket : MonoBehaviour
             Explode(contact.point,contact.normal);
         }
     }
+    void OnTriggerEnter(Collider collider)
+    {
+        if(!body || exploded || IgnoreHit(collider))return;
+        if(collider.isTrigger && !collider.GetComponent<SoldierHitRegion>())return;
+        Vector3 point=collider.ClosestPoint(body.position);
+        Vector3 normal=body.position-point;
+        if(normal.sqrMagnitude<.0001f)normal=-body.linearVelocity;
+        Explode(point,normal.sqrMagnitude>.0001f?normal.normalized:Vector3.up);
+    }
     bool IgnoreHit(Collider collider)
     {
         if (collider.transform.IsChildOf(transform) || (owner && collider.transform.IsChildOf(owner))) return true;
@@ -117,7 +131,7 @@ public class VehicleRocket : MonoBehaviour
         if (exploded)
             return;
         exploded = true;
-        ExplosionDamage.Apply(point,normal,radius,infantryDamage,vehicleDamage,source,transform);
+        ExplosionDamage.Apply(point,normal,radius,infantryDamage,vehicleDamage,source,transform,damageIcon);
         if(showImpactVisual && impactEffect)
         {
         var effect = Instantiate(impactEffect,point+normal*.03f,Quaternion.FromToRotation(Vector3.forward,normal));

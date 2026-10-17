@@ -12,6 +12,34 @@ public class CombatResourceTests
     static void Set(object o,string name,object value)=>o.GetType().GetField(name,Flags).SetValue(o,value);
     static object Get(object o,string name)=>o.GetType().GetProperty(name,Flags).GetValue(o);
 
+    [Test] public void AcceptedDamageRetainsVehicleSystemIconAndResetClearsIt()
+    {
+        var actor=new GameObject("Damage icon recipient");
+        var texture=new Texture2D(1,1);
+        var icon=Sprite.Create(texture,new Rect(0,0,1,1),Vector2.zero);
+        try
+        {
+            var health=actor.AddComponent(TypeOf("SoldierHealth"));
+            var damage=health.GetType().GetMethod("ApplyDamage");
+            Assert.IsTrue((bool)damage.Invoke(health,new object[]{25f,null,icon}));
+            Assert.AreSame(icon,Get(health,"LastDamageIcon"));
+            // Rejected hits must not overwrite the last accepted source.
+            damage.Invoke(health,new object[]{0f,null,null});
+            Assert.AreSame(icon,Get(health,"LastDamageIcon"));
+            damage.Invoke(health,new object[]{1f,null,null});
+            Assert.IsNull(Get(health,"LastDamageIcon"),"Infantry hits retain the existing weapon fallback.");
+            damage.Invoke(health,new object[]{25f,null,icon});
+            health.GetType().GetMethod("ResetHealth").Invoke(health,null);
+            Assert.IsNull(Get(health,"LastDamageIcon"));
+        }
+        finally
+        {
+            UnityEngine.Object.DestroyImmediate(actor);
+            UnityEngine.Object.DestroyImmediate(icon);
+            UnityEngine.Object.DestroyImmediate(texture);
+        }
+    }
+
     [Test] public void PrimaryReserveResetsFromDefinitionAndReloadConsumesReserve()
     {
         var d=ScriptableObject.CreateInstance(TypeOf("SoldierWeaponDefinition"));

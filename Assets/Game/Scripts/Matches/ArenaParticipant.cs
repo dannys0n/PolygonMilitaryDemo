@@ -79,7 +79,7 @@ public class ArenaParticipant : MonoBehaviour
 
     void OnDied(GameObject source)
     {
-        respawnAt = Time.time + match.settings.respawnDelay;
+        respawnAt = Time.time + (match.rules ? match.rules.RespawnDelay(this) : match.settings.respawnDelay);
         nextSpawnAttempt = respawnAt;
         match.RecordKill(this, source);
     }

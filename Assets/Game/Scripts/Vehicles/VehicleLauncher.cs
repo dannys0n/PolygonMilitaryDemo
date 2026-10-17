@@ -201,7 +201,7 @@ public class VehicleLauncher : MonoBehaviour
         var muzzle = muzzles[tubeIndex];
         if(tubeRounds.Length>tubeIndex) tubeRounds[tubeIndex].SetActive(false);
         var rocket = Instantiate(projectile, muzzle.position + muzzle.forward * projectile.launchClearance, muzzle.rotation);
-        rocket.Launch(vehicle, pilot.gameObject);
+        rocket.Launch(vehicle, pilot.gameObject, weaponIcon);
         if (launchFlash)
         {
             var flash = Instantiate(launchFlash, muzzle.position, muzzle.rotation);

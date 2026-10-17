@@ -42,7 +42,7 @@ public class ArenaAIInput : SoldierInputSource
     [Header("Aim and bursts")]
     public float initialAimError = 3f;
     public float settledAimError = 0f;
-    public float aimSettleTime = 1.5f;
+    public float aimSettleTime = 3f;
     public float aimTrackingTime = .18f;
     public float aimNoiseInterval = .4f;
     public float FocusSeconds => target?Mathf.Max(0,Time.time-acquiredAt):0;
@@ -459,7 +459,12 @@ public class ArenaAIInput : SoldierInputSource
     void SetDestination(Vector3 point, bool force = false)
     {
         Destination = point;
-        if (!force && Time.time < nextPath) return;
+        // Do not restart a queued long-distance search every repath interval. With many bots,
+        // that can starve navigation and leave a valid objective order motionless.
+        if (agent.pathPending || !force && Time.time < nextPath) return;
+        // Keep a complete route until the destination changes or stuck recovery requests a retry.
+        if (!force && agent.hasPath && agent.pathStatus==NavMeshPathStatus.PathComplete
+            && (agent.destination-point).sqrMagnitude<.25f) return;
         agent.SetDestination(point); nextPath = Time.time + Mathf.Max(.05f, repathInterval);
     }
 

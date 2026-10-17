@@ -15,6 +15,11 @@ public abstract class ArenaMatchRules : MonoBehaviour
     public abstract bool TryChooseSpawn(ArenaParticipant actor, Dictionary<Transform,float> history, out Transform spawn);
     public abstract void OnSpawned(ArenaParticipant actor, bool wasDead);
     public virtual bool NeedsDeployment(ArenaParticipant actor) => false;
+    // Modes with volumes or coupled vehicle crews can own placement instead of point selection.
+    public virtual bool UsesCustomSpawning => false;
+    public virtual bool TrySpawn(ArenaParticipant actor) => false;
+    public virtual float RespawnDelay(ArenaParticipant actor) => actor.match.settings.respawnDelay;
+    public virtual bool CanDamage(ArenaParticipant victim,ArenaParticipant attacker) => true;
     // Null keeps the HUD's nearby-team display for modes without squads.
     public virtual IEnumerable<ArenaParticipant> SquadMembers(ArenaParticipant actor) => null;
     public virtual bool TryGetObjective(ArenaAIInput ai, out Vector3 destination) { destination=default; return false; }

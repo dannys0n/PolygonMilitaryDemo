@@ -114,9 +114,16 @@ public class VehicleTurret : MonoBehaviour
         UpdateAim();
         nextShot = Time.time + 60f / roundsPerMinute;
         bool showVisual=BulletTracer.ShowVisual(++visualShot,roundsPerMinute);
+        Vector3 shotDirection=muzzle.forward;
+        if(!gunner.IsLocal && vehicle.motor is HelicopterMotor && (!projectile || projectile.ballistic))
+        {
+            // Slight AI-only angular dispersion; ray, projectile and tracer share the same shot.
+            Vector2 spread=Random.insideUnitCircle*Mathf.Tan(.45f*Mathf.Deg2Rad);
+            shotDirection=(muzzle.forward+muzzle.right*spread.x+muzzle.up*spread.y).normalized;
+        }
         RaycastHit nearest = default;
         bool found = false;
-        foreach (var hit in projectile && !projectile.ballistic ? System.Array.Empty<RaycastHit>() : Physics.RaycastAll(muzzle.position, muzzle.forward, range, Physics.DefaultRaycastLayers, QueryTriggerInteraction.Collide))
+        foreach (var hit in projectile && !projectile.ballistic ? System.Array.Empty<RaycastHit>() : Physics.RaycastAll(muzzle.position, shotDirection, range, Physics.DefaultRaycastLayers, QueryTriggerInteraction.Collide))
         {
             if (hit.transform.IsChildOf(vehicle.transform) || SoldierPhysicsBody.IsMotorCollider(hit.collider))
                 continue;
@@ -145,23 +152,29 @@ public class VehicleTurret : MonoBehaviour
             }
             var region = nearest.collider.GetComponent<SoldierHitRegion>();
             if (region)
-                region.health.ApplyDamage(damage, gunner.gameObject);
+                region.health.ApplyDamage(damage, gunner.gameObject, weaponIcon);
             else
             {
                 var other = nearest.collider.GetComponentInParent<Vehicle>();
                 if (other)
                 {
-                    if(explosiveVehicleDamage) other.ApplyExplosiveDamage(damage, gunner.gameObject);
-                    else other.ApplyBulletDamage(damage, gunner.gameObject);
+                    if(explosiveVehicleDamage) other.ApplyExplosiveDamage(damage, gunner.gameObject, weaponIcon);
+                    else other.ApplyBulletDamage(damage, gunner.gameObject, weaponIcon);
                 }
             }
         }
-        if((!projectile||projectile.ballistic) && showVisual)BulletTracer.Emit(muzzle,found?nearest.point:muzzle.position+muzzle.forward*range,projectile?projectile.speed:vehicle.motor is HelicopterMotor||vehicle.motor is JetMotor?1500f:1000f);
+        if((!projectile||projectile.ballistic) && showVisual)
+        {
+            bool helicopter=vehicle.motor is HelicopterMotor;
+            BulletTracer.Emit(muzzle,found?nearest.point:muzzle.position+shotDirection*range,
+                projectile?projectile.speed:helicopter||vehicle.motor is JetMotor?1500f:1000f,
+                helicopter?.3f:.18f,helicopter?24f:18f);
+        }
         if (projectile)
         {
-            var round = Instantiate(projectile, muzzle.position + muzzle.forward * projectile.launchClearance, muzzle.rotation);
+            var round = Instantiate(projectile, muzzle.position + muzzle.forward * projectile.launchClearance, Quaternion.LookRotation(shotDirection,muzzle.up));
             if(round.ballistic)round.showImpactVisual=showVisual;
-            round.Launch(vehicle, gunner.gameObject);
+            round.Launch(vehicle, gunner.gameObject, weaponIcon);
         }
         // Fire cadence is the gate for this prototype weapon; launcher reserves are managed separately.
         lastBarrelShot=Time.time;

@@ -101,6 +101,16 @@ public class ArenaMatch : MonoBehaviour
             participant.CancelRespawn();
             if (participant.player) participant.player.SetGameplayAllowed(false);
         }
+        if (rules && rules.UsesCustomSpawning)
+        {
+            RedOpeningPoint=redOpeningSpawn;BlueOpeningPoint=blueOpeningSpawn;
+            IsRunning=true;
+            foreach(var participant in participants)participant.IsAwaitingSpawn=true;
+            foreach(var participant in participants)
+                if(!Spawn(participant)){participant.IsAwaitingSpawn=true;pendingJoins.Add(participant);}
+            MatchStarted?.Invoke();
+            return;
+        }
         // Plan both complete formations before teleporting anyone. Old positions on a
         // restart must not influence the opening, and partial team starts are rejected.
         if (!ArenaSpawnSelection.TryPlanOpening(this, out var placements, out var red, out var blue))
@@ -147,6 +157,7 @@ public class ArenaMatch : MonoBehaviour
         if (!attacker || attacker == victim) return true;
         if (attacker.IsAwaitingSpawn) return false;
         if (attacker.match != this) return false;
+        if (rules && !rules.CanDamage(victim,attacker)) return false;
         return settings.friendlyFire || attacker.team != victim.team;
     }
 
@@ -169,6 +180,7 @@ public class ArenaMatch : MonoBehaviour
     public bool Spawn(ArenaParticipant participant)
     {
         if (!IsRunning || participant.IsSpectator) return false;
+        if(rules && rules.UsesCustomSpawning)return rules.TrySpawn(participant);
         Transform spawn;
         bool found = rules ? rules.TryChooseSpawn(participant, spawnHistory, out spawn)
             : ArenaSpawnSelection.TryChoose(this, participant, spawnHistory, out spawn);

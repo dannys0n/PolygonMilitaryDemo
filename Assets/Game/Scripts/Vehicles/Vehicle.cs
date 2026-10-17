@@ -319,9 +319,9 @@ public class Vehicle : MonoBehaviour
         return true;
     }
     // Weapon damage is reduced once here. Collisions and forced cleanup remain raw damage.
-    public bool ApplyBulletDamage(float amount, GameObject source) => ApplyDamage(amount*bulletDamageMultiplier,source);
-    public bool ApplyExplosiveDamage(float amount, GameObject source) => ApplyDamage(amount*explosiveDamageMultiplier,source);
-    public bool ApplyDamage(float amount, GameObject source)
+    public bool ApplyBulletDamage(float amount, GameObject source, Sprite weaponIcon = null) => ApplyDamage(amount*bulletDamageMultiplier,source,weaponIcon);
+    public bool ApplyExplosiveDamage(float amount, GameObject source, Sprite weaponIcon = null) => ApplyDamage(amount*explosiveDamageMultiplier,source,weaponIcon);
+    public bool ApplyDamage(float amount, GameObject source, Sprite weaponIcon = null)
     {
         if (IsDestroyed || amount <= 0 || (DamageFilter != null && !DamageFilter(source)))
             return false;
@@ -336,7 +336,7 @@ public class Vehicle : MonoBehaviour
         {
             var actor = s.occupant;
             actor.Leave(true);
-            actor.life.health.ApplyDamage(actor.life.health.maxHealth, source);
+            actor.life.health.ApplyDamage(actor.life.health.maxHealth, source, weaponIcon);
         }
         motor.enabled = false;
         if (turret) turret.enabled = false;

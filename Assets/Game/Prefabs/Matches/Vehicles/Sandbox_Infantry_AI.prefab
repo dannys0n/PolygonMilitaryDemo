@@ -1,0 +1,141 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!1001 &8813360281549120814
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 0}
+    m_Modifications:
+    - target: {fileID: 6352532540411874628, guid: 298282ac5ea4f6d488f654c0636086f9, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6352532540411874628, guid: 298282ac5ea4f6d488f654c0636086f9, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6352532540411874628, guid: 298282ac5ea4f6d488f654c0636086f9, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6352532540411874628, guid: 298282ac5ea4f6d488f654c0636086f9, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 6352532540411874628, guid: 298282ac5ea4f6d488f654c0636086f9, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6352532540411874628, guid: 298282ac5ea4f6d488f654c0636086f9, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6352532540411874628, guid: 298282ac5ea4f6d488f654c0636086f9, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6352532540411874628, guid: 298282ac5ea4f6d488f654c0636086f9, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6352532540411874628, guid: 298282ac5ea4f6d488f654c0636086f9, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6352532540411874628, guid: 298282ac5ea4f6d488f654c0636086f9, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7947099166434602876, guid: 298282ac5ea4f6d488f654c0636086f9, type: 3}
+      propertyPath: m_Name
+      value: Sandbox_Infantry_AI
+      objectReference: {fileID: 0}
+    - target: {fileID: 9077473738993931020, guid: 298282ac5ea4f6d488f654c0636086f9, type: 3}
+      propertyPath: inputSource
+      value: 
+      objectReference: {fileID: 1388646514823177053}
+    m_RemovedComponents:
+    - {fileID: 896018110739372459, guid: 298282ac5ea4f6d488f654c0636086f9, type: 3}
+    - {fileID: 2816820908504341014, guid: 298282ac5ea4f6d488f654c0636086f9, type: 3}
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 7947099166434602876, guid: 298282ac5ea4f6d488f654c0636086f9, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1388646514823177053}
+  m_SourcePrefab: {fileID: 100100000, guid: 298282ac5ea4f6d488f654c0636086f9, type: 3}
+--- !u!114 &555897954241492514 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 9077473738993931020, guid: 298282ac5ea4f6d488f654c0636086f9, type: 3}
+  m_PrefabInstance: {fileID: 8813360281549120814}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1443013272363502162}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a479f348a19ec154b8e44b66b56b6b29, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::SoldierController
+--- !u!1 &1443013272363502162 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 7947099166434602876, guid: 298282ac5ea4f6d488f654c0636086f9, type: 3}
+  m_PrefabInstance: {fileID: 8813360281549120814}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &1388646514823177053
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1443013272363502162}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b5f583fd91834203bd6e54b45e8d37bd, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::SandboxInfantryInput
+  soldier: {fileID: 555897954241492514}
+  life: {fileID: 4376084996615404664}
+  participant: {fileID: 1998951036095861778}
+  agent: {fileID: 8522550747427069033}
+  objective: {fileID: 0}
+  sightRange: 45
+  fieldOfView: 160
+  perceptionInterval: 0.15
+  reactionTime: 0.2
+  aimHoldTime: 0.6
+  turnSpeed: 240
+  initialAimError: 3
+  aimSettleTime: 3
+  burstRounds: 3
+  burstPause: 0.4
+  semiAutoInterval: 0.22
+  repathInterval: 0.5
+  sprintDistance: 15
+--- !u!114 &1998951036095861778 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 7057962068424601916, guid: 298282ac5ea4f6d488f654c0636086f9, type: 3}
+  m_PrefabInstance: {fileID: 8813360281549120814}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1443013272363502162}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 18e192d7e55f8464da1e3579fc199f30, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ArenaParticipant
+--- !u!114 &4376084996615404664 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 5113171508392941910, guid: 298282ac5ea4f6d488f654c0636086f9, type: 3}
+  m_PrefabInstance: {fileID: 8813360281549120814}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1443013272363502162}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: da7cb17233e87be48b78db7580b9d147, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::SoldierLife
+--- !u!195 &8522550747427069033 stripped
+NavMeshAgent:
+  m_CorrespondingSourceObject: {fileID: 867354948841830727, guid: 298282ac5ea4f6d488f654c0636086f9, type: 3}
+  m_PrefabInstance: {fileID: 8813360281549120814}
+  m_PrefabAsset: {fileID: 0}

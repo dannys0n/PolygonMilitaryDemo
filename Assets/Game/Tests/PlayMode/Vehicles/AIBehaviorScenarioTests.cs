@@ -70,6 +70,8 @@ public class AIBehaviorScenarioTests
    var red=(Component)Get(scenario,"Vehicle");var blue=(Component)Get(scenario,"Opponent");
    Vector3 initial=red.transform.position;yield return new WaitForSeconds(10);
    Assert.Greater(Vector3.Distance(initial,red.transform.position),5,name+" physically flies");
+   // The 400m opening includes an approach before shorter-range weapons acquire.
+   until=Time.time+20;while(Time.time<until&&(int)Get(scenario,"ShotsFired")==0)yield return null;
    Assert.Greater((int)Get(scenario,"ShotsFired"),0,name+" must engage with production weapons");
    until=Time.time+20;while(Time.time<until&&(int)Get(scenario,"VehicleDamageHits")==0)yield return null;
    Assert.Greater((int)Get(scenario,"VehicleDamageHits"),0,name+" must hit a moving opponent, not just fire into empty space");
@@ -301,7 +303,7 @@ public class AIBehaviorScenarioTests
   var attacker=(Component)Get(enemy,"Driver");
   var seats=(Array)Get(vehicle,"seats");var passenger=seats.Cast<object>().First(s=>Get(s,"role").ToString()=="Passenger");
   var rider=(Component)Get(passenger,"occupant");var ai=rider.GetComponent(T("ArenaAIInput"));
-  vehicle.GetType().GetMethod("ApplyDamage").Invoke(vehicle,new object[]{1f,attacker.gameObject});
+  vehicle.GetType().GetMethod("ApplyDamage").Invoke(vehicle,new object[]{1f,attacker.gameObject,null});
   Assert.IsTrue((bool)Get(ai,"IsCombatAlert"),"A vehicle hit must notify seated passengers, not just the driver.");
   Assert.AreEqual(attacker.GetComponent(T("ArenaParticipant")),Get(ai,"Target"));
   rider.GetType().GetMethod("Leave").Invoke(rider,new object[]{true});yield return null;

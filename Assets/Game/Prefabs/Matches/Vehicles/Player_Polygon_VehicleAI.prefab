@@ -119,6 +119,13 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::ArenaVehicleAI
   infantry: {fileID: 2816820908504341014}
   occupant: {fileID: 7184418454688371563}
+  pilotControl: 2
+  directPilot:
+    angleResponse: 3
+    rateDamping: 0.3
+    maximumBank: 65
+    velocityResponse: 0.9
+    climbResponse: 2.8
   minimumTrip: 26
   vehicleSearchRadius: 35
   decisionInterval: 0.6
@@ -129,6 +136,18 @@ MonoBehaviour:
   combatHoldTime: 8
   groundEngagementDistance: 35
   airEngagementDistance: 55
+  groundDetectionRange: 90
+  helicopterDetectionRange: 450
+  jetDetectionRange: 450
+  helicopterAcquisitionRange: 280
+  infantryDetectionRange: 65
+  aircraftGroundDetectionRange: 450
+  jetPursuitTime: 7
+  jetExtensionTime: 4
+  jetResetDistance: 200
+  helicopterSeparation: 32
+  jetCannonFireAngle: 22
+  cannonFireAngle: 12
 --- !u!114 &9077473738993931020 stripped
 MonoBehaviour:
   m_CorrespondingSourceObject: {fileID: 5076720797126757785, guid: 34f2961e4465e3243bb2a72b2a0a83a1, type: 3}
