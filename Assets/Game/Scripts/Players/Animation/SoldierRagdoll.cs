@@ -34,6 +34,7 @@ public class SoldierRagdoll : MonoBehaviour
     Rigidbody chestBody;
     SkinnedMeshRenderer[] bodyMeshes;
     bool[] previousOffscreenUpdates;
+    bool[] damageBodies;
 
     void Awake()
     {
@@ -59,8 +60,13 @@ public class SoldierRagdoll : MonoBehaviour
             if (behaviour is IRigConstraint) found.Add(behaviour);
         constraints = found.ToArray();
         constraintEnabled = new bool[constraints.Length]; constraintWeights = new float[constraints.Length];
-        bodyMeshes = life.view.thirdPersonRoot.GetComponentsInChildren<SkinnedMeshRenderer>(true);
-        previousOffscreenUpdates = new bool[bodyMeshes.Length];
+        damageBodies = new bool[bodies.Length];
+        foreach (var region in GetComponentsInChildren<SoldierHitRegion>(true))
+            foreach (var collider in region.GetComponents<Collider>())
+            {
+                int index = System.Array.IndexOf(bodies, collider.attachedRigidbody);
+                if (index >= 0 && collider.enabled) damageBodies[index] = true;
+            }
         SetPhysics(false);
         // Joint limits constrain the pose; avoid extra self-collision contacts.
         for (int i = 0; i < bodyColliders.Length; i++)
@@ -84,6 +90,9 @@ public class SoldierRagdoll : MonoBehaviour
     {
         if (IsRagdoll) return;
         IsRagdoll = true;
+        // Equipment can be replaced after Awake; snapshot only the current skins.
+        bodyMeshes = life.view.thirdPersonRoot.GetComponentsInChildren<SkinnedMeshRenderer>(true);
+        previousOffscreenUpdates = new bool[bodyMeshes.Length];
         // PhysX moves bones beyond the imported animation bounds. Recompute bounds
         // while this short-lived corpse is active; living characters retain culling.
         for (int i = 0; i < bodyMeshes.Length; i++)
@@ -137,14 +146,15 @@ public class SoldierRagdoll : MonoBehaviour
     void SetPhysics(bool active)
     {
         foreach (var collider in bodyColliders) collider.enabled = active;
-        foreach (var body in bodies)
+        for (int i = 0; i < bodies.Length; i++)
         {
+            var body = bodies[i];
             // Interpolation belongs to the simulated corpse. Leaving it on while
             // kinematic lets old physics poses overwrite the animated skeleton.
             body.interpolation = active ? RigidbodyInterpolation.Interpolate : RigidbodyInterpolation.None;
             if (!body.isKinematic) { body.linearVelocity = Vector3.zero; body.angularVelocity = Vector3.zero; }
             // Hit-region triggers can share these rigidbodies while the soldier is alive.
-            body.isKinematic = !active; body.detectCollisions = true;
+            body.isKinematic = !active; body.detectCollisions = active || damageBodies[i];
         }
     }
 

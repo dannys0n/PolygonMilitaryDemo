@@ -4,6 +4,10 @@ using UnityEngine;
 public class ArenaPauseMenu : MonoBehaviour
 {
     public ArenaClassMenu classMenu;
+    [Header("Pause and deployment presentation")]
+    public TMPro.TMP_FontAsset menuFont;
+    public Material normalText, selectedText;
+    public UnityEngine.UI.Button deploymentButton;
     public GameObject panel;
     public ArenaSceneTransition transition;
     public bool IsPaused { get; private set; }
@@ -26,6 +30,11 @@ public class ArenaPauseMenu : MonoBehaviour
         deployment = FindAnyObjectByType<ConquestDeploymentMenu>();
         spectator = FindAnyObjectByType<ArenaAISpectator>();
         classEditor = FindAnyObjectByType<ArenaClassEditor>(FindObjectsInactive.Include);
+        if (!classMenu && deploymentButton && deployment)
+        {
+            deploymentButton.gameObject.SetActive(localInput);
+            deploymentButton.onClick.AddListener(deployment.OpenRedeployment);
+        }
         if (spectateButton)
         {
             spectateButton.gameObject.SetActive(spectator && spectator.localPlayer);

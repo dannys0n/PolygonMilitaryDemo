@@ -11,6 +11,9 @@ public class ConquestDeploymentMenu : MonoBehaviour
     public SoldierLocalInput input;
     public ArenaPauseMenu pause;
     public ArenaClassMenu classMenu;
+    public Material NormalText => pause.normalText ? pause.normalText : classMenu ? classMenu.normalText : null;
+    public Material SelectedText => pause.selectedText ? pause.selectedText : classMenu ? classMenu.selectedText : null;
+    bool ClassMenuVisible => classMenu && classMenu.IsVisible;
     public ArenaAISpectator spectator;
     public GameObject panel;
     public Button baseButton, deployButton, classButton;
@@ -83,7 +86,7 @@ public class ConquestDeploymentMenu : MonoBehaviour
             if(IsSandbox){CloseTacticalMap();return;}
             requested=false;rules.CancelDeployment(participant);
             // Hand input ownership back before the class menu takes it.
-            SetVisible(false);classMenu.Open();
+            SetVisible(false);if(classMenu)classMenu.Open();
         });
     }
     static void StyleLocation(Button button)
@@ -112,7 +115,7 @@ public class ConquestDeploymentMenu : MonoBehaviour
     {
         bool waiting=participant.health.IsDead || participant.IsAwaitingSpawn;
         if(!waiting && !redeploying)requested=false;
-        bool unobstructed=participant.match.IsRunning && !pause.IsPaused && !classMenu.IsVisible;
+        bool unobstructed=participant.match.IsRunning && !pause.IsPaused && !ClassMenuVisible;
         if(Input.GetKeyDown(KeyCode.M) && unobstructed && !waiting)
         {
             tacticalMap=!tacticalMap;
@@ -120,7 +123,7 @@ public class ConquestDeploymentMenu : MonoBehaviour
         }
         if(waiting || !unobstructed)tacticalMap=false;
         bool show=rules.NeedsDeployment(participant) && (!spectator || !spectator.IsWatchingDeath)
-            && !participant.IsSpectator && participant.match.IsRunning && waiting && !participant.NeedsClassSelection && !pause.IsPaused && !classMenu.IsVisible;
+            && !participant.IsSpectator && participant.match.IsRunning && waiting && !participant.NeedsClassSelection && !pause.IsPaused && !ClassMenuVisible;
         show|=tacticalMap || redeploying && unobstructed;
         SetVisible(show);
         if(!show)return;
@@ -181,7 +184,7 @@ public class ConquestDeploymentMenu : MonoBehaviour
                 if(spectator)spectator.ControlsBlocked=previousSpectatorBlocked;
             }
             else restoreOnRestart=true;
-            if(!pause.IsPaused && !classMenu.IsVisible && participant.match.IsRunning)
+            if(!pause.IsPaused && !ClassMenuVisible && participant.match.IsRunning)
             {Cursor.lockState=CursorLockMode.Locked;Cursor.visible=false;}
         }
     }

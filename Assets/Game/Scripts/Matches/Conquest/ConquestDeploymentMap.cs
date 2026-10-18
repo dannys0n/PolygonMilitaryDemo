@@ -90,7 +90,7 @@ public class ConquestDeploymentMap : MonoBehaviour, IScrollHandler, IBeginDragHa
   // frame. Throttle roster/readout changes only while the map is stationary.
   bool selectionChanged=previousPoint!=menu.SelectedPoint||previousMember!=menu.SelectedMember;
   bool moved=mapDirty;
-  if(moved){mapCamera.Render();mapDirty=false;}
+  if(moved){PreviewCameraRenderer.Render(mapCamera);mapDirty=false;}
   if(moved || selectionChanged || Time.unscaledTime>=nextPins){nextPins=Time.unscaledTime+.15f;UpdatePins();}
   if(selectionChanged){previousPoint=menu.SelectedPoint;previousMember=menu.SelectedMember;nextPreview=0;}
   if(Time.unscaledTime>=nextPreview){nextPreview=Time.unscaledTime+.1f;UpdatePreview();}
@@ -135,7 +135,7 @@ public class ConquestDeploymentMap : MonoBehaviour, IScrollHandler, IBeginDragHa
    previewCamera.transform.position=pivot+offset;previewCamera.transform.rotation=Quaternion.LookRotation(pivot-previewCamera.transform.position,Vector3.up);
    previewTitle.text=menu.SelectedPoint?"OBJECTIVE "+menu.SelectedPoint.letter+" / "+menu.SelectedPoint.displayName.ToUpperInvariant():"TEAM BASE / LIVE FEED";
   }
-  previewCamera.Render();
+  PreviewCameraRenderer.Render(previewCamera);
  }
  public void OnScroll(PointerEventData e){if(!mapCamera)return;mapCamera.orthographicSize=Mathf.Clamp(mapCamera.orthographicSize*Mathf.Pow(.88f,e.scrollDelta.y),extent*.25f,extent*1.4f);mapDirty=true;}
  public void OnBeginDrag(PointerEventData e){}

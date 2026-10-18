@@ -309,13 +309,19 @@ public class SoldierFirstPersonView : MonoBehaviour
         position = cameraTransform.parent.TransformPoint(thirdPersonCameraPosition);
     }
 
-    public void SetFirstPerson(bool enabled)
+    public void SetFirstPerson(bool enabled) => ApplyPerspective(enabled, true);
+
+    // Observer shutdown restores camera/visibility state without rebuilding an
+    // equipment presentation while its scene hierarchy is being destroyed.
+    public void RestoreCameraPerspective(bool enabled) => ApplyPerspective(enabled, false);
+
+    void ApplyPerspective(bool enabled, bool refreshEquipment)
     {
         firstPerson = enabled;
-        loadout.RefreshFirstPersonPresentation();
+        if(refreshEquipment)loadout.RefreshFirstPersonPresentation();
         playerCamera.fieldOfView = originalFieldOfView;
         firstPersonRoot.gameObject.SetActive(true);
-        foreach (Renderer mesh in firstPersonRenderers) mesh.enabled = enabled;
+        foreach (Renderer mesh in firstPersonRenderers) if(mesh)mesh.enabled = enabled;
         playerCamera.transform.localPosition = enabled ? Vector3.zero : thirdPersonCameraPosition;
         playerCamera.transform.localRotation = enabled ? Quaternion.identity : thirdPersonCameraRotation;
         playerCamera.nearClipPlane = enabled ? 0.03f : originalNearClip;

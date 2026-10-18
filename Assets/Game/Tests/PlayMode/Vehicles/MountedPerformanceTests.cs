@@ -77,6 +77,9 @@ public class MountedPerformanceTests
   yield return Load(0);var actor=Actors[0];var occupant=actor.GetComponent(T("VehicleOccupant"));
   Call(occupant,"Leave",true);yield return null;
   var animator=(Animator)Get(Get(Get(actor,"player"),"actions"),"animator");
+  // Equipment/appearance may bind new renderers after the actor's Awake.
+  var lateSkin=new GameObject("Late bound skin",typeof(SkinnedMeshRenderer)).GetComponent<SkinnedMeshRenderer>();
+  lateSkin.transform.SetParent(animator.transform,false);lateSkin.enabled=false;
   var meshes=animator.GetComponentsInChildren<SkinnedMeshRenderer>(true);Assert.IsNotEmpty(meshes);
   var old=meshes.Select(m=>m.updateWhenOffscreen).ToArray();
   Call(Get(actor,"health"),"ApplyDamage",10000f,null,null);yield return null;
@@ -84,6 +87,17 @@ public class MountedPerformanceTests
   Assert.IsFalse(animator.enabled);
   yield return new WaitForSeconds(3.7f);
   for(int i=0;i<meshes.Length;i++)Assert.AreEqual(old[i],meshes[i].updateWhenOffscreen,"Respawn must restore living skin culling.");
+ }
+ [UnityTest] public IEnumerator LivingBodyRegistersDamageRegionsButNotDormantCorpseShapes()
+ {
+  yield return Load(0);var actor=Actors[0];Call(actor.GetComponent(T("VehicleOccupant")),"Leave",true);yield return null;
+  var doll=actor.GetComponentInChildren(T("SoldierRagdoll"));var bones=(Rigidbody[])Get(doll,"bodies");
+  var hitBodies=actor.GetComponentsInChildren(T("SoldierHitRegion"),true).Cast<Component>()
+   .SelectMany(r=>r.GetComponents<Collider>()).Where(c=>c.enabled).Select(c=>c.attachedRigidbody).Where(b=>b).Distinct().ToArray();
+  Assert.IsNotEmpty(hitBodies);Assert.Less(bones.Count(b=>b.detectCollisions),bones.Length);
+  foreach(var b in hitBodies)Assert.IsTrue(b.detectCollisions,"Living head/torso damage queries must retain physics registration.");
+  Call(Get(actor,"health"),"ApplyDamage",10000f,null,null);yield return null;
+  Assert.IsTrue(bones.All(b=>b.detectCollisions&&!b.isKinematic),"Every authored corpse shape must restore at death.");
  }
  [UnityTest] public IEnumerator SharedContactsDeduplicateHullsAndRefreshAfterCrewDismounts()
  {

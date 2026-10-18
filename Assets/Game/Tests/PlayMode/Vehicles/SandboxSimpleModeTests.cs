@@ -289,7 +289,19 @@ public class SandboxSimpleModeTests
         Assert.IsTrue((bool)Get(menu,"IsVisible"));
         Assert.IsTrue((bool)Get(actor,"IsAwaitingSpawn"));
         Assert.IsFalse((bool)Get(actor,"NeedsClassSelection"));
-        Assert.IsFalse((bool)Get(Get(menu,"classMenu"),"IsVisible"));
+        Assert.IsNull(Get(menu,"classMenu"), "Sandbox deployment must not depend on a hidden class selector.");
+        Assert.AreEqual(0, All("ArenaClassMenu").Length);
+        Assert.NotNull(Get(Get(menu,"pause"),"normalText"));
+        Assert.NotNull(Get(Get(menu,"pause"),"menuFont"));
+        var initialPause=Get(menu,"pause");
+        Call(initialPause,"Pause");yield return null;yield return null;
+        var pausePanel=(GameObject)Get(initialPause,"panel");
+        Assert.IsTrue(pausePanel.activeInHierarchy,"Pause opened over deployment must remain visible.");
+        Assert.IsTrue(pausePanel.GetComponentInParent<Canvas>().enabled);
+        var sensitivity=(Component)Get(initialPause,"sensitivitySlider");
+        Assert.IsTrue(sensitivity.gameObject.activeInHierarchy,"The direct sensitivity control must render while paused.");
+        Assert.IsTrue(((Behaviour)Get(sensitivity,"label")).isActiveAndEnabled);
+        Call(initialPause,"Resume");yield return null;
         var points=((IEnumerable)Get(rules,"points")).Cast<Component>().ToArray();
         foreach(var point in points)
         {
@@ -302,7 +314,7 @@ public class SandboxSimpleModeTests
             Assert.NotNull(Get(actor,"SelectedClass"));
         }
         var pause=Get(menu,"pause");Call(pause,"Pause");
-        Call(Get(menu,"classMenu"),"Open");
+        ((UnityEngine.UI.Button)Get(pause,"deploymentButton")).onClick.Invoke();
         Assert.IsFalse((bool)Get(pause,"IsPaused"));
         Assert.IsTrue((bool)Get(menu,"IsVisible"));
         Assert.IsTrue((bool)Call(menu,"CloseTacticalMap"));

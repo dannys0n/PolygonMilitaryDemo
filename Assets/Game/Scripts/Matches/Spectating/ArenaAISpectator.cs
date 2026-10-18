@@ -23,6 +23,7 @@ public class ArenaAISpectator : MonoBehaviour
     [Tooltip("Optional local player: spectate while dead and return on respawn.")]
     public ArenaParticipant localPlayer;
     bool deathWatch, restorePerspective, killerDied, localDeathView, localWasFirstPerson;
+    bool releasingPresentation;
     float deathWatchUntil;
     ArenaParticipant pendingKiller;
     SoldierLocalInput localInput;
@@ -354,7 +355,8 @@ public class ArenaAISpectator : MonoBehaviour
     {
         if (ManualSpectating || !localDeathView) return;
         StopFollowing(); localDeathView = false;
-        localPlayer.player.view.SetFirstPerson(localWasFirstPerson);
+        if(releasingPresentation)localPlayer.player.view.RestoreCameraPerspective(localWasFirstPerson);
+        else localPlayer.player.view.SetFirstPerson(localWasFirstPerson);
         localPlayer.player.view.playerCamera.enabled = true;
         spectatorCamera.enabled = false;
         localInput.enabled = localInputEnabled;
@@ -499,18 +501,21 @@ public class ArenaAISpectator : MonoBehaviour
             observedView.GetComponent<SoldierWeaponLoadout>().PresentationChanging -= MarkBodyDirty;
             var camera = observedView.playerCamera;
             var aimRotation = camera.transform.localRotation;
-            observedView.SetFirstPerson(previousFirstPerson);
+            // Restore render ownership before rebuilding ordinary equipment.
+            // Otherwise the still-observed camera can briefly rent FPS visuals
+            // solely to discard them, or recreate the pool during scene unload.
+            camera.enabled = previousCameraEnabled;
+            camera.targetTexture = previousCameraTarget;
+            if(releasingPresentation)observedView.RestoreCameraPerspective(previousFirstPerson);
+            else observedView.SetFirstPerson(previousFirstPerson);
             if (observedOccupant && observedOccupant.IsMounted)
                 foreach (var mesh in observedView.firstPersonRoot.GetComponentsInChildren<Renderer>(true)) mesh.enabled = false;
             camera.transform.localRotation = aimRotation;
             camera.cullingMask = previousCameraMask;
-            camera.enabled = previousCameraEnabled;
-            camera.targetTexture = previousCameraTarget;
             camera.GetUniversalAdditionalCameraData().renderPostProcessing = previousPostProcessing;
             spectatorCamera.targetTexture = previousSpectatorTarget;
             spectatorCamera.cullingMask = previousSpectatorMask;
             spectatorCamera.enabled = previousSpectatorEnabled;
-            observedView.GetComponent<SoldierWeaponLoadout>().RefreshFirstPersonPresentation();
         }
         hiddenBody = null;
         observedView = null;
@@ -571,6 +576,7 @@ public class ArenaAISpectator : MonoBehaviour
 
     void OnDisable()
     {
+        releasingPresentation = true;
         RenderPipelineManager.beginCameraRendering -= BeforeCamera;
         RenderPipelineManager.endCameraRendering -= AfterCamera;
         if (localPlayer)
@@ -581,6 +587,7 @@ public class ArenaAISpectator : MonoBehaviour
             localPlayer.player.Respawned -= OnLocalPlayerRespawned;
         }
         StopFollowing(); Cursor.lockState = CursorLockMode.None; Cursor.visible = true;
+        releasingPresentation = false;
     }
 
 }

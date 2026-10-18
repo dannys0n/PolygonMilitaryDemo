@@ -45,9 +45,9 @@ public sealed class SandboxDeploymentVehicles : MonoBehaviour
         if(picker.activeSelf!=visible)picker.SetActive(visible);
         if(!visible)return;
         if(!refreshSelection && selectedVehicle==rules.SelectedVehicle
-            && normalText==menu.classMenu.normalText && selectedText==menu.classMenu.selectedText)return;
+            && normalText==menu.NormalText && selectedText==menu.SelectedText)return;
         refreshSelection=false;selectedVehicle=rules.SelectedVehicle;
-        normalText=menu.classMenu.normalText;selectedText=menu.classMenu.selectedText;
+        normalText=menu.NormalText;selectedText=menu.SelectedText;
         for(int i=0;i<rows.Count;i++)
         {
             var row=rows[i];bool selected=row.vehicle==selectedVehicle;var label=row.label;
