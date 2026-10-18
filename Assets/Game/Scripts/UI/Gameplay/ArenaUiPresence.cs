@@ -57,6 +57,8 @@ public class ArenaUiPresence : MonoBehaviour
     }
     void AddPanel(RectTransform panel)
     {
+        // Full-screen atmosphere/damage overlays belong to the display, not a tilted HUD panel.
+        if(panel.GetComponent<ArenaMenuAtmosphere>())return;
         panels.Add(panel); restPositions.Add(panel.anchoredPosition);
     }
     public void RefreshGraphics()
@@ -64,6 +66,12 @@ public class ArenaUiPresence : MonoBehaviour
         if (!root) return;
         foreach (var graphic in GetComponentsInChildren<Graphic>(true))
         {
+            if(graphic.GetComponent<ArenaMenuAtmosphere>())
+            {
+                var oldPerspective=graphic.GetComponent<ArenaUiPerspective>();
+                if(oldPerspective)oldPerspective.enabled=false;
+                continue;
+            }
             foreach (var panel in panels)
             {
                 if (!graphic.transform.IsChildOf(panel)) continue;

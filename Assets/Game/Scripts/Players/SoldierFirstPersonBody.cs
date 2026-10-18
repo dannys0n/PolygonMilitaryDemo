@@ -111,7 +111,7 @@ public class SoldierFirstPersonBody : MonoBehaviour
         if (occupant && occupant.IsMounted)
         {
             var seat = occupant.MountedVehicle.seats[occupant.SeatIndex];
-            if (!occupant.MountedVehicle.hasRenderedInterior || seat.weaponMountedView) return false;
+            if (!occupant.MountedVehicle.hasRenderedInterior || !seat.showCharacter || seat.externalView || seat.weaponMountedView) return false;
             var vehicleCamera = occupant.ActiveVehicleCamera;
             return (soldier.inputSource is SoldierLocalInput && occupant.CockpitView
                     && vehicleCamera && vehicleCamera.isActiveAndEnabled)
@@ -179,7 +179,12 @@ public class SoldierFirstPersonBody : MonoBehaviour
             ? (camera == occupant.ActiveVehicleCamera && occupant.CockpitView)
                 || (vehiclePerspective && occupant.MountedVehicle.hasRenderedInterior)
             : owner && camera == view.playerCamera && view.firstPerson;
-        if (occupant && occupant.IsMounted && occupant.MountedVehicle.seats[occupant.SeatIndex].weaponMountedView) firstPerson = false;
+        if (occupant && occupant.IsMounted)
+        {
+            var seat=occupant.MountedVehicle.seats[occupant.SeatIndex];
+            firstPerson &= occupant.MountedVehicle.hasRenderedInterior && seat.showCharacter
+                && !seat.externalView && !seat.weaponMountedView;
+        }
         SetHeadless(firstPerson);
     }
 

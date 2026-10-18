@@ -29,6 +29,7 @@ public class VehicleOccupant : MonoBehaviour
     readonly Dictionary<Rigidbody,bool> mountedBodyCollisions=new Dictionary<Rigidbody,bool>();
     Transform originalParent;
     VehicleSeatPose seatPose;
+    SoldierFirstPersonBody firstPersonBody;
     Camera vehicleCamera;
     Animation vehicleCameraShake;
     public Camera ActiveVehicleCamera => vehicleCamera;
@@ -357,6 +358,7 @@ public class VehicleOccupant : MonoBehaviour
         seatedBody = System.Array.FindAll(life.view.thirdPersonRoot.GetComponentsInChildren<SkinnedMeshRenderer>(true),
             skin => renderers.TryGetValue(skin,out var wasVisible) && wasVisible
                 && System.Array.Exists(skin.bones,bone=>humanoidBones.Contains(bone)));
+        firstPersonBody=GetComponent<SoldierFirstPersonBody>();
         seatedVisible=null;
         UpdateSeatedVisibility();
         if (!IsLocal)
@@ -594,6 +596,10 @@ public class VehicleOccupant : MonoBehaviour
         var seat=MountedVehicle.seats[SeatIndex];
         bool visible=MountedVehicle.hasRenderedInterior && seat.showCharacter
             && !(IsLocal && CockpitView && seat.weaponMountedView);
+        // Only the viewed interior needs the extra headless skin and camera callbacks.
+        bool bodyView=visible && !seat.externalView && !seat.weaponMountedView
+            && (IsLocal ? CockpitView : life.view.firstPerson && life.view.NeedsCameraAnimation);
+        if(firstPersonBody && firstPersonBody.enabled!=bodyView)firstPersonBody.enabled=bodyView;
         if(seatedVisible==visible)return;
         seatedVisible=visible;
         foreach(var skin in seatedBody) if(skin){skin.enabled=visible;skin.forceRenderingOff=!visible;skin.shadowCastingMode=UnityEngine.Rendering.ShadowCastingMode.On;}

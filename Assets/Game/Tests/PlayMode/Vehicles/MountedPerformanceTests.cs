@@ -149,6 +149,58 @@ public class MountedPerformanceTests
    Count(0,0);yield return null;
   }
  }
+ [UnityTest] public IEnumerator LocalTransportCockpitUsesHeadlessBodyWithoutMovingItsEye()
+ {
+  yield return SceneManager.LoadSceneAsync("Assets/Game/Scenes/Tests/Performance/Performance_Vehicles.unity");yield return null;
+  control=UnityEngine.Object.FindAnyObjectByType(T("EntityPerformanceControl")) as Component;
+  control.GetType().GetField("vehiclePrefab").SetValue(control,UnityEditor.AssetDatabase.LoadAssetAtPath<GameObject>("Assets/Game/Prefabs/Vehicles/Transports/TransportHelicopter.prefab").GetComponent(T("Vehicle")));
+  Count(0,1);yield return null;yield return new WaitForSeconds(.3f);
+  var actor=Actors[0];var rider=actor.GetComponent(T("VehicleOccupant"));var vehicle=(Component)Get(rider,"MountedVehicle");int index=(int)Get(rider,"SeatIndex");
+  Call(rider,"Leave",true);var soldier=(Component)Get(rider,"soldier");
+  var input=(Behaviour)actor.gameObject.AddComponent(T("SoldierLocalInput"));input.enabled=false;soldier.GetType().GetField("inputSource").SetValue(soldier,input);
+  Call(rider,"Mount",vehicle,index);var seat=((Array)Get(vehicle,"seats")).GetValue(index);seat.GetType().GetField("occupant").SetValue(seat,rider);
+  rider.GetType().GetProperty("CockpitView",F).SetValue(rider,true);yield return null;yield return null;
+  var camera=(Camera)Get(rider,"ActiveVehicleCamera");var body=(Behaviour)actor.GetComponent(T("SoldierFirstPersonBody"));var eye=(Transform)Get(seat,"eye");
+  Assert.IsTrue(body.enabled);Assert.Less(Vector3.Distance(eye.position,camera.transform.position),.001f);
+  Call(body,"BeginCamera",camera);Assert.IsTrue((bool)Get(body,"headlessActive"));
+  Assert.IsTrue(actor.GetComponentsInChildren<SkinnedMeshRenderer>(true).Any(m=>m.name.StartsWith("First-person body:")&&m.enabled&&!m.forceRenderingOff));
+  Call(body,"EndCamera",camera);rider.GetType().GetProperty("CockpitView",F).SetValue(rider,false);yield return null;
+  Assert.IsFalse(body.enabled,"TPS must suspend the headless copy");Call(rider,"Leave",true);yield return null;Assert.IsTrue(body.enabled,"Exit restores infantry body handling");
+ }
+ [UnityTest] public IEnumerator TransportInteriorViewsUseHeadlessBodiesAndAuthoredEyes()
+ {
+  foreach(string prefab in new[]{"Transports/TransportHelicopter","Transports/TruckTransport","Transports/TravelVan","Transports/SUV","Prototypes/TransportPlane"})
+  {
+   yield return SceneManager.LoadSceneAsync("Assets/Game/Scenes/Tests/Performance/Performance_Vehicles.unity");yield return null;
+   control=UnityEngine.Object.FindAnyObjectByType(T("EntityPerformanceControl")) as Component;
+   var source=UnityEditor.AssetDatabase.LoadAssetAtPath<GameObject>("Assets/Game/Prefabs/Vehicles/"+prefab+".prefab").GetComponent(T("Vehicle"));
+   control.GetType().GetField("vehiclePrefab").SetValue(control,source);Count(0,1);yield return null;yield return new WaitForSeconds(.3f);
+   foreach(var actor in Actors)
+   {
+    var rider=actor.GetComponent(T("VehicleOccupant"));var vehicle=(Component)Get(rider,"MountedVehicle");
+    var seat=((Array)Get(vehicle,"seats")).GetValue((int)Get(rider,"SeatIndex"));
+    if(!(bool)Get(vehicle,"hasRenderedInterior") || !(bool)Get(seat,"showCharacter") || (bool)Get(seat,"externalView") || (bool)Get(seat,"weaponMountedView"))continue;
+    var view=(Component)Get(Get(actor,"player"),"view");var camera=(Camera)Get(view,"playerCamera");
+    var body=(Behaviour)actor.GetComponent(T("SoldierFirstPersonBody"));
+    Call(view,"RestoreCameraPerspective",true);camera.enabled=true;
+    Call(body,"PrepareForVehicleSpectating");yield return null;yield return null;
+    Assert.IsTrue(body.enabled,prefab+" observed cockpit must restore headless-body callbacks");
+    var eye=(Transform)Get(seat,"eye");Assert.IsNotNull(eye,prefab+" interior seat needs its authored eye");
+    object[] pose={true,Vector3.zero,Quaternion.identity};rider.GetType().GetMethod("GetSpectatorCameraPose").Invoke(rider,pose);
+    Assert.Less(Vector3.Distance(eye.position,(Vector3)pose[1]),.001f,prefab+" cockpit camera must stay on its eye anchor");
+    var animator=(Animator)Get(Get(Get(actor,"player"),"actions"),"animator");
+    Assert.Less(Vector3.Distance(eye.position,animator.GetBoneTransform(HumanBodyBones.Head).position),.25f,"The eye must remain near the seated head");
+    Call(body,"BeginCamera",camera);Assert.IsTrue((bool)Get(body,"headlessActive"));
+    var copies=actor.GetComponentsInChildren<SkinnedMeshRenderer>(true).Where(m=>m.name.StartsWith("First-person body:")).ToArray();
+    Assert.IsNotEmpty(copies);Assert.IsTrue(copies.Any(m=>m.enabled&&!m.forceRenderingOff),"The headless skin must actually render");
+    Call(body,"EndCamera",camera);Assert.IsFalse((bool)Get(body,"headlessActive"));
+    var original=animator.GetComponentsInChildren<SkinnedMeshRenderer>(true);Assert.IsTrue(original.Any(m=>m.enabled&&m.shadowCastingMode!=UnityEngine.Rendering.ShadowCastingMode.ShadowsOnly),"TPS must restore the full character");
+    camera.enabled=false;yield return null;
+    Assert.IsFalse(body.enabled,"Unobserved crew must return to the suspended presentation policy");
+   }
+   Count(0,0);yield return null;
+  }
+ }
  [UnityTest] public IEnumerator EmptyTargetSearchesRespectTheSameBudgetAsSuccessfulSearches()
  {
   yield return Load(0);var actor=Actors[0];var ai=actor.GetComponent(T("ArenaVehicleAI"));
