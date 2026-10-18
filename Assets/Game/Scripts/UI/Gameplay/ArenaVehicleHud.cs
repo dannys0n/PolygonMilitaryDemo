@@ -135,7 +135,6 @@ public class ArenaVehicleHud : MonoBehaviour
         var selectedWeapon=weaponSystems?weaponSystems.Current(player):null;
         bool armed = weaponSystems?selectedWeapon!=null:showAttack || (role == Vehicle.SeatRole.Gunner && v.turret) || (air && role == Vehicle.SeatRole.Driver && v.GetComponent<VehicleLauncher>());
         seatHasWeapon=armed;
-        vehicleEquipment.SetActive(armed);
         var launcherForReadout=selectedWeapon!=null?selectedWeapon.launcher:air?v.GetComponent<VehicleLauncher>():null;
         int currentAmmo=launcherForReadout?launcherForReadout.Missiles:-1;
         bool currentReady=selectedWeapon!=null?selectedWeapon.ReadyIn<=0:launcherForReadout?launcherForReadout.ReadyIn<=0:!v.turret||v.turret.ReadyIn<=0;

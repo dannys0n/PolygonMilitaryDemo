@@ -339,6 +339,40 @@ public class SandboxSimpleModeTests
         }
         finally{if(vehicle)UnityEngine.Object.Destroy(vehicle.gameObject);}
     }
+    [UnityTest] public IEnumerator DefenseOnlyVehicleEquipmentStaysVisibleBetweenReadoutRefreshes()
+    {
+        yield return Load();yield return null;
+        var spectator=All("ArenaAISpectator").Single();var hud=All("ArenaVehicleHud").Single();
+        Call(spectator,"SetInterestMode",false);
+        var flight=((IEnumerable)Get(rules,"flights")).Cast<object>().First(f=>Get(f,"battle").ToString()=="Jets");
+        var vehicle=(Component)Get(flight,"current");
+        ((Behaviour)vehicle.GetComponent(T("SandboxAirCombatAI"))).enabled=false;
+        vehicle.GetComponent<Rigidbody>().isKinematic=true;
+        var pilot=((IEnumerable)Get(flight,"crew")).Cast<Component>().First();
+        var systems=vehicle.GetComponent(T("VehicleWeaponSystems"));
+        var defenses=vehicle.GetComponent(T("VehicleCountermeasures"));
+        Assert.IsNotNull(defenses);
+        Set(systems,"weapons",Array.CreateInstance(Get(systems,"weapons").GetType().GetElementType(),0));
+        Set(defenses,"automaticForAI",false);
+        Call(spectator,"SetManualSpectating",true);Call(spectator,"Follow",pilot);
+        yield return null;
+        foreach(bool smoke in new[]{false,true})
+        {
+            Set(defenses,"smoke",smoke);Set(defenses,"flares",!smoke);Set(defenses,"chaff",false);
+            Set(hud,"nextReadout",float.NegativeInfinity);Call(hud,"Update");
+            Assert.AreEqual(smoke?"SMOKE":"FLARES",Get(Get(hud,"equippedName"),"text"));
+            Assert.IsFalse(((UnityEngine.UI.Image)Get(hud,"equippedIcon")).gameObject.activeSelf);
+            // Hold the readout cache unchanged: visibility must survive the intervening frames.
+            Set(hud,"nextReadout",float.PositiveInfinity);
+            for(int i=0;i<8;i++)
+            {
+                yield return null;
+                Assert.IsTrue(((GameObject)Get(hud,"vehicleEquipment")).activeInHierarchy,
+                    "A defense-only station must not disappear between text refreshes.");
+            }
+        }
+        Set(hud,"nextReadout",float.NegativeInfinity);
+    }
     [UnityTest] public IEnumerator SpectatorVehicleHudUsesObservedOccupantAndBothPresentationCameras()
     {
         yield return Load();yield return null;
