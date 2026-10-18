@@ -49,6 +49,7 @@ public class SoldierMovement : MonoBehaviour
         body.angularVelocity=Vector3.up*(yawError*Mathf.Deg2Rad/dt);
         Vector3 direction=heading*new Vector3(input.x,0,input.y);
         AdjustClearance(direction);
+        controller.TraverseGround(direction,Mathf.Max(moveSpeed,runSpeed));
         bool grounded=controller.isGrounded;
         IsRunning=runRequested&&input.y>.1f&&grounded&&!view.IsReloading&&!view.IsEquipping&&view.AimBlend<.01f&&!view.WantsToAim;
         float speed=IsRunning?runSpeed:moveSpeed;
@@ -58,8 +59,7 @@ public class SoldierMovement : MonoBehaviour
             // A landing ends the airborne reference; never keep steering toward the departed plane.
             airReference=Vector3.ProjectOnPlane(controller.GroundVelocity,Vector3.up);
             Vector3 wanted=controller.GroundVelocity+Vector3.ProjectOnPlane(direction,controller.GroundNormal).normalized*direction.magnitude*speed;
-            Vector3 error=Vector3.ProjectOnPlane(wanted-body.linearVelocity,controller.GroundNormal);
-            body.AddForce(Vector3.ClampMagnitude(error/dt,groundAcceleration),ForceMode.Acceleration);
+            controller.AccelerateTowards(wanted,controller.GroundNormal,groundAcceleration,dt);
             if(jumpRequested)
             {
                 airReference=Vector3.ProjectOnPlane(controller.GroundVelocity,Vector3.up);
@@ -70,8 +70,7 @@ public class SoldierMovement : MonoBehaviour
         }
         else if(input.sqrMagnitude>.001f)
         {
-            Vector3 error=airReference+direction*speed-Vector3.ProjectOnPlane(body.linearVelocity,Vector3.up);
-            body.AddForce(Vector3.ClampMagnitude(error/dt,airAcceleration),ForceMode.Acceleration);
+            controller.AccelerateTowards(airReference+direction*speed,Vector3.up,airAcceleration,dt);
         }
         jumpRequested=false;wasGrounded=grounded;
         animator.SetFloat("RunBlend",IsRunning?1:0,.15f,dt);
