@@ -61,7 +61,8 @@ public class SoldierFirstPersonView : MonoBehaviour
     private bool cameraAnimationSuspended;
     private bool savedArmsEnabled, savedRigEnabled, savedGripEnabled;
     // TPS still consumes AimBlend, but an unobserved soldier needs no FPS graph.
-    public bool NeedsCameraAnimation => playerCamera && playerCamera.isActiveAndEnabled
+    public bool NeedsCameraAnimation => playerCamera && playerCamera.gameObject.activeInHierarchy
+        && (playerCamera.enabled || playerCamera.targetTexture)
         && (!life || !life.health.IsDead);
 
     private int locomotionLayer;

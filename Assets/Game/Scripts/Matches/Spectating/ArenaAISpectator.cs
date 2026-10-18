@@ -18,6 +18,8 @@ public class ArenaAISpectator : MonoBehaviour
     [Min(0f)] public float deathWatchDuration = 2f;
     [Tooltip("Wide lens used only while rendering the alternate monitor.")]
     [Range(60f,110f)] public float insetFieldOfView = 85f;
+    [Range(5,60)] public int insetFramesPerSecond = 30;
+    public Camera InsetCamera => insetTexture && observedView ? (FirstPersonSpectating ? spectatorCamera : observedView.playerCamera) : null;
     [Tooltip("Optional local player: spectate while dead and return on respawn.")]
     public ArenaParticipant localPlayer;
     bool deathWatch, restorePerspective, killerDied, localDeathView, localWasFirstPerson;
@@ -36,6 +38,9 @@ public class ArenaAISpectator : MonoBehaviour
     RenderTexture previousCameraTarget, previousSpectatorTarget, insetTexture;
     Renderer[] hiddenBody;
     UnityEngine.Rendering.ShadowCastingMode[] previousShadows;
+    bool[] bodyBatchingOverrides;
+    MaterialPropertyBlock bodyBatchingProperties;
+    static readonly int PerCameraVisibility = Shader.PropertyToID("_ArenaPerCameraVisibility");
     float yaw, pitch;
     public bool ShowControls { get; private set; } = true;
     public bool IsWatchingDeath => deathWatch || VehicleRespawnRemaining>0;
@@ -74,6 +79,9 @@ public class ArenaAISpectator : MonoBehaviour
     public void SetInterestMode(bool value) => interest.SetEnabled(value);
     void Awake()
     {
+        var insetRenderer = GetComponent<SpectatorInsetRenderer>();
+        if (!insetRenderer) insetRenderer = gameObject.AddComponent<SpectatorInsetRenderer>();
+        insetRenderer.spectator = this;
         interest = GetComponent<ArenaSpectatorInterest>();
         if (!interest) interest = gameObject.AddComponent<ArenaSpectatorInterest>();
         interest.spectator = this;
@@ -394,11 +402,37 @@ public class ArenaAISpectator : MonoBehaviour
 
     void CacheBody()
     {
+        RestoreBodyBatching();
+        bodyBatchingProperties ??= new MaterialPropertyBlock();
         hiddenBody = observedView.thirdPersonRoot.GetComponentsInChildren<Renderer>(true);
         previousShadows = new ShadowCastingMode[hiddenBody.Length];
+        bodyBatchingOverrides = new bool[hiddenBody.Length];
         for (int i = 0; i < hiddenBody.Length; i++)
+        {
             previousShadows[i] = hiddenBody[i].shadowCastingMode;
+            if (hiddenBody[i] is MeshRenderer mesh && !mesh.HasPropertyBlock())
+            {
+                // GPU Resident Drawer cannot represent per-camera visibility edits.
+                // An individual property block selects Unity's documented fallback.
+                bodyBatchingOverrides[i] = true;
+                bodyBatchingProperties.Clear();
+                bodyBatchingProperties.SetFloat(PerCameraVisibility, 1);
+                mesh.SetPropertyBlock(bodyBatchingProperties);
+            }
+        }
         bodyDirty = false;
+    }
+
+    void RestoreBodyBatching()
+    {
+        if (bodyBatchingOverrides == null || hiddenBody == null) return;
+        for (int i = 0; i < hiddenBody.Length; i++)
+            if (bodyBatchingOverrides[i] && hiddenBody[i] is MeshRenderer mesh && mesh)
+            {
+                mesh.GetPropertyBlock(bodyBatchingProperties);
+                if (bodyBatchingProperties.GetFloat(PerCameraVisibility) == 1) mesh.SetPropertyBlock(null);
+            }
+        bodyBatchingOverrides = null;
     }
 
     Camera insetLensCamera;
@@ -444,8 +478,8 @@ public class ArenaAISpectator : MonoBehaviour
         // Exactly one camera owns the screen; the alternate writes to the HUD texture.
         observedView.playerCamera.targetTexture = FirstPersonSpectating ? null : insetTexture;
         spectatorCamera.targetTexture = FirstPersonSpectating ? insetTexture : null;
-        observedView.playerCamera.enabled = FirstPersonSpectating || insetTexture;
-        spectatorCamera.enabled = !FirstPersonSpectating || insetTexture;
+        observedView.playerCamera.enabled = FirstPersonSpectating;
+        spectatorCamera.enabled = !FirstPersonSpectating;
     }
 
     void ExitPerspective()
@@ -457,6 +491,7 @@ public class ArenaAISpectator : MonoBehaviour
     void ReleasePerspective()
     {
         RestoreBody();
+        RestoreBodyBatching();
         if (observedView)
         {
             observedView.GetComponent<SoldierWeaponLoadout>().PresentationChanging -= MarkBodyDirty;

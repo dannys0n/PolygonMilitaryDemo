@@ -97,6 +97,37 @@ public class ParticleEffectPoolTests
     }
 
     [UnityTest]
+    public IEnumerator TransientFeedbackIsCulledAndBoundedWithoutAffectingPersistentEffects()
+    {
+        var cameraObject = new GameObject("Transient test viewer");
+        var camera = cameraObject.AddComponent<Camera>();
+        camera.transform.position = Vector3.up * 10000;
+        var prefab = Template("Budgeted feedback", 10f);
+        var effects = new System.Collections.Generic.List<ParticleSystem>();
+        var transient = PoolType.GetMethod("PlayTransient");
+        try
+        {
+            var unseen = transient.Invoke(null, new object[] { prefab, Vector3.one * 1000000, Quaternion.identity });
+            Assert.IsNull(unseen);
+            for (int i = 0; i < 80; i++)
+            {
+                var effect = (ParticleSystem)transient.Invoke(null, new object[] { prefab, camera.transform.position + Vector3.forward * 10, Quaternion.identity });
+                if (effect) effects.Add(effect);
+            }
+            Assert.AreEqual(64, effects.Count, "Repeated transient impacts must have a bounded active visual cost.");
+            var persistent = Play(prefab, persistent: true); effects.Add(persistent);
+            Assert.IsNotNull(persistent, "Owner-held effects must bypass the optional feedback budget.");
+        }
+        finally
+        {
+            foreach (var effect in effects) if (effect) UnityEngine.Object.Destroy(effect.gameObject);
+            UnityEngine.Object.Destroy(prefab.gameObject);
+            UnityEngine.Object.Destroy(cameraObject);
+        }
+        yield return null;
+    }
+
+    [UnityTest]
     public IEnumerator ActualGasTankExplosionReturnsWithoutLosingChildren()
     {
         var prefab = UnityEditor.AssetDatabase.LoadAssetAtPath<GameObject>(

@@ -47,8 +47,10 @@ public class VehicleTurret : MonoBehaviour
     public void AimAt(Ray view)
     {
         float distance = range;
-        foreach(var hit in Physics.RaycastAll(view,range,Physics.DefaultRaycastLayers,QueryTriggerInteraction.Collide))
+        int count = CombatQueries.Raycast(view, range, ProjectileCollision.WithoutProjectiles(Physics.DefaultRaycastLayers), QueryTriggerInteraction.Collide, ref aimHits);
+        for (int i = 0; i < count; i++)
         {
+            var hit = aimHits[i];
             if(hit.transform.IsChildOf(vehicle.transform)||SoldierPhysicsBody.IsMotorCollider(hit.collider))continue;
             if(hit.collider.isTrigger&&!hit.collider.GetComponent<SoldierHitRegion>())continue;
             distance=Mathf.Min(distance,hit.distance);
@@ -63,6 +65,8 @@ public class VehicleTurret : MonoBehaviour
         if (direction.sqrMagnitude > .001f)
             aimDirection = direction.normalized;
     }
+    RaycastHit[] aimHits = new RaycastHit[16];
+    RaycastHit[] shotHits = new RaycastHit[16];
     int lastAimFrame = -1;
     void UpdateAim()
     {
@@ -123,8 +127,10 @@ public class VehicleTurret : MonoBehaviour
         }
         RaycastHit nearest = default;
         bool found = false;
-        foreach (var hit in projectile && !projectile.ballistic ? System.Array.Empty<RaycastHit>() : Physics.RaycastAll(muzzle.position, shotDirection, range, Physics.DefaultRaycastLayers, QueryTriggerInteraction.Collide))
+        int hitCount = projectile && !projectile.ballistic ? 0 : CombatQueries.Raycast(new Ray(muzzle.position, shotDirection), range, ProjectileCollision.WithoutProjectiles(Physics.DefaultRaycastLayers), QueryTriggerInteraction.Collide, ref shotHits);
+        for (int i = 0; i < hitCount; i++)
         {
+            var hit = shotHits[i];
             if (hit.transform.IsChildOf(vehicle.transform) || SoldierPhysicsBody.IsMotorCollider(hit.collider))
                 continue;
             if (hit.collider.isTrigger && !hit.collider.GetComponent<SoldierHitRegion>())
@@ -140,7 +146,7 @@ public class VehicleTurret : MonoBehaviour
             var hitEffect = !explosiveVehicleDamage && bulletImpactEffect ? bulletImpactEffect : impactEffect;
             if(hitEffect && showVisual)
             {
-                ParticleEffectPool.Play(hitEffect,nearest.point+nearest.normal*.03f,Quaternion.FromToRotation(Vector3.forward,nearest.normal));
+                ParticleEffectPool.PlayTransient(hitEffect,nearest.point+nearest.normal*.03f,Quaternion.FromToRotation(Vector3.forward,nearest.normal));
             }
             var region = nearest.collider.GetComponent<SoldierHitRegion>();
             if (region)
@@ -164,9 +170,15 @@ public class VehicleTurret : MonoBehaviour
         }
         if (projectile)
         {
-            var round = ProjectilePool.Spawn(projectile, muzzle.position + muzzle.forward * projectile.launchClearance, Quaternion.LookRotation(shotDirection,muzzle.up));
-            if(round.ballistic)round.showImpactVisual=showVisual;
-            round.Launch(vehicle, gunner.gameObject, weaponIcon);
+            Vector3 origin = muzzle.position + muzzle.forward * projectile.launchClearance;
+            if (projectile.ballistic)
+                BallisticRounds.Fire(projectile, origin, shotDirection, vehicle.Body.GetPointVelocity(origin),
+                    vehicle.transform, gunner.gameObject, weaponIcon, showVisual);
+            else
+            {
+                var round = ProjectilePool.Spawn(projectile, origin, Quaternion.LookRotation(shotDirection,muzzle.up));
+                round.Launch(vehicle, gunner.gameObject, weaponIcon);
+            }
         }
         // Fire cadence is the gate for this prototype weapon; launcher reserves are managed separately.
         lastBarrelShot=Time.time;

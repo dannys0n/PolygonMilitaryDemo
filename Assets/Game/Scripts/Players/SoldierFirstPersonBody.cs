@@ -113,9 +113,9 @@ public class SoldierFirstPersonBody : MonoBehaviour
             var vehicleCamera = occupant.ActiveVehicleCamera;
             return (soldier.inputSource is SoldierLocalInput && occupant.CockpitView
                     && vehicleCamera && vehicleCamera.isActiveAndEnabled)
-                || (view.firstPerson && view.playerCamera.isActiveAndEnabled);
+                || (view.firstPerson && view.NeedsCameraAnimation);
         }
-        return soldier.inputSource is SoldierLocalInput && view.firstPerson && view.playerCamera.isActiveAndEnabled;
+        return soldier.inputSource is SoldierLocalInput && view.firstPerson && view.NeedsCameraAnimation;
     }
 
     void OnEnable()

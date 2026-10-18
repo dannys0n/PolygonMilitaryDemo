@@ -14,13 +14,14 @@ public class SoldierScopeView : MonoBehaviour
     Material lensMaterial,originalMaterial;
     WeaponSightDefinition renderedSight;
     public Camera ScopeCamera=>scopeCamera;
+    public bool HasActiveLens => lens && scopeCamera && texture;
     public RenderTexture ScopeTexture=>texture;
     void LateUpdate()
     {
         var sights=loadout.EquippedSights;
         var sight=sights?sights.SelectedSight:null;
         var attachment=sights?sights.FirstPersonAttachment:null;
-        bool equippedInViewer=view.isActiveAndEnabled && view.firstPerson && view.playerCamera.isActiveAndEnabled
+        bool equippedInViewer=view.isActiveAndEnabled && view.firstPerson && view.NeedsCameraAnimation
             && loadout.HasFirstPersonPresentation && loadout.FirstPersonView.gameObject.activeInHierarchy
             && sight && sights.UsesPictureInPicture && attachment && attachment.scopeLens
             && attachment.scopeLens.enabled && attachment.scopeLens.gameObject.activeInHierarchy
@@ -58,7 +59,9 @@ public class SoldierScopeView : MonoBehaviour
         scopeCamera.cullingMask=camera.cullingMask&~(1<<view.firstPersonLayer);
         scopeCamera.nearClipPlane=camera.nearClipPlane;scopeCamera.farClipPlane=camera.farClipPlane;
         scopeCamera.clearFlags=camera.clearFlags;scopeCamera.backgroundColor=camera.backgroundColor;
-        scopeCamera.depth=camera.depth-1;scopeCamera.enabled=true;
+        scopeCamera.depth=camera.depth-1;
+        // A scheduled monitor captures its lens explicitly before its own view.
+        scopeCamera.enabled=camera.enabled;
     }
     public static float LensFieldOfView(Camera viewer, Renderer aperture, float magnification)
     {

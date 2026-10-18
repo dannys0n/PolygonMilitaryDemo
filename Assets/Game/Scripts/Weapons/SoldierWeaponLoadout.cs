@@ -84,7 +84,7 @@ public class SoldierWeaponLoadout : MonoBehaviour
         if(WantsFirstPerson())CreateFirstPerson();
         ConnectViews();
     }
-    bool WantsFirstPerson()=>presentation.view.firstPerson&&presentation.view.playerCamera.isActiveAndEnabled;
+    bool WantsFirstPerson()=>presentation.view.firstPerson&&presentation.view.NeedsCameraAnimation;
     void CreateFirstPerson()
     {
         var prefab=slots[selectedSlot].firstPersonPrefab;

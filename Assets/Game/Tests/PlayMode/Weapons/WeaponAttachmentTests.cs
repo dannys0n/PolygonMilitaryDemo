@@ -63,6 +63,38 @@ public class WeaponAttachmentTests
             AssertFinite(camera.transform);
         }
     }
+    [UnityTest] public IEnumerator ScheduledPreviewKeepsFPSAndScopeOwnershipUntilReleased()
+    {
+        var fixtureBody=view.GetComponent<Rigidbody>();fixtureBody.position=Vector3.up*10000;fixtureBody.linearVelocity=Vector3.zero;
+        Call(view,"SetFirstPerson",true);
+        var sights=(Component)Get(loadout,"EquippedSights");
+        var optic=((Array)Get(sights,"compatibleSights")).Cast<UnityEngine.Object>()
+            .First(s=>s && (bool)Get(s,"pictureInPicture") && (bool)Call(sights,"Supports",s));
+        Call(loadout,"SetSight",optic);
+        Assert.AreSame(optic,Get(sights,"SelectedSight"));
+        Call(view,"SetAimRequested",true);
+        yield return new WaitForSeconds(.4f);
+        var camera=(Camera)Get(view,"playerCamera");
+        var scope=view.GetComponent(T("SoldierScopeView"));
+        var target=new RenderTexture(256,256,24);target.Create();
+        try
+        {
+            camera.targetTexture=target;camera.enabled=false;
+            yield return null;yield return null;
+            Assert.IsTrue((bool)Get(view,"NeedsCameraAnimation"));
+            Assert.IsTrue((bool)Get(loadout,"HasFirstPersonPresentation"));
+            Assert.IsTrue((bool)Get(scope,"HasActiveLens"));
+            var lensCamera=(Camera)Get(scope,"ScopeCamera");
+            Assert.IsFalse(lensCamera.enabled,"A manual preview captures its lens explicitly.");
+            lensCamera.Render();camera.Render();
+            camera.targetTexture=null;
+            yield return null;yield return null;
+            Assert.IsFalse((bool)Get(view,"NeedsCameraAnimation"));
+            Assert.IsNull(Get(scope,"ScopeTexture"));
+        }
+        finally { camera.targetTexture=null;target.Release();UnityEngine.Object.Destroy(target); }
+    }
+
     [UnityTest] public IEnumerator OpticMountStandardsFilterRuntimeAndClassMenuConsistently()
     {
         var catalog=AssetDatabase.LoadAssetAtPath<ScriptableObject>("Assets/Game/Definitions/Weapons/Catalogs/WeaponCatalog.asset");

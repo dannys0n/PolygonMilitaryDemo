@@ -204,8 +204,8 @@ public class VehicleLauncher : MonoBehaviour
         rocket.Launch(vehicle, pilot.gameObject, weaponIcon);
         if (launchFlash)
         {
-            var flash = ParticleEffectPool.Play(launchFlash, muzzle.position, muzzle.rotation);
-            flash.Emit(1);
+            var flash = ParticleEffectPool.PlayTransient(launchFlash, muzzle.position, muzzle.rotation);
+            if (flash) flash.Emit(1);
         }
         if (pilot.IsLocal) pilot.PlayVehicleCameraShake(cameraShake);
         if (rocket.TryGetComponent<VehicleMissileGuidance>(out var guidance)) guidance.Initialize(vehicle, RequestedAimRay, this, validatedTarget);

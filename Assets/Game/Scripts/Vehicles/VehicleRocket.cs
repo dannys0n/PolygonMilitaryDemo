@@ -154,7 +154,7 @@ public class VehicleRocket : MonoBehaviour
         ExplosionDamage.Apply(point,normal,radius,infantryDamage,vehicleDamage,source,transform,damageIcon);
         if(showImpactVisual && impactEffect)
         {
-            ParticleEffectPool.Play(impactEffect,point+normal*.03f,Quaternion.FromToRotation(Vector3.forward,normal));
+            ParticleEffectPool.PlayTransient(impactEffect,point+normal*.03f,Quaternion.FromToRotation(Vector3.forward,normal));
         }
         ReturnToPool();
     }

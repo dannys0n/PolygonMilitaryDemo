@@ -103,6 +103,10 @@ public class VehicleCoreRegressionTests
         Object.Destroy(runway);yield return null;body.constraints=RigidbodyConstraints.None;body.useGravity=true;body.linearVelocity=Vector3.forward*75;
         // Refresh production airspeed/ground sensing before asking AI for its first flight command.
         Call(motor,"Simulate",Activator.CreateInstance(T("VehicleInput")),false);yield return new WaitForFixedUpdate();
+        // Ground sensing is cached. Let the removed runway expire from that cache
+        // before asserting obstacle avoidance rather than the takeoff command.
+        yield return new WaitForSeconds(.2f);
+        Call(motor,"Simulate",Activator.CreateInstance(T("VehicleInput")),false);
         var obstacle=GameObject.CreatePrimitive(PrimitiveType.Cube);roots.Add(obstacle);obstacle.transform.position=new Vector3(0,1000,120);obstacle.transform.localScale=new Vector3(50,50,5);Physics.SyncTransforms();
         Call(ai,"FlyJet",v,motor);var command=Get(v,"DriverInput");Assert.LessOrEqual((float)Get(command,"viewPitch"),-24.9f,"Obstacle must request a climb");
         float altitude=body.position.y;Quaternion rotation=body.rotation;
