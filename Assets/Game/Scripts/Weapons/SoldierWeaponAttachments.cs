@@ -16,7 +16,7 @@ public class SoldierWeaponAttachments : MonoBehaviour
     public void Apply(WeaponAttachmentDefinition[] selections,SoldierFirstPersonView view)
     {
         this.selections=selections;
-        foreach(var go in visuals){go.SetActive(false);go.transform.SetParent(null);if(Application.isPlaying)Destroy(go);else DestroyImmediate(go);}visuals.Clear();
+        ClearPresentation();
         Transform rear=null,front=null;
         WeaponAttachmentDefinition rearDefinition=null;
         float sightLift=0;
@@ -46,6 +46,11 @@ public class SoldierWeaponAttachments : MonoBehaviour
         RefreshIronVisibility();
         view.RefreshVisuals();
     }
+    public void ClearPresentation()
+    {
+        foreach(var go in visuals)EquipmentVisualPool.Return(go);
+        visuals.Clear();
+    }
     public void RefreshIronVisibility()
     {
         bool optic=TryGetComponent<SoldierWeaponSights>(out var sights) && sights.SelectedSight && sights.SelectedSight.prefab;
@@ -61,7 +66,7 @@ public class SoldierWeaponAttachments : MonoBehaviour
     }
     GameObject Add(WeaponAttachmentDefinition definition,Transform mount,int layer,bool visible)
     {
-        var go=Instantiate(definition.prefab,mount,false);
+        var go=EquipmentVisualPool.Rent(definition.prefab,mount);
 #if UNITY_EDITOR
         if (go.TryGetComponent<WeaponSightAttachment>(out var sight))
             sight.SourcePrefab = definition.prefab.GetComponent<WeaponSightAttachment>();

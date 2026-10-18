@@ -77,6 +77,7 @@ public class SoldierWeaponSights : MonoBehaviour
         if(!sight)throw new System.InvalidOperationException($"{name} has no bare sight configuration.");
         if (!Supports(sight)) throw new System.ArgumentException($"{sight.name} is incompatible with {name}.");
         if (SelectedSight == sight) return;
+        if(owner && owner.TryGetComponent<SoldierScopeView>(out var scope))scope.ClearPresentation();
         Remove(firstAttachment); Remove(thirdAttachment);
         SelectedSight = sight;
         AlternateSightActive = false;
@@ -91,12 +92,13 @@ public class SoldierWeaponSights : MonoBehaviour
         ApplySightLift();
         if(TryGetComponent<SoldierWeaponAttachments>(out var attachments))attachments.RefreshIronVisibility();
         Revision++;
-        // Removed attachments are detached before Destroy, so no stale renderer references remain.
+        // Returned attachments leave the rig immediately, so no stale renderer references remain.
         owner.RefreshVisuals();
     }
 
     public void ClearPresentation()
     {
+        if(owner && owner.TryGetComponent<SoldierScopeView>(out var scope))scope.ClearPresentation();
         Remove(firstAttachment); Remove(thirdAttachment);
         firstAttachment=thirdAttachment=null; replacementRear=replacementFront=null;
         SelectedSight=null; AlternateSightActive=false; replacementRearDefinition=null; sightLift=0; Revision++;
@@ -124,14 +126,14 @@ public class SoldierWeaponSights : MonoBehaviour
     static void Remove(WeaponSightAttachment attachment)
     {
         if (!attachment) return;
-        attachment.gameObject.SetActive(false);
-        attachment.transform.SetParent(null);
-        if (Application.isPlaying) Destroy(attachment.gameObject); else DestroyImmediate(attachment.gameObject);
+        var support=attachment.transform.Find("RequiredSightRiser");
+        if(support)EquipmentVisualPool.Return(support.gameObject);
+        EquipmentVisualPool.Return(attachment.gameObject);
     }
 
     static WeaponSightAttachment Create(WeaponSightAttachment prefab, Transform mount, int layer, bool visible, bool firstPerson)
     {
-        var attachment = Instantiate(prefab, mount);
+        var attachment = EquipmentVisualPool.Rent(prefab.gameObject, mount).GetComponent<WeaponSightAttachment>();
 #if UNITY_EDITOR
         attachment.SourcePrefab = prefab;
 #endif
@@ -184,13 +186,11 @@ public class SoldierWeaponSights : MonoBehaviour
         var old = attachment.transform.Find("RequiredSightRiser");
         if (old)
         {
-            old.gameObject.SetActive(false);
-            old.SetParent(null);
-            if (Application.isPlaying) Destroy(old.gameObject); else DestroyImmediate(old.gameObject);
+            EquipmentVisualPool.Return(old.gameObject);
         }
         // An explicitly equipped riser already supplies the support mesh.
         if (!required || sightLift > 0f) return;
-        var support = Instantiate(required.prefab, attachment.transform, false);
+        var support = EquipmentVisualPool.Rent(required.prefab, attachment.transform);
         support.name = "RequiredSightRiser";
         support.transform.SetLocalPositionAndRotation(required.positionOffset + Vector3.forward * placement.contactPoint.z - attachment.transform.localPosition,
             Quaternion.Euler(required.rotationOffset));

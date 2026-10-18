@@ -27,9 +27,70 @@ public class WeaponAttachmentTests
         Set(actor.GetComponent(T("ArenaParticipant")),"match",match);holder.SetActive(true);loadout=actor.GetComponent(T("SoldierWeaponLoadout"));view=actor.GetComponent(T("SoldierFirstPersonView"));actions=actor.GetComponent(T("SoldierActions"));
         ((Behaviour)actor.GetComponent(T("SoldierLocalInput"))).enabled=false;yield return null;yield return null;
         ((Behaviour)actor.GetComponent(T("SoldierController"))).enabled=false;Call(actor.GetComponent(T("SoldierLife")),"SetGameplayAllowed",true);
+        Set(loadout,"infiniteAmmunition",false);Call(loadout,"ResetAmmunition"); // Garage prefab is unlimited; reload tests require finite magazines.
     }
     [UnityTearDown] public IEnumerator Cleanup(){for(int i=roots.Count-1;i>=0;i--)if(roots[i])Object.Destroy(roots[i]);roots.Clear();yield return null;}
     static void AssertFinite(Transform t){Assert.IsFalse(float.IsNaN(t.position.x)||float.IsInfinity(t.position.x));Assert.Greater(t.lossyScale.sqrMagnitude,0);}
+    [UnityTest] public IEnumerator WeaponViewsAreReusedWithoutLosingSlotAmmoOrSightSelections()
+    {
+        // Other fixtures can fill the bounded cache; isolate this reuse check from eviction.
+        var poolRoot=(Transform)T("EquipmentVisualPool").GetField("root",BindingFlags.Static|BindingFlags.NonPublic).GetValue(null);
+        if(poolRoot)Object.DestroyImmediate(poolRoot.gameObject);
+        var slot=(int)Get(loadout,"selectedSlot");
+        var slots=(Array)Get(loadout,"slots");
+        int other=Enumerable.Range(0,slots.Length).First(i=>i!=slot && !(bool)Get(Get(slots.GetValue(i),"definition"),"isUtility"));
+        Assert.IsTrue((bool)Call(loadout,"SetStartingSlot",other));Assert.IsTrue((bool)Call(loadout,"SetStartingSlot",slot));
+        var sights=(Component)Get(loadout,"EquippedSights");
+        var optic=((Array)Get(sights,"compatibleSights")).Cast<UnityEngine.Object>()
+            .First(s=>s && Get(s,"prefab")!=null && (bool)Call(sights,"Supports",s));
+        Call(loadout,"SetSight",optic);
+        var third=(Component)Get(loadout,"ThirdPersonView");var first=(Component)Get(loadout,"FirstPersonView");
+        var sightAttachment=third.transform.GetComponentsInChildren(T("WeaponSightAttachment"),true).First();
+        var state=Get(loadout,"EquippedState");var definition=Get(slots.GetValue(slot),"definition");
+        Call(state,"TryConsumeRound",Time.time,definition);int remaining=(int)Get(state,"MagazineAmmo");
+        for(int i=0;i<4;i++)
+        {
+            Assert.IsTrue((bool)Call(loadout,"SetStartingSlot",other));
+            Assert.IsTrue((bool)Call(loadout,"SetStartingSlot",slot));
+            CollectionAssert.AreEquivalent(new[]{third,first},new[]{Get(loadout,"ThirdPersonView"),Get(loadout,"FirstPersonView")});
+            third=(Component)Get(loadout,"ThirdPersonView");first=(Component)Get(loadout,"FirstPersonView");
+            Assert.AreSame(optic,Get(Get(loadout,"EquippedSights"),"SelectedSight"));
+            Assert.AreEqual(remaining,Get(Get(loadout,"EquippedState"),"MagazineAmmo"));
+            Assert.Contains(sightAttachment,third.transform.GetComponentsInChildren(T("WeaponSightAttachment"),true)
+                .Concat(first.transform.GetComponentsInChildren(T("WeaponSightAttachment"),true)).ToArray());
+            Assert.AreSame(Get(loadout,"thirdPersonMount"),third.transform.parent);
+            AssertFinite(third.transform);
+            yield return null;
+        }
+    }
+    [UnityTest] public IEnumerator EquipmentPoolRestoresAuthoredStateAndBoundsIdleInventory()
+    {
+        var pool=T("EquipmentVisualPool");var rent=pool.GetMethod("Rent");var giveBack=pool.GetMethod("Return");
+        var prefab=Root("Pool authored visual");prefab.transform.localScale=Vector3.one*2;
+        var mesh=prefab.AddComponent<MeshRenderer>();mesh.shadowCastingMode=UnityEngine.Rendering.ShadowCastingMode.On;
+        var child=new GameObject("Authored child");child.transform.SetParent(prefab.transform,false);child.transform.localPosition=Vector3.up;
+        var parent=Root("Pool borrower").transform;
+        var borrowed=(GameObject)rent.Invoke(null,new object[]{prefab,parent});
+        var borrowedMesh=borrowed.GetComponent<MeshRenderer>();
+        borrowedMesh.forceRenderingOff=true;borrowedMesh.enabled=false;borrowedMesh.shadowCastingMode=UnityEngine.Rendering.ShadowCastingMode.Off;
+        var block=new MaterialPropertyBlock();block.SetFloat("_PoolTest",1);borrowedMesh.SetPropertyBlock(block);
+        borrowed.transform.GetChild(0).localPosition=Vector3.one*100;
+        giveBack.Invoke(null,new object[]{borrowed});giveBack.Invoke(null,new object[]{borrowed});
+        Assert.IsFalse(borrowed.activeInHierarchy);
+        var reused=(GameObject)rent.Invoke(null,new object[]{prefab,parent});Assert.AreSame(borrowed,reused);
+        Assert.IsTrue(borrowedMesh.enabled);Assert.IsFalse(borrowedMesh.forceRenderingOff);Assert.IsFalse(borrowedMesh.HasPropertyBlock());
+        Assert.AreEqual(UnityEngine.Rendering.ShadowCastingMode.On,borrowedMesh.shadowCastingMode);
+        Assert.AreEqual(Vector3.up,reused.transform.GetChild(0).localPosition);
+        Assert.AreEqual(Vector3.one*2,reused.transform.localScale);
+        giveBack.Invoke(null,new object[]{reused});
+        for(int i=0;i<70;i++)
+        {
+            var source=Root("Pool budget source "+i);
+            var item=(GameObject)rent.Invoke(null,new object[]{source,parent});giveBack.Invoke(null,new object[]{item});
+        }
+        Assert.LessOrEqual((int)pool.GetProperty("IdleCount").GetValue(null),64,"No per-player inactive arsenal or unbounded prefab cache.");
+        yield return null;
+    }
     [UnityTest] public IEnumerator HiddenFirstPersonAnimationResumesAtCurrentWeaponState()
     {
         var camera=(Camera)Get(view,"playerCamera");
@@ -232,7 +293,7 @@ public class WeaponAttachmentTests
     }
     [UnityTest] public IEnumerator OpticCalibrationDoesNotAccumulateAndPiPOwnershipIsPreserved()
     {
-        var slots=(Array)Get(loadout,"slots");int index=Array.FindIndex(slots.Cast<object>().ToArray(),s=>(string)Get(Get(s,"definition"),"displayName")=="AK-47");Call(loadout,"SetStartingSlot",index);yield return null;
+        var slots=(Array)Get(loadout,"slots");int index=Array.FindIndex(slots.Cast<object>().ToArray(),s=>new[]{"AK-47","AKM"}.Contains((string)Get(Get(s,"definition"),"displayName")));Assert.Greater(index,0,"Use the AK platform, not the already-equipped starting slot.");Assert.IsTrue((bool)Call(loadout,"SetStartingSlot",index));yield return null;
         var sights=(Component)Get(loadout,"EquippedSights");var choices=((Array)Get(sights,"compatibleSights")).Cast<Object>().Where(s=>s&&Get(s,"prefab")!=null).ToArray();
         var selected=choices.First(s=>((Component)Get(s,"prefab")).name=="Polygon_Scope_A");Call(loadout,"SetSight",selected);yield return null;
         var first=(Component)Get(sights,"FirstPersonAttachment");var expectedPosition=first.transform.localPosition;var expectedRotation=first.transform.localRotation;
@@ -243,12 +304,12 @@ public class WeaponAttachmentTests
     }
     [UnityTest] public IEnumerator AttachmentsRemainBoundDuringFireReloadAndWeaponSwap()
     {
-        var slots=(Array)Get(loadout,"slots");int index=Array.FindIndex(slots.Cast<object>().ToArray(),s=>(string)Get(Get(s,"definition"),"displayName")=="AK-47");Call(loadout,"SetStartingSlot",index);yield return null;
+        var slots=(Array)Get(loadout,"slots");int index=Array.FindIndex(slots.Cast<object>().ToArray(),s=>new[]{"AK-47","AKM"}.Contains((string)Get(Get(s,"definition"),"displayName")));Assert.Greater(index,0,"Use the AK platform, not the already-equipped starting slot.");Assert.IsTrue((bool)Call(loadout,"SetStartingSlot",index));yield return null;
         var sights=(Component)Get(loadout,"EquippedSights");var sight=((Array)Get(sights,"compatibleSights")).Cast<Object>().First(s=>s&&Get(s,"prefab")!=null&&((Component)Get(s,"prefab")).name=="Polygon_Scope_A");Call(loadout,"SetSight",sight);
         var first=(Component)Get(sights,"FirstPersonAttachment");var mount=first.transform.parent;var position=first.transform.localPosition;var rotation=first.transform.localRotation;
         Assert.IsTrue((bool)Call(actions,"TryFire"));yield return new WaitForSeconds(.15f);Assert.IsTrue((bool)Call(actions,"TryReload"));
         for(int i=0;i<5;i++){yield return new WaitForSeconds(.15f);Assert.AreEqual(mount,first.transform.parent);Assert.Less(Vector3.Distance(position,first.transform.localPosition),.00001f);Assert.Less(Quaternion.Angle(rotation,first.transform.localRotation),.001f);}
-        Call(actions,"CancelActions");Call(loadout,"SetStartingSlot",0);yield return null;Assert.IsFalse((bool)first);Call(loadout,"SetStartingSlot",index);yield return null;Assert.IsNotNull(Get(Get(loadout,"EquippedSights"),"FirstPersonAttachment"));
+        Call(actions,"CancelActions");Call(loadout,"SetStartingSlot",0);yield return null;if(mount)Assert.IsFalse(mount.gameObject.activeInHierarchy,"The old weapon mount must no longer render; its optic may be reused on the new weapon.");Call(loadout,"SetStartingSlot",index);yield return null;Assert.IsNotNull(Get(Get(loadout,"EquippedSights"),"FirstPersonAttachment"));
     }
     [UnityTest] public IEnumerator CaptureCorrectedWeaponAssembliesInFPSAndTPS()
     {

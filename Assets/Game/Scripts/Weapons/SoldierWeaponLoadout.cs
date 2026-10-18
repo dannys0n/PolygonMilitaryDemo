@@ -2,7 +2,7 @@ using System;
 using System.Collections;
 using UnityEngine;
 
-// Inventory data survives swaps; only the equipped weapon has scene objects.
+// Inventory data survives swaps; only the equipped weapon has active presentation.
 [DefaultExecutionOrder(-20)]
 public class SoldierWeaponLoadout : MonoBehaviour
 {
@@ -93,7 +93,7 @@ public class SoldierWeaponLoadout : MonoBehaviour
     }
     static SoldierWeaponView CreateView(SoldierWeaponView prefab,Transform parent)
     {
-        var instance=Instantiate(prefab,parent,false);instance.name=prefab.mountName;
+        var instance=EquipmentVisualPool.Rent(prefab.gameObject,parent).GetComponent<SoldierWeaponView>();instance.name=prefab.mountName;
         foreach(var collider in instance.GetComponentsInChildren<Collider>(true))collider.enabled=false;
         foreach(var body in instance.GetComponentsInChildren<Rigidbody>(true)){body.isKinematic=true;body.detectCollisions=false;}
         instance.transform.SetLocalPositionAndRotation(prefab.mountPosition,prefab.mountRotation);
@@ -131,7 +131,7 @@ public class SoldierWeaponLoadout : MonoBehaviour
             for(int i=0;i<source.layerCount;i++){var state=source.GetCurrentAnimatorStateInfo(i);target.SetLayerWeight(i,source.GetLayerWeight(i));if(state.fullPathHash!=0)target.Play(state.fullPathHash,i,state.normalizedTime);}
             target.Update(0);
         }
-        else {DestroyView(FirstPersonView);FirstPersonView=null;presentation.view.weaponAnimator=null;}
+        else {ReturnView(FirstPersonView);FirstPersonView=null;presentation.view.weaponAnimator=null;}
         ConnectViews();ApplySelections();
         presentation.view.RefreshVisuals();SetEquippedVisible(equippedVisible);
     }
@@ -153,11 +153,11 @@ public class SoldierWeaponLoadout : MonoBehaviour
         EquippedWeapon.thirdPersonHands.Apply(presentation.supportHand,presentation.firingHand);
         EquippedWeapon.sprintSocket.Apply(sprintSocket);ApplySelections();
     }
-    static void DestroyView(SoldierWeaponView view){if(!view)return;view.gameObject.SetActive(false);view.transform.SetParent(null);Destroy(view.gameObject);}
+    static void ReturnView(SoldierWeaponView view){if(!view)return;EquipmentVisualPool.Return(view.gameObject);}
     void Release()
     {
-        PresentationChanging?.Invoke();EquippedSights.ClearPresentation();
-        DestroyView(FirstPersonView);DestroyView(ThirdPersonView);FirstPersonView=null;ThirdPersonView=null;
+        PresentationChanging?.Invoke();EquippedSights.ClearPresentation();EquippedAttachments.ClearPresentation();
+        ReturnView(FirstPersonView);ReturnView(ThirdPersonView);FirstPersonView=null;ThirdPersonView=null;
     }
     public void ConfigureAvailableSlots(int[] indices)
     {

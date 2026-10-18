@@ -102,6 +102,8 @@ public class SoldierScopeView : MonoBehaviour
         if(scopeCamera)scopeCamera.targetTexture=null;
         texture.Release();Destroy(texture);texture=null;
     }
-    void OnDisable(){ReleaseLens();if(scopeCamera)scopeCamera.enabled=false;ReleaseTexture();}
+    void OnEnable(){loadout.PresentationChanging+=ClearPresentation;}
+    public void ClearPresentation(){ReleaseLens();if(scopeCamera)scopeCamera.enabled=false;ReleaseTexture();}
+    void OnDisable(){loadout.PresentationChanging-=ClearPresentation;ClearPresentation();}
     void OnDestroy(){ReleaseLens();ReleaseTexture();if(scopeCamera)Destroy(scopeCamera.gameObject);}
 }

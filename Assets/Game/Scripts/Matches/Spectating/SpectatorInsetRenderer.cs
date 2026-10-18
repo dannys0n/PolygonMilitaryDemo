@@ -17,7 +17,7 @@ public sealed class SpectatorInsetRenderer : MonoBehaviour
         if (Time.unscaledTime < nextCapture) return;
         nextCapture = Time.unscaledTime + 1f / Mathf.Max(1, spectator.insetFramesPerSecond);
         // An FPS preview may depend on a PiP lens. Capture that dependency first.
-        if (scope && scope.HasActiveLens) scope.ScopeCamera.Render();
-        camera.Render();
+        if (scope && scope.HasActiveLens) PreviewCameraRenderer.Render(scope.ScopeCamera);
+        PreviewCameraRenderer.Render(camera);
     }
 }

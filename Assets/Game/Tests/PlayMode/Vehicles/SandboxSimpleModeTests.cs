@@ -426,12 +426,17 @@ public class SandboxSimpleModeTests
         var preview = (Camera)Get(spectator,"InsetCamera");
         Assert.IsNotNull(preview); Assert.IsFalse(preview.enabled, "The monitor must not render automatically every frame.");
         Assert.IsTrue((bool)Get(Get(Get(pilot,"player"),"view"),"NeedsCameraAnimation"), "A scheduled FPS preview still owns its animation graph.");
-        int captures=0;
-        void CountPreview(UnityEngine.Rendering.ScriptableRenderContext context, Camera camera) { if(camera==preview)captures++; }
+        int captures=0;bool leanPreview=true;
+        var previewData=preview.GetComponent(T("UniversalAdditionalCameraData"));
+        bool originalShadows=(bool)Get(previewData,"renderShadows"),originalPost=(bool)Get(previewData,"renderPostProcessing");
+        void CountPreview(UnityEngine.Rendering.ScriptableRenderContext context, Camera camera)
+        { if(camera==preview){captures++;leanPreview &= !(bool)Get(previewData,"renderShadows")&&!(bool)Get(previewData,"renderPostProcessing");} }
         UnityEngine.Rendering.RenderPipelineManager.endCameraRendering += CountPreview;
         try { yield return new WaitForSecondsRealtime(.25f); }
         finally { UnityEngine.Rendering.RenderPipelineManager.endCameraRendering -= CountPreview; }
         Assert.Greater(captures,0); Assert.LessOrEqual(captures,9, "Small-monitor captures must respect the 30 Hz budget.");
+        Assert.IsTrue(leanPreview,"Monitor captures must not duplicate shadow maps and post processing.");
+        Assert.AreEqual(originalShadows,Get(previewData,"renderShadows"));Assert.AreEqual(originalPost,Get(previewData,"renderPostProcessing"));
         Call(spectator,"EnterPerspective");yield return null;
         Assert.AreSame(Get(Get(Get(pilot,"player"),"view"),"playerCamera"),Get(hud,"PresentationCamera"));
         var groundPrefab=((IEnumerable)Get(rules,"deploymentVehicles")).Cast<Component>().Single(v=>v.name=="PickupTechnical");
@@ -445,14 +450,14 @@ public class SandboxSimpleModeTests
             var actorView = (Component)Get(Get(actor,"player"),"view");
             var bodyMeshes = ((Transform)Get(actorView,"thirdPersonRoot")).GetComponentsInChildren<MeshRenderer>(true);
             var gpuModes = bodyMeshes.Select(m => m.HasPropertyBlock()).ToArray();
-            Call(spectator,"Follow",actor);yield return null;yield return null;
-            Assert.IsTrue(bodyMeshes.Where(m => m).All(m => m.HasPropertyBlock()), "Per-camera body hiding must bypass GPU Resident Drawer.");
+            Call(spectator,"Follow",actor);yield return null;yield return new WaitForSecondsRealtime(.08f);
+            Assert.IsTrue(((Transform)Get(actorView,"thirdPersonRoot")).GetComponentsInChildren<MeshRenderer>(true).All(m => m.HasPropertyBlock()), "Per-camera body hiding must bypass GPU Resident Drawer.");
             Assert.AreSame(rider,Get(hud,"player"));Assert.IsTrue(((GameObject)Get(hud,"vehicleEquipment")).activeInHierarchy);
             Call(rider,"Leave",true);yield return null;yield return null;
             Assert.IsFalse(((GameObject)Get(hud,"mountedPanel")).activeSelf);
             Assert.IsTrue(((GameObject)Get(hud,"infantryEquipment")).activeSelf);
             Call(spectator,"StopFollowing");yield return null;
-            for (int i=0;i<bodyMeshes.Length;i++) if(bodyMeshes[i]) Assert.AreEqual(gpuModes[i],bodyMeshes[i].HasPropertyBlock());
+            for (int i=0;i<bodyMeshes.Length;i++) if(bodyMeshes[i] && bodyMeshes[i].transform.IsChildOf(actor.transform)) Assert.AreEqual(gpuModes[i],bodyMeshes[i].HasPropertyBlock());
             Assert.IsFalse(((GameObject)Get(hud,"vehicleEquipment")).activeSelf);
         }
         finally{if(ground)UnityEngine.Object.Destroy(ground.gameObject);}
