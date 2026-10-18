@@ -61,6 +61,38 @@ public class ArenaVehicleAI : MonoBehaviour
     public TravelState State { get; private set; }
     public Vector3 Goal { get; private set; }
     ArenaVehicleScenario scenario;
+    Vehicle contactVehicle;
+    VehicleCombatContacts contacts;
+    readonly ArenaParticipant[] stationTargets=new ArenaParticipant[4];
+    readonly float[] stationScans=new float[4];
+    readonly float[] stationRanges=new float[4];
+
+    RaycastHit[] sightHits=new RaycastHit[16], avoidanceHits=new RaycastHit[16];
+    static RaycastHit[] terrainHits=new RaycastHit[16];
+    VehicleWeaponSystems cachedSystems;
+    VehicleWeaponSystems.Weapon[] cachedWeapons, driverWeapons, gunnerWeapons;
+    System.Collections.Generic.IReadOnlyList<ArenaParticipant> Contacts(Vehicle vehicle)
+    {
+        if(contactVehicle!=vehicle || !contacts)
+        {
+            contactVehicle=vehicle;
+            contacts=vehicle.GetComponent<VehicleCombatContacts>();
+            if(!contacts)contacts=vehicle.gameObject.AddComponent<VehicleCombatContacts>();
+            System.Array.Clear(stationScans,0,stationScans.Length);
+            System.Array.Clear(stationTargets,0,stationTargets.Length);
+        }
+        return contacts.Read(infantry.participant);
+    }
+    VehicleWeaponSystems.Weapon[] StationWeapons(VehicleWeaponSystems systems,Vehicle.SeatRole role)
+    {
+        if(cachedSystems!=systems || cachedWeapons!=systems.weapons)
+        {
+            cachedSystems=systems;cachedWeapons=systems.weapons;
+            driverWeapons=System.Array.FindAll(cachedWeapons,w=>w.role==Vehicle.SeatRole.Driver);
+            gunnerWeapons=System.Array.FindAll(cachedWeapons,w=>w.role==Vehicle.SeatRole.Gunner);
+        }
+        return role==Vehicle.SeatRole.Driver?driverWeapons:gunnerWeapons;
+    }
     Vehicle orderedVehicle;
     public string BoardingStatus { get; private set; }="Idle";
     public bool MissionCrew { get; private set; }
@@ -155,7 +187,7 @@ public class ArenaVehicleAI : MonoBehaviour
     Vector3 progressPosition;
     bool landing, reservedForCombat;
     ArenaParticipant vehicleTarget;
-    float nextTargetDecision, lastVehicleContact = float.NegativeInfinity;
+    float lastVehicleContact = float.NegativeInfinity;
 
     bool IsVehicleCrew
     {
@@ -547,7 +579,10 @@ public class ArenaVehicleAI : MonoBehaviour
         if (jet.Grounded) pitch = -18;
         Vector3 flight=v.Body.linearVelocity.sqrMagnitude>1?v.Body.linearVelocity.normalized:v.transform.forward;
         float avoidanceDistance=Mathf.Max(45,jet.Airspeed*2);
-        foreach(var obstacle in Physics.SphereCastAll(v.Body.worldCenterOfMass,3,flight,avoidanceDistance,Physics.DefaultRaycastLayers,QueryTriggerInteraction.Ignore))
+        int obstacleCount=CombatQueries.SphereCast(v.Body.worldCenterOfMass,3,flight,avoidanceDistance,Physics.DefaultRaycastLayers,QueryTriggerInteraction.Ignore,ref avoidanceHits);
+        for(int obstacleIndex=0;obstacleIndex<obstacleCount;obstacleIndex++)
+        {
+            var obstacle=avoidanceHits[obstacleIndex];
             if(!obstacle.transform.IsChildOf(v.transform))
             {
                 // Cannon rounds must not look like walls immediately in front of the nose.
@@ -559,6 +594,7 @@ public class ArenaVehicleAI : MonoBehaviour
                     BeginGroundExtension(v,jet);
                 pitch=-25;tracking=false;heading=v.transform.eulerAngles.y;break;
             }
+        }
         v.DriverInput = new VehicleInput { directionalFlight = true, heading = heading,
             aim=tracking,
             viewPitch = Mathf.Clamp(pitch, tracking?-40:-25, Maneuver==AirManeuver.GroundAttack?22:tracking?35:15), move = new Vector2(0, jet.Airspeed < jet.maxSpeed * .85f ? 1 : -.3f),
@@ -750,13 +786,17 @@ public class ArenaVehicleAI : MonoBehaviour
         var hull = v.NavigationBounds;
         Vector3 nose = v.transform.TransformPoint(hull.center + Vector3.forward * hull.extents.z);
         Vector3 clearance = new Vector3(hull.extents.x + .2f, hull.extents.y * .65f, .2f);
-        foreach (var hit in Physics.BoxCastAll(nose, clearance, v.transform.forward, v.transform.rotation,
-            Mathf.Max(2, speed * .7f), Physics.DefaultRaycastLayers, QueryTriggerInteraction.Ignore))
+        int obstacleCount=CombatQueries.BoxCast(nose,clearance,v.transform.forward,v.transform.rotation,
+            Mathf.Max(2,speed*.7f),Physics.DefaultRaycastLayers,QueryTriggerInteraction.Ignore,ref avoidanceHits);
+        for(int i=0;i<obstacleCount;i++)
+        {
+            var hit=avoidanceHits[i];
             if (!hit.transform.IsChildOf(v.transform) && !(hit.collider is WheelCollider) && hit.normal.y < .65f)
             {
                 blocked = true;
                 break;
             }
+        }
         if (Vector3.Distance(progressPosition, v.transform.position) > 2)
         {
             progressPosition = v.transform.position;
@@ -837,8 +877,10 @@ public class ArenaVehicleAI : MonoBehaviour
         if(!landing)velocity=SeparateAircraft(v,velocity);
         bool evading=(velocity-requestedVelocity).sqrMagnitude>16;
         if(v.transform.position.y-altitude<flightHeight*.65f && !landing)velocity=Vector3.zero;
-        foreach(var hit in Physics.SphereCastAll(v.Body.worldCenterOfMass,2,velocity.normalized,Mathf.Max(12,v.Body.linearVelocity.magnitude*2),Physics.DefaultRaycastLayers,QueryTriggerInteraction.Ignore))
+        int obstacleCount=CombatQueries.SphereCast(v.Body.worldCenterOfMass,2,velocity.normalized,Mathf.Max(12,v.Body.linearVelocity.magnitude*2),Physics.DefaultRaycastLayers,QueryTriggerInteraction.Ignore,ref avoidanceHits);
+        for(int i=0;i<obstacleCount;i++)
         {
+            var hit=avoidanceHits[i];
             if(hit.transform.IsChildOf(v.transform))continue;
             if(hit.collider.GetComponentInParent<VehicleRocket>())continue;
             var aircraft=hit.collider.GetComponentInParent<Vehicle>();
@@ -925,21 +967,25 @@ public class ArenaVehicleAI : MonoBehaviour
     {
         float height = 0;
         float nearest = float.PositiveInfinity;
-        foreach (var hit in Physics.RaycastAll(new Vector3(position.x,5000,position.z), Vector3.down, 10000, Physics.DefaultRaycastLayers, QueryTriggerInteraction.Ignore))
+        int count=CombatQueries.Raycast(new Ray(new Vector3(position.x,5000,position.z),Vector3.down),10000,Physics.DefaultRaycastLayers,QueryTriggerInteraction.Ignore,ref terrainHits);
+        for(int i=0;i<count;i++)
+        {
+            var hit=terrainHits[i];
             if (!hit.collider.GetComponentInParent<Vehicle>() && !hit.collider.GetComponentInParent<SoldierLife>() && hit.distance < nearest)
             {
                 nearest = hit.distance;
                 height = hit.point.y;
             }
+        }
         return height;
     }
     ArenaParticipant NearbyEnemy(float radius)
     {
         ArenaParticipant best = null;
         float distance = radius;
-        foreach (var actor in infantry.participant.match.participants)
+        foreach (var actor in Contacts(occupant.MountedVehicle))
         {
-            if (actor.team == infantry.participant.team || actor.health.IsDead || actor.IsAwaitingSpawn)
+            if (!actor || actor.team == infantry.participant.team || actor.health.IsDead || actor.IsAwaitingSpawn)
                 continue;
             float d = Vector3.Distance(actor.transform.position, transform.position);
             if (d < distance)
@@ -966,12 +1012,15 @@ public class ArenaVehicleAI : MonoBehaviour
         if(GrenadeSmoke.BlocksLine(from,to))return false;
         Vector3 barrel=v.turret?v.turret.muzzle.forward:(to-from).normalized;
         Vector3 checkFrom=from+barrel*.15f;
-        foreach(var obstruction in Physics.RaycastAll(checkFrom,(to-checkFrom).normalized,Vector3.Distance(checkFrom,to),Physics.DefaultRaycastLayers,QueryTriggerInteraction.Ignore))
-            if(obstruction.transform.IsChildOf(v.transform)&&obstruction.distance>.25f)return false;
+        int count=CombatQueries.Raycast(new Ray(checkFrom,(to-checkFrom).normalized),Vector3.Distance(checkFrom,to),Physics.DefaultRaycastLayers,QueryTriggerInteraction.Ignore,ref sightHits);
+        for(int i=0;i<count;i++)
+            if(sightHits[i].transform.IsChildOf(v.transform)&&sightHits[i].distance>.25f)return false;
         Vector3 delta=to-from;
         var rider=enemy.GetComponent<VehicleOccupant>();
-        foreach(var hit in Physics.RaycastAll(from,delta.normalized,delta.magnitude,Physics.DefaultRaycastLayers,QueryTriggerInteraction.Ignore))
+        count=CombatQueries.Raycast(new Ray(from,delta.normalized),delta.magnitude,Physics.DefaultRaycastLayers,QueryTriggerInteraction.Ignore,ref sightHits);
+        for(int i=0;i<count;i++)
         {
+            var hit=sightHits[i];
             if(hit.transform.IsChildOf(v.transform)||hit.transform.IsChildOf(enemy.transform)||hit.collider.GetComponentInParent<VehicleRocket>())continue;
             if(rider && rider.IsMounted && hit.transform.IsChildOf(rider.MountedVehicle.transform))continue;
             return false;
@@ -989,20 +1038,29 @@ public class ArenaVehicleAI : MonoBehaviour
     ArenaParticipant FindVehicleTarget(Vehicle v,Vector3 origin,float range,bool gunner,bool aircraftOnly=false)
     {
         if(gunner && v.motor is HelicopterMotor)range=Mathf.Min(range,helicopterAcquisitionRange);
-        if (Time.time < nextTargetDecision && vehicleTarget)
+        var candidates=Contacts(v);
+        int query=(gunner?1:0)+(aircraftOnly?2:0);
+        // Cache misses as well as hits. Previously a failed scan retried every frame.
+        if(Time.time<stationScans[query] && Mathf.Approximately(stationRanges[query],range))
         {
-            var rider=vehicleTarget.GetComponent<VehicleOccupant>();
-            bool compatible=!aircraftOnly || rider && rider.IsMounted && rider.MountedVehicle.IsAircraft;
-            float limit=DetectionRange(v,vehicleTarget,range);
-            if(compatible && (EnemyPoint(vehicleTarget)-origin).sqrMagnitude<=limit*limit)
-            return vehicleTarget && vehicleTarget.isActiveAndEnabled && !vehicleTarget.health.IsDead && !vehicleTarget.IsAwaitingSpawn
-                && HasLineOfFire(v, vehicleTarget, origin, EnemyPoint(vehicleTarget)) ? vehicleTarget : null;
+            var target=stationTargets[query];
+            if(target && target.isActiveAndEnabled && !target.health.IsDead && !target.IsAwaitingSpawn)
+            {
+                float limit=DetectionRange(v,target,range);
+                var rider=target.GetComponent<VehicleOccupant>();
+                bool compatible=!aircraftOnly || rider && rider.IsMounted && rider.MountedVehicle.IsAircraft;
+                if(compatible && target.team!=infantry.participant.team && (EnemyPoint(target)-origin).sqrMagnitude<=limit*limit)
+                {vehicleTarget=target;return target;}
+            }
+            return null;
         }
-        nextTargetDecision=Time.time+.2f;vehicleTarget=null;
+        stationScans[query]=Time.time+.18f+((uint)GetEntityId().GetHashCode()%7)*.01f;
+        stationRanges[query]=range;
+        vehicleTarget=null;
         float nearest=float.PositiveInfinity;
-        foreach(var enemy in infantry.participant.match.participants)
+        foreach(var enemy in candidates)
         {
-            if(!enemy.isActiveAndEnabled||enemy.team==infantry.participant.team||enemy.health.IsDead||enemy.IsAwaitingSpawn)continue;
+            if(!enemy || !enemy.isActiveAndEnabled||enemy.team==infantry.participant.team||enemy.health.IsDead||enemy.IsAwaitingSpawn)continue;
             Vector3 point=EnemyPoint(enemy),direction=point-origin;
             float distance=direction.magnitude;if(distance>DetectionRange(v,enemy,range))continue;
             var mounted=enemy.GetComponent<VehicleOccupant>();
@@ -1022,6 +1080,7 @@ public class ArenaVehicleAI : MonoBehaviour
             if(!HasLineOfFire(v,enemy,origin,point))continue;
             vehicleTarget=enemy;nearest=score;lastVehicleContact=Time.time;lastVehiclePoint=point;
         }
+        stationTargets[query]=vehicleTarget;
         return vehicleTarget;
     }
     static bool HasGunner(Vehicle v)
@@ -1035,7 +1094,7 @@ public class ArenaVehicleAI : MonoBehaviour
         if(v.TryGetComponent<VehicleWeaponSystems>(out var systems))
         {
             var role=v.seats[occupant.SeatIndex].role;
-            var profiles=System.Array.FindAll(systems.weapons,w=>w.role==role);
+            var profiles=StationWeapons(systems,role);
             if(profiles.Length==0)return;
             float range=0;foreach(var profile in profiles)range=Mathf.Max(range,profile.range);
             var searchOrigin=profiles[0].gun ? profiles[0].gun.muzzle.position : profiles[0].launcher ? profiles[0].launcher.NextShotRay.origin : v.cameraTarget.position;

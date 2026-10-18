@@ -25,6 +25,8 @@ public class VehicleOccupant : MonoBehaviour
     readonly Dictionary<Collider, bool> colliders = new Dictionary<Collider, bool>();
     readonly Dictionary<Renderer, bool> forcedVisibility = new Dictionary<Renderer, bool>();
     SkinnedMeshRenderer[] seatedBody;
+    bool? seatedVisible;
+    readonly Dictionary<Rigidbody,bool> mountedBodyCollisions=new Dictionary<Rigidbody,bool>();
     Transform originalParent;
     VehicleSeatPose seatPose;
     Camera vehicleCamera;
@@ -318,7 +320,7 @@ public class VehicleOccupant : MonoBehaviour
         renderers.Clear(); forcedVisibility.Clear();
         shadowModes.Clear();
         colliders.Clear();
-        foreach (var b in new Behaviour[] { soldier, life.actions, life.movement, life.look, life.loadout, life.view, GetComponent<SoldierWeaponPresentation>() })
+        foreach (var b in new Behaviour[] { soldier, life.actions, life.movement, life.look, life.loadout, life.view, GetComponent<SoldierWeaponPresentation>(), GetComponent<SoldierFirstPersonCamera>(), GetComponent<SoldierScopeView>(), GetComponent<SoldierFirstPersonBody>() })
             SaveDisable(b);
         foreach (var b in GetComponentsInChildren<Behaviour>(true))
             if (b is Animator || b is RigBuilder || b is IRigConstraint || b is SoldierMotionGrip || b is SoldierFootIK)
@@ -333,6 +335,12 @@ public class VehicleOccupant : MonoBehaviour
         {
             colliders[c] = c.enabled;
             c.enabled = false;
+        }
+        mountedBodyCollisions.Clear();
+        foreach(var body in GetComponentsInChildren<Rigidbody>(true))
+        {
+            mountedBodyCollisions[body]=body.detectCollisions;
+            body.detectCollisions=false;
         }
         var agent = GetComponent<NavMeshAgent>();
         if (agent)
@@ -349,6 +357,7 @@ public class VehicleOccupant : MonoBehaviour
         seatedBody = System.Array.FindAll(life.view.thirdPersonRoot.GetComponentsInChildren<SkinnedMeshRenderer>(true),
             skin => renderers.TryGetValue(skin,out var wasVisible) && wasVisible
                 && System.Array.Exists(skin.bones,bone=>humanoidBones.Contains(bone)));
+        seatedVisible=null;
         UpdateSeatedVisibility();
         if (!IsLocal)
             return;
@@ -429,6 +438,8 @@ public class VehicleOccupant : MonoBehaviour
         MountedVehicle = null;
         transform.SetParent(originalParent, true);
         transform.SetPositionAndRotation(position, Quaternion.Euler(0, vehicle.transform.eulerAngles.y, 0));
+        foreach(var pair in mountedBodyCollisions)if(pair.Key)pair.Key.detectCollisions=pair.Value;
+        mountedBodyCollisions.Clear();
         foreach (var pair in colliders)
         if (pair.Key)
             pair.Key.enabled = pair.Value;
@@ -583,6 +594,8 @@ public class VehicleOccupant : MonoBehaviour
         var seat=MountedVehicle.seats[SeatIndex];
         bool visible=MountedVehicle.hasRenderedInterior && seat.showCharacter
             && !(IsLocal && CockpitView && seat.weaponMountedView);
+        if(seatedVisible==visible)return;
+        seatedVisible=visible;
         foreach(var skin in seatedBody) if(skin){skin.enabled=visible;skin.forceRenderingOff=!visible;skin.shadowCastingMode=UnityEngine.Rendering.ShadowCastingMode.On;}
     }
     public bool OpticalADSActive { get { var sight=MountedVehicle?MountedVehicle.GetComponent<VehicleAttackSight>():null; return IsMounted && IsLocal && sight && sight.IsDocumentedTankSight && sight.DisplaysForSeat(SeatIndex) && Input.GetMouseButton(1) && !Freelook; } }

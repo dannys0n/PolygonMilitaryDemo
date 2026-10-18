@@ -27,6 +27,8 @@ public class VehicleSeatPose : MonoBehaviour
         enabled = true;
         animator.runtimeAnimatorController = Resources.Load<RuntimeAnimatorController>("VehicleSeats");
         animator.applyRootMotion = false;
+        // Mount hides renderers until the pose is ready. Always evaluate this initial sample,
+        // otherwise culling leaves standing-pose hips in the seating-offset calculation.
         animator.cullingMode = AnimatorCullingMode.AlwaysAnimate;
         animator.enabled = true;
         string state = seat.pose != Vehicle.Seat.Pose.Automatic ? seat.pose.ToString()
@@ -34,6 +36,7 @@ public class VehicleSeatPose : MonoBehaviour
         animator.Play(state, 0, 0);
         animator.Update(0f);
         bodyOffset=Quaternion.Inverse(pelvisAnchor.rotation)*(lastBodyPosition-animator.GetBoneTransform(HumanBodyBones.Hips).position);
+        animator.cullingMode = AnimatorCullingMode.CullUpdateTransforms;
     }
 
     public void End()
@@ -71,4 +74,3 @@ public class VehicleSeatPose : MonoBehaviour
         animator.SetIKRotation(hand, target.rotation);
     }
 }
-

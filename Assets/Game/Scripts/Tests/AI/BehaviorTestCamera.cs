@@ -13,6 +13,12 @@ public sealed class BehaviorTestCamera : MonoBehaviour
         follow=null;
         ReadAngles();
     }
+    public void SetPose(Vector3 position, Quaternion rotation)
+    {
+        follow=null;wasFollowing=false;
+        transform.SetPositionAndRotation(position,rotation);
+        ReadAngles();
+    }
     void ReadAngles()
     {
         yaw=transform.eulerAngles.y;

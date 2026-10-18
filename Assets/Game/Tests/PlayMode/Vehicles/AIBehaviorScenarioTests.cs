@@ -318,7 +318,10 @@ public class AIBehaviorScenarioTests
   var driver=(Component)Get(vehicle,"Driver");var ai=driver.GetComponent(T("ArenaVehicleAI"));
   var target=((Component)Get(enemy,"Driver")).GetComponent(T("ArenaParticipant"));
   ai.GetType().GetField("vehicleTarget",Flags).SetValue(ai,target);
-  ai.GetType().GetField("nextTargetDecision",Flags).SetValue(ai,Time.time+10);
+  ai.GetType().GetMethod("Contacts",Flags).Invoke(ai,new object[]{vehicle});
+  ((Array)Get(ai,"stationTargets")).SetValue(target,1);
+  ((float[])Get(ai,"stationScans"))[1]=Time.time+10;
+  ((float[])Get(ai,"stationRanges"))[1]=1000;
   var body=enemy.GetComponent<Rigidbody>();body.position=vehicle.transform.position+Vector3.forward*350;
   enemy.transform.position=body.position;Physics.SyncTransforms();
   var found=ai.GetType().GetMethod("FindVehicleTarget",Flags).Invoke(ai,new object[]{vehicle,vehicle.transform.position+Vector3.up*2,1000f,true,false});
@@ -432,3 +435,4 @@ public class AIBehaviorScenarioTests
  }
 }
 #endif
+
