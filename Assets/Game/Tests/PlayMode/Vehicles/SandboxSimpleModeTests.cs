@@ -264,6 +264,8 @@ public class SandboxSimpleModeTests
         var catalog = Get(settings, "weaponCatalog");
         foreach (var actor in infantry.Select(i => (Component)Get(i, "participant")))
         {
+            var input=actor.GetComponent(T("SandboxInfantryInput"));
+            Assert.AreEqual(4f,Get(input,"aimSettleTime"));Assert.AreEqual(1f,Get(input,"reactionTime"));Assert.AreEqual(2,Get(input,"burstRounds"));
             if((bool)Get(actor,"IsAwaitingSpawn"))continue; // Local player now chooses deployment before receiving equipment.
             var choice = Get(actor, "SelectedClass"); Assert.NotNull(choice);
             foreach (string weapon in new[] { "primary", "secondary" })

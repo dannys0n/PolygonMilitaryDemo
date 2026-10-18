@@ -49,16 +49,39 @@ public class SandboxBehaviorTests
         yield return Load("AI_Accuracy");
         var actors=(IList)Get(scenario,"actors");Assert.AreEqual(4,actors.Count);
         var actor=(Component)actors[0];var enemy=(Component)actors[2];var ai=actor.GetComponent(T("ArenaAIInput"));
-        Assert.AreEqual(3f,Get(ai,"aimSettleTime"));Assert.AreEqual(0f,Get(ai,"settledAimError"));
+        Assert.AreEqual(4f,Get(ai,"aimSettleTime"));Assert.AreEqual(0f,Get(ai,"settledAimError"));
         ai.GetType().GetField("target",Flags).SetValue(ai,enemy);
-        ai.GetType().GetField("acquiredAt",Flags).SetValue(ai,Time.time-2);
-        Assert.Greater((float)Get(ai,"CurrentAimError"),0f,"Aim must still be settling at two seconds");
-        ai.GetType().GetField("acquiredAt",Flags).SetValue(ai,Time.time-3.01f);
+        ai.GetType().GetField("acquiredAt",Flags).SetValue(ai,Time.time-3.99f);
+        Assert.Greater((float)Get(ai,"CurrentAimError"),0f,"Aim must still be settling immediately before four seconds");
+        ai.GetType().GetField("acquiredAt",Flags).SetValue(ai,Time.time-4.01f);
         ai.GetType().GetField("aimNoise",Flags).SetValue(ai,new Vector2(4,4));
         ai.GetType().GetField("trackedAim",Flags).SetValue(ai,Vector3.one*100);
         var expected=(Vector3)Call(ai,"AimPoint",enemy);
         Assert.Less(Vector3.Distance(expected,(Vector3)Call(ai,"GetImperfectAim")),.00001f);
         Assert.AreEqual(Vector2.zero,Get(ai,"aimNoise"));Assert.AreEqual(0f,Get(ai,"CurrentAimError"));
+    }
+    [UnityTest] public IEnumerator NewInfantryThreatWaitsOneSecondAndBurstsStayShort()
+    {
+        yield return Load("AI_Accuracy");
+        var actors=((IEnumerable)Get(scenario,"actors")).Cast<Component>().ToArray();
+        var ai=actors[0].GetComponent(T("ArenaAIInput"));
+        ((Behaviour)ai).enabled=false;
+        Set(ai,"target",null);Set(ai,"targetVisible",false);
+        Assert.AreEqual(1f,Get(ai,"reactionTime"));
+        Set(ai,"combatAlertUntil",Time.time+10);
+        Call(ai,"NotifyThreat",actors[2].gameObject);
+        float ready=(float)Get(ai,"readyAt");
+        Assert.That(ready-Time.time,Is.EqualTo(1f).Within(.01f),"Being in combat must not bypass reaction time on a new enemy.");
+        Call(ai,"NotifyThreat",actors[2].gameObject);
+        Assert.AreEqual(ready,Get(ai,"readyAt"),"Repeated reports of the same target must not restart or skip the delay.");
+        Call(ai,"NotifyThreat",actors[3].gameObject);
+        Assert.That((float)Get(ai,"readyAt")-Time.time,Is.EqualTo(1f).Within(.01f));
+        Set(ai,"burstUntil",0f);Set(ai,"pauseUntil",0f);Set(ai,"burstShots",0);
+        Assert.IsTrue((bool)Call(ai,"InBurst"));int rounds=(int)Get(ai,"burstShotLimit");
+        Assert.That(rounds,Is.InRange(1,2));
+        for(int i=0;i<rounds;i++)Call(ai,"OnShot");
+        Assert.IsFalse((bool)Call(ai,"InBurst"),"A burst must stop after at most two actual emitted rounds.");
+        Assert.Greater((float)Get(ai,"pauseUntil"),Time.time);
     }
     [UnityTest] public IEnumerator SettledAimActuallyDamagesAndKillsInfantry()
     {

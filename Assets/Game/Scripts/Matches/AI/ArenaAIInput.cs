@@ -18,7 +18,7 @@ public class ArenaAIInput : SoldierInputSource
     [Min(0)] public float avoidanceClearance=.12f;
     public float attackRange = 18f;
     public float turnSpeed = 180f;
-    public float reactionTime = .35f;
+    public float reactionTime = 1f;
     public float memoryDuration = 4f;
     public float repathInterval = .3f;
     public float perceptionInterval = .15f;
@@ -42,12 +42,12 @@ public class ArenaAIInput : SoldierInputSource
     [Header("Aim and bursts")]
     public float initialAimError = 3f;
     public float settledAimError = 0f;
-    public float aimSettleTime = 3f;
+    public float aimSettleTime = 4f;
     public float aimTrackingTime = .18f;
     public float aimNoiseInterval = .4f;
     public float FocusSeconds => target?Mathf.Max(0,Time.time-acquiredAt):0;
     public float CurrentAimError => Mathf.Lerp(initialAimError,settledAimError,Mathf.Clamp01(FocusSeconds/Mathf.Max(.01f,aimSettleTime)));
-    public Vector2 burstDuration = new Vector2(.5f, 1f);
+    public Vector2 burstDuration = new Vector2(.2f, .35f);
     public Vector2 burstPause = new Vector2(.35f, .8f);
     public float semiAutoInterval = .25f;
     [Header("Weapon choice")]
@@ -171,10 +171,10 @@ public class ArenaAIInput : SoldierInputSource
             || enemy.health.IsDead || enemy.IsAwaitingSpawn)return;
         combatAlertUntil=Time.time+combatReadyDuration;LastCombatTime=Time.time;
         if(targetVisible && target && !target.health.IsDead)return;
-        if(target!=enemy){acquiredAt=Time.time;trackedAim=AimPoint(enemy);aimNoise=desiredNoise=Vector2.zero;}
+        if(target!=enemy || Time.time-seenAt>aimHoldDuration){acquiredAt=Time.time;readyAt=Time.time+reactionTime;trackedAim=AimPoint(enemy);aimNoise=desiredNoise=Vector2.zero;}
         target=enemy;lastSeen=enemy.transform.position;seenAt=Time.time;
         reportedThreatUntil=Time.time+Mathf.Max(memoryDuration,combatReadyDuration*2);
-        readyAt=Time.time;nextPerception=0;HasCover=false;
+        nextPerception=0;HasCover=false;
         investigating=false;hasPatrolDestination=false;nextReposition=0;
     }
     void Investigate(Vector3 point)
@@ -341,7 +341,7 @@ public class ArenaAIInput : SoldierInputSource
         {
             if (target != visible || Time.time - seenAt > aimHoldDuration)
             {
-                readyAt = Time.time + (IsCombatAlert ? 0f : Mathf.Min(reactionTime, .2f));
+                readyAt = Time.time + reactionTime;
                 acquiredAt = Time.time; trackedAim = AimPoint(visible);
                 // Preserve the cadence across target changes rather than repeatedly delaying a shot.
                 if (burstUntil == 0f && Time.time >= pauseUntil) burstShots = 0;
@@ -580,7 +580,7 @@ public class ArenaAIInput : SoldierInputSource
             // single-shot weapons remain lethal; this policy does not alter weapon damage.
             float damage = Mathf.Max(1f, soldier.loadout.EquippedWeapon.definition.damage);
             int lethalRounds = Mathf.CeilToInt(target.health.maxHealth / damage);
-            burstShotLimit = Mathf.Min(Mathf.Clamp((lethalRounds + 1) / 2, 1, 4),
+            burstShotLimit = Mathf.Min(Mathf.Clamp((lethalRounds + 1) / 2, 1, 2),
                 Mathf.Max(1, Mathf.RoundToInt((burstUntil-Time.time)*soldier.actions.roundsPerMinute/60f)));
         }
         if (burstShots < burstShotLimit) return true;

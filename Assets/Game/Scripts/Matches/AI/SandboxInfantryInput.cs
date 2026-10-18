@@ -14,12 +14,12 @@ public class SandboxInfantryInput : SoldierInputSource
     [Min(1)] public float sightRange = 45f;
     [Range(1, 360)] public float fieldOfView = 160f;
     [Min(.05f)] public float perceptionInterval = .15f;
-    [Min(0)] public float reactionTime = .2f;
+    [Min(0)] public float reactionTime = 1f;
     [Min(0)] public float aimHoldTime = .6f;
     [Min(1)] public float turnSpeed = 240f;
     [Min(0)] public float initialAimError = 3f;
-    [Min(.01f)] public float aimSettleTime = 3f;
-    [Min(1)] public int burstRounds = 3;
+    [Min(.01f)] public float aimSettleTime = 4f;
+    [Min(1)] public int burstRounds = 2;
     [Min(.01f)] public float burstPause = .4f;
     [Min(.01f)] public float semiAutoInterval = .22f;
     [Header("Objective movement")]
