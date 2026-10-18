@@ -59,6 +59,15 @@ public class ArenaHud : MonoBehaviour
         accent = new Color(1f, .55f, .12f);
         accentHex = ColorUtility.ToHtmlStringRGB(accent);
         ArenaHudTheme.StyleLines(transform, filamentLine, accentLineGlow);
+        // Radar and health use the same glass opacity, including their corner accents.
+        if(radar)
+            foreach(var image in radar.GetComponentsInChildren<UnityEngine.UI.Image>(true))
+            {
+                if(image.name=="Backdrop")
+                {var tint=ArenaHudTheme.SectionBackground;tint.a=.38f;image.color=tint;}
+                else if(image.name=="Corner Horizontal" || image.name=="Corner Vertical")
+                {var tint=image.color;tint.a=.65f;image.color=tint;}
+            }
         var friendlyMarkers=GetComponent<ArenaFriendlyMarkers>();
         if(!friendlyMarkers)friendlyMarkers=gameObject.AddComponent<ArenaFriendlyMarkers>();
         friendlyMarkers.hud=this;
@@ -222,7 +231,7 @@ public class ArenaHud : MonoBehaviour
             StyleEquipmentIcon(launcherIcons[i],selected,launchers.Count(i)>0?1:.25f);
             bool infinite=loadout.slots[launchers.Slot(i)].state.InfiniteOverride;
             launcherCounts[i].text=(infinite?"\u221e":launchers.Count(i).ToString())+"  "+(i==0?"[Q]":"[X]");
-            launcherBackgrounds[i].color=selected?new Color(accent.r,accent.g,accent.b,.12f):new Color(1,1,1,.035f);
+            launcherBackgrounds[i].color=ArenaHudTheme.SectionTint(selected?.16f:.06f);
             StyleEquipmentText(launcherCounts[i],selected);
         }
         var slotText = new StringBuilder();
@@ -241,7 +250,7 @@ public class ArenaHud : MonoBehaviour
             equipmentIcons[i].sprite = loadout.slots[loadout.AvailableSlots[i]].definition.icon;
             StyleEquipmentIcon(equipmentIcons[i],i == ordinal);
             StyleEquipmentText(equipmentKeys[i],i == ordinal);
-            equipmentBackgrounds[i].color = i == ordinal ? new Color(accent.r,accent.g,accent.b,.12f) : new Color(1,1,1,.035f);
+            equipmentBackgrounds[i].color = ArenaHudTheme.SectionTint(i == ordinal ? .16f : .06f);
         }
         var grenades=player.player.GetComponent<SoldierGrenades>();
         for(int i=0;i<grenadeIcons.Length;i++)
@@ -249,7 +258,7 @@ public class ArenaHud : MonoBehaviour
             grenadeIcons[i].sprite=grenades.types[i].icon;
             StyleEquipmentIcon(grenadeIcons[i],grenades.Selected==i,grenades.Count(i)>0?1:.25f);
             grenadeCounts[i].text=grenades.Count(i)+"  "+(grenades.Selected==i?"[G]":"");
-            grenadeBackgrounds[i].color=grenades.Selected==i?new Color(accent.r,accent.g,accent.b,.12f):new Color(1,1,1,.035f);
+            grenadeBackgrounds[i].color=ArenaHudTheme.SectionTint(grenades.Selected==i?.16f:.06f);
             StyleEquipmentText(grenadeCounts[i],grenades.Selected==i);
         }
         health.text = $"+ {Mathf.CeilToInt(player.health.CurrentHealth):000}";
@@ -270,7 +279,7 @@ public class ArenaHud : MonoBehaviour
         var respawningPlayer=localSpectator&&localSpectator.localPlayer&&!localSpectator.ManualSpectating
             && localSpectator.localPlayer.IsRespawning?localSpectator.localPlayer:player;
         deathStatus.text = !match.IsRunning ? $"{match.Result.ToUpperInvariant()}\nBACKSPACE TO RESTART"
-            : respawningPlayer.IsRespawning ? $"RESPAWN IN {respawningPlayer.RespawnRemaining:F1}s" : "";
+            : allowLocalShortcuts && respawningPlayer.IsRespawning ? $"RESPAWN IN {respawningPlayer.RespawnRemaining:F1}s" : "";
     }
     void StyleEquipmentIcon(UnityEngine.UI.Image icon, bool selected, float availability = 1f)
     {

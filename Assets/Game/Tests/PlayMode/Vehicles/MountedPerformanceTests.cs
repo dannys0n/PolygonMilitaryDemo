@@ -40,6 +40,51 @@ public class MountedPerformanceTests
   Assert.IsFalse((bool)Get(Get(actor,"health"),"IsDead"));Assert.IsTrue((bool)Get(occupant,"IsMounted"));
   Assert.IsFalse((bool)Get(ragdoll,"IsRagdoll"));Assert.IsTrue(animator.enabled);
  }
+ [UnityTest] public IEnumerator CrewMountedBeforeFirstStartKeepsPhysicalAndAnimationOwnership()
+ {
+  yield return SceneManager.LoadSceneAsync("Assets/Game/Scenes/Tests/Performance/Performance_Vehicles.unity");yield return null;
+  control=UnityEngine.Object.FindAnyObjectByType(T("EntityPerformanceControl")) as Component;
+  // Spawn immediately, before newly activated actors receive Start. Do not let the
+  // match's normal deferred-join update hide the opening-scene initialization case.
+  var match=(Behaviour)Get(control,"match");match.enabled=false;
+  Count(0,1);
+  foreach(var actor in Actors)Assert.IsTrue((bool)Call(control,"TrySpawn",actor));
+  var first=Actors[0];var rider=first.GetComponent(T("VehicleOccupant"));
+  var life=(Component)Get(first,"player");
+  var animator=(Animator)Get(Get(life,"actions"),"animator");
+  Camera.main.transform.SetPositionAndRotation(first.transform.position+new Vector3(3,2,-4),
+   Quaternion.LookRotation(first.transform.position+Vector3.up-(first.transform.position+new Vector3(3,2,-4))));
+  yield return null;yield return new WaitForSeconds(.2f);
+  foreach(var actor in Actors)
+  {
+   var actorLife=Get(actor,"player");
+   Assert.IsTrue((bool)Get(actor.GetComponent(T("VehicleOccupant")),"IsMounted"));
+   foreach(string component in new[]{"controller","movement","look","actions","loadout"})
+    Assert.IsFalse(((Behaviour)Get(actorLife,component)).enabled,component+" must stay suspended after the actor's first Start");
+   Assert.IsTrue(actor.GetComponentsInChildren<Rigidbody>(true).All(b=>!b.detectCollisions),"Mounted capsules/bones must not rejoin the vehicle's physics contacts");
+   Call(actorLife,"SetGameplayAllowed",true);
+   Assert.IsFalse(((Behaviour)Get(actorLife,"controller")).enabled,"Later generic enable calls also respect mounted ownership");
+  }
+  float idleTime=animator.GetCurrentAnimatorStateInfo(0).normalizedTime;
+  yield return new WaitForSeconds(.3f);
+  Assert.IsTrue(animator.enabled);Assert.Greater(animator.GetCurrentAnimatorStateInfo(0).normalizedTime,idleTime,"The guard must retain visible seated idle playback");
+  Assert.IsTrue((bool)Call(rider,"Leave",true));yield return null;
+  Assert.IsTrue(((Behaviour)Get(life,"controller")).enabled,"An actual exit restores normal infantry movement");
+  Assert.IsTrue(first.GetComponent<Rigidbody>().detectCollisions);
+ }
+ [UnityTest] public IEnumerator RagdollSkinFollowsPhysicsOutsideAnimationBoundsThenRestoresCulling()
+ {
+  yield return Load(0);var actor=Actors[0];var occupant=actor.GetComponent(T("VehicleOccupant"));
+  Call(occupant,"Leave",true);yield return null;
+  var animator=(Animator)Get(Get(Get(actor,"player"),"actions"),"animator");
+  var meshes=animator.GetComponentsInChildren<SkinnedMeshRenderer>(true);Assert.IsNotEmpty(meshes);
+  var old=meshes.Select(m=>m.updateWhenOffscreen).ToArray();
+  Call(Get(actor,"health"),"ApplyDamage",10000f,null,null);yield return null;
+  foreach(var mesh in meshes)Assert.IsTrue(mesh.updateWhenOffscreen,"Corpse deformation must update its bounds after Animator ownership ends.");
+  Assert.IsFalse(animator.enabled);
+  yield return new WaitForSeconds(3.7f);
+  for(int i=0;i<meshes.Length;i++)Assert.AreEqual(old[i],meshes[i].updateWhenOffscreen,"Respawn must restore living skin culling.");
+ }
  [UnityTest] public IEnumerator SharedContactsDeduplicateHullsAndRefreshAfterCrewDismounts()
  {
   yield return Load();var actor=Actors.First(a=>Get(a,"team").ToString()=="Red");

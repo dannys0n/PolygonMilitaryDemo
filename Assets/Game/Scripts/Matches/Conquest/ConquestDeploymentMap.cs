@@ -17,6 +17,8 @@ public class ConquestDeploymentMap : MonoBehaviour, IScrollHandler, IBeginDragHa
  public TMP_Text previewTitle, mapTitle, matchSummary;
  public Material textMaterial;
  Camera mapCamera, previewCamera;
+ Material bracketMaterial;
+ GameObject selectedBrackets;
  RenderTexture mapTexture, previewTexture;
  readonly List<Pin> pins=new List<Pin>();
  readonly Dictionary<Canvas,bool> hiddenCanvases=new Dictionary<Canvas,bool>();
@@ -27,7 +29,7 @@ public class ConquestDeploymentMap : MonoBehaviour, IScrollHandler, IBeginDragHa
  ArenaParticipant previousMember;
  ConquestCapturePoint previousPoint;
  class Pin {public UnityEngine.UI.Button button;public RectTransform rect;public TMP_Text label;public Image image;public ConquestCapturePoint point;public ArenaParticipant member;public bool teamBase;}
- static readonly Color Orange=new Color(1,.64f,.22f), White=new Color(.92f,.95f,.96f), Green=new Color(.6f,.84f,.42f);
+ static readonly Color Orange=ArenaHudTheme.Accent, White=new Color(.92f,.95f,.96f), Green=new Color(.6f,.84f,.42f);
  void OnEnable(){mapDirty=true;nextPins=nextPreview=0;}
  void Initialize()
  {
@@ -35,7 +37,8 @@ public class ConquestDeploymentMap : MonoBehaviour, IScrollHandler, IBeginDragHa
   foreach(var hud in Object.FindObjectsByType<ArenaHud>(FindObjectsInactive.Include))
   {
    if(hud.gameObject.scene!=gameObject.scene)continue;
-   var canvas=hud.GetComponentInParent<Canvas>();if(canvas==ownCanvas)continue;
+   var canvas=hud.GetComponentInParent<Canvas>();if(!bracketMaterial)bracketMaterial=hud.filamentLine;
+   if(canvas==ownCanvas)continue;
    hiddenCanvases[canvas]=canvas.enabled;canvas.enabled=false;
   }
   // Two presentation cameras. Neither changes the observed character's camera or input.
@@ -54,11 +57,12 @@ public class ConquestDeploymentMap : MonoBehaviour, IScrollHandler, IBeginDragHa
   center=bounds.center;extent=Mathf.Max(bounds.extents.z,bounds.extents.x/mapCamera.aspect)*1.08f;
   height=bounds.max.y+100;mapCamera.farClipPlane=Mathf.Max(250,height-bounds.min.y+100);
   mapCamera.transform.position=new Vector3(center.x,height,center.z);mapCamera.orthographicSize=extent;
+  selectedBrackets=ArenaHudTheme.SelectionBrackets(pinRoot,bracketMaterial);
   BuildPins();mapDirty=true;
  }
  Camera CreateCamera(string name,RenderTexture texture)
  {
-  var go=new GameObject(name,typeof(Camera));var c=go.GetComponent<Camera>();c.enabled=false;c.targetTexture=texture;c.clearFlags=CameraClearFlags.SolidColor;c.backgroundColor=new Color(.035f,.04f,.045f);c.nearClipPlane=.1f;c.farClipPlane=2000;c.cullingMask=~(1<<8);
+  var go=new GameObject(name,typeof(Camera));var c=go.GetComponent<Camera>();c.enabled=false;c.targetTexture=texture;c.clearFlags=CameraClearFlags.SolidColor;c.backgroundColor=ArenaHudTheme.SectionBackground;c.nearClipPlane=.1f;c.farClipPlane=2000;c.cullingMask=~(1<<8);
   var data=c.GetUniversalAdditionalCameraData();data.renderPostProcessing=false;data.renderShadows=true;
   return c;
  }
@@ -70,6 +74,7 @@ public class ConquestDeploymentMap : MonoBehaviour, IScrollHandler, IBeginDragHa
  }
  void BuildPins()
  {
+  if(selectedBrackets)selectedBrackets.transform.SetParent(pinRoot,false);
   foreach(var p in pins)Destroy(p.button.gameObject);pins.Clear();roster=menu.participant.match.participants;
   var team=AddPin("Team base pin");team.teamBase=true;team.button.onClick.AddListener(menu.SelectBase);
   foreach(var point in menu.rules.points){var p=AddPin("Objective "+point.letter);p.point=point;p.button.onClick.AddListener(()=>menu.SelectFlag(point));}
@@ -81,9 +86,12 @@ public class ConquestDeploymentMap : MonoBehaviour, IScrollHandler, IBeginDragHa
   if(!menu.IsVisible)return;
   if(!mapCamera)Initialize();
   if(roster!=menu.participant.match.participants)BuildPins();
-  if(mapDirty){mapCamera.Render();mapDirty=false;}
-  if(Time.unscaledTime>=nextPins){nextPins=Time.unscaledTime+.15f;UpdatePins();}
+  // Map pixels and pin projection must use the same camera state on the same
+  // frame. Throttle roster/readout changes only while the map is stationary.
   bool selectionChanged=previousPoint!=menu.SelectedPoint||previousMember!=menu.SelectedMember;
+  bool moved=mapDirty;
+  if(moved){mapCamera.Render();mapDirty=false;}
+  if(moved || selectionChanged || Time.unscaledTime>=nextPins){nextPins=Time.unscaledTime+.15f;UpdatePins();}
   if(selectionChanged){previousPoint=menu.SelectedPoint;previousMember=menu.SelectedMember;nextPreview=0;}
   if(Time.unscaledTime>=nextPreview){nextPreview=Time.unscaledTime+.1f;UpdatePreview();}
   if(Input.GetKeyDown(KeyCode.P)){ResetMap();}
@@ -92,6 +100,7 @@ public class ConquestDeploymentMap : MonoBehaviour, IScrollHandler, IBeginDragHa
  void UpdatePins()
  {
   int friendly=0;
+  selectedBrackets.SetActive(false);
   foreach(var p in pins)
   {
    Vector3 position;bool available=true,chosen=false,squad=false;Color color=White;
@@ -99,11 +108,12 @@ public class ConquestDeploymentMap : MonoBehaviour, IScrollHandler, IBeginDragHa
    else if(p.point){position=p.point.transform.position;available=menu.IsTacticalMap || menu.rules.CanDeploy(menu.participant,p.point);chosen=menu.SelectedPoint==p.point;p.label.text=p.point.letter+(p.point.IsContested?" !":"");color=p.point.Owner==menu.participant.team?Orange:p.point.Owner.HasValue?new Color(.9f,.4f,.32f):White;}
    else {var actor=p.member;bool alive=actor&&!actor.health.IsDead&&!actor.IsAwaitingSpawn;p.button.gameObject.SetActive(alive);if(!alive)continue;friendly++;position=actor.transform.position;squad=menu.rules.squads&&menu.rules.squads.SquadOf(actor)==menu.rules.squads.SquadOf(menu.participant);available=menu.IsTacticalMap || squad&&menu.rules.squads.CanDeploy(menu.participant,actor);chosen=menu.SelectedMember==actor;p.label.text=squad?"S":"";color=squad?Green:White;}
    var uv=mapCamera.WorldToViewportPoint(position);bool inView=uv.x>=0&&uv.x<=1&&uv.y>=0&&uv.y<=1;p.button.gameObject.SetActive(inView);if(!inView)continue;
-   p.rect.anchorMin=p.rect.anchorMax=new Vector2(uv.x,uv.y);p.rect.anchoredPosition=Vector2.zero;p.rect.sizeDelta=p.member?Vector2.one*(squad?20:10):Vector2.one*(chosen?42:34);
+   p.rect.anchorMin=p.rect.anchorMax=new Vector2(uv.x,uv.y);p.rect.anchoredPosition=Vector2.zero;p.rect.sizeDelta=Vector2.one*(p.member?(squad?20:10):34);
+   if(chosen){selectedBrackets.transform.SetParent(p.rect,false);selectedBrackets.SetActive(true);}
    p.button.interactable=available;p.image.color=new Color(color.r,color.g,color.b,p.member ? .85f : chosen ? .95f : .7f);p.label.color=chosen?Color.white:color;
   }
   var match=menu.participant.match;
-  if(matchSummary){string flags="";foreach(var point in menu.rules.points){string color=point.Owner==menu.participant.team?"FFAF00":point.Owner.HasValue?"DE7763":"C5CDD2";flags+="<color=#"+color+">"+point.letter+"</color>  ";}string clock=match.UsesMatchTimer?Mathf.CeilToInt(match.TimeRemaining/60)+" MIN":"NO TIME LIMIT";matchSummary.text="<color=#FFAF00>"+match.RedScore+"</color>  /  "+match.BlueScore+"  <size=17>"+clock+"</size>\n<size=17>"+flags+"</size>";}
+  if(matchSummary){string flags="";foreach(var point in menu.rules.points){string color=point.Owner==menu.participant.team?"FF8C1F":point.Owner.HasValue?"DE7763":"C5CDD2";flags+="<color=#"+color+">"+point.letter+"</color>  ";}string clock=match.UsesMatchTimer?Mathf.CeilToInt(match.TimeRemaining/60)+" MIN":"NO TIME LIMIT";matchSummary.text="<color=#FF8C1F>"+match.RedScore+"</color>  /  "+match.BlueScore+"  <size=17>"+clock+"</size>\n<size=17>"+flags+"</size>";}
   mapTitle.text="TACTICAL MAP  /  "+friendly+" FRIENDLIES   /   WHEEL ZOOM / RMB DRAG / P RESET";
  }
  void UpdatePreview()
@@ -133,5 +143,5 @@ public class ConquestDeploymentMap : MonoBehaviour, IScrollHandler, IBeginDragHa
  public void ResetMap(){if(!mapCamera)return;mapCamera.transform.position=new Vector3(center.x,height,center.z);mapCamera.orthographicSize=extent;mapDirty=true;}
  void OnDisable(){Release();}
  void OnDestroy(){Release();}
- void Release(){foreach(var pair in hiddenCanvases)if(pair.Key)pair.Key.enabled=pair.Value;hiddenCanvases.Clear();if(mapCamera)Destroy(mapCamera.gameObject);if(previewCamera)Destroy(previewCamera.gameObject);if(mapTexture){mapTexture.Release();Destroy(mapTexture);}if(previewTexture){previewTexture.Release();Destroy(previewTexture);}mapCamera=previewCamera=null;mapTexture=previewTexture=null;mapImage.texture=previewImage.texture=null;}
+ void Release(){if(selectedBrackets)Destroy(selectedBrackets);foreach(var pair in hiddenCanvases)if(pair.Key)pair.Key.enabled=pair.Value;hiddenCanvases.Clear();if(mapCamera)Destroy(mapCamera.gameObject);if(previewCamera)Destroy(previewCamera.gameObject);if(mapTexture){mapTexture.Release();Destroy(mapTexture);}if(previewTexture){previewTexture.Release();Destroy(previewTexture);}mapCamera=previewCamera=null;mapTexture=previewTexture=null;mapImage.texture=previewImage.texture=null;}
 }

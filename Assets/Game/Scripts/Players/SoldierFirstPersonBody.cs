@@ -18,12 +18,14 @@ public class SoldierFirstPersonBody : MonoBehaviour
     readonly Stack<(Camera camera, bool headless)> renderStates = new();
     MaterialPropertyBlock properties;
     VehicleOccupant occupant;
+    SoldierHealth health;
     Transform collapsedHead, animatedHead;
     bool headlessActive, initialized, subscribed, copiesActive;
 
     void Awake()
     {
         occupant = GetComponent<VehicleOccupant>();
+        health = GetComponent<SoldierHealth>();
         if (soldier.inputSource is SoldierLocalInput) BuildParts();
     }
 
@@ -64,7 +66,7 @@ public class SoldierFirstPersonBody : MonoBehaviour
                     firstPerson.shadowCastingMode = ShadowCastingMode.Off;
                     firstPerson.forceRenderingOff = true;
                     firstPerson.enabled = false;
-                    parts.Add(new BodyPart { fullBody = renderer, firstPerson = firstPerson });
+                    parts.Add(new BodyPart { fullBody = renderer, firstPerson = firstPerson, previousShadows = renderer.shadowCastingMode });
                 }
         if (isActiveAndEnabled) Subscribe();
     }
@@ -168,6 +170,7 @@ public class SoldierFirstPersonBody : MonoBehaviour
         if (!initialized) return;
         bool owner = soldier.inputSource is SoldierLocalInput;
         bool vehiclePerspective = occupant && occupant.IsMounted && camera == view.playerCamera && view.firstPerson;
+        if (health.IsDead) { SetHeadless(false); renderStates.Clear(); return; }
         if (!owner && !vehiclePerspective && renderStates.Count == 0) return;
         if (renderStates.Count == 0)
             foreach (var part in parts) if (part.fullBody) part.previousShadows = part.fullBody.shadowCastingMode;

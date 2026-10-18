@@ -13,6 +13,8 @@ public class SoldierLife : MonoBehaviour
     public SoldierPhysicsBody controller;
     public event System.Action Respawned;
     public event System.Action Respawning;
+    VehicleOccupant vehicleOccupant;
+    void Awake()=>vehicleOccupant=GetComponent<VehicleOccupant>();
 
     void OnEnable()
     {
@@ -38,6 +40,14 @@ public class SoldierLife : MonoBehaviour
     public void SetGameplayAllowed(bool allowed)
     {
         allowed &= !health.IsDead;
+        // A scene can seat its opening crew before their first Start. Mounted pose
+        // and collision ownership must survive this initialization (and later calls).
+        if (vehicleOccupant && vehicleOccupant.IsMounted)
+        {
+            controller.enabled=false;
+            actions.enabled=movement.enabled=look.enabled=loadout.enabled=false;
+            return;
+        }
         if (!allowed)
         {
             actions.CancelActions();

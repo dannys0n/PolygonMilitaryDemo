@@ -16,6 +16,28 @@ public class SoldierScopeView : MonoBehaviour
     public Camera ScopeCamera=>scopeCamera;
     public bool HasActiveLens => lens && scopeCamera && texture;
     public RenderTexture ScopeTexture=>texture;
+    // Screen HUD pins use the main camera, so they must not float over a
+    // separately magnified PiP image. This is only a visibility test; the scope
+    // remains responsible for rendering its own image and reticle.
+    public bool TryGetLensScreenRect(Camera viewer, out Rect rect)
+    {
+        rect=default;
+        if(!HasActiveLens || !view || view.playerCamera != viewer)return false;
+        var bounds=lens.localBounds;
+        var low=new Vector2(float.PositiveInfinity,float.PositiveInfinity);
+        var high=new Vector2(float.NegativeInfinity,float.NegativeInfinity);
+        for(int i=0;i<8;i++)
+        {
+            var corner=bounds.center+Vector3.Scale(bounds.extents,
+                new Vector3((i&1)==0?-1:1,(i&2)==0?-1:1,(i&4)==0?-1:1));
+            var screen=viewer.WorldToScreenPoint(lens.transform.TransformPoint(corner));
+            if(screen.z<=viewer.nearClipPlane)continue;
+            low=Vector2.Min(low,screen);high=Vector2.Max(high,screen);
+        }
+        if(float.IsInfinity(low.x))return false;
+        rect=Rect.MinMaxRect(low.x,low.y,high.x,high.y);
+        return true;
+    }
     void LateUpdate()
     {
         var sights=loadout.EquippedSights;

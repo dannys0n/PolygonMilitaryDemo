@@ -58,7 +58,7 @@ public sealed class SandboxDeploymentVehicles : MonoBehaviour
                 if(label.fontSharedMaterial!=material)label.fontSharedMaterial=material;
                 label.color=selected?Color.white:new Color(.75f,.75f,.75f);
             }
-            row.background.color=selected?new Color(1,.48f,.12f,.13f):Color.clear;
+            row.background.color=selected?ArenaHudTheme.SectionBackground:Color.clear;
         }
     }
 }

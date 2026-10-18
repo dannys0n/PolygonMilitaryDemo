@@ -95,14 +95,14 @@ public class ConquestHud : MonoBehaviour
             if(!flagBackgrounds[i])continue;
             bool active=i<rules.points.Length && rules.points[i]==current;
             flagBackgrounds[i].gameObject.SetActive(i<rules.points.Length && hud.match.IsRunning);
-            flagBackgrounds[i].color=active?new Color(.16f,.10f,.035f,.86f):new Color(.018f,.018f,.02f,.62f);
+            flagBackgrounds[i].color=ArenaHudTheme.SectionBackground;
         }
         if(current)
         {
             bool friendly=current.Owner==actor.team;
             bool opposing=current.Progress*(actor.team==ArenaParticipant.Team.Red?-1:1)<0;
             string status=current.IsContested?"CONTESTED":friendly?"DEFENDING":opposing?"NEUTRALIZING":"CAPTURING";
-            captureLabel.text="<color=#FFAF00>"+current.letter+"</color>  "+current.displayName.ToUpperInvariant()+"\n<size=14>"+status+"  /  "+current.Count(actor.team)+" FRIENDLY</size>";
+            captureLabel.text="<color=#FF8C1F>"+current.letter+"</color>  "+current.displayName.ToUpperInvariant()+"\n<size=14>"+status+"  /  "+current.Count(actor.team)+" FRIENDLY</size>";
             if(captureFilament)captureFilament.color=new Color(1,1,1,current.IsContested?.72f:.46f);
             captureProgress.fillAmount=Mathf.Abs(current.Progress);
             captureProgress.color=ConquestCapturePoint.TeamColor(current.Progress<0?ArenaParticipant.Team.Red:ArenaParticipant.Team.Blue);

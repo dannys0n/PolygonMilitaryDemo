@@ -18,6 +18,8 @@ public sealed class ArenaFriendlyMarkers : MonoBehaviour
     readonly List<Marker> markers = new();
     ArenaParticipant[] roster;
     ArenaAISpectator spectator;
+    ArenaParticipant scopeViewer;
+    SoldierScopeView scope;
     RectTransform root;
     Canvas canvas;
     Sprite sprite;
@@ -30,7 +32,10 @@ public sealed class ArenaFriendlyMarkers : MonoBehaviour
         spectator = FindAnyObjectByType<ArenaAISpectator>();
         canvas = GetComponentInParent<Canvas>();
         root = new GameObject("Friendly Markers", typeof(RectTransform)).GetComponent<RectTransform>();
-        root.SetParent(hud.transform, false);
+        // World pins belong to the screen plane, not the decorative tilted HUD
+        // panel. RectTransform projection into an angled panel displaced markers,
+        // most noticeably when ADS changed the camera projection.
+        root.SetParent(canvas.transform, false);
         root.anchorMin = Vector2.zero; root.anchorMax = Vector2.one;
         root.offsetMin = root.offsetMax = Vector2.zero;
         // One tiny antialiased sprite shared by every marker; no per-frame texture work.
@@ -90,10 +95,18 @@ public sealed class ArenaFriendlyMarkers : MonoBehaviour
             && hud.match.IsRunning && (!observing || spectator.FollowedCharacter==viewer);
         root.gameObject.SetActive(visible);
         if(!visible)return;
+        if(scopeViewer!=viewer)
+        {
+            scopeViewer=viewer;
+            scope=viewer.GetComponent<SoldierScopeView>();
+        }
         var seat=viewer.GetComponent<VehicleOccupant>();
         Camera camera=observing?spectator.PresentationCamera
             :seat && seat.IsMounted && seat.ActiveVehicleCamera?seat.ActiveVehicleCamera:viewer.player.view.playerCamera;
         if(!camera){root.gameObject.SetActive(false);return;}
+        Rect lensRect=default;
+        bool hasLens=scope && scope.TryGetLensScreenRect(camera,out lensRect);
+        if(hasLens){lensRect.xMin-=14;lensRect.xMax+=14;lensRect.yMin-=18;lensRect.yMax+=18;}
         var uiCamera=canvas.renderMode==RenderMode.ScreenSpaceOverlay?null:canvas.worldCamera;
         foreach(var marker in markers)
         {
@@ -108,6 +121,7 @@ public sealed class ArenaFriendlyMarkers : MonoBehaviour
                 screen=camera.WorldToScreenPoint(marker.head.position+Vector3.up*.3f);
                 var rect=camera.pixelRect;
                 show=screen.z>0 && screen.x>rect.xMin+14 && screen.x<rect.xMax-14 && screen.y>rect.yMin+18 && screen.y<rect.yMax-18;
+                if(show && hasLens && lensRect.Contains(screen))show=false;
             }
             marker.rect.gameObject.SetActive(show);
             if(!show)continue;

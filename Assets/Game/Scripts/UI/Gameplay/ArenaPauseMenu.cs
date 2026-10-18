@@ -8,6 +8,7 @@ public class ArenaPauseMenu : MonoBehaviour
     public ArenaSceneTransition transition;
     public bool IsPaused { get; private set; }
     public UnityEngine.UI.Button spectateButton;
+    public ArenaSensitivitySlider sensitivitySlider;
     ArenaAISpectator spectator;
     TMPro.TMP_Text spectateLabel;
     bool previousSpectatorBlocked;

@@ -32,6 +32,8 @@ public class SoldierRagdoll : MonoBehaviour
     Quaternion weaponRotation;
     Vector3 lastVelocity;
     Rigidbody chestBody;
+    SkinnedMeshRenderer[] bodyMeshes;
+    bool[] previousOffscreenUpdates;
 
     void Awake()
     {
@@ -57,6 +59,8 @@ public class SoldierRagdoll : MonoBehaviour
             if (behaviour is IRigConstraint) found.Add(behaviour);
         constraints = found.ToArray();
         constraintEnabled = new bool[constraints.Length]; constraintWeights = new float[constraints.Length];
+        bodyMeshes = life.view.thirdPersonRoot.GetComponentsInChildren<SkinnedMeshRenderer>(true);
+        previousOffscreenUpdates = new bool[bodyMeshes.Length];
         SetPhysics(false);
         // Joint limits constrain the pose; avoid extra self-collision contacts.
         for (int i = 0; i < bodyColliders.Length; i++)
@@ -80,6 +84,13 @@ public class SoldierRagdoll : MonoBehaviour
     {
         if (IsRagdoll) return;
         IsRagdoll = true;
+        // PhysX moves bones beyond the imported animation bounds. Recompute bounds
+        // while this short-lived corpse is active; living characters retain culling.
+        for (int i = 0; i < bodyMeshes.Length; i++)
+        {
+            previousOffscreenUpdates[i] = bodyMeshes[i].updateWhenOffscreen;
+            bodyMeshes[i].updateWhenOffscreen = true;
+        }
         for (int i = 0; i < bones.Length; i++)
         { deathPositions[i] = bones[i].localPosition; deathRotations[i] = bones[i].localRotation; }
         animatorEnabled = animator.enabled;
@@ -140,6 +151,8 @@ public class SoldierRagdoll : MonoBehaviour
     void RestoreAnimation()
     {
         if (!IsRagdoll) return;
+        for (int i = 0; i < bodyMeshes.Length; i++)
+            if (bodyMeshes[i]) bodyMeshes[i].updateWhenOffscreen = previousOffscreenUpdates[i];
         SetPhysics(false);
         if(heldWeapon && heldWeapon==life.loadout.ThirdPersonView.transform)
         {

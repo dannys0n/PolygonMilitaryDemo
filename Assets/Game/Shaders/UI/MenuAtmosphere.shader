@@ -4,7 +4,7 @@ Shader "Game/UI/Menu Atmosphere"
     {
         [PerRendererData] _MainTex ("Sprite", 2D) = "white" {}
         _Color ("Tint", Color) = (1,1,1,1)
-        [Enum(Atmosphere,0,Marker,1,Spill,2,HudLine,3,HudOutline,4,HudDust,5)] _Mode ("Effect", Float) = 0
+        [Enum(Atmosphere,0,Marker,1,Spill,2,HudLine,3,HudOutline,4,DamageEdges,5)] _Mode ("Effect", Float) = 0
         _DustTex ("Dust Texture", 2D) = "black" {}
         _DustStrength ("Dust Visibility", Range(0,4)) = 0.8
         _LightRadius ("Filament Dust Reach", Range(0.01,0.5)) = 0.2
@@ -60,12 +60,21 @@ Shader "Game/UI/Menu Atmosphere"
             half4 frag(v2f i):SV_Target
             {
                 float energy;
-                if (_Mode < .5 || _Mode > 4.5)
+                if (_Mode > 4.5)
+                {
+                    float2 uv=i.screen.xy/i.screen.w;
+                    float dust=tex2D(_DustTex,uv).r;
+                    // A wide oval keeps aiming and the central action clear.
+                    // The existing dust speckles become irregular orange damage
+                    // flecks, independent of UI position or filament lighting.
+                    float2 oval=(uv-.5)/float2(.56,.64);
+                    float edge=smoothstep(.68,1.02,length(oval));
+                    energy=edge*(.035+pow(saturate(dust),.6)*2.5)*_DustStrength;
+                }
+                else if (_Mode < .5)
                 {
                     float aspect=_ScreenParams.x/_ScreenParams.y;
-                    // HUD dust uses screen coordinates so angled panels cannot move the lens texture.
-                    // The menu keeps its existing panel-relative texture.
-                    float2 dustUV=_Mode > 4.5 ? i.screen.xy/i.screen.w : i.uv;
+                    float2 dustUV=i.uv;
                     float dust=tex2D(_DustTex,dustUV).r;
                     float2 position=float2(dustUV.x*aspect,dustUV.y);
                     float illumination=0;
@@ -78,7 +87,7 @@ Shader "Game/UI/Menu Atmosphere"
                         float2 offset=position-(start+segment*t);
                         illumination+=exp(-dot(offset,offset)*3/(_LightRadius*_LightRadius))*_FilamentStrengths[n];
                     }
-                    energy=illumination*_LightStrength*((_Mode > 4.5 ? 0 : .025)+pow(max(dust,0),.7)*_DustStrength);
+                    energy=illumination*_LightStrength*(.025+pow(max(dust,0),.7)*_DustStrength);
                 }
                 else if (_Mode > 3.5)
                 {

@@ -210,8 +210,8 @@ public class ArenaAISpectator : MonoBehaviour
         Cursor.lockState = looking ? CursorLockMode.Locked : CursorLockMode.None;
         Cursor.visible = !looking;
         if (!looking) return;
-        yaw += Input.GetAxis("Mouse X") * lookSensitivity;
-        pitch = Mathf.Clamp(pitch - Input.GetAxis("Mouse Y") * lookSensitivity, -85f, 85f);
+        yaw += Input.GetAxis("Mouse X") * lookSensitivity * ArenaMouseSensitivity.Value;
+        pitch = Mathf.Clamp(pitch - Input.GetAxis("Mouse Y") * lookSensitivity * ArenaMouseSensitivity.Value, -85f, 85f);
         transform.rotation = Quaternion.Euler(pitch, yaw, 0);
         if (FollowedCharacter) return;
         Vector3 move = new Vector3(Input.GetAxisRaw("Horizontal"),
@@ -402,6 +402,7 @@ public class ArenaAISpectator : MonoBehaviour
 
     void CacheBody()
     {
+        RestoreBody();
         RestoreBodyBatching();
         bodyBatchingProperties ??= new MaterialPropertyBlock();
         hiddenBody = observedView.thirdPersonRoot.GetComponentsInChildren<Renderer>(true);
@@ -449,6 +450,7 @@ public class ArenaAISpectator : MonoBehaviour
         if (!observedView || camera != observedView.playerCamera) return;
         if (observedOccupant && observedOccupant.IsMounted
             && !observedOccupant.MountedVehicle.seats[observedOccupant.SeatIndex].weaponMountedView) return;
+        if (FollowedCharacter && FollowedCharacter.health.IsDead) { RestoreBody(); return; }
         if (bodyDirty) CacheBody();
         for (int i = 0; i < hiddenBody.Length; i++)
             if (hiddenBody[i]) hiddenBody[i].shadowCastingMode = ShadowCastingMode.ShadowsOnly;

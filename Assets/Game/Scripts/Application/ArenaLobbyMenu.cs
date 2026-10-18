@@ -6,9 +6,9 @@ public class ArenaLobbyMenu : MonoBehaviour
 {
     public ArenaApplicationMenu applicationMenu;
     public TMP_Text status;
-    public string arenaScene = "Assets/Game/Scenes/Gameplay/Prototype/Player_vs_AI.unity";
+    public const string SandboxScenePath = "Assets/Game/Scenes/Gameplay/MilitaryBase/MilitaryBase_Sandbox.unity";
 
-    public void StartMatch() => applicationMenu.LoadScene(arenaScene);
+    public void StartMatch() => applicationMenu.LoadScene(SandboxScenePath);
     public void CreateClass() => ArenaClassEditor.Open();
     public void Callsign() => status.text = "CALLSIGN & KILLSTREAKS\nPlayer customization is not connected yet.";
     public void Barracks() => status.text = "BARRACKS\nCareer statistics are not connected yet.";

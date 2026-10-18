@@ -28,10 +28,13 @@ public class ArenaSpectatorHud : MonoBehaviour
     static readonly string[] FilterNames = { "ALL", "INFANTRY", "GROUND VEHICLES", "AIRBORNE VEHICLES" };
     void Awake()
     {
+        accent=ArenaHudTheme.Accent;
         accentHex = ColorUtility.ToHtmlStringRGB(accent);
         caption=(RectTransform)title.transform.parent;
         captionPosition=caption.anchoredPosition;captionSize=caption.sizeDelta;captionMin=caption.anchorMin;captionMax=caption.anchorMax;captionPivot=caption.pivot;
         titleSize=title.rectTransform.sizeDelta;controlsSize=controls.rectTransform.sizeDelta;
+        ArenaHudTheme.StyleBackgrounds(monitor.transform);
+        if(monitor.TryGetComponent<Image>(out var monitorBackground))monitorBackground.color=ArenaHudTheme.SectionBackground;
         BuildFilters();
         interestLabel = Instantiate(title, caption);
         interestLabel.name = "Spectator interest mode";

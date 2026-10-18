@@ -215,7 +215,7 @@ public class VehicleOccupant : MonoBehaviour
         Vector2 mouse = new Vector2(Input.GetAxisRaw("Mouse X"), Input.GetAxisRaw("Mouse Y"));
         if (aircraft && role == Vehicle.SeatRole.Driver && !vehicle.FlightAssistEnabled)
             mouse = Vector2.ClampMagnitude(mouse,1f);
-        mouse *= local.sensitivity;
+        mouse *= local.EffectiveSensitivity;
         bool driverWeapon = role==Vehicle.SeatRole.Driver && (weaponSystems ? weaponSystems.Current(this)!=null : (vehicle.turret && vehicle.turret.controlRole==Vehicle.SeatRole.Driver) || (vehicle.GetComponent<VehicleLauncher>() && vehicle.GetComponent<VehicleLauncher>().controlRole==Vehicle.SeatRole.Driver));
         if ((!aircraft && role == Vehicle.SeatRole.Driver && !driverWeapon) || role == Vehicle.SeatRole.Passenger)
             yaw += Mathf.DeltaAngle(lastVehicleYaw, vehicle.transform.eulerAngles.y);

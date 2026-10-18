@@ -399,7 +399,7 @@ public class ArenaVehicleHud : MonoBehaviour
             icon.color=new Color(1,1,1,!available ? .25f : chosen ? 1 : .6f);icon.material=chosen&&available?selectedIconGlow:null;
             key.color=chosen?accent:Color.white;caption.color=Color.white;
             var background=systemTiles[i].GetComponent<Image>();
-            if(background)background.color=chosen?new Color(accent.r,accent.g,accent.b,.12f):new Color(1,1,1,.035f);
+            if(background)background.color=ArenaHudTheme.SectionTint(chosen?.16f:.06f);
         }
     }
     void LateUpdate()
@@ -535,7 +535,7 @@ public class ArenaVehicleHud : MonoBehaviour
         var card=new GameObject(name,typeof(RectTransform),typeof(UnityEngine.UI.Image));
         var rect=(RectTransform)card.transform;rect.SetParent(transform,false);
         rect.anchorMin=rect.anchorMax=Vector2.right;rect.pivot=Vector2.right;rect.anchoredPosition=position;rect.sizeDelta=size;
-        var image=card.GetComponent<UnityEngine.UI.Image>();image.color=name=="Armored driver instruments"?Color.clear:new Color(0,0,0,.32f);image.raycastTarget=false;return card;
+        var image=card.GetComponent<UnityEngine.UI.Image>();image.color=name=="Armored driver instruments"?Color.clear:ArenaHudTheme.SectionTint(.32f);image.raycastTarget=false;return card;
     }
     static string DriveState(Vehicle vehicle)
     {

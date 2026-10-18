@@ -58,6 +58,11 @@ public class ConquestDeploymentMenu : MonoBehaviour
     void Awake()
     {
         panel.SetActive(false);
+        if(panel.TryGetComponent<Image>(out var background))background.color=ArenaHudTheme.FullBackground;
+        ArenaHudTheme.StyleBackgrounds(panel.transform);
+        StyleLocation(baseButton);
+        foreach(var button in flagButtons)StyleLocation(button);
+        foreach(var button in squadButtons)StyleLocation(button);
         baseButton.onClick.AddListener(()=>Select(null));
         for(int i=0;i<flagButtons.Length && i<rules.points.Length;i++)
         {
@@ -80,6 +85,15 @@ public class ConquestDeploymentMenu : MonoBehaviour
             // Hand input ownership back before the class menu takes it.
             SetVisible(false);classMenu.Open();
         });
+    }
+    static void StyleLocation(Button button)
+    {
+        if(!button || !button.TryGetComponent<Image>(out var image))return;
+        image.color=ArenaHudTheme.SectionBackground;
+        var colors=button.colors;
+        colors.normalColor=Color.white;colors.highlightedColor=Color.white;
+        colors.pressedColor=Color.white;colors.selectedColor=Color.white;
+        button.colors=colors;
     }
     void Start() { participant.match.MatchStarted+=ResetSelection; }
     void ResetSelection()
