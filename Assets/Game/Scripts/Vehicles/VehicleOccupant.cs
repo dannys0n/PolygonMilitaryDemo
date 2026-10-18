@@ -347,7 +347,8 @@ public class VehicleOccupant : MonoBehaviour
         foreach(HumanBodyBones bone in System.Enum.GetValues(typeof(HumanBodyBones)))
             if(bone!=HumanBodyBones.LastBone){var t=life.actions.animator.GetBoneTransform(bone);if(t)humanoidBones.Add(t);}
         seatedBody = System.Array.FindAll(life.view.thirdPersonRoot.GetComponentsInChildren<SkinnedMeshRenderer>(true),
-            skin => System.Array.Exists(skin.bones,bone=>humanoidBones.Contains(bone)));
+            skin => renderers.TryGetValue(skin,out var wasVisible) && wasVisible
+                && System.Array.Exists(skin.bones,bone=>humanoidBones.Contains(bone)));
         UpdateSeatedVisibility();
         if (!IsLocal)
             return;

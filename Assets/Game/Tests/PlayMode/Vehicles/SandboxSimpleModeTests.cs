@@ -195,6 +195,41 @@ public class SandboxSimpleModeTests
         Time.timeScale = 1;
         yield return null;
     }
+    [UnityTest] public IEnumerator SandboxTeamsUsePreparedInfantryLooksOnSharedRigs()
+    {
+        yield return Load();
+        string[] Appearance(Component actor)
+        {
+            var view=actor.GetComponent(T("SoldierFirstPersonView"));
+            var root=(Transform)Get(view,"thirdPersonRoot");
+            var rider=actor.GetComponent(T("VehicleOccupant"));
+            var saved=rider?Get(rider,"renderers") as IDictionary:null;
+            return root.GetComponentsInChildren<Renderer>(true).Where(r=>r.name.StartsWith("SM_Chr_")
+                &&(saved!=null&&saved.Contains(r)?(bool)saved[r]:r.enabled))
+                .Select(r=>r.name+":"+string.Join(",",r.sharedMaterials.Select(m=>m?m.name:"null"))).OrderBy(n=>n).ToArray();
+        }
+        var red=UnityEditor.AssetDatabase.LoadAssetAtPath<GameObject>("Assets/Game/Prefabs/Matches/Player_Polygon_AI.prefab");
+        var blue=UnityEditor.AssetDatabase.LoadAssetAtPath<GameObject>("Assets/Game/Prefabs/Matches/Player_Polygon_AI_Skin01.prefab");
+        var redLook=Appearance(red.transform);var blueLook=Appearance(blue.transform);
+        CollectionAssert.AreNotEqual(redLook,blueLook);
+        var actors=All("ArenaParticipant");Assert.AreEqual(48,actors.Length);
+        foreach(var actor in actors)
+        {
+            CollectionAssert.AreEqual(Get(actor,"team").ToString()=="Blue"?blueLook:redLook,Appearance(actor),actor.name);
+            var view=actor.GetComponent(T("SoldierFirstPersonView"));
+            var root=(Transform)Get(view,"thirdPersonRoot");
+            var rider=actor.GetComponent(T("VehicleOccupant"));
+            var saved=Get(rider,"renderers") as IDictionary;
+            foreach(var skin in root.GetComponentsInChildren<SkinnedMeshRenderer>(true))
+            {
+                if(saved.Contains(skin)&&!(bool)saved[skin])Assert.IsFalse(skin.enabled,"Mounting must not enable the other skin stored in a prefab variant.");
+                if(!skin.enabled)continue;
+                Assert.IsNotNull(skin.rootBone);
+                Assert.IsTrue(skin.rootBone.IsChildOf(actor.transform));
+                foreach(var bone in skin.bones)Assert.IsTrue(bone&&bone.IsChildOf(actor.transform),"Skins must use the live actor rig, not prefab asset bones.");
+            }
+        }
+    }
     [UnityTest] public IEnumerator SavedSandboxHasThreeIndependentInfantryBattlesAndSeparateAirCrews()
     {
         yield return Load();
