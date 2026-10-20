@@ -51,7 +51,8 @@ public class SoldierWeaponPresentation : MonoBehaviour
         view.armsAnimator.runtimeAnimatorController = set.firstPerson;
         if (GetComponent<SoldierWeaponLoadout>().HasFirstPersonPresentation)
         {
-            view.weaponAnimator.runtimeAnimatorController = set.firstPersonParts;
+            var fp=GetComponent<SoldierWeaponLoadout>().FirstPersonView;
+            view.weaponAnimator.runtimeAnimatorController = fp.animationOverride ? fp.animationOverride : set.firstPersonParts;
             view.weaponAnimator.Rebind();
         }
         characterAnimator.runtimeAnimatorController = set.thirdPerson;
