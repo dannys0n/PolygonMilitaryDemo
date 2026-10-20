@@ -7,6 +7,9 @@ using UnityEngine;
 public class ArmoryWall : MonoBehaviour
 {
     public ArenaWeaponCatalog catalog;
+    public ArmoryDisplayCache displayCache;
+    [HideInInspector] public string sourceCatalogPath;
+    public bool lazyReview;
     public ArmoryTarget displayPrefab;
     public Transform weaponWall, attachmentWall;
     [Min(1)] public int columns = 13;
@@ -18,6 +21,7 @@ public class ArmoryWall : MonoBehaviour
 
     public ArmoryTarget[] Build()
     {
+        if(lazyReview)return BuildCached();
         var targets = new List<ArmoryTarget>();
         SetLayout(weaponWall, catalog.entries.Length);
         SetLayout(attachmentWall, 1 + catalog.entries.SelectMany(e => e.sights).Distinct().Count(s => s.prefab)
@@ -31,7 +35,7 @@ public class ArmoryWall : MonoBehaviour
             {
                 var target = Add(entry.weapon.displayName, weaponWall, weaponIndex++);
                 target.weapon = entry.weapon;
-                AddModel(entry.basePrefab, target, staging.transform);
+                AddModel(entry.basePrefab, target, staging.transform,entry.weapon.catalogId);
                 targets.Add(target);
             }
             var reset = Add("Default sights", attachmentWall, attachmentIndex++);
@@ -43,7 +47,7 @@ public class ArmoryWall : MonoBehaviour
                 if (!sight.prefab) continue;
                 var target = Add(sight.displayName, attachmentWall, attachmentIndex++);
                 target.sight = sight;
-                AddModel(sight.prefab.gameObject, target, staging.transform);
+                AddModel(sight.prefab.gameObject, target, staging.transform,"sight:"+sight.name);
                 targets.Add(target);
             }
             foreach (var attachment in catalog.entries.SelectMany(e => e.attachments).Distinct()
@@ -51,7 +55,7 @@ public class ArmoryWall : MonoBehaviour
             {
                 var target = Add(attachment.displayName, attachmentWall, attachmentIndex++);
                 target.attachment = attachment;
-                AddModel(attachment.prefab, target, staging.transform);
+                AddModel(attachment.prefab, target, staging.transform,"attachment:"+attachment.name);
                 targets.Add(target);
             }
         }
@@ -80,14 +84,38 @@ public class ArmoryWall : MonoBehaviour
         return target;
     }
 
-    void AddModel(GameObject prefab, ArmoryTarget target, Transform staging)
+    ArmoryTarget[] BuildCached()
+    {
+        if(!displayCache)throw new System.InvalidOperationException("Armory display cache is missing.");
+        var items=displayCache.items;
+        SetLayout(weaponWall,items.Count(i=>i.kind==ArmoryDisplayCache.Kind.Weapon));
+        SetLayout(attachmentWall,1+items.Count(i=>i.kind!=ArmoryDisplayCache.Kind.Weapon));
+        var targets=new List<ArmoryTarget>();int w=0,a=0;
+        var reset=Add("Default sights",attachmentWall,a++);reset.resetSight=true;targets.Add(reset);
+        foreach(var item in items)
+        {
+            var target=Add(item.title,item.kind==ArmoryDisplayCache.Kind.Weapon?weaponWall:attachmentWall,item.kind==ArmoryDisplayCache.Kind.Weapon?w++:a++);
+            target.cachedItem=item;
+            if(item.display)Instantiate(item.display,target.transform,false);
+            targets.Add(target);
+        }
+        return targets.ToArray();
+    }
+    void AddModel(GameObject prefab, ArmoryTarget target, Transform staging,string key)
+    {
+        var cached=displayCache?displayCache.Find(key):null;
+        if(cached!=null&&cached.display){Instantiate(cached.display,target.transform,false);return;}
+        BakeModel(prefab,target.transform,staging);
+    }
+    // Used by the editor cache builder; runtime displays instantiate the saved result.
+    public GameObject BakeModel(GameObject prefab,Transform parent,Transform staging)
     {
         var source = Instantiate(prefab, staging, false);
         var snapshots = new List<Mesh>();
+        var visual = new GameObject("Equipment display").transform;
+        visual.SetParent(parent,false);
         try
         {
-            var visual = new GameObject("Equipment display").transform;
-            visual.SetParent(target.transform, false);
             var groups = new Dictionary<Material, List<CombineInstance>>();
             var nodes = new Dictionary<Transform, Transform> { [source.transform] = visual };
             var bounds = new Bounds();
@@ -129,7 +157,7 @@ public class ArmoryWall : MonoBehaviour
             }
             foreach (var group in groups)
             {
-                var mesh = new Mesh { name = target.title + " display", indexFormat = UnityEngine.Rendering.IndexFormat.UInt32 };
+                var mesh = new Mesh { name = prefab.name + " display", indexFormat = UnityEngine.Rendering.IndexFormat.UInt32 };
                 mesh.CombineMeshes(group.Value.ToArray(), true, true);
                 generatedMeshes.Add(mesh);
                 var node = new GameObject(group.Key.name);
@@ -165,10 +193,12 @@ public class ArmoryWall : MonoBehaviour
         }
         finally
         {
-            foreach (var mesh in snapshots) Destroy(mesh);
-            Destroy(source);
+            foreach (var mesh in snapshots) Release(mesh);
+            Release(source);
         }
+        return visual.gameObject;
     }
+    static void Release(Object value){if(Application.isPlaying)Destroy(value);else DestroyImmediate(value);}
 
     static Transform CopyTransform(Transform source, Dictionary<Transform, Transform> nodes)
     {
@@ -196,7 +226,7 @@ public class ArmoryWall : MonoBehaviour
 
     void OnDestroy()
     {
-        foreach (var mesh in generatedMeshes) Destroy(mesh);
+        foreach (var mesh in generatedMeshes)if(mesh)Release(mesh);
     }
 }
 
