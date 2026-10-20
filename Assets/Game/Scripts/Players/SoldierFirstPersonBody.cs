@@ -19,6 +19,7 @@ public class SoldierFirstPersonBody : MonoBehaviour
     MaterialPropertyBlock properties;
     VehicleOccupant occupant;
     SoldierHealth health;
+    SoldierWeaponLoadout loadout;
     Transform collapsedHead, animatedHead;
     bool headlessActive, initialized, subscribed, copiesActive;
 
@@ -26,6 +27,7 @@ public class SoldierFirstPersonBody : MonoBehaviour
     {
         occupant = GetComponent<VehicleOccupant>();
         health = GetComponent<SoldierHealth>();
+        loadout = GetComponent<SoldierWeaponLoadout>();
         if (soldier.inputSource is SoldierLocalInput) BuildParts();
     }
 
@@ -117,7 +119,8 @@ public class SoldierFirstPersonBody : MonoBehaviour
                     && vehicleCamera && vehicleCamera.isActiveAndEnabled)
                 || (view.firstPerson && view.NeedsCameraAnimation);
         }
-        return soldier.inputSource is SoldierLocalInput && view.firstPerson && view.NeedsCameraAnimation;
+        return soldier.inputSource is SoldierLocalInput && view.firstPerson && view.NeedsCameraAnimation
+            && !(loadout.FirstPersonView && loadout.FirstPersonView.independentFirstPersonFrame);
     }
 
     void OnEnable()
@@ -178,7 +181,8 @@ public class SoldierFirstPersonBody : MonoBehaviour
         bool firstPerson = occupant && occupant.IsMounted
             ? (camera == occupant.ActiveVehicleCamera && occupant.CockpitView)
                 || (vehiclePerspective && occupant.MountedVehicle.hasRenderedInterior)
-            : owner && camera == view.playerCamera && view.firstPerson;
+            : owner && camera == view.playerCamera && view.firstPerson
+                && !(loadout.FirstPersonView && loadout.FirstPersonView.independentFirstPersonFrame);
         if (occupant && occupant.IsMounted)
         {
             var seat=occupant.MountedVehicle.seats[occupant.SeatIndex];

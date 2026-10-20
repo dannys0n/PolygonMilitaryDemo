@@ -66,7 +66,7 @@ public class ArmoryController : MonoBehaviour
         // Unlimited supply without resetting controllers, interrupting reloads, or editing assets.
         var state=loadout.EquippedState;
         if(state.MagazineAmmo==0 && !loadout.actions.IsReloading && !loadout.IsSwitching)
-            state.CompleteReload(loadout.EquippedWeapon.definition);
+            loadout.actions.TryReload();
         if(Time.unscaledTime<refreshAt && lastSlot==loadout.selectedSlot)return;
         refreshAt=Time.unscaledTime+.1f;lastSlot=loadout.selectedSlot;
         RefreshDisplays();
@@ -74,6 +74,19 @@ public class ArmoryController : MonoBehaviour
 
     public void Activate(ArmoryTarget target)
     {
+        if(wall.lazyReview && target.IsWeapon)
+        {
+            if(target.WeaponId!=loadout.EquippedWeapon.definition.catalogId)
+            {
+                var entry=wall.displayCache.LoadWeapon(target.WeaponId);
+                var slot=ArmoryReviewLoadout.Slot(entry);
+                var definition=Instantiate(slot.definition);definition.startingReserveAmmo=1000000;
+                slot.definition=definition;runtimeDefinitions.Add(definition);
+                selections.Clear();loadout.ReplaceEquipped(slot);
+            }
+            status.text="Equipping "+target.title;refreshAt=0;return;
+        }
+        if(wall.lazyReview)wall.displayCache.Resolve(target);
         if(target.weapon)
         {
             int index=Array.FindIndex(loadout.slots,s=>s.definition.catalogId==target.weapon.catalogId);
@@ -114,6 +127,14 @@ public class ArmoryController : MonoBehaviour
         selections.TryGetValue(loadout.selectedSlot,out var current);
         foreach(var target in targets)
         {
+            if(target.cachedItem!=null)
+            {
+                bool chosen=target.IsWeapon?target.WeaponId==slot.definition.catalogId
+                    :target.cachedItem.kind==ArmoryDisplayCache.Kind.Sight
+                        ?loadout.EquippedSights&&loadout.EquippedSights.SelectedSight&&target.cachedItem.key=="sight:"+loadout.EquippedSights.SelectedSight.name
+                        :current!=null&&current.Any(x=>target.cachedItem.key=="attachment:"+x.name);
+                target.Show(target.cachedItem.Supports(slot.definition.catalogId),chosen);continue;
+            }
             bool compatible=target.weapon || (target.sight && loadout.EquippedSights && loadout.EquippedSights.Supports(target.sight))
                 || (target.resetSight && loadout.EquippedSights)
                 || (target.attachment && loadout.EquippedAttachments && loadout.EquippedAttachments.Supports(target.attachment));

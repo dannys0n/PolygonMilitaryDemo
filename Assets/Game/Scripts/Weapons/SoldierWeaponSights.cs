@@ -210,7 +210,8 @@ public class SoldierWeaponSights : MonoBehaviour
         // Sight markers share the weapon root coordinate space, regardless of parent/socket edits.
         // The saved neutral weapon pose preserves authored sway and recoil.
         var point = ActiveAimPoint;
-        var firstPersonWeaponRoot = loadout.FirstPersonView.transform;
+        var view = loadout.FirstPersonView;
+        var firstPersonWeaponRoot = view.sightPlacementRoot ? view.sightPlacementRoot : view.transform;
         Vector3 localPoint = firstPersonWeaponRoot.InverseTransformPoint(point.position);
         Vector3 localFront = firstPersonWeaponRoot.InverseTransformPoint(ActiveFrontAimPoint.position);
         Vector3 localUp = firstPersonWeaponRoot.InverseTransformDirection(point.up);

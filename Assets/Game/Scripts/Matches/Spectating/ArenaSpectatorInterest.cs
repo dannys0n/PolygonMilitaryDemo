@@ -83,20 +83,32 @@ public sealed class ArenaSpectatorInterest : MonoBehaviour
     {
         ArenaParticipant best = null;
         float bestScore = float.NegativeInfinity;
-        bool differentTypeExists = false, differentVehicleExists = false;
         var current = spectator.FollowedCharacter;
         var currentMount = Mount(current);
-        int consecutiveLimit = lastType == 0 ? 5 : 3;
+        int available = 0;
         foreach (var actor in spectator.match.participants)
+            if (actor != current && spectator.CanFollowFiltered(actor)) available |= 1 << UnitType(actor);
+        if (available == 0) return null;
+        int selectedType = lastType;
+        int limit = lastType == 2 ? 3 : 6;
+        if (lastType < 0 || (available & (1 << lastType)) == 0 || consecutive >= limit)
         {
-            if (actor == current || !spectator.CanFollowFiltered(actor)) continue;
-            if (UnitType(actor) != lastType) differentTypeExists = true;
-            if (!currentMount || Mount(actor) != currentMount) differentVehicleExists = true;
+            // Rotate only through groups that actually have an eligible actor.
+            // Skipping ground vehicles never consumes an airborne follow.
+            for (int step = 1; step <= 3; step++)
+            {
+                int type = (lastType + step + 3) % 3;
+                if ((available & (1 << type)) != 0) { selectedType = type; break; }
+            }
         }
+        bool differentVehicleExists = false;
+        foreach (var actor in spectator.match.participants)
+            if (actor != current && spectator.CanFollowFiltered(actor) && UnitType(actor) == selectedType
+                && (!currentMount || Mount(actor) != currentMount)) differentVehicleExists = true;
         foreach (var actor in spectator.match.participants)
         {
             if (actor == current || !spectator.CanFollowFiltered(actor)) continue;
-            if (consecutive >= consecutiveLimit && differentTypeExists && UnitType(actor) == lastType) continue;
+            if (UnitType(actor) != selectedType) continue;
             if (differentVehicleExists && currentMount && Mount(actor) == currentMount) continue;
             float activityAge = Mathf.Max(0, now - ActionAt(actor));
             float novelty = watchedAt.TryGetValue(actor, out float watched) ? Mathf.Clamp(now - watched, 0, 60) : 60;
