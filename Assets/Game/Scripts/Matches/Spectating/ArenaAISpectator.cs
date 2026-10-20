@@ -170,7 +170,8 @@ public class ArenaAISpectator : MonoBehaviour
             if(target==localPlayer && target.RespawnRemaining<=0)respawnWatchTarget=null;
             else if(target!=localPlayer && CanFollowFiltered(target))
             {
-                FollowWithPerspective(target, respawnWatchFirstPerson);
+                var next = InterestMode ? interest.Choose(Time.time) : target;
+                if (next) FollowWithPerspective(next, respawnWatchFirstPerson);
             }
         }
         if (!localPlayer && Input.GetKeyDown(KeyCode.Backspace)) { CancelDeathWatch(); match.BeginMatch(); }
@@ -310,8 +311,8 @@ public class ArenaAISpectator : MonoBehaviour
 
     void CompleteDeathWatch()
     {
-        var next = !killerDied && CanFollowFiltered(pendingKiller) ? pendingKiller : null;
-        if (!next)
+        var next = InterestMode ? interest.Choose(Time.time) : !killerDied && CanFollowFiltered(pendingKiller) ? pendingKiller : null;
+        if (!next && !InterestMode)
             foreach (var actor in match.participants)
                 if (CanFollowFiltered(actor) && actor != FollowedCharacter && actor != pendingKiller) { next = actor; break; }
         bool perspective = restorePerspective;
