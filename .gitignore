@@ -73,3 +73,27 @@ crashlytics-build.properties
 # Temporary auto-generated Android Assets
 /[Aa]ssets/[Ss]treamingAssets/aa.meta
 /[Aa]ssets/[Ss]treamingAssets/aa/*
+
+# Local profiling captures (not authored game assets).
+/[Pp]rofilerCaptures/
+
+# Armory display caches are rebuilt automatically before Play from source catalog paths.
+/Assets/Game/AnimationTests/ArmoryDisplayCache/
+/Assets/Game/AnimationTests/ArmoryDisplayCache.meta
+
+# Additional local editor/build diagnostics (never authored game assets).
+/.idea/
+/*.slnx
+/mono_crash.*
+/*.stackdump
+/UnityCrashDump*
+
+# Unity may create metadata alongside local capture/export folders.
+/[Pp]rofilerCaptures.meta
+/[Mm]emoryCaptures.meta
+/[Rr]ecordings.meta
+/[Bb]uild.meta
+/[Bb]uilds.meta
+
+# Keep authored conversion prefabs, meshes, clips and their .meta files tracked.
+# PolygonUE4Conversions is consumed directly; it is not an automatic display cache.

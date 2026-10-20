@@ -1,2 +1,12 @@
 # Auto detect text files and perform LF normalization
 * text=auto
+Assets/FPSAnimationPack/native-motion.json filter=lfs diff=lfs merge=lfs -text
+Assets/FPSAnimationPack/**/*.fbx filter=lfs diff=lfs merge=lfs -text
+Assets/FPSAnimationPack/**/*.png filter=lfs diff=lfs merge=lfs -text
+Assets/FPSAnimationPack/Actions/**/*.anim filter=lfs diff=lfs merge=lfs -text
+Assets/Imported/FPSAnimationTests/**/*.fbx filter=lfs diff=lfs merge=lfs -text
+Assets/Imported/FPSAnimationTests/**/*.png filter=lfs diff=lfs merge=lfs -text
+Assets/Game/AnimationTests/Clips/*.anim filter=lfs diff=lfs merge=lfs -text
+
+Assets/Game/AnimationTests/Meshes/*.asset filter=lfs diff=lfs merge=lfs -text
+Assets/Game/AnimationTests/Polygon/Clips/*.anim filter=lfs diff=lfs merge=lfs -text
