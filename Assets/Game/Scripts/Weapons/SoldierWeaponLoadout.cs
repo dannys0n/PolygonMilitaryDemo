@@ -57,6 +57,8 @@ public class SoldierWeaponLoadout : MonoBehaviour
     public event Action PresentationChanging;
     Coroutine switchRoutine;
     bool equippedVisible=true;
+    SoldierSharedFirstPersonRig sharedFirstPersonRig;
+    GameObject sharedFirstPersonPrefab;
     void Awake()
     {
         var regular = new System.Collections.Generic.List<int>();
@@ -70,7 +72,7 @@ public class SoldierWeaponLoadout : MonoBehaviour
     {
         if(!ThirdPersonView)return;
         var definition=slots[selectedSlot].definition;var state=EquippedState;
-        bool loaded=actions.ReloadHasRound || ((definition.infiniteAmmunition||state.InfiniteOverride)
+        bool loaded=(definition.useAuthoredReload && actions.IsReloading) || actions.ReloadHasRound || ((definition.infiniteAmmunition||state.InfiniteOverride)
             ? Time.time>=state.ReadyAt : state.MagazineAmmo>0);
         if(FirstPersonView && FirstPersonView.loadedProjectile)FirstPersonView.loadedProjectile.SetActive(loaded);
         if(ThirdPersonView.loadedProjectile)ThirdPersonView.loadedProjectile.SetActive(loaded);
@@ -88,7 +90,30 @@ public class SoldierWeaponLoadout : MonoBehaviour
     void CreateFirstPerson()
     {
         var prefab=slots[selectedSlot].firstPersonPrefab;
-        FirstPersonView=CreateView(prefab,firstPersonMount);
+        if(prefab.sharedFirstPersonRig)
+        {
+            if(!sharedFirstPersonRig || sharedFirstPersonPrefab!=prefab.sharedFirstPersonRig)
+            {
+                if(sharedFirstPersonRig){sharedFirstPersonRig.gameObject.SetActive(false);Destroy(sharedFirstPersonRig.gameObject);}
+                sharedFirstPersonPrefab=prefab.sharedFirstPersonRig;
+                sharedFirstPersonRig=Instantiate(sharedFirstPersonPrefab,presentation.view.firstPersonRoot,false).GetComponent<SoldierSharedFirstPersonRig>();
+                sharedFirstPersonRig.transform.SetLocalPositionAndRotation(sharedFirstPersonRig.mountPosition,sharedFirstPersonRig.mountRotation);
+                sharedFirstPersonRig.transform.localScale=sharedFirstPersonRig.mountScale;
+            }
+            sharedFirstPersonRig.SetVisible(equippedVisible);
+            var mount=string.IsNullOrEmpty(prefab.sharedWeaponMountPath)?sharedFirstPersonRig.weaponMount
+                :sharedFirstPersonRig.transform.Find(prefab.sharedWeaponMountPath);
+            if(!mount)throw new InvalidOperationException("Missing shared FPS weapon mount '"+prefab.sharedWeaponMountPath+"' for "+prefab.name);
+            FirstPersonView=CreateView(prefab,mount);
+            FirstPersonView.name="SourceWeapon";
+            FirstPersonView.animator=sharedFirstPersonRig.animator;
+            sharedFirstPersonRig.Bind(FirstPersonView);
+        }
+        else
+        {
+            if(sharedFirstPersonRig)sharedFirstPersonRig.SetVisible(false);
+            FirstPersonView=CreateView(prefab,prefab.independentFirstPersonFrame?presentation.view.firstPersonRoot:firstPersonMount);
+        }
         presentation.view.weaponAnimator=FirstPersonView.animator;
     }
     static SoldierWeaponView CreateView(SoldierWeaponView prefab,Transform parent)
@@ -120,7 +145,7 @@ public class SoldierWeaponLoadout : MonoBehaviour
         EquippedSights.ClearPresentation();
         if(wanted)
         {
-            CreateFirstPerson();FirstPersonView.animator.runtimeAnimatorController=slots[selectedSlot].definition.firstPersonParts;FirstPersonView.animator.Rebind();
+            CreateFirstPerson();FirstPersonView.animator.runtimeAnimatorController=FirstPersonView.animationOverride?FirstPersonView.animationOverride:slots[selectedSlot].definition.firstPersonParts;FirstPersonView.animator.Rebind();
             var source=ThirdPersonView.animator;var target=FirstPersonView.animator;
             foreach(var p in source.parameters)
             {
@@ -128,10 +153,16 @@ public class SoldierWeaponLoadout : MonoBehaviour
                 else if(p.type==AnimatorControllerParameterType.Bool)target.SetBool(p.nameHash,source.GetBool(p.nameHash));
                 else if(p.type==AnimatorControllerParameterType.Int)target.SetInteger(p.nameHash,source.GetInteger(p.nameHash));
             }
-            for(int i=0;i<source.layerCount;i++){var state=source.GetCurrentAnimatorStateInfo(i);target.SetLayerWeight(i,source.GetLayerWeight(i));if(state.fullPathHash!=0)target.Play(state.fullPathHash,i,state.normalizedTime);}
+            for(int i=0;i<source.layerCount;i++)
+            {
+                int layer=FirstPersonView.sharedFirstPersonRig?target.GetLayerIndex(source.GetLayerName(i)):i;
+                if(layer<0 || layer>=target.layerCount)continue;
+                var state=source.GetCurrentAnimatorStateInfo(i);target.SetLayerWeight(layer,source.GetLayerWeight(i));
+                if(state.fullPathHash!=0 && target.HasState(layer,state.fullPathHash))target.Play(state.fullPathHash,layer,state.normalizedTime);
+            }
             target.Update(0);
         }
-        else {ReturnView(FirstPersonView);FirstPersonView=null;presentation.view.weaponAnimator=null;}
+        else {ReleaseFirstPerson();presentation.view.weaponAnimator=null;}
         ConnectViews();ApplySelections();
         presentation.view.RefreshVisuals();SetEquippedVisible(equippedVisible);
     }
@@ -154,16 +185,28 @@ public class SoldierWeaponLoadout : MonoBehaviour
         EquippedWeapon.sprintSocket.Apply(sprintSocket);ApplySelections();
     }
     static void ReturnView(SoldierWeaponView view){if(!view)return;EquipmentVisualPool.Return(view.gameObject);}
+    void ReleaseFirstPerson()
+    {
+        if(sharedFirstPersonRig){sharedFirstPersonRig.Bind(null);sharedFirstPersonRig.SetVisible(false);}
+        ReturnView(FirstPersonView);FirstPersonView=null;
+    }
     void Release()
     {
         PresentationChanging?.Invoke();EquippedSights.ClearPresentation();EquippedAttachments.ClearPresentation();
-        ReturnView(FirstPersonView);ReturnView(ThirdPersonView);FirstPersonView=null;ThirdPersonView=null;
+        ReleaseFirstPerson();ReturnView(ThirdPersonView);ThirdPersonView=null;
     }
     public void ConfigureAvailableSlots(int[] indices)
     {
         if(indices.Length==0)throw new ArgumentException("Loadout needs a slot.");
         for(int i=0;i<indices.Length;i++)if(indices[i]<0||indices[i]>=slots.Length||Array.IndexOf(indices,indices[i])!=i)throw new ArgumentException("Invalid loadout slots.");
         actions.CancelActions();AvailableSlots=(int[])indices.Clone();SetStartingSlot(indices[0]);
+    }
+    // Replace a runtime equipment slot without rebuilding the player or preloading a catalog.
+    public void ReplaceEquipped(Slot slot)
+    {
+        if(slot==null||!slot.definition||!slot.firstPersonPrefab||!slot.thirdPersonPrefab)throw new ArgumentException("A complete equipment slot is required.");
+        actions.CancelActions();CancelSwitch();Release();
+        slots=new[]{slot};selectedSlot=0;AvailableSlots=new[]{0};ResetStates();Spawn();Bind();EquipCurrentWeapon();
     }
     public void ResetAmmunition(){actions.CancelActions();ResetStates();}
     void ResetStates()
@@ -223,7 +266,13 @@ public class SoldierWeaponLoadout : MonoBehaviour
     public void SetAttachments(WeaponAttachmentDefinition[] attachments){slots[selectedSlot].selectedAttachments=(WeaponAttachmentDefinition[])attachments.Clone();EquippedAttachments.Apply(attachments,presentation.view);}
     public void SetClassSights(WeaponSightDefinition primary,WeaponSightDefinition secondary){for(int i=0;i<AvailableSlots.Length;i++){var slot=slots[AvailableSlots[i]];var selected=i==0?primary:secondary;slot.selectedSight=selected?selected:slot.thirdPersonPrefab.GetComponent<SoldierWeaponSights>().BareSight;slot.alternateSight=false;}ApplySelections();}
     public void SetClassAttachments(WeaponAttachmentDefinition[] primary,WeaponAttachmentDefinition[] secondary){for(int i=0;i<AvailableSlots.Length;i++)slots[AvailableSlots[i]].selectedAttachments=(WeaponAttachmentDefinition[])(i==0?primary:secondary).Clone();ApplySelections();}
-    public void SetEquippedVisible(bool visible){equippedVisible=visible;if(FirstPersonView)FirstPersonView.gameObject.SetActive(visible);if(ThirdPersonView)ThirdPersonView.gameObject.SetActive(visible);}
+    public void SetEquippedVisible(bool visible)
+    {
+        equippedVisible=visible;
+        if(FirstPersonView)FirstPersonView.gameObject.SetActive(visible);
+        if(sharedFirstPersonRig)sharedFirstPersonRig.SetVisible(visible && FirstPersonView && FirstPersonView.sharedFirstPersonRig);
+        if(ThirdPersonView)ThirdPersonView.gameObject.SetActive(visible);
+    }
     public void EquipCurrentWeapon(){switchRoutine=StartCoroutine(EquipCurrent());}
     IEnumerator EquipCurrent(){IsSwitching=true;presentation.view.CancelAim();SetEquippedVisible(true);Play("Equip");yield return new WaitForSeconds(EquippedWeapon.definition.equipDuration);IsSwitching=false;switchRoutine=null;}
     public void CancelSwitch(){if(!IsSwitching)return;StopCoroutine(switchRoutine);switchRoutine=null;IsSwitching=false;SetEquippedVisible(true);Play("Empty");}
@@ -236,6 +285,14 @@ public class SoldierWeaponLoadout : MonoBehaviour
         body.SetFloat("WeaponSwitchSpeed",state=="Empty"?1f:WeaponAnimationTiming.Speed(body,state+"_ThirdPerson",duration));
         arms.Play(state,arms.GetLayerIndex("WeaponSwitch"),0);
         body.Play(state,body.GetLayerIndex("WeaponSwitch"),0);
+        if(FirstPersonView && FirstPersonView.animationOverride)
+        {
+            var authored=FirstPersonView.animator;
+            authored.SetFloat("WeaponSwitchSpeed",state=="Empty"?1f:WeaponAnimationTiming.Speed(authored,state+"_FirstPerson",duration));
+            int layer=authored.GetLayerIndex("WeaponSwitch");
+            authored.Play(layer>=0?state:state=="Empty"?"Idle":state,Mathf.Max(0,layer),0);
+        }
     }
     void OnDisable()=>CancelSwitch();
+    void OnDestroy(){if(sharedFirstPersonRig)Destroy(sharedFirstPersonRig.gameObject);}
 }
