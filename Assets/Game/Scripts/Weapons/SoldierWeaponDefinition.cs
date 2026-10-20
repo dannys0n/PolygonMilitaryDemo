@@ -12,7 +12,9 @@ public class SoldierWeaponDefinition : ScriptableObject
     public bool isUtility;
     public bool infiniteAmmunition;
     public VehicleRocket rocketProjectile;
-    public bool UsesSwapReload => rocketProjectile && magazineCapacity == 1;
+    [Tooltip("Use a supplied launcher reload clip instead of the single-shot swap fallback.")]
+    public bool useAuthoredReload;
+    public bool UsesSwapReload => rocketProjectile && magazineCapacity == 1 && !useAuthoredReload;
     public GrenadeDefinition thrownExplosive;
     [Tooltip("Half-angle of the shotgun spread cone. Damage is a single radius check per target, not individual pellet traces.")]
     [Range(0,20)] public float spreadDegrees;

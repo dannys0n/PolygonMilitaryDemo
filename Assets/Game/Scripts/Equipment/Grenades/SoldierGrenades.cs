@@ -13,6 +13,9 @@ public class SoldierGrenades : MonoBehaviour
     int[] counts;float started,flashUntil,flashStrength,flashDuration;
     bool released;GrenadeDefinition throwing;
     GameObject firstHeld,thirdHeld;
+    AuthoredGrenadeView authoredThrow;
+    float ActiveDuration=>authoredThrow?authoredThrow.duration:throwDuration;
+    float ActiveRelease=>authoredThrow?authoredThrow.releaseTime:releaseTime;
     void Awake(){counts=new int[types.Length];ResetEquipment();}
     void OnEnable()=>life.Respawned+=ResetEquipment;
     void OnDisable(){life.Respawned-=ResetEquipment;CancelThrow();}
@@ -26,8 +29,18 @@ public class SoldierGrenades : MonoBehaviour
         var utility=GetComponent<SoldierUtilitySlots>();if(utility)utility.Unequip();
         throwing=types[Selected];counts[Selected]--;started=Time.time;released=false;IsThrowing=true;
         life.view.CancelAim();
+        var source=life.loadout.FirstPersonView?life.loadout.FirstPersonView.grenadeView:null;
+        if(source && life.view.firstPerson)
+        {
+            authoredThrow=Instantiate(source,life.view.firstPersonRoot,false);
+            foreach(var node in authoredThrow.GetComponentsInChildren<Transform>(true))node.gameObject.layer=life.view.firstPersonLayer;
+            foreach(var mesh in authoredThrow.GetComponentsInChildren<Renderer>(true))mesh.shadowCastingMode=UnityEngine.Rendering.ShadowCastingMode.Off;
+        }
         life.loadout.SetEquippedVisible(false);
-        firstHeld=Held(firstPersonHand,life.view.firstPersonLayer);thirdHeld=Held(thirdPersonHand,life.view.thirdPersonLayer);
+        firstHeld=Held(authoredThrow?authoredThrow.hand:firstPersonHand,life.view.firstPersonLayer);
+        if(authoredThrow)firstHeld.transform.SetLocalPositionAndRotation(authoredThrow.handPosition,Quaternion.Euler(authoredThrow.handRotation));
+        if(authoredThrow)authoredThrow.BindHeldVisual(firstHeld.transform,throwing);
+        thirdHeld=Held(thirdPersonHand,life.view.thirdPersonLayer);
         PlayThrow(life.actions.animator);
         PlayThrow(life.view.armsAnimator);
         return true;
@@ -59,7 +72,7 @@ public class SoldierGrenades : MonoBehaviour
     {
         // Change to Equip before Animator evaluates, so the restored gun is
         // never rendered for a frame in the final grenade pose.
-        if(IsThrowing && Time.time-started>=throwDuration)
+        if(IsThrowing && Time.time-started>=ActiveDuration)
         {
             CancelThrow();
             life.loadout.EquipCurrentWeapon();
@@ -68,8 +81,9 @@ public class SoldierGrenades : MonoBehaviour
     void LateUpdate()
     {
         if(!IsThrowing)return;
+        if(authoredThrow)authoredThrow.UpdateHeldVisual(Time.time-started);
         foreach(var renderer in firstHeld.GetComponentsInChildren<Renderer>(true))renderer.enabled=life.view.firstPerson;
-        if(!released&&Time.time-started>=releaseTime)
+        if(!released&&Time.time-started>=ActiveRelease)
         {
             released=true;firstHeld.SetActive(false);thirdHeld.SetActive(false);
             var camera=life.look.aimCamera;Vector3 direction=camera.transform.forward;
@@ -86,6 +100,8 @@ public class SoldierGrenades : MonoBehaviour
         if(!released)counts[System.Array.IndexOf(types,throwing)]++;
         IsThrowing=false;
         Destroy(firstHeld);Destroy(thirdHeld);
+        if(authoredThrow)Destroy(authoredThrow.gameObject);
+        authoredThrow=null;
         ClearThrow(life.actions.animator);
         ClearThrow(life.view.armsAnimator);
         life.loadout.SetEquippedVisible(true);
