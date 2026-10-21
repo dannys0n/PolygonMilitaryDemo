@@ -31,12 +31,12 @@ public static class ArenaWeaponProportionComparisonBuilder
   PairStamps stamps;
   try{stamps=File.Exists(StampPath)?JsonUtility.FromJson<PairStamps>(File.ReadAllText(StampPath)):new PairStamps();}catch{stamps=new PairStamps();}
   var stampMemo=new System.Collections.Generic.Dictionary<string,string>();
-  string meshHash=ArmoryEditorCache.Stamp(AssetDatabase.GetDependencies(ArenaUe4RigProofBuilder.OriginalPreviewRigPath,true).OrderBy(sourcePath=>sourcePath,StringComparer.Ordinal),stampMemo);
+  string meshHash=WeaponAuthoringStamp.Stamp(AssetDatabase.GetDependencies(ArenaUe4RigProofBuilder.OriginalPreviewRigPath,true).OrderBy(sourcePath=>sourcePath,StringComparer.Ordinal),stampMemo);
   foreach(var profilePath in paths)
   {
    var stamp=stamps.items.FirstOrDefault(i=>i.path==profilePath);
    var files=stamp?.sourceFiles??AssetDatabase.GetDependencies(profilePath,true).OrderBy(sourcePath=>sourcePath,StringComparer.Ordinal).ToArray();
-   string Fingerprint(string[] sources)=>"paired-v3|"+ArmoryEditorCache.Stamp(sources,stampMemo)+"|"+meshHash;
+   string Fingerprint(string[] sources)=>"paired-v3|"+WeaponAuthoringStamp.Stamp(sources,stampMemo)+"|"+meshHash;
    string fingerprint=Fingerprint(files);
    if(!regenerateMotion&&stamp!=null&&stamp.fingerprint==fingerprint&&File.Exists(stamp.output))continue;
    // Saving a source prefab can leave Unity's native dependency hash stale this session.

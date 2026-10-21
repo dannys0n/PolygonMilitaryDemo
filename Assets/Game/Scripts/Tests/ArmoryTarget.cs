@@ -4,10 +4,9 @@ using TMPro;
 // A shootable display. Catalog assets remain unchanged while testing equipment.
 public class ArmoryTarget : MonoBehaviour
 {
-    [System.NonSerialized] public ArmoryDisplayCache.Item cachedItem;
-    public bool IsWeapon=>weapon || cachedItem!=null&&cachedItem.kind==ArmoryDisplayCache.Kind.Weapon;
-    public string WeaponId=>weapon?weapon.catalogId:cachedItem?.key;
-    public SoldierWeaponDefinition weapon;
+    [System.NonSerialized] public string weaponId;
+    public bool IsWeapon => !string.IsNullOrEmpty(weaponId);
+    public string WeaponId => weaponId;
     public WeaponSightDefinition sight;
     public bool resetSight;
     public WeaponAttachmentDefinition attachment;

@@ -74,27 +74,21 @@ public class ArmoryController : MonoBehaviour
 
     public void Activate(ArmoryTarget target)
     {
-        if(wall.lazyReview && target.IsWeapon)
+        if(target.IsWeapon)
         {
             if(target.WeaponId!=loadout.EquippedWeapon.definition.catalogId)
             {
-                var entry=wall.displayCache.LoadWeapon(target.WeaponId);
+                var entry=wall.Index.LoadWeapon(target.WeaponId);
                 var slot=ArmoryReviewLoadout.Slot(entry);
                 var definition=Instantiate(slot.definition);definition.startingReserveAmmo=1000000;
-                slot.definition=definition;runtimeDefinitions.Add(definition);
+                slot.definition=definition;
                 selections.Clear();loadout.ReplaceEquipped(slot);
+                foreach(var previous in runtimeDefinitions)Destroy(previous);
+                runtimeDefinitions.Clear();runtimeDefinitions.Add(definition);
             }
             status.text="Equipping "+target.title;refreshAt=0;return;
         }
-        if(wall.lazyReview)wall.displayCache.Resolve(target);
-        if(target.weapon)
-        {
-            int index=Array.FindIndex(loadout.slots,s=>s.definition.catalogId==target.weapon.catalogId);
-            if(index<0){status.text="Weapon is not in this loadout.";return;}
-            if(index!=loadout.selectedSlot)loadout.TrySelectWeapon(index);
-            status.text="Equipping "+target.title;
-        }
-        else if(target.sight || target.resetSight)
+        if(target.sight || target.resetSight)
         {
             var module=loadout.EquippedSights;
             if(target.resetSight)
@@ -105,7 +99,7 @@ public class ArmoryController : MonoBehaviour
             }
             if(!module || !module.Supports(target.sight)){status.text="This sight does not fit the equipped weapon.";return;}
             loadout.SetSight(module.SelectedSight==target.sight?null:target.sight);
-            status.text="Sight: "+module.SelectedSight.displayName;
+            status.text="Sight: "+(module.SelectedSight?module.SelectedSight.displayName:"Built-in sights");
         }
         else if(target.attachment)
         {
@@ -127,24 +121,16 @@ public class ArmoryController : MonoBehaviour
         selections.TryGetValue(loadout.selectedSlot,out var current);
         foreach(var target in targets)
         {
-            if(target.cachedItem!=null)
-            {
-                bool chosen=target.IsWeapon?target.WeaponId==slot.definition.catalogId
-                    :target.cachedItem.kind==ArmoryDisplayCache.Kind.Sight
-                        ?loadout.EquippedSights&&loadout.EquippedSights.SelectedSight&&target.cachedItem.key=="sight:"+loadout.EquippedSights.SelectedSight.name
-                        :current!=null&&current.Any(x=>target.cachedItem.key=="attachment:"+x.name);
-                target.Show(target.cachedItem.Supports(slot.definition.catalogId),chosen);continue;
-            }
-            bool compatible=target.weapon || (target.sight && loadout.EquippedSights && loadout.EquippedSights.Supports(target.sight))
+            bool compatible=target.IsWeapon || (target.sight && loadout.EquippedSights && loadout.EquippedSights.Supports(target.sight))
                 || (target.resetSight && loadout.EquippedSights)
                 || (target.attachment && loadout.EquippedAttachments && loadout.EquippedAttachments.Supports(target.attachment));
-            bool selected=target.weapon?target.weapon.catalogId==slot.definition.catalogId:target.resetSight
+            bool selected=target.IsWeapon?target.WeaponId==slot.definition.catalogId:target.resetSight
                 ?loadout.EquippedSights && loadout.EquippedSights.SelectedSight==loadout.EquippedSights.defaultSight:target.sight
                 ?loadout.EquippedSights && loadout.EquippedSights.SelectedSight==target.sight:current!=null&&current.Contains(target.attachment);
             target.Show(compatible,selected);
         }
         equipment.text=slot.definition.displayName+"   "+loadout.EquippedState.MagazineAmmo+" / ∞"
-            +"\n"+(loadout.EquippedSights?loadout.EquippedSights.SelectedSight.displayName:"Built-in sights");
+            +"\n"+(loadout.EquippedSights && loadout.EquippedSights.SelectedSight?loadout.EquippedSights.SelectedSight.displayName:"Built-in sights");
     }
 
     public void ReturnToMenu() => UnityEngine.SceneManagement.SceneManager.LoadScene("MainMenu");

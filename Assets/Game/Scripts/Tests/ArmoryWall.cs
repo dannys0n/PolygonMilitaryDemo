@@ -2,14 +2,14 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 
-// Builds the equipment sandbox from the same catalog used by class selection.
+// Reads current asset names; only attachment models are displayed on the wall.
 // Display geometry is static: no weapon scripts, scope cameras, or animators survive.
 public class ArmoryWall : MonoBehaviour
 {
-    public ArenaWeaponCatalog catalog;
-    public ArmoryDisplayCache displayCache;
-    [HideInInspector] public string sourceCatalogPath;
-    public bool lazyReview;
+    public string sourceCatalogPath;
+    public bool polishedOnly;
+    public ArmoryAssetIndex Index { get; private set; }
+    public void ReadAssets() => Index = ArmoryAssetIndex.Read(sourceCatalogPath, polishedOnly);
     public ArmoryTarget displayPrefab;
     public Transform weaponWall, attachmentWall;
     [Min(1)] public int columns = 13;
@@ -21,45 +21,44 @@ public class ArmoryWall : MonoBehaviour
 
     public ArmoryTarget[] Build()
     {
-        if(lazyReview)return BuildCached();
+        if (Index == null) ReadAssets();
+        var sights = new List<WeaponSightDefinition>();
+        var attachments = new List<WeaponAttachmentDefinition>();
+#if UNITY_EDITOR
+        sights.AddRange(Index.sightPaths.Select(UnityEditor.AssetDatabase.LoadAssetAtPath<WeaponSightDefinition>)
+            .Where(s => s && s.prefab).OrderBy(s => s.displayName));
+        attachments.AddRange(Index.attachmentPaths.Select(UnityEditor.AssetDatabase.LoadAssetAtPath<WeaponAttachmentDefinition>)
+            .Where(a => a && a.prefab).OrderBy(a => a.mount).ThenBy(a => a.displayName));
+#endif
+        SetLayout(weaponWall, Index.weapons.Length);
+        SetLayout(attachmentWall, 1 + sights.Count + attachments.Count);
         var targets = new List<ArmoryTarget>();
-        SetLayout(weaponWall, catalog.entries.Length);
-        SetLayout(attachmentWall, 1 + catalog.entries.SelectMany(e => e.sights).Distinct().Count(s => s.prefab)
-            + catalog.entries.SelectMany(e => e.attachments).Distinct().Count());
-        var staging = new GameObject("Display preparation");
-        staging.SetActive(false);
+        int w = 0, a = 0;
+        foreach (var weapon in Index.weapons)
+        {
+            var target = Add(weapon.title, weaponWall, w++);
+            target.weaponId = weapon.id;
+            // Weapon targets deliberately contain only the label and shootable plate.
+            target.label.rectTransform.anchoredPosition = Vector2.zero;
+            targets.Add(target);
+        }
+        var reset = Add("Default sights", attachmentWall, a++);
+        reset.resetSight = true; targets.Add(reset);
+        var staging = new GameObject("Attachment display preparation"); staging.SetActive(false);
         try
         {
-            int weaponIndex = 0, attachmentIndex = 0;
-            foreach (var entry in catalog.entries.OrderBy(e => e.weapon.displayName))
+            foreach (var sight in sights)
             {
-                var target = Add(entry.weapon.displayName, weaponWall, weaponIndex++);
-                target.weapon = entry.weapon;
-                AddModel(entry.basePrefab, target, staging.transform,entry.weapon.catalogId);
-                targets.Add(target);
+                var target = Add(sight.displayName, attachmentWall, a++); target.sight = sight;
+                AddAttachmentModel(sight.prefab.gameObject, target.transform, staging.transform); targets.Add(target);
             }
-            var reset = Add("Default sights", attachmentWall, attachmentIndex++);
-            reset.resetSight = true;
-            targets.Add(reset);
-            foreach (var sight in catalog.entries.SelectMany(e => e.sights).Distinct().OrderBy(s => s.displayName))
+            foreach (var attachment in attachments)
             {
-                // The default-sights display covers the bare iron configuration.
-                if (!sight.prefab) continue;
-                var target = Add(sight.displayName, attachmentWall, attachmentIndex++);
-                target.sight = sight;
-                AddModel(sight.prefab.gameObject, target, staging.transform,"sight:"+sight.name);
-                targets.Add(target);
-            }
-            foreach (var attachment in catalog.entries.SelectMany(e => e.attachments).Distinct()
-                         .OrderBy(a => a.mount).ThenBy(a => a.displayName))
-            {
-                var target = Add(attachment.displayName, attachmentWall, attachmentIndex++);
-                target.attachment = attachment;
-                AddModel(attachment.prefab, target, staging.transform,"attachment:"+attachment.name);
-                targets.Add(target);
+                var target = Add(attachment.displayName, attachmentWall, a++); target.attachment = attachment;
+                AddAttachmentModel(attachment.prefab, target.transform, staging.transform); targets.Add(target);
             }
         }
-        finally { Destroy(staging); }
+        finally { Release(staging); }
         return targets.ToArray();
     }
 
@@ -84,31 +83,7 @@ public class ArmoryWall : MonoBehaviour
         return target;
     }
 
-    ArmoryTarget[] BuildCached()
-    {
-        if(!displayCache)throw new System.InvalidOperationException("Armory display cache is missing.");
-        var items=displayCache.items;
-        SetLayout(weaponWall,items.Count(i=>i.kind==ArmoryDisplayCache.Kind.Weapon));
-        SetLayout(attachmentWall,1+items.Count(i=>i.kind!=ArmoryDisplayCache.Kind.Weapon));
-        var targets=new List<ArmoryTarget>();int w=0,a=0;
-        var reset=Add("Default sights",attachmentWall,a++);reset.resetSight=true;targets.Add(reset);
-        foreach(var item in items)
-        {
-            var target=Add(item.title,item.kind==ArmoryDisplayCache.Kind.Weapon?weaponWall:attachmentWall,item.kind==ArmoryDisplayCache.Kind.Weapon?w++:a++);
-            target.cachedItem=item;
-            if(item.display)Instantiate(item.display,target.transform,false);
-            targets.Add(target);
-        }
-        return targets.ToArray();
-    }
-    void AddModel(GameObject prefab, ArmoryTarget target, Transform staging,string key)
-    {
-        var cached=displayCache?displayCache.Find(key):null;
-        if(cached!=null&&cached.display){Instantiate(cached.display,target.transform,false);return;}
-        BakeModel(prefab,target.transform,staging);
-    }
-    // Used by the editor cache builder; runtime displays instantiate the saved result.
-    public GameObject BakeModel(GameObject prefab,Transform parent,Transform staging)
+    GameObject AddAttachmentModel(GameObject prefab, Transform parent, Transform staging)
     {
         var source = Instantiate(prefab, staging, false);
         var snapshots = new List<Mesh>();

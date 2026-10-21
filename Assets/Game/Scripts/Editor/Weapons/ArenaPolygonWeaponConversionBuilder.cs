@@ -90,7 +90,7 @@ public static class ArenaPolygonWeaponConversionBuilder
   if(!catalog){catalog=ScriptableObject.CreateInstance<ArenaWeaponCatalog>();AssetDatabase.CreateAsset(catalog,catalogPath);}
   catalog.entries=ArenaArmoryCatalogs.ReviewEntries(proofs);EditorUtility.SetDirty(catalog);
   var scene=EditorSceneManager.OpenScene(scenePath);
-  foreach(var wall in Object.FindObjectsByType<ArmoryWall>()){wall.catalog=catalog;EditorUtility.SetDirty(wall);}
+  foreach(var wall in Object.FindObjectsByType<ArmoryWall>()){wall.sourceCatalogPath=AssetDatabase.GetAssetPath(catalog);EditorUtility.SetDirty(wall);}
   foreach(var binding in Object.FindObjectsByType<SoldierWeaponCatalogBinding>())
   {
    binding.catalog=catalog;EditorUtility.SetDirty(binding);var loadout=binding.GetComponent<SoldierWeaponLoadout>();
@@ -101,7 +101,7 @@ public static class ArenaPolygonWeaponConversionBuilder
   var obsolete=Object.FindAnyObjectByType<Mk18RigVerification>();if(obsolete)Object.DestroyImmediate(obsolete.gameObject);
   var old=Object.FindAnyObjectByType<WeaponConversionPreview>();if(old)Object.DestroyImmediate(old.gameObject);
   AddPreview(proofs);
-  ArmoryEditorCache.ConfigureReview(scene,catalog);
+  ArmoryEditorSetup.ConfigureReview(scene,catalog);
   EditorSceneManager.SaveScene(scene);
  }
  public static WeaponConversionPreview AddPreview(WeaponAnimationConversionProof[] proofs)

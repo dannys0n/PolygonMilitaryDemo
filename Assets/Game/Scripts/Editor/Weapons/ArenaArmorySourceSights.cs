@@ -108,7 +108,7 @@ public static class ArenaArmorySourceSights
             {
                 string path = AssetDatabase.GUIDToAssetPath(guid);
                 var record = state.items.FirstOrDefault(r => r.proof == path);
-                string Fingerprint(string[] files) => "native-sights-v1|" + ArmoryEditorCache.Stamp(files, memo);
+                string Fingerprint(string[] files) => "native-sights-v1|" + WeaponAuthoringStamp.Stamp(files, memo);
                 if (record != null && record.fingerprint == Fingerprint(record.files)) continue;
                 var proof = AssetDatabase.LoadAssetAtPath<WeaponAnimationConversionProof>(path);
                 if (!proof.source.weapon.catalogId.StartsWith("animation-test-", StringComparison.Ordinal)) continue;

@@ -5,7 +5,6 @@ using UnityEngine;
 // Scene-specific lists share the gameplay definitions and equipment prefabs.
 public static class ArenaArmoryCatalogs
 {
-    public const string PolishedPath="Assets/Game/Definitions/Weapons/Catalogs/ArmoryPolishedCatalog.asset";
     public const string ReviewPath="Assets/Game/AnimationTests/UE4RigProof/OriginalProportionsCatalog.asset";
     public static ArenaWeaponCatalog.Entry[] ReviewEntries(WeaponAnimationConversionProof[] proofs)
     {
@@ -14,13 +13,9 @@ public static class ArenaArmoryCatalogs
         return converted.Select(p=>p.converted).Concat(source.entries.Where(e=>!e.polished&&!converted.Any(p=>p.source.weapon==e.weapon)))
             .OrderBy(e=>e.weapon.displayName).ToArray();
     }
-    [MenuItem("Tools/Arena Shooter/Refresh armory catalogs")]
+    [MenuItem("Tools/Arena Shooter/Refresh animation review catalog")]
     public static void Refresh()
     {
-        var source=AssetDatabase.LoadAssetAtPath<ArenaWeaponCatalog>("Assets/Game/Definitions/Weapons/Catalogs/WeaponCatalog.asset");
-        var polished=AssetDatabase.LoadAssetAtPath<ArenaWeaponCatalog>(PolishedPath);
-        if(!polished){polished=ScriptableObject.CreateInstance<ArenaWeaponCatalog>();AssetDatabase.CreateAsset(polished,PolishedPath);}
-        polished.entries=source.entries.Where(e=>e.polished).ToArray();EditorUtility.SetDirty(polished);
         var proofs=AssetDatabase.FindAssets("t:WeaponAnimationConversionProof",new[]{ArenaPolygonWeaponConversionBuilder.Root})
             .Select(AssetDatabase.GUIDToAssetPath).Select(AssetDatabase.LoadAssetAtPath<WeaponAnimationConversionProof>).ToArray();
         var review=AssetDatabase.LoadAssetAtPath<ArenaWeaponCatalog>(ReviewPath);

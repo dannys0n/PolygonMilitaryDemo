@@ -4,11 +4,13 @@ using UnityEngine;
 [DefaultExecutionOrder(-250)]
 public sealed class ArmoryReviewLoadout : MonoBehaviour
 {
-    public ArmoryDisplayCache library;
+    public ArmoryWall wall;
     public SoldierWeaponLoadout loadout;
     void Awake()
     {
-        var e=library.LoadWeapon(library.defaultWeapon);
+        wall.ReadAssets();
+        var initial = System.Array.Find(wall.Index.weapons, w => w.id.Contains("mg5") || w.id.EndsWith("mgx5_ue4")) ?? wall.Index.weapons[0];
+        var e = wall.Index.LoadWeapon(initial.id);
         loadout.selectedSlot=0;
         loadout.slots=new[]{Slot(e)};
     }
