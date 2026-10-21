@@ -75,7 +75,7 @@ public static class ArenaPolygonAnimationBuilder
    hintOffset[i]=mids[i].position-(gunStart+axes*(sourceMids[i].position-sourceStart));
   }
   var pose=new Pose(fp.gameObject);var bones=fp.GetComponentsInChildren<SkinnedMeshRenderer>(true).SelectMany(r=>r.bones).Where(t=>t).Concat(new[]{body.Find("Root"),motion}).Distinct().ToArray();var curves=new Curves();var input=Clip(key,action);bool grenade=action=="Grenade";
-  if(grenade)input=AssetDatabase.LoadAssetAtPath<AnimationClip>(Source+"/Clips/Grenade_UE4_Throw.anim");
+  if(grenade)input=AssetDatabase.LoadAssetAtPath<AnimationClip>("Assets/Game/Animations/Weapons/Clips/Grenades/Grenade_UE4_Throw.anim");
   float length=grenade?3.2f:input.length;int frames=Mathf.Max(1,Mathf.CeilToInt(length*30));float reach=0;
   for(int f=0;f<=frames;f++)
   {
@@ -121,7 +121,7 @@ public static class ArenaPolygonAnimationBuilder
   using(var handler=new HumanPoseHandler(animator.avatar,animator.transform))
   foreach(string action in new[]{"Reload","Grenade"})
   {
-   var input=action=="Reload"?Clip(key,"Reload"):AssetDatabase.LoadAssetAtPath<AnimationClip>(Source+"/Clips/Grenade_UE4_Throw.anim");
+   var input=action=="Reload"?Clip(key,"Reload"):AssetDatabase.LoadAssetAtPath<AnimationClip>("Assets/Game/Animations/Weapons/Clips/Grenades/Grenade_UE4_Throw.anim");
    float length=action=="Grenade"?3.2f:input.length;int frames=Mathf.CeilToInt(length*30);var curves=new Curves();var weaponCurves=new Curves();
    for(int f=0;f<=frames;f++)
    {

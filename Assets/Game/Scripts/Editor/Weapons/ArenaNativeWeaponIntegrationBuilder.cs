@@ -249,6 +249,9 @@ public static class ArenaNativeWeaponIntegrationBuilder
  public static object Build(string key,string polygonId=null,bool originalProportions=false,float reloadTimeScale=1f)
  {
   if(EditorApplication.isPlayingOrWillChangePlaymode||EditorApplication.isCompiling||EditorUtility.scriptCompilationFailed)throw new Exception("Build in Edit Mode after compilation");
+  string promotedId=polygonId==null?"ue4-original-proportions-"+key.ToLowerInvariant():"ue4-original-proportions-"+polygonId+"-polygon-ue4";
+  var promoted=AssetDatabase.LoadAssetAtPath<ArenaWeaponCatalog>(Production).entries.FirstOrDefault(e=>e.polished&&e.weapon.catalogId==promotedId);
+  if(promoted!=null)throw new InvalidOperationException("This weapon is promoted. Edit its production definition, prefabs and animation assets directly: "+AssetDatabase.GetAssetPath(promoted.weapon));
   if(polygonId=="polygon-machinegun")ArenaM249PartsBuilder.PrepareFeedTray();
   var native=Native(key);var reference=polygonId==null?Reference(native):AssetDatabase.LoadAssetAtPath<ArenaWeaponCatalog>(Production).entries.First(e=>e.weapon.catalogId==polygonId);
   if(originalProportions&&polygonId==null)throw new ArgumentException("A source Polygon weapon is required for a new scaled adaptation.");

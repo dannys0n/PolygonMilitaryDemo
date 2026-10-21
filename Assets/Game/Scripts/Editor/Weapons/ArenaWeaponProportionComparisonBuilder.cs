@@ -32,6 +32,7 @@ public static class ArenaWeaponProportionComparisonBuilder
   try{stamps=File.Exists(StampPath)?JsonUtility.FromJson<PairStamps>(File.ReadAllText(StampPath)):new PairStamps();}catch{stamps=new PairStamps();}
   var stampMemo=new System.Collections.Generic.Dictionary<string,string>();
   string meshHash=WeaponAuthoringStamp.Stamp(AssetDatabase.GetDependencies(ArenaUe4RigProofBuilder.OriginalPreviewRigPath,true).OrderBy(sourcePath=>sourcePath,StringComparer.Ordinal),stampMemo);
+  var production=AssetDatabase.LoadAssetAtPath<ArenaWeaponCatalog>("Assets/Game/Definitions/Weapons/Catalogs/WeaponCatalog.asset");
   foreach(var profilePath in paths)
   {
    var stamp=stamps.items.FirstOrDefault(i=>i.path==profilePath);
@@ -43,6 +44,8 @@ public static class ArenaWeaponProportionComparisonBuilder
    // File stamps catch the change; refresh the dependency list when it actually changes.
    files=AssetDatabase.GetDependencies(profilePath,true).OrderBy(sourcePath=>sourcePath,StringComparer.Ordinal).ToArray();fingerprint=Fingerprint(files);
    var p=AssetDatabase.LoadAssetAtPath<WeaponAnimationConversionProof>(profilePath);
+   string promotedId="ue4-original-proportions-"+(p.source.weapon.catalogId.StartsWith("animation-test-")?p.source.weapon.catalogId.Substring("animation-test-".Length).ToLowerInvariant():p.converted.weapon.catalogId);
+   if(production.entries.Any(e=>e.polished&&(e.weapon==p.converted.weapon||e.weapon.catalogId==promotedId)))continue;
    var productionPair=AssetDatabase.LoadAssetAtPath<WeaponAnimationConversionProof>(Root+"/OriginalProportions/"+p.converted.weapon.catalogId+"/Conversion.asset");
    if(productionPair && productionPair.source.weapon==productionPair.converted.weapon)continue;
    var entry=p.converted;string folder=Path.GetDirectoryName(AssetDatabase.GetAssetPath(p)).Replace('\\','/');

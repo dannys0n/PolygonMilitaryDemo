@@ -48,7 +48,9 @@ public class SoldierUtilitySlots : MonoBehaviour
     {
         if (!IsEquipped) return;
         life.actions.CancelReload(); life.loadout.CancelSwitch();
-        life.loadout.SetStartingSlot(Array.IndexOf(life.loadout.AvailableSlots, previousSlot) >= 0
-            ? previousSlot : life.loadout.AvailableSlots[0]);
+        var available=life.loadout.AvailableSlots;
+        if(available==null || available.Length==0)return;
+        life.loadout.SetStartingSlot(Array.IndexOf(available, previousSlot) >= 0
+            ? previousSlot : available[0]);
     }
 }
