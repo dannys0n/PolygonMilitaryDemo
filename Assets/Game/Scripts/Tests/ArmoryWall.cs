@@ -1,8 +1,9 @@
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 
-// Reads current asset names; only attachment models are displayed on the wall.
+// Names and shootable plates are ready immediately; weapon displays follow across frames.
 // Display geometry is static: no weapon scripts, scope cameras, or animators survive.
 public class ArmoryWall : MonoBehaviour
 {
@@ -18,6 +19,8 @@ public class ArmoryWall : MonoBehaviour
     public Vector2 modelSize = new Vector2(1.85f, .55f);
     readonly List<Mesh> generatedMeshes = new();
     readonly Dictionary<Transform, (int columns, float scale)> layouts = new();
+    Coroutine weaponDisplayRoutine;
+    GameObject weaponDisplayStaging;
 
     public ArmoryTarget[] Build()
     {
@@ -38,7 +41,7 @@ public class ArmoryWall : MonoBehaviour
         {
             var target = Add(weapon.title, weaponWall, w++);
             target.weaponId = weapon.id;
-            // Weapon targets deliberately contain only the label and shootable plate.
+            // Keep the plate usable while its optional display model is being prepared.
             target.label.rectTransform.anchoredPosition = Vector2.zero;
             targets.Add(target);
         }
@@ -50,16 +53,57 @@ public class ArmoryWall : MonoBehaviour
             foreach (var sight in sights)
             {
                 var target = Add(sight.displayName, attachmentWall, a++); target.sight = sight;
-                AddAttachmentModel(sight.prefab.gameObject, target.transform, staging.transform); targets.Add(target);
+                AddDisplayModel(sight.prefab.gameObject, target.transform, staging.transform); targets.Add(target);
             }
             foreach (var attachment in attachments)
             {
                 var target = Add(attachment.displayName, attachmentWall, a++); target.attachment = attachment;
-                AddAttachmentModel(attachment.prefab, target.transform, staging.transform); targets.Add(target);
+                AddDisplayModel(attachment.prefab, target.transform, staging.transform); targets.Add(target);
             }
         }
         finally { Release(staging); }
-        return targets.ToArray();
+        var result = targets.ToArray();
+        if (Application.isPlaying) weaponDisplayRoutine = StartCoroutine(PopulateWeaponDisplays(result));
+        return result;
+    }
+
+    IEnumerator PopulateWeaponDisplays(ArmoryTarget[] targets)
+    {
+        // Return control to gameplay before loading any weapon prefab dependencies.
+        yield return null;
+        weaponDisplayStaging = new GameObject("Weapon display preparation");
+        weaponDisplayStaging.SetActive(false);
+        weaponDisplayStaging.transform.SetParent(transform, false);
+        try
+        {
+            for (int i = 0; i < Index.weapons.Length; i++)
+            {
+#if UNITY_EDITOR
+                try
+                {
+                    // Resolve the TPS prefab directly without loading a complete equipment slot.
+                    var prefab = UnityEditor.AssetDatabase.LoadAssetAtPath<GameObject>(Index.weapons[i].thirdPersonPath);
+                    if (prefab && targets[i])
+                    {
+                        AddDisplayModel(prefab, targets[i].transform, weaponDisplayStaging.transform);
+                        targets[i].label.rectTransform.anchoredPosition = displayPrefab.label.rectTransform.anchoredPosition;
+                    }
+                }
+                catch (System.Exception error)
+                {
+                    Debug.LogException(error, this);
+                }
+#endif
+                // A single coroutine, one model per frame. AssetDatabase loading itself is synchronous.
+                yield return null;
+            }
+        }
+        finally
+        {
+            Release(weaponDisplayStaging);
+            weaponDisplayStaging = null;
+            weaponDisplayRoutine = null;
+        }
     }
 
     void SetLayout(Transform wall, int count)
@@ -83,7 +127,7 @@ public class ArmoryWall : MonoBehaviour
         return target;
     }
 
-    GameObject AddAttachmentModel(GameObject prefab, Transform parent, Transform staging)
+    GameObject AddDisplayModel(GameObject prefab, Transform parent, Transform staging)
     {
         var source = Instantiate(prefab, staging, false);
         var snapshots = new List<Mesh>();
@@ -97,11 +141,12 @@ public class ArmoryWall : MonoBehaviour
             bool hasBounds = false;
             foreach (var renderer in source.GetComponentsInChildren<Renderer>(true))
             {
-                if (!renderer.enabled || !renderer.gameObject.activeSelf) continue;
+                if (!renderer.enabled || !VisibleWithin(renderer.transform, source.transform)) continue;
                 Mesh mesh;
                 if (renderer is SkinnedMeshRenderer skin)
                 {
                     mesh = new Mesh();
+                    // Preserve the renderer-local scale convention before applying its matrix.
                     skin.BakeMesh(mesh, true);
                     snapshots.Add(mesh);
                 }
@@ -166,6 +211,11 @@ public class ArmoryWall : MonoBehaviour
                     new Vector3(bounds.center.x, bounds.center.y, 0) * scale;
             }
         }
+        catch
+        {
+            Release(visual.gameObject);
+            throw;
+        }
         finally
         {
             foreach (var mesh in snapshots) Release(mesh);
@@ -174,6 +224,13 @@ public class ArmoryWall : MonoBehaviour
         return visual.gameObject;
     }
     static void Release(Object value){if(Application.isPlaying)Destroy(value);else DestroyImmediate(value);}
+
+    static bool VisibleWithin(Transform node, Transform root)
+    {
+        for (; node != root; node = node.parent)
+            if (!node.gameObject.activeSelf) return false;
+        return true;
+    }
 
     static Transform CopyTransform(Transform source, Dictionary<Transform, Transform> nodes)
     {
@@ -201,6 +258,8 @@ public class ArmoryWall : MonoBehaviour
 
     void OnDestroy()
     {
+        if (weaponDisplayRoutine != null) StopCoroutine(weaponDisplayRoutine);
+        if (weaponDisplayStaging) Release(weaponDisplayStaging);
         foreach (var mesh in generatedMeshes)if(mesh)Release(mesh);
     }
 }
