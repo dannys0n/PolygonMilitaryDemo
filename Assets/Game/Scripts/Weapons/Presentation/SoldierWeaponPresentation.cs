@@ -56,7 +56,7 @@ public class SoldierWeaponPresentation : MonoBehaviour
             view.weaponAnimator.Rebind();
         }
         characterAnimator.runtimeAnimatorController = set.thirdPerson;
-        partsAnimator.runtimeAnimatorController = set.firstPersonParts;
+        partsAnimator.runtimeAnimatorController = set.thirdPersonParts ? set.thirdPersonParts : set.firstPersonParts;
         partsAnimator.Rebind();
         view.ApplyWeaponDefinition(set);
         characterSwayLayer = characterAnimator.GetLayerIndex("SourceSway");

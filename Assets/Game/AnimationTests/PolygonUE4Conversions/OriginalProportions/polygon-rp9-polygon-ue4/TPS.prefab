@@ -92,7 +92,7 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
-  m_Father: {fileID: 2285073857858814612}
+  m_Father: {fileID: 4034286844134815548}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!137 &3869889953470227707
 SkinnedMeshRenderer:
@@ -437,7 +437,7 @@ Transform:
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 6799214350255968428}
-  m_Father: {fileID: 2285073857858814612}
+  m_Father: {fileID: 4034286844134815548}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &2321154756234655791
 GameObject:
@@ -513,40 +513,6 @@ Transform:
   - {fileID: 7808568589191780242}
   - {fileID: 2360661656322193325}
   m_Father: {fileID: 2869625993525175215}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!1 &2679797966503019716
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 2285073857858814612}
-  m_Layer: 0
-  m_Name: SourceWeapon
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!4 &2285073857858814612
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2679797966503019716}
-  serializedVersion: 2
-  m_LocalRotation: {x: 0.0094099445, y: 0.9999557, z: -0.00000017178225, w: -0.00000011821854}
-  m_LocalPosition: {x: -0.0050509498, y: -0.023389578, z: -0.10348371}
-  m_LocalScale: {x: 1.0000001, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children:
-  - {fileID: 2869625993525175215}
-  - {fileID: 7814305154259436353}
-  - {fileID: 1572620604951616888}
-  m_Father: {fileID: 4034286844134815548}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &3102365494478143996
 GameObject:
@@ -786,7 +752,7 @@ Transform:
   - {fileID: 2030640681045234767}
   - {fileID: 2712899677919139317}
   - {fileID: 8323951364698830289}
-  m_Father: {fileID: 2285073857858814612}
+  m_Father: {fileID: 4034286844134815548}
   m_LocalEulerAnglesHint: {x: -89.98021, y: 0.000009167323, z: 0}
 --- !u!1 &4529354603704165701
 GameObject:
@@ -1018,8 +984,8 @@ GameObject:
   - component: {fileID: 4034286844134815548}
   - component: {fileID: 727038668357236532}
   - component: {fileID: 5736995078068432504}
-  - component: {fileID: 1723540112288490759}
   - component: {fileID: 1522214353844030486}
+  - component: {fileID: 1723540112288490759}
   - component: {fileID: 436352605744635449}
   - component: {fileID: 7215763829268567318}
   m_Layer: 0
@@ -1042,7 +1008,9 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
-  - {fileID: 2285073857858814612}
+  - {fileID: 2869625993525175215}
+  - {fileID: 7814305154259436353}
+  - {fileID: 1572620604951616888}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &727038668357236532
@@ -1061,18 +1029,18 @@ MonoBehaviour:
   animator: {fileID: 1723540112288490759}
   animationOverride: {fileID: 0}
   sharedFirstPersonRig: {fileID: 0}
-  sharedWeaponMountPath: 
+  sharedWeaponMountPath: ViewMotion/WeaponMotion/SourceArms/root/ik_hand_root/ik_hand_gun
   independentFirstPersonFrame: 0
-  grenadeView: {fileID: 0}
-  mountName: 
-  mountPosition: {x: 0, y: 0, z: 0}
-  mountScale: {x: 1, y: 1, z: 1}
-  mountRotation: {x: 0, y: 0, z: 0, w: 1}
+  grenadeView: {fileID: 1294830757234422915, guid: bc4ffc9b34afe1e41bf9530efccd9fab, type: 3}
+  mountName: SourceWeapon
+  mountPosition: {x: -0.0063951015, y: -0.018490266, z: -0.09877443}
+  mountScale: {x: 1.0653803, y: 1.0653807, z: 1.0653803}
+  mountRotation: {x: 0.009408952, y: 0.9999547, z: 0.0012700012, w: -0.000747369}
   effects: {fileID: 5736995078068432504}
   opticMount: {fileID: 8001607469738002088}
   rearSight: {fileID: 2958851748480795327}
   frontSight: {fileID: 8446441581625656829}
-  sightPlacementRoot: {fileID: 0}
+  sightPlacementRoot: {fileID: 4034286844134815548}
   attachments:
   - kind: 0
     socket: {fileID: 4639719011140383920}
@@ -1112,28 +1080,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::SoldierWeaponSockets
   muzzleFlash: {fileID: 3856569582933543942}
   shellEjection: {fileID: 2518735036739409103}
---- !u!95 &1723540112288490759
-Animator:
-  serializedVersion: 7
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 6731113432328463698}
-  m_Enabled: 1
-  m_Avatar: {fileID: 0}
-  m_Controller: {fileID: 9100000, guid: cb44462d7b49ea441838f1091bf8e4d5, type: 2}
-  m_CullingMode: 0
-  m_UpdateMode: 0
-  m_ApplyRootMotion: 0
-  m_LinearVelocityBlending: 0
-  m_StabilizeFeet: 0
-  m_AnimatePhysics: 0
-  m_WarningMessage: 
-  m_HasTransformHierarchy: 1
-  m_AllowConstantClipSamplingOptimization: 1
-  m_KeepAnimatorStateOnDisable: 0
-  m_WriteDefaultValuesOnDisable: 0
 --- !u!114 &1522214353844030486
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1166,12 +1112,12 @@ MonoBehaviour:
       scale: {x: 1, y: 1, z: 1}
   thirdPersonHands:
     leftGrip:
-      position: {x: -0.053801566, y: -0.02047503, z: 0.10989037}
-      rotation: {x: 0.4419954, y: -0.15388581, z: -0.85126144, w: -0.23730394}
+      position: {x: -0.060187034, y: -0.10512632, z: -0.024753086}
+      rotation: {x: 0.51941466, y: -0.13862847, z: -0.48215848, w: -0.6917474}
       scale: {x: 1, y: 1, z: 1}
     rightGrip:
-      position: {x: 0.017147899, y: -0.1011734, z: -0.17174563}
-      rotation: {x: 0.57294434, y: -0.3249275, z: 0.5584063, w: 0.5043208}
+      position: {x: 0.017148163, y: -0.10117342, z: -0.17174554}
+      rotation: {x: -0.75268394, y: 0.21937759, z: -0.18460922, w: -0.59267193}
       scale: {x: 1, y: 1, z: 1}
     leftElbow:
       position: {x: -0.22358796, y: -0.20159113, z: -0.02914849}
@@ -1185,6 +1131,28 @@ MonoBehaviour:
     position: {x: 0.18266356, y: 0.024625137, z: -0.077810094}
     rotation: {x: -0.5729443, y: 0.32492757, z: -0.5584063, w: 0.50432074}
     scale: {x: 1, y: 1, z: 1}
+--- !u!95 &1723540112288490759
+Animator:
+  serializedVersion: 7
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6731113432328463698}
+  m_Enabled: 1
+  m_Avatar: {fileID: 0}
+  m_Controller: {fileID: 9100000, guid: 2df8e89f287742a4498d433ab1184985, type: 2}
+  m_CullingMode: 0
+  m_UpdateMode: 0
+  m_ApplyRootMotion: 0
+  m_LinearVelocityBlending: 0
+  m_StabilizeFeet: 0
+  m_AnimatePhysics: 0
+  m_WarningMessage: 
+  m_HasTransformHierarchy: 1
+  m_AllowConstantClipSamplingOptimization: 1
+  m_KeepAnimatorStateOnDisable: 0
+  m_WriteDefaultValuesOnDisable: 0
 --- !u!114 &436352605744635449
 MonoBehaviour:
   m_ObjectHideFlags: 0

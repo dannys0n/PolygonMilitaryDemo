@@ -26,6 +26,8 @@ public class SoldierWeaponDefinition : ScriptableObject
     public RuntimeAnimatorController firstPerson;
     public RuntimeAnimatorController firstPersonParts;
     public RuntimeAnimatorController thirdPerson;
+    [Tooltip("Optional TPS weapon-parts controller; falls back to the shared parts controller.")]
+    public RuntimeAnimatorController thirdPersonParts;
     [Tooltip("Render FPS arms and apply their grip IK. Weapon animation stays active when disabled.")]
     public bool showFirstPersonHands = true;
 

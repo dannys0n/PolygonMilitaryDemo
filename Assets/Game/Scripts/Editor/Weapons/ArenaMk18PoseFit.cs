@@ -53,7 +53,7 @@ public static class ArenaMk18PoseFit
     mixer.SetLayerMaskFromAvatarMask(1,weaponMask);mixer.SetLayerMaskFromAvatarMask(2,weaponMask);inputRoot=mixer;
    }
    rig.StartPreview();var root=rig.BuildPreviewGraph(graph,inputRoot);var output=AnimationPlayableOutput.Create(graph,"Evaluated Polygon reference",animator);output.SetSourcePlayable(root);
-   if(weapon.animator){var partClip=ArenaWeaponAnimationSource.State(definition.firstPersonParts,"Base Layer",input.name.Contains("Reload")?"Reload":input.name.Contains("Fire")?"Fire":"Idle");parts=AnimationClipPlayable.Create(graph,partClip);var partOutput=AnimationPlayableOutput.Create(graph,"Original weapon parts",weapon.animator);partOutput.SetSourcePlayable(parts);}
+   if(weapon.animator){var partClip=ArenaWeaponAnimationSource.State(IsThirdPerson&&definition.thirdPersonParts?definition.thirdPersonParts:definition.firstPersonParts,"Base Layer",input.name.Contains("Reload")?"Reload":input.name.Contains("Fire")?"Fire":"Idle");parts=AnimationClipPlayable.Create(graph,partClip);var partOutput=AnimationPlayableOutput.Create(graph,"Original weapon parts",weapon.animator);partOutput.SetSourcePlayable(parts);}
    graph.Play();
   }
   public void Sample(float time)
