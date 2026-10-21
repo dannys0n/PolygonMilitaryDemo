@@ -11,6 +11,8 @@ public class SoldierWeaponDefinition : ScriptableObject
     [Tooltip("May occupy a utility equipment slot while retaining its normal weapon animations, sights and ammunition.")]
     public bool isUtility;
     public bool infiniteAmmunition;
+    [Tooltip("Initial attachments for a newly equipped weapon. An explicit player selection can remove or replace them.")]
+    public WeaponAttachmentDefinition[] defaultAttachments = System.Array.Empty<WeaponAttachmentDefinition>();
     public VehicleRocket rocketProjectile;
     [Tooltip("Use a supplied launcher reload clip instead of the single-shot swap fallback.")]
     public bool useAuthoredReload;

@@ -90,8 +90,8 @@ public class ArenaClassEditor : MonoBehaviour
         {
             var r=classes[i]??new ArenaCustomClassStore.Record{name="CUSTOM CLASS "+(i+1)};
             bool newPrimary=!primaryWeapons.Any(w=>w.id==r.primary),newSecondary=!secondaryWeapons.Any(w=>w.id==r.secondary);
-            if(newPrimary){r.primary=primaryWeapons[0].id;r.primarySight=defaultSights[r.primary];r.primaryAttachments=Array.Empty<string>();}
-            if(newSecondary){var pistol=secondaryWeapons.First(w=>w.category==SoldierWeaponDefinition.WeaponCategory.Pistol);r.secondary=pistol.id;r.secondarySight=defaultSights[r.secondary];r.secondaryAttachments=Array.Empty<string>();}
+            if(newPrimary){r.primary=primaryWeapons[0].id;r.primarySight=defaultSights[r.primary];r.primaryAttachments=(string[])menuCatalog.FindWeapon(r.primary).defaultAttachments.Clone();}
+            if(newSecondary){var pistol=secondaryWeapons.First(w=>w.category==SoldierWeaponDefinition.WeaponCategory.Pistol);r.secondary=pistol.id;r.secondarySight=defaultSights[r.secondary];r.secondaryAttachments=(string[])menuCatalog.FindWeapon(r.secondary).defaultAttachments.Clone();}
             if(r.utilities==null)r.utilities=new[]{utilityWeapons.FirstOrDefault(w=>w.id=="military-rpg")?.id,utilityWeapons.FirstOrDefault(w=>w.id=="military-rocketlauncher")?.id};
             r.primaryAttachments=r.primaryAttachments??Array.Empty<string>();r.secondaryAttachments=r.secondaryAttachments??Array.Empty<string>();classes[i]=r;
         }
@@ -108,7 +108,7 @@ public class ArenaClassEditor : MonoBehaviour
     void ChangeWeapon(bool first)
     {
         if(refreshing)return;var weapon=first?primaryWeapons[primary.value]:secondaryWeapons[secondary.value];
-        if(first){draft.primary=weapon.id;draft.primarySight=defaultSights[weapon.id];draft.primaryAttachments=Array.Empty<string>();}else{draft.secondary=weapon.id;draft.secondarySight=defaultSights[weapon.id];draft.secondaryAttachments=Array.Empty<string>();}
+        if(first){draft.primary=weapon.id;draft.primarySight=defaultSights[weapon.id];draft.primaryAttachments=(string[])weapon.defaultAttachments.Clone();}else{draft.secondary=weapon.id;draft.secondarySight=defaultSights[weapon.id];draft.secondaryAttachments=(string[])weapon.defaultAttachments.Clone();}
         RefreshWeapon(first);SetPreviewWeapon(first);
     }
     void RefreshWeapon(bool first)

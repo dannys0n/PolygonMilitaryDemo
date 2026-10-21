@@ -227,6 +227,7 @@ Transform:
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 4514583717711316015}
+  - {fileID: 4494100806522750098}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &425605183767867364
@@ -257,6 +258,7 @@ MonoBehaviour:
   rearSight: {fileID: 5053809975792520724}
   frontSight: {fileID: 179658329812744441}
   sightPlacementRoot: {fileID: 0}
+  gripFrame: {fileID: 4494100806522750098}
   attachments:
   - kind: 0
     socket: {fileID: 174195998891846467}
@@ -350,12 +352,12 @@ MonoBehaviour:
       scale: {x: 1, y: 1, z: 1}
   thirdPersonHands:
     leftGrip:
-      position: {x: -0.050535917, y: -0.072765104, z: 0.08488458}
-      rotation: {x: 0.47688064, y: -0.5215417, z: -0.5600792, w: -0.43230826}
+      position: {x: -0.054625694, y: -0.108059004, z: -0.015890498}
+      rotation: {x: 0.49954852, y: -0.51907223, z: -0.55509067, w: -0.41580003}
       scale: {x: 1, y: 1, z: 1}
     rightGrip:
-      position: {x: 0.030094132, y: -0.0701142, z: -0.052914068}
-      rotation: {x: -0.52695626, y: 0.38065305, z: -0.55576795, w: -0.5182108}
+      position: {x: 0.017571425, y: -0.09949618, z: -0.15464328}
+      rotation: {x: -0.5269567, y: 0.38065323, z: -0.5557668, w: -0.5182115}
       scale: {x: 1, y: 1, z: 1}
     leftElbow:
       position: {x: -0.22358796, y: -0.20159113, z: -0.02914849}
@@ -455,6 +457,7 @@ MonoBehaviour:
     - {fileID: 11400000, guid: a005b8932d8cc9748a683c0c1e177557, type: 2}
     - {fileID: 11400000, guid: 93e585dc40fb89941be717a68c11bc68, type: 2}
     - {fileID: 11400000, guid: 28101d2a24dbc5f4ca60207aacdd027f, type: 2}
+    - {fileID: 11400000, guid: cd3733678c2873e458324072ae71861c, type: 2}
     builtInFirstPerson: []
     builtInThirdPerson: []
   - kind: 1
@@ -1398,6 +1401,37 @@ Transform:
   m_Children: []
   m_Father: {fileID: 9206683704356933931}
   m_LocalEulerAnglesHint: {x: 0, y: 90, z: -90}
+--- !u!1 &2797170903535011650
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 4494100806522750098}
+  m_Layer: 0
+  m_Name: GripFrame
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &4494100806522750098
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2797170903535011650}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0.000000029802319, y: -1.6653177e-16, z: -0.000000029802262, w: 1}
+  m_LocalPosition: {x: 0.025971938, y: -0.054723598, z: -0.05736012}
+  m_LocalScale: {x: 1.0000001, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 4806223828025694891}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &2816503738285137419
 GameObject:
   m_ObjectHideFlags: 0
@@ -1836,8 +1870,8 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 4498472905249540067}
   serializedVersion: 2
-  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0.00013033491, y: 0.002244681, z: 0.44885182}
+  m_LocalRotation: {x: -0, y: -0, z: 9.313227e-10, w: 1}
+  m_LocalPosition: {x: 0.00004273, y: 0.0022634862, z: 0.28268048}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -2800,7 +2834,7 @@ SkinnedMeshRenderer:
   m_Quality: 0
   m_UpdateWhenOffscreen: 1
   m_SkinnedMotionVectors: 1
-  m_Mesh: {fileID: 4300000, guid: e14071808b5e75640aa52da857013436, type: 2}
+  m_Mesh: {fileID: 4300000, guid: 41d5c859afb91ce4cbc595109b125e5a, type: 2}
   m_Bones:
   - {fileID: 2953405916095787332}
   - {fileID: 542671277103127504}
@@ -3132,7 +3166,7 @@ Transform:
   m_GameObject: {fileID: 7945072028080361374}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0.00013033491, y: 0.002244681, z: 0.44885182}
+  m_LocalPosition: {x: 0.00004273, y: 0.0022634862, z: 0.28268048}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []

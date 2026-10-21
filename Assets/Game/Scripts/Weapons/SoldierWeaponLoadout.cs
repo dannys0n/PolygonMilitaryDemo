@@ -6,6 +6,7 @@ using UnityEngine;
 [DefaultExecutionOrder(-20)]
 public class SoldierWeaponLoadout : MonoBehaviour
 {
+    public const string ThirdPersonWeaponName = "EquippedWeapon";
     [Serializable] public class Slot
     {
         public string name;
@@ -14,7 +15,7 @@ public class SoldierWeaponLoadout : MonoBehaviour
         [NonSerialized] public WeaponState state;
         [NonSerialized] public WeaponSightDefinition selectedSight;
         [NonSerialized] public bool alternateSight;
-        [NonSerialized] public WeaponAttachmentDefinition[] selectedAttachments = Array.Empty<WeaponAttachmentDefinition>();
+        [NonSerialized] public WeaponAttachmentDefinition[] selectedAttachments;
         public bool Supports(WeaponSightDefinition sight) => thirdPersonPrefab.GetComponent<SoldierWeaponSights>().Supports(sight);
         public bool Supports(WeaponAttachmentDefinition attachment) => thirdPersonPrefab.GetComponent<SoldierWeaponAttachments>().Supports(attachment);
     }
@@ -53,7 +54,8 @@ public class SoldierWeaponLoadout : MonoBehaviour
     public SoldierWeaponAttachments EquippedAttachments => ThirdPersonView.GetComponent<SoldierWeaponAttachments>();
     public WeaponState EquippedState => slots[selectedSlot].state;
     public Transform EquippedMuzzle => HasFirstPersonPresentation && presentation.view.firstPerson
-        ? FirstPersonView.effects.muzzleFlash : ThirdPersonView.effects.muzzleFlash;
+        ? (EquippedAttachments.FirstPersonMuzzle ? EquippedAttachments.FirstPersonMuzzle : FirstPersonView.effects.muzzleFlash)
+            : (EquippedAttachments.ThirdPersonMuzzle ? EquippedAttachments.ThirdPersonMuzzle : ThirdPersonView.effects.muzzleFlash);
     public event Action PresentationChanging;
     Coroutine switchRoutine;
     bool equippedVisible=true;
@@ -81,7 +83,9 @@ public class SoldierWeaponLoadout : MonoBehaviour
     void Spawn()
     {
         var slot=slots[selectedSlot];
+        slot.selectedAttachments ??= (WeaponAttachmentDefinition[])slot.definition.defaultAttachments.Clone();
         ThirdPersonView=CreateView(slot.thirdPersonPrefab,thirdPersonMount);
+        if(slot.definition.thirdPersonAnimatedGrips)ThirdPersonView.name=ThirdPersonWeaponName;
         EquippedWeapon.definition=slot.definition;presentation.weapon=EquippedWeapon;presentation.partsAnimator=ThirdPersonView.animator;
         if(WantsFirstPerson())CreateFirstPerson();
         ConnectViews();

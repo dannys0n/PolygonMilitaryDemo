@@ -33,7 +33,7 @@ public static class ArenaCustomClassStore
             var primary=catalog.Find(d.primary);var secondary=catalog.Find(d.secondary);
             WeaponSightDefinition Sight(ArenaWeaponCatalog.Entry entry,string id)=>Array.Find(entry.sights,s=>s&&s.id==id);
             WeaponAttachmentDefinition[] Attachments(ArenaWeaponCatalog.Entry entry,string[] ids)=>entry.attachments.Where(a=>a&&ids!=null&&ids.Contains(a.id)).GroupBy(a=>a.mount).Select(g=>g.First()).ToArray();
-            if(r==null){d.primarySight=primary.defaultSight;d.secondarySight=secondary.defaultSight;}
+            if(r==null){d.primarySight=primary.defaultSight;d.secondarySight=secondary.defaultSight;d.primaryAttachments=(WeaponAttachmentDefinition[])d.primary.defaultAttachments.Clone();d.secondaryAttachments=(WeaponAttachmentDefinition[])d.secondary.defaultAttachments.Clone();}
             if(r!=null){d.primarySight=Sight(primary,r.primarySight);d.secondarySight=Sight(secondary,r.secondarySight);d.primaryAttachments=Attachments(primary,r.primaryAttachments);d.secondaryAttachments=Attachments(secondary,r.secondaryAttachments);d.grenadeIndex=Mathf.Clamp(r.grenade,0,2);}
             if(r!=null&&r.utilities!=null)d.utilities=r.utilities.Take(2).Select(id=>{var w=catalog.FindWeapon(id);return w&&w.isUtility?w:null;}).ToArray();
             choices[i]=d;

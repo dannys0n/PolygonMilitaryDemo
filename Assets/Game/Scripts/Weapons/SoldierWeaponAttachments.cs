@@ -10,6 +10,8 @@ public class SoldierWeaponAttachments : MonoBehaviour
         public Renderer[] builtInFirstPerson,builtInThirdPerson;
     }
     public Mount[] mounts;
+    public Transform FirstPersonMuzzle { get; private set; }
+    public Transform ThirdPersonMuzzle { get; private set; }
     readonly List<GameObject> visuals=new List<GameObject>();
     WeaponAttachmentDefinition[] selections=System.Array.Empty<WeaponAttachmentDefinition>();
     public bool Supports(WeaponAttachmentDefinition attachment)=>System.Array.Exists(mounts,m=>m.kind==attachment.mount&&System.Array.IndexOf(m.compatible,attachment)>=0);
@@ -36,7 +38,12 @@ public class SoldierWeaponAttachments : MonoBehaviour
                 if (iron.rearSight) { rear = iron.rearSight; rearDefinition = selected; }
                 if (iron.frontSight) front = iron.frontSight;
             }
-            Add(selected,mount.thirdPerson,view.thirdPersonLayer,true);
+            var third=Add(selected,mount.thirdPerson,view.thirdPersonLayer,true);
+            if(mount.kind==WeaponAttachmentDefinition.MountKind.Muzzle)
+            {
+                FirstPersonMuzzle=first&&first.TryGetComponent<SoldierWeaponSockets>(out var fp)?fp.muzzleFlash:null;
+                ThirdPersonMuzzle=third&&third.TryGetComponent<SoldierWeaponSockets>(out var tp)?tp.muzzleFlash:null;
+            }
         }
         if(TryGetComponent<SoldierWeaponSights>(out var sights))
         {
@@ -50,6 +57,7 @@ public class SoldierWeaponAttachments : MonoBehaviour
     {
         foreach(var go in visuals)EquipmentVisualPool.Return(go);
         visuals.Clear();
+        FirstPersonMuzzle=ThirdPersonMuzzle=null;
     }
     public void RefreshIronVisibility()
     {

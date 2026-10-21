@@ -15,6 +15,7 @@ public class ArenaClassMenuCatalog : ScriptableObject
         public int rounds;
         public Sprite icon;
         public string defaultSight;
+        public string[] defaultAttachments=Array.Empty<string>();
         public string[] sights=Array.Empty<string>(),attachments=Array.Empty<string>();
         public Socket[] sockets=Array.Empty<Socket>();
         public BuiltIn[] builtIns=Array.Empty<BuiltIn>();
@@ -53,6 +54,7 @@ public class ArenaClassMenuCatalog : ScriptableObject
             var entry=source.Find(definition);
             item.sights=Array.ConvertAll(Array.FindAll(entry.sights,s=>s),s=>s.id);
             item.defaultSight=entry.defaultSight?entry.defaultSight.id:null;
+            item.defaultAttachments=Array.ConvertAll(Array.FindAll(definition.defaultAttachments,a=>a),a=>a.id);
         }
     }
     public Weapon[] weapons=Array.Empty<Weapon>();

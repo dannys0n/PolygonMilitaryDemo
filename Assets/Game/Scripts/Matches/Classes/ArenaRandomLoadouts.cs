@@ -52,9 +52,13 @@ public class ArenaRandomLoadouts : MonoBehaviour
             if (!groups.TryGetValue(part.mount, out var options)) groups[part.mount] = options = new List<WeaponAttachmentDefinition>();
             options.Add(part);
         }
-        var selected = new List<WeaponAttachmentDefinition>();
+        var selected = new List<WeaponAttachmentDefinition>(entry.weapon.defaultAttachments);
         foreach (var options in groups.Values)
-            if (UnityEngine.Random.value < attachmentChance) selected.Add(options[UnityEngine.Random.Range(0, options.Count)]);
+            if (UnityEngine.Random.value < attachmentChance)
+            {
+                var part=options[UnityEngine.Random.Range(0, options.Count)];
+                selected.RemoveAll(a=>a.mount==part.mount);selected.Add(part);
+            }
         return selected.ToArray();
     }
 }
