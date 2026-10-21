@@ -28,6 +28,10 @@ public class SoldierWeaponDefinition : ScriptableObject
     public RuntimeAnimatorController thirdPerson;
     [Tooltip("Optional TPS weapon-parts controller; falls back to the shared parts controller.")]
     public RuntimeAnimatorController thirdPersonParts;
+    [Tooltip("Play an authored TPS hand action during firing, such as cycling a bolt. Ordinary recoil keeps its existing additive animation and grip IK.")]
+    public bool thirdPersonAuthoredFire;
+    [Tooltip("Authored weapon actions animate the existing hand IK targets in weapon space.")]
+    public bool thirdPersonAnimatedGrips;
     [Tooltip("Render FPS arms and apply their grip IK. Weapon animation stays active when disabled.")]
     public bool showFirstPersonHands = true;
 

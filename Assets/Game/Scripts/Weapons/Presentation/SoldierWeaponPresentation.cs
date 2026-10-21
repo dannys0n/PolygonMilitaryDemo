@@ -23,7 +23,10 @@ public class SoldierWeaponPresentation : MonoBehaviour
     [Min(1)] public float simpleDetailDistance = 70f;
     [Min(0)] public float firingPoseHold = .35f;
 
-    int characterSwayLayer, weaponPoseLayer, weaponSwayLayer, weaponFireLayer, sprintBodyLayer, sprintArmsLayer;
+    int characterSwayLayer, weaponPoseLayer, weaponSwayLayer, weaponFireLayer, sprintBodyLayer, sprintArmsLayer, bodyFireLayer;
+    static readonly int FireActionWeight = Animator.StringToHash("WeaponFireWeight");
+    static readonly int FireState = Animator.StringToHash("Fire");
+    static readonly int EmptyState = Animator.StringToHash("Empty");
 
     SoldierGrenades grenades;
     SoldierController soldier;
@@ -63,6 +66,12 @@ public class SoldierWeaponPresentation : MonoBehaviour
         weaponPoseLayer = characterAnimator.GetLayerIndex("WeaponPose");
         weaponSwayLayer = characterAnimator.GetLayerIndex("WeaponSway");
         weaponFireLayer = characterAnimator.GetLayerIndex("WeaponFire");
+        bodyFireLayer = characterAnimator.GetLayerIndex("Fire");
+        if (set.thirdPersonAuthoredFire && bodyFireLayer >= 0)
+        {
+            characterAnimator.SetFloat(FireActionWeight, 0f);
+            characterAnimator.Play(EmptyState, bodyFireLayer, 0f);
+        }
         sprintBodyLayer = characterAnimator.GetLayerIndex("SprintBody");
         sprintArmsLayer = characterAnimator.GetLayerIndex("SprintArms");
         // A new controller/weapon needs its initial authored pose before it can
@@ -83,9 +92,11 @@ public class SoldierWeaponPresentation : MonoBehaviour
     {
         UpdatePresentationQuality();
         float reloadWeight = characterAnimator.GetFloat("WeaponReloadWeight");
+        float fireWeight = AuthoredFireWeight();
+        if (fireWeight > 0f) fullPoseUntil = Time.time + firingPoseHold;
         UpdateRigWeights(reloadWeight);
         UpdateMovementMotion();
-        UpdateWeaponLayers(reloadWeight);
+        UpdateWeaponLayers(reloadWeight, fireWeight);
         UpdateWeaponPlacement(reloadWeight);
     }
 
@@ -108,6 +119,18 @@ public class SoldierWeaponPresentation : MonoBehaviour
         }
     }
 
+    float AuthoredFireWeight()
+    {
+        if (!weapon.definition.thirdPersonAuthoredFire || bodyFireLayer < 0) return 0f;
+        // Empty states and weapon switches must never retain an action-blend value
+        // left by a clip that was interrupted before its final key.
+        var state = characterAnimator.GetCurrentAnimatorStateInfo(bodyFireLayer);
+        bool firing = state.shortNameHash == FireState;
+        if (characterAnimator.IsInTransition(bodyFireLayer))
+            firing |= characterAnimator.GetNextAnimatorStateInfo(bodyFireLayer).shortNameHash == FireState;
+        return firing ? Mathf.Clamp01(characterAnimator.GetFloat(FireActionWeight)) : 0f;
+    }
+
     void UpdateRigWeights(float weight)
     {
         float throwing=grenades && grenades.IsThrowing?1f:0f;
@@ -123,9 +146,12 @@ public class SoldierWeaponPresentation : MonoBehaviour
         sprint *= (1f - weight) * (1f - throwing);
         characterAnimator.SetLayerWeight(sprintBodyLayer, sprint);
         characterAnimator.SetLayerWeight(sprintArmsLayer, sprint);
-        chestAim.weight = firingHand.weight = (1f - weight) * (1f - sprint) * (1f - throwing);
-        supportHand.weight = (1f - weight) * (1f - throwing);
-        weaponAim.weight = (1f - weight) * (1f - throwing);
+        chestAim.weight = (weapon.definition.thirdPersonAnimatedGrips ? 1f : 1f-weight) * (1f - sprint) * (1f - throwing);
+        // Authored weapon actions animate the existing weapon-relative grip targets.
+        // Keeping IK active makes the hand path follow the player's aiming frame.
+        firingHand.weight = weapon.definition.thirdPersonAnimatedGrips ? (1f-sprint)*(1f-throwing) : chestAim.weight;
+        supportHand.weight = (weapon.definition.thirdPersonAnimatedGrips ? 1f : 1f-weight) * (1f-throwing);
+        weaponAim.weight = (weapon.definition.thirdPersonAnimatedGrips ? 1f : 1f-weight) * (1f - throwing);
         runWeaponFollow.weight = sprint;
         if(rigStateChanged)rigBuilder.SyncLayers();
     }
@@ -139,14 +165,16 @@ public class SoldierWeaponPresentation : MonoBehaviour
 
     }
 
-    void UpdateWeaponLayers(float weight)
+    void UpdateWeaponLayers(float weight, float fireWeight)
     {
         // The same curve returns the weapon to its hold pose and the hands
         // to their grips. Animator blends the clips before the rig solves IK.
-        characterAnimator.SetLayerWeight(characterSwayLayer, (1f - weight) * cosmeticDetail);
+        bool authoredGrips = weapon.definition.thirdPersonAnimatedGrips;
+        characterAnimator.SetLayerWeight(characterSwayLayer, authoredGrips ? 1f : (1f - weight) * cosmeticDetail);
         characterAnimator.SetLayerWeight(weaponPoseLayer, weight);
-        characterAnimator.SetLayerWeight(weaponSwayLayer, (1f - weight) * cosmeticDetail);
-        characterAnimator.SetLayerWeight(weaponFireLayer, 1f - weight);
+        characterAnimator.SetLayerWeight(weaponSwayLayer, (1f - weight) * (1f - fireWeight) * cosmeticDetail);
+        characterAnimator.SetLayerWeight(weaponFireLayer, (1f - weight) *
+            (weapon.definition.thirdPersonAuthoredFire ? fireWeight : 1f));
     }
 
     void UpdateWeaponPlacement(float weight)
@@ -166,6 +194,11 @@ public class SoldierWeaponPresentation : MonoBehaviour
     {
         fullPoseUntil = Time.time + firingPoseHold;
         UpdatePresentationQuality();
+        if (weapon.definition.thirdPersonAuthoredFire && bodyFireLayer >= 0)
+        {
+            characterAnimator.ResetTrigger("Fire");
+            characterAnimator.CrossFadeInFixedTime(FireState, weapon.definition.fireBlendTime, bodyFireLayer, 0f);
+        }
         characterAnimator.ResetTrigger("WeaponFire");
         characterAnimator.CrossFadeInFixedTime("Fire", weapon.definition.fireBlendTime, weaponFireLayer, 0f);
         partsAnimator.ResetTrigger("Fire");
@@ -175,6 +208,7 @@ public class SoldierWeaponPresentation : MonoBehaviour
     void CancelReload()
     {
         characterAnimator.ResetTrigger("WeaponReload");
+        characterAnimator.SetFloat("WeaponReloadWeight", 0f);
         characterAnimator.Play("Idle", weaponPoseLayer, 0f);
         partsAnimator.ResetTrigger("Reload");
         partsAnimator.Play("Idle", 0, 0f);
@@ -184,6 +218,8 @@ public class SoldierWeaponPresentation : MonoBehaviour
     {
         UpdatePresentationQuality();
         if(actions.IsSwapReload)return;
+        if (weapon.definition.thirdPersonAuthoredFire && bodyFireLayer >= 0)
+            characterAnimator.Play(EmptyState, bodyFireLayer, 0f);
         characterAnimator.ResetTrigger("WeaponFire");
         characterAnimator.SetTrigger("CancelWeaponFire");
         characterAnimator.SetTrigger("WeaponReload");

@@ -9,9 +9,10 @@ public static class ArenaMk18PoseFit
  public sealed class Source : IDisposable
  {
   public bool IsThirdPerson {get;private set;}
+  public bool KeepAimFrame {get;set;}
   public TwoBoneIKConstraint left,right;
   SoldierWeaponPresentation presentation;SoldierWeaponDefinition definition;AvatarMask weaponMask;
-  AnimationLayerMixerPlayable mixer,bodyPose;AnimationClipPlayable hold,reload,bodyBase,bodyIdle;bool bodyReload;
+  AnimationLayerMixerPlayable mixer,bodyPose;AnimationClipPlayable hold,reload,bodyBase,bodyIdle,bodyAim;bool bodyReload,bodyFire;
   public GameObject player;public Animator animator;public SoldierWeaponLoadout loadout;public SoldierWeaponView weapon;
   public float MaxGripError {get;private set;}
   public RigBuilder rig;PlayableGraph graph;AnimationClipPlayable playable,parts;AnimationClip clip;AnimationCurve reloadWeight;
@@ -30,7 +31,7 @@ public static class ArenaMk18PoseFit
   }
   public void Begin(AnimationClip input)
   {
-   End();MaxGripError=0;clip=input;reloadWeight=AnimationUtility.GetEditorCurve(clip,EditorCurveBinding.FloatCurve("",typeof(Animator),"WeaponReloadWeight"));
+   End();MaxGripError=0;clip=input;bodyFire=AnimationUtility.GetEditorCurve(clip,EditorCurveBinding.FloatCurve("",typeof(Animator),"WeaponFireWeight"))!=null;reloadWeight=AnimationUtility.GetEditorCurve(clip,EditorCurveBinding.FloatCurve("",typeof(Animator),bodyFire?"WeaponFireWeight":"WeaponReloadWeight"));
    graph=PlayableGraph.Create("MK18 original evaluated IK capture");graph.SetTimeUpdateMode(DirectorUpdateMode.Manual);
    playable=AnimationClipPlayable.Create(graph,clip);playable.SetApplyFootIK(false);playable.SetApplyPlayableIK(false);
    Playable inputRoot=playable;
@@ -40,13 +41,18 @@ public static class ArenaMk18PoseFit
     // locomotion base and the same masks used by the production character.
     var controller=ArenaWeaponAnimationSource.Base(definition.thirdPerson);
     bodyBase=AnimationClipPlayable.Create(graph,ArenaWeaponAnimationSource.State(definition.thirdPerson,"Base Layer","Locomotion"));
+    bodyAim=AnimationClipPlayable.Create(graph,ArenaWeaponAnimationSource.State(definition.thirdPerson,"UpperBody","Aim"));
     bodyIdle=AnimationClipPlayable.Create(graph,ArenaWeaponAnimationSource.Body(definition.thirdPerson,"Idle"));
     bodyReload=input==ArenaWeaponAnimationSource.Body(definition.thirdPerson,"Reload");
-    bodyPose=AnimationLayerMixerPlayable.Create(graph,3);bodyPose.ConnectInput(0,bodyBase,0,1);bodyPose.ConnectInput(1,playable,0,1);bodyPose.ConnectInput(2,bodyIdle,0,0);
-    var poseMask=controller.layers.First(l=>l.name==(bodyReload?"Reload":"SourceSway")).avatarMask;var idleMask=controller.layers.First(l=>l.name=="SourceSway").avatarMask;
-    if(poseMask)bodyPose.SetLayerMaskFromAvatarMask(1,poseMask);if(idleMask)bodyPose.SetLayerMaskFromAvatarMask(2,idleMask);
+    bodyPose=AnimationLayerMixerPlayable.Create(graph,4);bodyPose.ConnectInput(0,bodyBase,0,1);bodyPose.ConnectInput(1,bodyAim,0,1);bodyPose.ConnectInput(2,playable,0,1);bodyPose.ConnectInput(3,bodyIdle,0,0);
+    var poseMask=controller.layers.First(l=>l.name==(bodyReload?"Reload":bodyFire?"Fire":"SourceSway")).avatarMask;var idleMask=controller.layers.First(l=>l.name=="SourceSway").avatarMask;
+    var aimLayer=controller.layers.First(l=>l.name=="UpperBody");if(aimLayer.avatarMask)bodyPose.SetLayerMaskFromAvatarMask(1,aimLayer.avatarMask);
+    if(poseMask)bodyPose.SetLayerMaskFromAvatarMask(2,poseMask);if(idleMask)bodyPose.SetLayerMaskFromAvatarMask(3,idleMask);
+    bodyPose.SetLayerAdditive(1,aimLayer.blendingMode==UnityEditor.Animations.AnimatorLayerBlendingMode.Additive);
+    bodyPose.SetLayerAdditive(2,controller.layers.First(l=>l.name==(bodyReload?"Reload":bodyFire?"Fire":"SourceSway")).blendingMode==UnityEditor.Animations.AnimatorLayerBlendingMode.Additive);
+    bodyPose.SetLayerAdditive(3,controller.layers.First(l=>l.name=="SourceSway").blendingMode==UnityEditor.Animations.AnimatorLayerBlendingMode.Additive);
     inputRoot=bodyPose;
-    hold=AnimationClipPlayable.Create(graph,ArenaWeaponAnimationSource.State(definition.thirdPerson,"WeaponPose","Idle"));reload=AnimationClipPlayable.Create(graph,ArenaWeaponAnimationSource.State(definition.thirdPerson,"WeaponPose","Reload"));
+    hold=AnimationClipPlayable.Create(graph,ArenaWeaponAnimationSource.State(definition.thirdPerson,"WeaponPose","Idle"));reload=AnimationClipPlayable.Create(graph,ArenaWeaponAnimationSource.State(definition.thirdPerson,bodyFire?"WeaponFire":"WeaponPose",bodyFire?"Fire":"Reload"));
     mixer=AnimationLayerMixerPlayable.Create(graph,3);mixer.ConnectInput(0,inputRoot,0,1);mixer.ConnectInput(1,hold,0,1);mixer.ConnectInput(2,reload,0,0);
     weaponMask=new AvatarMask();weaponMask.AddTransformPath(animator.transform,true);for(int i=0;i<(int)AvatarMaskBodyPart.LastBodyPart;i++)weaponMask.SetHumanoidBodyPartActive((AvatarMaskBodyPart)i,false);
     var paths=AnimationUtility.GetCurveBindings(hold.GetAnimationClip()).Concat(AnimationUtility.GetCurveBindings(reload.GetAnimationClip())).Select(b=>b.path).Distinct().ToArray();for(int i=0;i<weaponMask.transformCount;i++){var path=weaponMask.GetTransformPath(i);if(path.StartsWith(animator.name+"/"))path=path.Substring(animator.name.Length+1);if(path==animator.name)path="";weaponMask.SetTransformPath(i,path);weaponMask.SetTransformActive(i,paths.Contains(path));}
@@ -59,8 +65,8 @@ public static class ArenaMk18PoseFit
   public void Sample(float time)
   {
    float weight=1-Mathf.Clamp01(reloadWeight?.Evaluate(time)??0);
-   left.weight=right.weight=weight;
-   if(IsThirdPerson){float r=1-weight;bodyBase.SetTime(0);bodyIdle.SetTime(0);bodyPose.SetInputWeight(2,bodyReload?1-r:0);presentation.chestAim.weight=presentation.weaponAim.weight=weight;presentation.runWeaponFollow.weight=0;presentation.aimPivot.localPosition=Vector3.Lerp(definition.thirdPersonHipAimPosition,definition.thirdPersonReloadPosition,r);presentation.aimPivot.localRotation=Quaternion.identity;hold.SetTime(0);reload.SetTime(time);reload.SetTime(time);mixer.SetInputWeight(2,r);}
+   left.weight=right.weight=bodyFire||IsThirdPerson&&definition.thirdPersonAnimatedGrips?1:weight;
+   if(IsThirdPerson){float r=1-weight;bodyBase.SetTime(0);bodyAim.SetTime(0);bodyIdle.SetTime(0);bodyPose.SetInputWeight(3,bodyReload||bodyFire?1-r:0);presentation.chestAim.weight=presentation.weaponAim.weight=bodyFire||KeepAimFrame||definition.thirdPersonAnimatedGrips?1:weight;presentation.runWeaponFollow.weight=0;presentation.aimPivot.localPosition=Vector3.Lerp(definition.thirdPersonHipAimPosition,definition.thirdPersonReloadPosition,bodyFire?0:r);presentation.aimPivot.localRotation=Quaternion.identity;hold.SetTime(0);reload.SetTime(time);reload.SetTime(time);mixer.SetInputWeight(2,r);}
    playable.SetTime(time);playable.SetTime(time);if(parts.IsValid()){parts.SetTime(time);parts.SetTime(time);}rig.UpdatePreviewGraph(graph);graph.Evaluate(0);
    if(weight>.999f)MaxGripError=Mathf.Max(MaxGripError,Mathf.Max(Vector3.Distance(left.data.tip.position,left.data.target.position),Vector3.Distance(right.data.tip.position,right.data.target.position)));
   }
