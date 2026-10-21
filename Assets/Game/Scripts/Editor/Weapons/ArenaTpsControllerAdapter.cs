@@ -47,7 +47,19 @@ public static class ArenaTpsControllerAdapter
   sprintMask.SetHumanoidBodyPartActive(AvatarMaskBodyPart.LeftFingers,false);sprintMask.SetHumanoidBodyPartActive(AvatarMaskBodyPart.RightFingers,false);
   for(int i=0;i<sprintMask.transformCount;i++)if(sprintMask.GetTransformPath(i).Contains("Finger_")||sprintMask.GetTransformPath(i).Contains("Thumb_"))sprintMask.SetTransformActive(i,false);
   sprint.avatarMask=sprintMask;EditorUtility.SetDirty(sprintMask);
-  var reload=layers.First(l=>l.name=="Reload");
+  var reload=layers.First(l=>l.name=="Reload");reload.defaultWeight=0;
+  if(fire.blendingMode==AnimatorLayerBlendingMode.Override)fire.defaultWeight=0;
+  // A null Humanoid motion can output zero finger muscles even with Write Defaults off.
+  // Share the weapon's idle key so its override supplies an explicit resting grip.
+  var emptyReload=reload.stateMachine.states.First(s=>s.state.name=="Empty").state;
+  emptyReload.motion=hold.stateMachine.states.First().state.motion;EditorUtility.SetDirty(emptyReload);
+  var hit=layers.First(l=>l.name=="HitReaction");hit.defaultWeight=0;
+  const string hitMaskPath="Assets/Game/Animations/Weapons/ScaledTPS/HitReactionBody.mask";
+  var hitMask=AssetDatabase.LoadAssetAtPath<AvatarMask>(hitMaskPath);
+  if(!hitMask){hitMask=UnityEngine.Object.Instantiate(hit.avatarMask);hitMask.name="HitReactionBody";AssetDatabase.CreateAsset(hitMask,hitMaskPath);}
+  hitMask.SetHumanoidBodyPartActive(AvatarMaskBodyPart.LeftFingers,false);hitMask.SetHumanoidBodyPartActive(AvatarMaskBodyPart.RightFingers,false);
+  for(int i=0;i<hitMask.transformCount;i++)if(hitMask.GetTransformPath(i).Contains("Finger_")||hitMask.GetTransformPath(i).Contains("Thumb_"))hitMask.SetTransformActive(i,false);
+  hit.avatarMask=hitMask;EditorUtility.SetDirty(hitMask);
   layers.Remove(hold);layers.Remove(fire);layers.Remove(reload);
   int index=layers.FindIndex(l=>l.name=="UpperBody")+1;
   layers.Insert(index,hold);layers.Insert(index+1,fire);layers.Insert(index+2,reload);

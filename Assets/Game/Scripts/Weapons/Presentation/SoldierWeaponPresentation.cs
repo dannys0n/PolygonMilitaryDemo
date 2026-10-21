@@ -23,9 +23,11 @@ public class SoldierWeaponPresentation : MonoBehaviour
     [Min(1)] public float simpleDetailDistance = 70f;
     [Min(0)] public float firingPoseHold = .35f;
 
-    int characterSwayLayer, weaponPoseLayer, weaponSwayLayer, weaponFireLayer, sprintBodyLayer, sprintArmsLayer, bodyFireLayer;
+    int characterSwayLayer, weaponPoseLayer, weaponSwayLayer, weaponFireLayer, sprintBodyLayer, sprintArmsLayer, bodyFireLayer, bodyReloadLayer, bodyHitLayer;
     static readonly int FireActionWeight = Animator.StringToHash("WeaponFireWeight");
     static readonly int FireState = Animator.StringToHash("Fire");
+    static readonly int ReloadState = Animator.StringToHash("Reload");
+    static readonly int HitState = Animator.StringToHash("HitReaction");
     static readonly int EmptyState = Animator.StringToHash("Empty");
 
     SoldierGrenades grenades;
@@ -67,6 +69,14 @@ public class SoldierWeaponPresentation : MonoBehaviour
         weaponSwayLayer = characterAnimator.GetLayerIndex("WeaponSway");
         weaponFireLayer = characterAnimator.GetLayerIndex("WeaponFire");
         bodyFireLayer = characterAnimator.GetLayerIndex("Fire");
+        bodyReloadLayer = characterAnimator.GetLayerIndex("Reload");
+        bodyHitLayer = characterAnimator.GetLayerIndex("HitReaction");
+        if (set.thirdPersonAnimatedGrips)
+        {
+            if (bodyReloadLayer >= 0) characterAnimator.SetLayerWeight(bodyReloadLayer, 0f);
+            if (bodyHitLayer >= 0) characterAnimator.SetLayerWeight(bodyHitLayer, 0f);
+            if (set.thirdPersonAuthoredFire && bodyFireLayer >= 0) characterAnimator.SetLayerWeight(bodyFireLayer, 0f);
+        }
         if (set.thirdPersonAuthoredFire && bodyFireLayer >= 0)
         {
             characterAnimator.SetFloat(FireActionWeight, 0f);
@@ -124,11 +134,14 @@ public class SoldierWeaponPresentation : MonoBehaviour
         if (!weapon.definition.thirdPersonAuthoredFire || bodyFireLayer < 0) return 0f;
         // Empty states and weapon switches must never retain an action-blend value
         // left by a clip that was interrupted before its final key.
-        var state = characterAnimator.GetCurrentAnimatorStateInfo(bodyFireLayer);
-        bool firing = state.shortNameHash == FireState;
-        if (characterAnimator.IsInTransition(bodyFireLayer))
-            firing |= characterAnimator.GetNextAnimatorStateInfo(bodyFireLayer).shortNameHash == FireState;
-        return firing ? Mathf.Clamp01(characterAnimator.GetFloat(FireActionWeight)) : 0f;
+        return ActionActive(bodyFireLayer, FireState) ? Mathf.Clamp01(characterAnimator.GetFloat(FireActionWeight)) : 0f;
+    }
+
+    bool ActionActive(int layer, int state)
+    {
+        if (layer < 0) return false;
+        return characterAnimator.GetCurrentAnimatorStateInfo(layer).shortNameHash == state ||
+            characterAnimator.IsInTransition(layer) && characterAnimator.GetNextAnimatorStateInfo(layer).shortNameHash == state;
     }
 
     void UpdateRigWeights(float weight)
@@ -170,6 +183,15 @@ public class SoldierWeaponPresentation : MonoBehaviour
         // The same curve returns the weapon to its hold pose and the hands
         // to their grips. Animator blends the clips before the rig solves IK.
         bool authoredGrips = weapon.definition.thirdPersonAnimatedGrips;
+        if (authoredGrips)
+        {
+            // A Humanoid layer's empty state can still output default muscles.
+            // Give it ownership only while its action is running or blending out.
+            if (bodyReloadLayer >= 0) characterAnimator.SetLayerWeight(bodyReloadLayer, ActionActive(bodyReloadLayer, ReloadState) ? 1f : 0f);
+            if (bodyHitLayer >= 0) characterAnimator.SetLayerWeight(bodyHitLayer, ActionActive(bodyHitLayer, HitState) ? 1f : 0f);
+            if (weapon.definition.thirdPersonAuthoredFire && bodyFireLayer >= 0)
+                characterAnimator.SetLayerWeight(bodyFireLayer, ActionActive(bodyFireLayer, FireState) ? 1f : 0f);
+        }
         characterAnimator.SetLayerWeight(characterSwayLayer, authoredGrips ? 1f : (1f - weight) * cosmeticDetail);
         characterAnimator.SetLayerWeight(weaponPoseLayer, weight);
         characterAnimator.SetLayerWeight(weaponSwayLayer, (1f - weight) * (1f - fireWeight) * cosmeticDetail);
