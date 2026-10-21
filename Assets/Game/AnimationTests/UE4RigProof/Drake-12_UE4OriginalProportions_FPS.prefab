@@ -327,6 +327,37 @@ SkinnedMeshRenderer:
     m_Center: {x: 0.000000022351742, y: -0.05052814, z: 0.24240717}
     m_Extent: {x: 0.017714566, y: 0.10840371, z: 0.6324446}
   m_DirtyAABB: 0
+--- !u!1 &3072535714833643889
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1835365703325564536}
+  m_Layer: 0
+  m_Name: GripFrame
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1835365703325564536
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3072535714833643889}
+  serializedVersion: 2
+  m_LocalRotation: {x: 5.168191e-15, y: -1, z: 0.0000000782311, w: -0.00000006606313}
+  m_LocalPosition: {x: -0.026731752, y: -0.019413803, z: 0.16551512}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 7732482705792695098}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &3443648435660708818
 GameObject:
   m_ObjectHideFlags: 0
@@ -511,6 +542,7 @@ Transform:
   - {fileID: 5109333103730419648}
   - {fileID: 7015621180556113002}
   - {fileID: 1752407997827121611}
+  - {fileID: 1835365703325564536}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &8445959058116406816
@@ -541,6 +573,7 @@ MonoBehaviour:
   rearSight: {fileID: 7999210180473546730}
   frontSight: {fileID: 4480511395943364216}
   sightPlacementRoot: {fileID: 7732482705792695098}
+  gripFrame: {fileID: 1835365703325564536}
   attachments:
   - kind: 0
     socket: {fileID: 31546903694077581}

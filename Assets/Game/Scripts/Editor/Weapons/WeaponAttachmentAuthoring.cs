@@ -23,11 +23,10 @@ public static class WeaponAttachmentAuthoring
     {
         if(EditorApplication.isPlaying)throw new InvalidOperationException("Edit Mode required");
         var catalog=AssetDatabase.LoadAssetAtPath<ArenaWeaponCatalog>("Assets/Game/Definitions/Weapons/Catalogs/WeaponCatalog.asset");
-        var loadout=AssetDatabase.LoadAssetAtPath<GameObject>("Assets/Game/Prefabs/Players/Player_Polygon.prefab").GetComponent<SoldierWeaponLoadout>();int count=0;
+        int count=0;
         foreach(var entry in catalog.entries.Where(e=>e.basePrefab&&e.attachments.Length>0))
         {
-            var slot=loadout.slots.First(s=>s.definition==entry.weapon);
-            foreach(var prefab in new[]{slot.firstPersonPrefab,slot.thirdPersonPrefab}.Where(v=>v))
+            foreach(var prefab in new[]{entry.firstPersonPrefab,entry.thirdPersonPrefab}.Where(v=>v))
             {
                 string path=AssetDatabase.GetAssetPath(prefab);var root=PrefabUtility.LoadPrefabContents(path);
                 try

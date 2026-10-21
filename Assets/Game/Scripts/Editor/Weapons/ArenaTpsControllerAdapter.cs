@@ -48,6 +48,14 @@ public static class ArenaTpsControllerAdapter
   for(int i=0;i<sprintMask.transformCount;i++)if(sprintMask.GetTransformPath(i).Contains("Finger_")||sprintMask.GetTransformPath(i).Contains("Thumb_"))sprintMask.SetTransformActive(i,false);
   sprint.avatarMask=sprintMask;EditorUtility.SetDirty(sprintMask);
   var reload=layers.First(l=>l.name=="Reload");reload.defaultWeight=0;
+  const string reloadMaskPath="Assets/Game/Animations/Weapons/ScaledTPS/ReloadUpperBody.mask";
+  var reloadMask=AssetDatabase.LoadAssetAtPath<AvatarMask>(reloadMaskPath);
+  if(!reloadMask){reloadMask=UnityEngine.Object.Instantiate(reload.avatarMask);reloadMask.name="ReloadUpperBody";AssetDatabase.CreateAsset(reloadMask,reloadMaskPath);}
+  reloadMask.SetHumanoidBodyPartActive(AvatarMaskBodyPart.Body,true);
+  reloadMask.SetHumanoidBodyPartActive(AvatarMaskBodyPart.Root,false);
+  reloadMask.SetHumanoidBodyPartActive(AvatarMaskBodyPart.LeftLeg,false);
+  reloadMask.SetHumanoidBodyPartActive(AvatarMaskBodyPart.RightLeg,false);
+  EditorUtility.SetDirty(reloadMask);reload.avatarMask=reloadMask;
   if(fire.blendingMode==AnimatorLayerBlendingMode.Override)fire.defaultWeight=0;
   // A null Humanoid motion can output zero finger muscles even with Write Defaults off.
   // Share the weapon's idle key so its override supplies an explicit resting grip.
@@ -63,9 +71,32 @@ public static class ArenaTpsControllerAdapter
   layers.Remove(hold);layers.Remove(fire);layers.Remove(reload);
   int index=layers.FindIndex(l=>l.name=="UpperBody")+1;
   layers.Insert(index,hold);layers.Insert(index+1,fire);layers.Insert(index+2,reload);
-  // Empty action states must not write bind-pose fingers or reset grip targets.
+  // Body control clips own only the shared weapon frame and grip targets.
+  // The child weapon Animator owns its receiver, magazine and mechanisms.
+  string motionPath=Enumerable.Range(0,layers.First(l=>l.name=="WeaponHold").avatarMask.transformCount)
+   .Select(i=>layers.First(l=>l.name=="WeaponHold").avatarMask.GetTransformPath(i)).First(p=>p.EndsWith("/WeaponMotion"));
+  AvatarMask Controls(bool grips)
+  {
+   string path="Assets/Game/Animations/Weapons/ScaledTPS/"+(grips?"WeaponHoldControls":"WeaponMotionControls")+".mask";
+   var mask=AssetDatabase.LoadAssetAtPath<AvatarMask>(path);
+   if(!mask){mask=new AvatarMask{name=System.IO.Path.GetFileNameWithoutExtension(path)};AssetDatabase.CreateAsset(mask,path);}
+   for(int i=0;i<(int)AvatarMaskBodyPart.LastBodyPart;i++)mask.SetHumanoidBodyPartActive((AvatarMaskBodyPart)i,false);
+   var ancestors=new List<string>{""};string parent="";
+   foreach(string part in motionPath.Split('/')){parent=string.IsNullOrEmpty(parent)?part:parent+"/"+part;ancestors.Add(parent);}
+   var paths=ancestors.Concat(new[]{motionPath+"/RMotionGrip",motionPath+"/SupportHandGrip",motionPath+"/"+SoldierWeaponLoadout.ThirdPersonWeaponName}).ToArray();
+   mask.transformCount=paths.Length;
+   for(int i=0;i<paths.Length;i++){mask.SetTransformPath(i,paths[i]);mask.SetTransformActive(i,paths[i]==motionPath||grips&&(paths[i].EndsWith("/RMotionGrip")||paths[i].EndsWith("/SupportHandGrip")));}
+   EditorUtility.SetDirty(mask);return mask;
+  }
+  var holdControls=Controls(true);var motionControls=Controls(false);
+  foreach(var layer in layers.Where(l=>l.name.StartsWith("Weapon")))
+   layer.avatarMask=layer.name=="WeaponHold"||layer.name=="WeaponPose"||layer.name=="WeaponFire"&&layer.blendingMode==AnimatorLayerBlendingMode.Override?holdControls:motionControls;
+  layers.First(l=>l.name=="WeaponSwitch").defaultWeight=0;
+  // Animation Rigging needs defaults enabled to synchronize script-driven
+  // hold positions and grip targets. Inactive Humanoid actions are gated by
+  // layer weight in SoldierWeaponPresentation, rather than freezing the stream.
   foreach(var layer in layers)
-   foreach(var state in layer.stateMachine.states){state.state.writeDefaultValues=false;EditorUtility.SetDirty(state.state);}
+   foreach(var state in layer.stateMachine.states){state.state.writeDefaultValues=true;EditorUtility.SetDirty(state.state);}
   controller.layers=layers.ToArray();EditorUtility.SetDirty(controller);
  }
 

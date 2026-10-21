@@ -40,8 +40,8 @@ public static class ArenaTpsFireAdapter
         var empty = states.First(s => s.name == "Empty");
         fire.speed = 1;
         fire.speedParameterActive = false;
-        fire.writeDefaultValues = false;
-        empty.writeDefaultValues = false;
+        fire.writeDefaultValues = true;
+        empty.writeDefaultValues = true;
 
         // Keep the original clip as the override key: all generated idle/reload
         // mappings stay valid when this controller is rebuilt.
@@ -146,7 +146,7 @@ public static class ArenaTpsFireAdapter
         for (int i = 0; i < paths.Length; i++)
         {
             mask.SetTransformPath(i, paths[i]);
-            mask.SetTransformActive(i, true);
+            mask.SetTransformActive(i, tracks.Contains(paths[i]));
         }
         EditorUtility.SetDirty(mask);
         return mask;

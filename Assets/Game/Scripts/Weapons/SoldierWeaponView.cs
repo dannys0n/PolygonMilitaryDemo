@@ -28,5 +28,7 @@ public class SoldierWeaponView : MonoBehaviour
     public Transform opticMount, rearSight, frontSight;
     [Tooltip("Animated weapon model frame for sight calibration when arms and gun share one authored rig.")]
     public Transform sightPlacementRoot;
+    [Tooltip("Authored receiver/grip reference for animation conversion. Independent of sights and wrapper origins.")]
+    public Transform gripFrame;
     public AttachmentSocket[] attachments;
 }

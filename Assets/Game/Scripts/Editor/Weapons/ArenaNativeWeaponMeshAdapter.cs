@@ -44,9 +44,10 @@ public static class ArenaNativeWeaponMeshAdapter
   var gun=Find(fps,"SourceWeapon");var nativeSkins=gun.GetComponentsInChildren<SkinnedMeshRenderer>(true);var nativeBones=nativeSkins.SelectMany(s=>s.bones).Distinct().ToArray();if(nativeBones.Length==0)throw new Exception("Native weapon has no part skeleton");var root=nativeBones.FirstOrDefault(b=>b.name=="Root"||b.name=="Body")??nativeBones[0];
   var nativePoints=new Dictionary<Transform,List<Vector3>>();
   foreach(var skin in nativeSkins){var baked=new Mesh();skin.BakeMesh(baked);var v=baked.vertices;var w=skin.sharedMesh.boneWeights;for(int i=0;i<v.Length;i++){var b=skin.bones[w[i].boneIndex0];if(!nativePoints.TryGetValue(b,out var p))nativePoints[b]=p=new();p.Add(skin.transform.TransformPoint(v[i]));}Object.DestroyImmediate(baked);}
-  using var source=new ArenaMk18PoseFit.Source(reference);source.Begin(ArenaWeaponAnimationSource.State(reference.weapon.firstPerson,"Base Layer","Idle"));source.Sample(0);
+  // The physical TPS grip remains valid after the shared FPS skeleton is replaced.
+  using var source=new ArenaMk18PoseFit.Source(reference,true);source.Begin(ArenaWeaponAnimationSource.Body(reference.weapon.thirdPerson,"Idle"));source.Sample(0);
   var skins=source.weapon.GetComponentsInChildren<SkinnedMeshRenderer>(true).Where(Visible).Where(r=>!new[]{"scope","glass","dot","lens"}.Any(n=>r.name.ToLowerInvariant().Contains(n))).ToArray();
-  var hand=Find(source.animator.gameObject,"Hand_R");var targetHand=Find(fps,"hand_r");var axis=(source.weapon.frontSight.position-source.weapon.rearSight.position).normalized;var rotation=Quaternion.Inverse(Quaternion.LookRotation(axis,source.weapon.rearSight.up));
+  var hand=source.animator.GetBoneTransform(HumanBodyBones.RightHand);var targetHand=Find(fps,"hand_r");var axis=(source.weapon.frontSight.position-source.weapon.rearSight.position).normalized;var rotation=Quaternion.Inverse(Quaternion.LookRotation(axis,source.weapon.rearSight.up));
   var originalPoints=new List<Vector3>();foreach(var s in skins){var m=new Mesh();s.BakeMesh(m);originalPoints.AddRange(m.vertices.Select(Matrix4x4.TRS(s.transform.position,s.transform.rotation,Vector3.one).MultiplyPoint3x4));Object.DestroyImmediate(m);}
   var filters=source.weapon.GetComponentsInChildren<MeshFilter>(true).Where(f=>f.TryGetComponent<Renderer>(out var r)&&Visible(r)).ToArray();
   foreach(var filter in filters)originalPoints.AddRange(filter.sharedMesh.vertices.Select(filter.transform.TransformPoint));
@@ -141,5 +142,3 @@ public static class ArenaNativeWeaponMeshAdapter
   body.Save(gun,renderBones,folder,"AdaptedPolygonWeapon");projectile.Save(gun,renderBones,folder,"LoadedRocket");File.WriteAllLines(folder+"/MeshFit.txt",log);return fit;
  }
 }
-
-

@@ -10,6 +10,7 @@ public static class ArenaMk18PoseFit
  {
   public bool IsThirdPerson {get;private set;}
   public bool KeepAimFrame {get;set;}
+  public bool IgnoreHandIK {get;set;}
   public TwoBoneIKConstraint left,right;
   SoldierWeaponPresentation presentation;SoldierWeaponDefinition definition;AvatarMask weaponMask;
   AnimationLayerMixerPlayable mixer,bodyPose;AnimationClipPlayable hold,reload,bodyBase,bodyIdle,bodyAim;bool bodyReload,bodyFire;
@@ -65,8 +66,14 @@ public static class ArenaMk18PoseFit
   public void Sample(float time)
   {
    float weight=1-Mathf.Clamp01(reloadWeight?.Evaluate(time)??0);
-   left.weight=right.weight=bodyFire||IsThirdPerson&&definition.thirdPersonAnimatedGrips?1:weight;
-   if(IsThirdPerson){float r=1-weight;bodyBase.SetTime(0);bodyAim.SetTime(0);bodyIdle.SetTime(0);bodyPose.SetInputWeight(3,bodyReload||bodyFire?1-r:0);presentation.chestAim.weight=presentation.weaponAim.weight=bodyFire||KeepAimFrame||definition.thirdPersonAnimatedGrips?1:weight;presentation.runWeaponFollow.weight=0;presentation.aimPivot.localPosition=Vector3.Lerp(definition.thirdPersonHipAimPosition,definition.thirdPersonReloadPosition,bodyFire?0:r);presentation.aimPivot.localRotation=Quaternion.identity;hold.SetTime(0);reload.SetTime(time);reload.SetTime(time);mixer.SetInputWeight(2,r);}
+   left.weight=right.weight=IgnoreHandIK?0:bodyFire||IsThirdPerson&&definition.thirdPersonAnimatedGrips?1:weight;
+   // Match gameplay: the converted upper-body pose supplies elbow guidance.
+   if(IsThirdPerson&&definition.thirdPersonAnimatedGrips)
+   {
+    var l=left.data;l.hintWeight=0;left.data=l;
+    var r=right.data;r.hintWeight=0;right.data=r;
+   }
+   if(IsThirdPerson){float r=1-weight;bodyBase.SetTime(0);bodyAim.SetTime(0);bodyIdle.SetTime(0);bodyPose.SetInputWeight(3,bodyReload||bodyFire?1-r:0);presentation.chestAim.weight=bodyFire?1:weight;presentation.weaponAim.weight=bodyFire||KeepAimFrame||definition.thirdPersonAnimatedGrips?1:weight;presentation.runWeaponFollow.weight=0;presentation.aimPivot.localPosition=Vector3.Lerp(definition.thirdPersonHipAimPosition,definition.thirdPersonReloadPosition,bodyFire||definition.thirdPersonAnimatedGrips?0:r);presentation.aimPivot.localRotation=Quaternion.identity;hold.SetTime(0);reload.SetTime(time);reload.SetTime(time);mixer.SetInputWeight(2,r);}
    playable.SetTime(time);playable.SetTime(time);if(parts.IsValid()){parts.SetTime(time);parts.SetTime(time);}rig.UpdatePreviewGraph(graph);graph.Evaluate(0);
    if(weight>.999f)MaxGripError=Mathf.Max(MaxGripError,Mathf.Max(Vector3.Distance(left.data.tip.position,left.data.target.position),Vector3.Distance(right.data.tip.position,right.data.target.position)));
   }
@@ -177,6 +184,3 @@ public static class ArenaMk18PoseFit
   }
  }
 }
-
-
-

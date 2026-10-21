@@ -193,7 +193,8 @@ public static class ArenaAnimationTestBuilder
   var equip=Clip(equipLink?.character);var unequip=Clip(outLink?.character);
   var fireLink=variant.links.FirstOrDefault(l=>l.key=="Fire");var fireArms=Clip(fireLink?.character)??idle;
   if((preset.family=="KXG12"||preset.family=="Kar98K")&&variant.links.Any(l=>l.key=="AdditionalReload")){var loop=variant.links.First(l=>l.key=="SecondaryReload");var end=variant.links.First(l=>l.key=="AdditionalReload");int rounds=preset.family=="Kar98K"?5:Mathf.Min(6,reference.weapon.magazineCapacity);reload=Concat(key+"_FullReload",new[]{reload}.Concat(Enumerable.Repeat(Clip(loop.character),rounds)).Concat(new[]{Clip(end.character)}).ToArray());reloadW=Concat(key+"_FullPartsReload",new[]{reloadW}.Concat(Enumerable.Repeat(Clip(loop.weapon),rounds)).Concat(new[]{Clip(end.weapon)}).ToArray());}
-  var fireW=catalog.Clip(catalog.Entries.FirstOrDefault(e=>e.Weapon&&e.Family==preset.family&&e.type=="AnimSequence"&&e.Action=="Fire"));
+  // The authored pair may be a pump/bolt montage rather than an animation named Fire.
+  var fireW=Clip(fireLink?.weapon)??catalog.Clip(catalog.Entries.FirstOrDefault(e=>e.Weapon&&e.Family==preset.family&&e.type=="AnimSequence"&&e.Action=="Fire"));
   var root=new GameObject(key+"_FPS");
   try
   {

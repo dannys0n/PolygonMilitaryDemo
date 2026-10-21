@@ -31,6 +31,37 @@ Transform:
   m_Children: []
   m_Father: {fileID: 393891070844872476}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &1224119462681190454
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 3832572178800811896}
+  m_Layer: 0
+  m_Name: GripFrame
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &3832572178800811896
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1224119462681190454}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0.00000004470348, y: -0.000000029802319, z: 0.00000008940701, w: 1}
+  m_LocalPosition: {x: 0.015750602, y: -0.06525877, z: -0.0647838}
+  m_LocalScale: {x: 0.8700002, y: 0.8699999, z: 0.8699995}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 8946932530833526186}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1368599404850686229
 GameObject:
   m_ObjectHideFlags: 0
@@ -282,6 +313,7 @@ Transform:
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 706982569242692342}
+  - {fileID: 3832572178800811896}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: -0, y: 0, z: 0}
 --- !u!114 &1284198090585304902
@@ -316,12 +348,12 @@ MonoBehaviour:
       scale: {x: 1, y: 1, z: 1}
   thirdPersonHands:
     leftGrip:
-      position: {x: -0.053689893, y: -0.03241056, z: 0.11554598}
-      rotation: {x: -0.42432824, y: 0.23460303, z: 0.84925884, w: 0.20896526}
+      position: {x: -0.053222544, y: -0.034570344, z: 0.1201075}
+      rotation: {x: -0.42904967, y: 0.22518736, z: 0.8514607, w: 0.20055385}
       scale: {x: 1, y: 1, z: 1}
     rightGrip:
-      position: {x: 0.03008661, y: -0.10753963, z: -0.17239924}
-      rotation: {x: -0.5749801, y: 0.3128563, z: -0.6439308, w: -0.39607078}
+      position: {x: 0.030002953, y: -0.106083, z: -0.1631172}
+      rotation: {x: -0.57023174, y: 0.31225175, z: -0.6509302, w: -0.3919497}
       scale: {x: 1, y: 1, z: 1}
     leftElbow:
       position: {x: -0.22358796, y: -0.20159113, z: -0.02914849}
@@ -505,6 +537,7 @@ MonoBehaviour:
   rearSight: {fileID: 4388510080005150537}
   frontSight: {fileID: 6322164933487846789}
   sightPlacementRoot: {fileID: 0}
+  gripFrame: {fileID: 3832572178800811896}
   attachments:
   - kind: 0
     socket: {fileID: 219197071803778625}

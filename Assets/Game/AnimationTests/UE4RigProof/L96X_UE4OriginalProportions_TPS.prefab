@@ -790,6 +790,37 @@ Transform:
   m_Children: []
   m_Father: {fileID: 3273699026469004854}
   m_LocalEulerAnglesHint: {x: 90, y: 0.00000515662, z: 0}
+--- !u!1 &5581193869815919458
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 4009602906069656471}
+  m_Layer: 0
+  m_Name: GripFrame
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &4009602906069656471
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5581193869815919458}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0.000000014901159, y: -1.665343e-16, z: 0.00000008940701, w: 1}
+  m_LocalPosition: {x: 0.0052905306, y: -0.062041707, z: -0.054922275}
+  m_LocalScale: {x: 0.9999999, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 3935889069175418190}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &5847463295553707188
 GameObject:
   m_ObjectHideFlags: 0
@@ -1316,6 +1347,7 @@ Transform:
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 4129631320667408207}
+  - {fileID: 4009602906069656471}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &8380165939804401868
@@ -1346,6 +1378,7 @@ MonoBehaviour:
   rearSight: {fileID: 2517534889831323891}
   frontSight: {fileID: 3770479882885690051}
   sightPlacementRoot: {fileID: 0}
+  gripFrame: {fileID: 4009602906069656471}
   attachments:
   - kind: 0
     socket: {fileID: 1875073217469159895}
@@ -1439,12 +1472,12 @@ MonoBehaviour:
       scale: {x: 1, y: 1, z: 1}
   thirdPersonHands:
     leftGrip:
-      position: {x: -0.05590249, y: -0.08072788, z: 0.08372224}
-      rotation: {x: 0.5616207, y: -0.42323118, z: -0.66080624, w: -0.26228362}
+      position: {x: -0.07646528, y: -0.08056065, z: 0.15746294}
+      rotation: {x: 0.57013434, y: -0.42358458, z: -0.65920347, w: -0.24692886}
       scale: {x: 1, y: 1, z: 1}
     rightGrip:
-      position: {x: 0.04479004, y: -0.0992578, z: -0.2291251}
-      rotation: {x: -0.5359324, y: 0.39396712, z: -0.6115773, w: -0.42841533}
+      position: {x: 0.01677269, y: -0.09882842, z: -0.15519226}
+      rotation: {x: -0.5344908, y: 0.39592296, z: -0.61301243, w: -0.4263572}
       scale: {x: 1, y: 1, z: 1}
     leftElbow:
       position: {x: -0.22358796, y: -0.20159113, z: -0.02914849}

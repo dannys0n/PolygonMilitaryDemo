@@ -1126,6 +1126,37 @@ Transform:
   - {fileID: 8742502270276472061}
   m_Father: {fileID: 8440758951396409596}
   m_LocalEulerAnglesHint: {x: -0, y: 0, z: 180}
+--- !u!1 &7217743302551400961
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 8134421262275851789}
+  m_Layer: 0
+  m_Name: GripFrame
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &8134421262275851789
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7217743302551400961}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: -0, z: -1.01972306e-32, w: 1}
+  m_LocalPosition: {x: 0.015750583, y: -0.06525785, z: -0.06478363}
+  m_LocalScale: {x: 0.87061113, y: 0.87061113, z: 0.87061113}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 2720363197728566942}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &7555879223766983101
 GameObject:
   m_ObjectHideFlags: 0
@@ -1409,6 +1440,7 @@ Transform:
   - {fileID: 3965311578423927558}
   - {fileID: 163692179584794966}
   - {fileID: 3538457406395832208}
+  - {fileID: 8134421262275851789}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 7.016707e-15, y: 1.9083327e-14, z: -6.5137756e-12}
 --- !u!114 &4989139549298178174
@@ -1453,6 +1485,7 @@ MonoBehaviour:
   rearSight: {fileID: 7525208097986352694}
   frontSight: {fileID: 3630345721691476490}
   sightPlacementRoot: {fileID: 2720363197728566942}
+  gripFrame: {fileID: 8134421262275851789}
   attachments:
   - kind: 0
     socket: {fileID: 4487657921446024898}

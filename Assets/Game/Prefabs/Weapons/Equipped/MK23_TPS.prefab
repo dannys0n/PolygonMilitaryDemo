@@ -1,5 +1,36 @@
 %YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
+--- !u!1 &4221728373247058315
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 452410206720849968}
+  m_Layer: 0
+  m_Name: GripFrame
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &452410206720849968
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4221728373247058315}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0.0026594547, y: -0.000026583668, z: -0, w: -0.9999965}
+  m_LocalPosition: {x: 0.033147864, y: 0.010428431, z: 0.00913219}
+  m_LocalScale: {x: 99.99999, y: 100.00003, z: 99.99999}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 2057954171404066615}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &4494507352959767431
 GameObject:
   m_ObjectHideFlags: 0
@@ -342,6 +373,9 @@ PrefabInstance:
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects:
+    - targetCorrespondingSourceObject: {fileID: 4626023881792057466, guid: 39903bd75dcb1e24786f0dcc173a87ec, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 452410206720849968}
     - targetCorrespondingSourceObject: {fileID: 4172591922007481442, guid: 39903bd75dcb1e24786f0dcc173a87ec, type: 3}
       insertIndex: -1
       addedObject: {fileID: 1661571277461510307}
@@ -367,6 +401,11 @@ Transform:
 --- !u!95 &1489678634253054028 stripped
 Animator:
   m_CorrespondingSourceObject: {fileID: 5193147954701442817, guid: 39903bd75dcb1e24786f0dcc173a87ec, type: 3}
+  m_PrefabInstance: {fileID: 6682675953713475405}
+  m_PrefabAsset: {fileID: 0}
+--- !u!4 &2057954171404066615 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 4626023881792057466, guid: 39903bd75dcb1e24786f0dcc173a87ec, type: 3}
   m_PrefabInstance: {fileID: 6682675953713475405}
   m_PrefabAsset: {fileID: 0}
 --- !u!4 &2485763474077296118 stripped
@@ -457,12 +496,12 @@ MonoBehaviour:
       scale: {x: 1, y: 1, z: 1}
   thirdPersonHands:
     leftGrip:
-      position: {x: 0.030334398, y: -0.117034964, z: -0.033975333}
-      rotation: {x: -0.809563, y: 0.25670558, z: 0.5008358, w: 0.16695403}
+      position: {x: 0.02585802, y: -0.112711154, z: -0.022237638}
+      rotation: {x: -0.81528026, y: 0.24366714, z: 0.4978758, w: 0.16752326}
       scale: {x: 1, y: 1, z: 1}
     rightGrip:
-      position: {x: 0.054036807, y: -0.08568208, z: -0.04396165}
-      rotation: {x: -0.34178972, y: 0.12842777, z: -0.7346149, w: -0.5718628}
+      position: {x: 0.051636074, y: -0.08386268, z: -0.038894195}
+      rotation: {x: -0.34337237, y: 0.1328233, z: -0.73711437, w: -0.5666709}
       scale: {x: 1, y: 1, z: 1}
     leftElbow:
       position: {x: -0.21095397, y: -0.19182038, z: -0.101692855}
@@ -605,6 +644,7 @@ MonoBehaviour:
   rearSight: {fileID: 4300479275623616443}
   frontSight: {fileID: 3348111930975796578}
   sightPlacementRoot: {fileID: 0}
+  gripFrame: {fileID: 452410206720849968}
   attachments:
   - kind: 0
     socket: {fileID: 2527695379983554174}

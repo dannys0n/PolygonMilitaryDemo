@@ -20,10 +20,10 @@ public static class ClassMenuPreviewBuilder
     static void Folder(string path){if(AssetDatabase.IsValidFolder(path))return;var split=path.LastIndexOf('/');Folder(path.Substring(0,split));AssetDatabase.CreateFolder(path.Substring(0,split),path.Substring(split+1));}
     [MenuItem("Tools/Game/Refresh Class Menu Previews")]
     public static void RefreshPreviews(){Generate();Wire();}
-    public static object Generate()
+    public static object Generate(bool syncMounts=true)
     {
         if(EditorApplication.isPlaying)throw new InvalidOperationException("Edit Mode required");
-        WeaponAttachmentAuthoring.Sync();
+        if(syncMounts)WeaponAttachmentAuthoring.Sync();
         previews.Clear();
         Folder(Output);Folder(System.IO.Path.GetDirectoryName(CatalogAsset).Replace('\\','/'));
         settings=AddressableAssetSettingsDefaultObject.Settings;if(!settings)settings=AddressableAssetSettings.Create("Assets/AddressableAssetsData","AddressableAssetSettings",true,true);

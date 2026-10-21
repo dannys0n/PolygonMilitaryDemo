@@ -819,6 +819,37 @@ MonoBehaviour:
   builtInSightRenderers: []
   opticMountRenderers: []
   sideMountSights: []
+--- !u!1 &4970457277625991935
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 658505314394078594}
+  m_Layer: 0
+  m_Name: GripFrame
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &658505314394078594
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4970457277625991935}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0.0130969705, y: -0.9999142, z: 0.00000014845193, w: 0.000001938317}
+  m_LocalPosition: {x: -0.026264958, y: -0.07359338, z: 0.2075162}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 3989349311318271947}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &5089036508406656198
 GameObject:
   m_ObjectHideFlags: 0
@@ -905,6 +936,7 @@ Transform:
   - {fileID: 6465390816634071682}
   - {fileID: 4668577957205052080}
   - {fileID: 230248988886117723}
+  - {fileID: 658505314394078594}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &6173319505057720070
@@ -935,6 +967,7 @@ MonoBehaviour:
   rearSight: {fileID: 1339260719235164295}
   frontSight: {fileID: 7234844812949256285}
   sightPlacementRoot: {fileID: 3989349311318271947}
+  gripFrame: {fileID: 658505314394078594}
   attachments:
   - kind: 0
     socket: {fileID: 279619556731797279}

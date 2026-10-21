@@ -295,7 +295,7 @@ public static class ArenaTpsAnimationAdapter
         var proof=AssetDatabase.FindAssets("t:WeaponAnimationConversionProof",new[]{ArenaPolygonWeaponConversionBuilder.Root+"/OriginalProportions"}).Select(AssetDatabase.GUIDToAssetPath).First(p=>AssetDatabase.LoadAssetAtPath<WeaponAnimationConversionProof>(p).converted.weapon.catalogId==id);
         return BuildProof(proof);
     }
-    public static object BuildProof(string proofPath)
+    public static object BuildProof(string proofPath, bool rebuildParts=true)
     {
         if(EditorApplication.isPlayingOrWillChangePlaymode)throw new InvalidOperationException("Edit Mode only.");
         var proof=AssetDatabase.LoadAssetAtPath<WeaponAnimationConversionProof>(proofPath);
@@ -305,7 +305,8 @@ public static class ArenaTpsAnimationAdapter
         // Fit against the same mechanism rest pose that gameplay will evaluate.
         // Old TPS part clips can use a different receiver orientation than the FPS source.
         ArenaM249SocketRepair.Repair(proof);
-        int partTracks=ArenaTpsPartsAdapter.Build(proof,folder);
+        // Mechanism and body channels can be authored independently. A normal full build refreshes both.
+        int partTracks=rebuildParts||!definition.thirdPersonParts?ArenaTpsPartsAdapter.Build(proof,folder):0;
         var baselineDefinition=Object.Instantiate(definition);baselineDefinition.thirdPersonAnimatedGrips=false;baselineDefinition.thirdPerson=proof.thirdPersonSourceController;baselineDefinition.thirdPersonParts=definition.thirdPersonParts;
         var baselineEntry=new ArenaWeaponCatalog.Entry{weapon=baselineDefinition,firstPersonPrefab=entry.firstPersonPrefab,thirdPersonPrefab=entry.thirdPersonPrefab};
         var view=entry.firstPersonPrefab;
@@ -315,6 +316,7 @@ public static class ArenaTpsAnimationAdapter
         var gun=Object.Instantiate(view.gameObject,mount,false);gun.name="SourceWeapon";gun.transform.SetLocalPositionAndRotation(view.mountPosition,view.mountRotation);gun.transform.localScale=view.mountScale;
         using var target=new ArenaMk18PoseFit.Source(baselineEntry,true);
         target.KeepAimFrame=true;
+        target.IgnoreHandIK=true;
         try
         {
             var sourceHand=Find(source,"hand_r");var sourceLeft=Find(source,"hand_l");var sourceElbow=Find(source,"lowerarm_r");var sourceLeftElbow=Find(source,"lowerarm_l");
@@ -327,28 +329,22 @@ public static class ArenaTpsAnimationAdapter
             var destinationRightIdle=new Pose(destinationHand.position,destinationHand.rotation);var destinationLeftIdle=new Pose(destinationLeft.position,destinationLeft.rotation);
             var sourceElbows=new[]{sourceLeftElbow.position,sourceElbow.position};
             var targetElbows=new[]{target.animator.GetBoneTransform(HumanBodyBones.LeftLowerArm).position,target.animator.GetBoneTransform(HumanBodyBones.RightLowerArm).position};
-            // Seat the receiver in the body aim frame before calibrating its hand contacts.
-            // Imported gun wrappers do not share a universal local forward axis.
-            var receiverForward=(target.weapon.frontSight.position-target.weapon.rearSight.position).normalized;
-            var receiverUp=Vector3.ProjectOnPlane(Vector3.up,receiverForward);
-            if(receiverUp.sqrMagnitude<.01f)receiverUp=target.weapon.rearSight.up;
-            var receiverFrame=Quaternion.LookRotation(receiverForward,receiverUp);
-            var receiverCorrection=Quaternion.Inverse(receiverFrame);
+            // Explicit physical registration replaces sight-derived axes and wrapper-origin assumptions.
+            // The body pose is sampled without the previous weapon's fitted IK targets.
+            ArenaWeaponGripFrame.Ensure(gun.GetComponent<SoldierWeaponView>(), target.weapon, Find(source,"index_01_r"));
+            var sourceFrame=gun.GetComponent<SoldierWeaponView>().gripFrame;
+            var targetFrame=target.weapon.gripFrame;
             var receiverRoot=target.player.GetComponent<SoldierWeaponPresentation>().weaponRoot;
+            var receiverCorrection=Quaternion.Inverse(targetFrame.rotation);
             receiverRoot.rotation=receiverCorrection*receiverRoot.rotation;
-            var sourceGunIdle=new Pose(gun.transform.position,gun.transform.rotation);var targetGunIdle=new Pose(target.weapon.transform.position,target.weapon.transform.rotation);
-            Quaternion SightFrame(SoldierWeaponView weapon)
-            {
-                var forward=weapon.frontSight.position-weapon.rearSight.position;
-                var up=Vector3.ProjectOnPlane(Vector3.up,forward.normalized);
-                if(up.sqrMagnitude<.01f)up=Vector3.ProjectOnPlane(weapon.rearSight.up,forward.normalized);
-                return Quaternion.LookRotation(forward,up);
-            }
-            var alignment=SightFrame(target.weapon)*Quaternion.Inverse(SightFrame(gun.GetComponent<SoldierWeaponView>()));
-            var relativeFrame=Quaternion.Inverse(targetGunIdle.rotation)*alignment*sourceGunIdle.rotation;
-            // Weapon-relative offsets scale with the equipped weapon, not the
-            // length of the two rigs' differently-proportioned upper arms.
-            float scale=target.weapon.transform.lossyScale.magnitude/gun.transform.lossyScale.magnitude;
+            var alignment=targetFrame.rotation*Quaternion.Inverse(sourceFrame.rotation);
+            float scale=targetFrame.lossyScale.magnitude/sourceFrame.lossyScale.magnitude;
+            var sourceOrigin=sourceFrame.position;
+            var targetOrigin=targetFrame.position;
+            Vector3 MapPoint(Vector3 point)=>targetOrigin+alignment*(point-sourceOrigin)*scale;
+            var receiver=ArenaWeaponGripFrame.Receiver(gun.GetComponent<SoldierWeaponView>());
+            var sourceReceiverIdle=receiver();
+            var targetReceiver=ArenaWeaponGripFrame.Receiver(target.weapon);
             Vector3 rightCalibration=Vector3.zero,leftCalibration=Vector3.zero;
             var sourceSkin=source.GetComponentsInChildren<SkinnedMeshRenderer>(true).First(r=>r.bones.Any(b=>b.name=="hand_r"));
             var targetSkin=target.animator.GetComponentsInChildren<SkinnedMeshRenderer>(true).First(r=>r.bones.Any(b=>b.name=="Hand_R"));
@@ -378,15 +374,30 @@ public static class ArenaTpsAnimationAdapter
                 fingers[i]=(finger.source,finger.target,finger.sourceHand,finger.targetHand,HandBasis(side),basis);
             }
             var rightLocalPosition=destinationHand.localPosition;var leftLocalPosition=destinationLeft.localPosition;
-            destinationHand.SetPositionAndRotation(targetGunIdle.position+alignment*(sourceHand.position-sourceGunIdle.position)*scale,
+            destinationHand.SetPositionAndRotation(MapPoint(sourceHand.position),
                 alignment*sourceHand.rotation*HandBasis("r"));
-            destinationLeft.SetPositionAndRotation(targetGunIdle.position+alignment*(sourceLeft.position-sourceGunIdle.position)*scale,
+            destinationLeft.SetPositionAndRotation(MapPoint(sourceLeft.position),
                 alignment*sourceLeft.rotation*HandBasis("l"));
             foreach(var finger in fingers)finger.target.rotation=finger.targetHand.rotation*Quaternion.Inverse(finger.handBasis)*Quaternion.Inverse(finger.sourceHand.rotation)*finger.source.rotation*finger.basis;
-            surfaceFit.Fit(point=>targetGunIdle.position+alignment*(point-sourceGunIdle.position)*scale);
-            destinationRightIdle=new Pose(destinationHand.position,destinationHand.rotation);destinationLeftIdle=new Pose(destinationLeft.position,destinationLeft.rotation);
-            rightCalibration=Quaternion.Inverse(targetGunIdle.rotation)*(destinationRightIdle.position-targetGunIdle.position)-relativeFrame*Quaternion.Inverse(sourceGunIdle.rotation)*(sourceRightIdle.position-sourceGunIdle.position)*scale;
-            leftCalibration=Quaternion.Inverse(targetGunIdle.rotation)*(destinationLeftIdle.position-targetGunIdle.position)-relativeFrame*Quaternion.Inverse(sourceGunIdle.rotation)*(sourceLeftIdle.position-sourceGunIdle.position)*scale;
+            surfaceFit.Fit(MapPoint);
+            // Preserve the physical finger contact for every weapon after fitting the different glove surfaces.
+            foreach(string side in new[]{"r","l"})
+                {
+                    var wrist=side=="r"?destinationHand:destinationLeft;
+                    var sourceKnuckle=Find(source,"index_01_"+side);
+                    var targetKnuckle=Find(target.animator.gameObject,"IndexFinger_01"+(side=="r"?"1":""));
+                    var goal=MapPoint(sourceKnuckle.position);
+                    wrist.position+=goal-targetKnuckle.position;
+                }
+            // Seat the gun once at the body's neutral firing hand. Neither hand reach nor reload
+            // sampling may move this reference afterwards.
+            var seating=destinationRightIdle.position-destinationHand.position;
+            receiverRoot.position+=seating;targetOrigin+=seating;
+            destinationHand.position+=seating;destinationLeft.position+=seating;
+            destinationRightIdle=new Pose(destinationHand.position,destinationHand.rotation);
+            destinationLeftIdle=new Pose(destinationLeft.position,destinationLeft.rotation);
+            rightCalibration=Quaternion.Inverse(alignment*sourceRightIdle.rotation)*(destinationRightIdle.position-MapPoint(sourceRightIdle.position));
+            leftCalibration=Quaternion.Inverse(alignment*sourceLeftIdle.rotation)*(destinationLeftIdle.position-MapPoint(sourceLeftIdle.position));
             var fingerCorrections=fingers.ToDictionary(f=>f.target,f=>Quaternion.Inverse(f.targetHand.rotation*Quaternion.Inverse(f.handBasis)*Quaternion.Inverse(f.sourceHand.rotation)*f.source.rotation*f.basis)*f.target.rotation);
             destinationHand.localPosition=rightLocalPosition;destinationLeft.localPosition=leftLocalPosition;
             // The persistent grip IK must use the same fitted pose as the authored
@@ -396,39 +407,47 @@ public static class ArenaTpsAnimationAdapter
             var fittedRight=new SoldierWeapon.GripPose{position=target.right.data.target.localPosition,rotation=target.right.data.target.localRotation,scale=target.right.data.target.localScale};
             var fittedLeft=new SoldierWeapon.GripPose{position=target.left.data.target.localPosition,rotation=target.left.data.target.localRotation,scale=target.left.data.target.localScale};
             var presentation=target.player.GetComponent<SoldierWeaponPresentation>();var root=target.animator.transform;var weaponRoot=presentation.weaponRoot;
-            var weaponLocalPosition=target.weapon.transform.localPosition;var weaponLocalRotation=target.weapon.transform.localRotation;
+            var sourceElbowContacts=sourceElbows.Select(point=>sourceReceiverIdle.inverse.MultiplyPoint3x4(point)).ToArray();
             var muscleIndices=Enumerable.Range(0,HumanTrait.MuscleCount).Where(i=>{int b=HumanTrait.BoneFromMuscle(i);return b==(int)HumanBodyBones.Spine||b==(int)HumanBodyBones.Chest||b==(int)HumanBodyBones.UpperChest||b==(int)HumanBodyBones.Neck||b==(int)HumanBodyBones.Head||b==(int)HumanBodyBones.LeftShoulder||b==(int)HumanBodyBones.RightShoulder||b==(int)HumanBodyBones.LeftUpperArm||b==(int)HumanBodyBones.RightUpperArm||b==(int)HumanBodyBones.LeftLowerArm||b==(int)HumanBodyBones.RightLowerArm||b==(int)HumanBodyBones.LeftHand||b==(int)HumanBodyBones.RightHand||(b>=(int)HumanBodyBones.LeftThumbProximal&&b<=(int)HumanBodyBones.RightLittleDistal);}).ToArray();
             var reloadBlend=AnimationUtility.GetEditorCurve(oldReload,EditorCurveBinding.FloatCurve("",typeof(Animator),"WeaponReloadWeight"));
             var sampledPose=new HumanPose();var output=new List<AnimationClip>();var weaponOutput=new List<AnimationClip>();float maxReach=0;
-            target.Begin(oldReload);
+            // Locomotion supplies the body baseline only; old TPS reload/idle arm motion is not a transfer source.
+            target.Begin(oldIdle);
             bool authoredFire=HasAuthoredHandAction(source,gun.transform,proof.fire);
             for(int action=0;action<(authoredFire?3:2);action++)
             {
                 bool reload=action==1,fire=action==2;
-                var input=reload?proof.reload:fire?proof.fire:proof.idle;float duration=Mathf.Max(.1f,input.length);int frames=action>0?Mathf.CeilToInt(duration*60):1;var bodyTracks=new Curves();var weaponTracks=new Curves();
+                var input=reload?proof.reload:fire?proof.fire:proof.idle;float duration=Mathf.Max(.1f,input.length);int frames=Mathf.Max(1,Mathf.CeilToInt(duration*(action>0?60:30)));var bodyTracks=new Curves();var weaponTracks=new Curves();
                 for(int f=0;f<=frames;f++)
                 {
-                    float time=duration*f/frames;input.SampleAnimation(source,time);target.Sample(reload?time*oldReload.length/duration:0);handler.GetHumanPose(ref baseline);handler.SetHumanPose(ref baseline);
-                    var gunDelta=alignment*gun.transform.rotation*Quaternion.Inverse(sourceGunIdle.rotation)*Quaternion.Inverse(alignment);
-                    var desiredRotation=gunDelta*targetGunIdle.rotation;
-                    var desiredPosition=targetGunIdle.position+alignment*(gun.transform.position-sourceGunIdle.position)*scale;
-                    // Translate the whole authored action into the body's reachable space,
-                    // rather than stretching bones or adding a runtime correction solver.
-                    for(int pass=0;pass<8;pass++)for(int side=0;side<2;side++)
-                    {
-                        bool left=side==0;var wrist=left?sourceLeft:sourceHand;
-                        var goal=desiredPosition+desiredRotation*(relativeFrame*Quaternion.Inverse(gun.transform.rotation)*(wrist.position-gun.transform.position)*scale+(left?leftCalibration:rightCalibration));
-                        var arm=target.animator.GetBoneTransform(left?HumanBodyBones.LeftUpperArm:HumanBodyBones.RightUpperArm);
-                        var elbow=target.animator.GetBoneTransform(left?HumanBodyBones.LeftLowerArm:HumanBodyBones.RightLowerArm);var hand=left?destinationLeft:destinationHand;
-                        float reach=Vector3.Distance(arm.position,elbow.position)+Vector3.Distance(elbow.position,hand.position)-.002f;
-                        var delta=goal-arm.position;if(delta.magnitude>reach)desiredPosition-=delta.normalized*(delta.magnitude-reach);
-                    }
+                    float time=duration*f/frames;proof.idle.SampleAnimation(source,0);input.SampleAnimation(source,time);target.Sample(0);handler.SetHumanPose(ref baseline);
+                    // Sample mechanisms first, then carry the FPS receiver motion into the
+                    // calibrated TPS action frame. Hands are transferred in receiver space.
+                    string partAction=reload?"Reload":fire?"Fire":"Idle";
+                    var partClip=ArenaWeaponAnimationSource.State(definition.thirdPersonParts,"Base Layer",partAction);
+                    if(partClip)partClip.SampleAnimation(target.weapon.animator.gameObject,time);
+                    var currentSource=receiver();
+                    var desiredReceiverRotation=alignment*currentSource.rotation;
+                    var correction=desiredReceiverRotation*Quaternion.Inverse(targetReceiver().rotation);
+                    weaponRoot.rotation=correction*weaponRoot.rotation;
+                    weaponRoot.position+=MapPoint(currentSource.GetColumn(3))-targetReceiver().MultiplyPoint3x4(Vector3.zero);
+                    var currentTarget=targetReceiver();
+                    var handMap=currentTarget*currentSource.inverse;
+                    var handAlignment=currentTarget.rotation*Quaternion.Inverse(currentSource.rotation);
+                    Vector3 Goal(bool left)=>handMap.MultiplyPoint3x4((left?sourceLeft:sourceHand).position)
+                        +(handAlignment*(left?sourceLeft:sourceHand).rotation)*(left?leftCalibration:rightCalibration);
+                    // Offline contact retarget: translate the shared action frame only as far as
+                    // necessary to put both wrists within the full body's reachable workspace.
+                    // The weapon and both hands always move together; mechanisms retain their paths.
+                    var reachOffset=ReachOffset(target.animator,Goal(false),Goal(true));
+                    weaponRoot.position+=reachOffset;
+                    currentTarget=targetReceiver();handMap=currentTarget*currentSource.inverse;
                     for(int side=1;side>=0;side--)
                     {
                         bool left=side==0;var sourceWrist=left?sourceLeft:sourceHand;var start=left?sourceLeftIdle:sourceRightIdle;var finish=left?destinationLeftIdle:destinationRightIdle;var elbow=left?sourceLeftElbow:sourceElbow;
-                        var goal=desiredPosition+desiredRotation*(relativeFrame*Quaternion.Inverse(gun.transform.rotation)*(sourceWrist.position-gun.transform.position)*scale+(left?leftCalibration:rightCalibration));
-                        var pole=targetElbows[side]+alignment*(elbow.position-sourceElbows[side])*scale;
-                        var delta=alignment*sourceWrist.rotation*Quaternion.Inverse(start.rotation)*Quaternion.Inverse(alignment);
+                        var goal=Goal(left);
+                        var pole=(left?target.animator.GetBoneTransform(HumanBodyBones.LeftLowerArm):target.animator.GetBoneTransform(HumanBodyBones.RightLowerArm)).position+currentTarget.MultiplyVector(currentSource.inverse.MultiplyPoint3x4(elbow.position)-sourceElbowContacts[side]);
+                        var delta=handAlignment*sourceWrist.rotation*Quaternion.Inverse(start.rotation)*Quaternion.Inverse(alignment);
                         var arm=target.animator.GetBoneTransform(left?HumanBodyBones.LeftUpperArm:HumanBodyBones.RightUpperArm);var mid=target.animator.GetBoneTransform(left?HumanBodyBones.LeftLowerArm:HumanBodyBones.RightLowerArm);var hand=left?destinationLeft:destinationHand;
                         maxReach=Mathf.Max(maxReach,Solve(arm,mid,hand,goal,pole));hand.rotation=delta*finish.rotation;
 
@@ -438,10 +457,6 @@ public static class ArenaTpsAnimationAdapter
                     float weight=reload?Mathf.Clamp01(reloadBlend?.Evaluate(time*oldReload.length/duration)??Mathf.Min(Mathf.Clamp01(time/.1f),Mathf.Clamp01((duration-time)/.15f))):0;
 
 
-                    // Match the root frame to the authored equipped prefab's local placement.
-                    var rootRotation=desiredRotation*Quaternion.Inverse(weaponLocalRotation);
-                    var rootPosition=desiredPosition-rootRotation*Vector3.Scale(weaponRoot.lossyScale,weaponLocalPosition);
-                    weaponRoot.SetPositionAndRotation(rootPosition,rootRotation);
                     foreach(int index in muscleIndices)bodyTracks.Add(EditorCurveBinding.FloatCurve("",typeof(Animator),MuscleBinding(index)),time,sampledPose.muscles[index]);
                     // Human-mapped fingers must use muscle curves. Their Transform tracks
                     // are ignored by Humanoid evaluation; only the weighted fourth tips
@@ -474,9 +489,26 @@ public static class ArenaTpsAnimationAdapter
                 PrefabUtility.SaveAsPrefabAsset(prefab,prefabPath);
             }
             finally{PrefabUtility.UnloadPrefabContents(prefab);}
-            definition.name=Path.GetFileNameWithoutExtension(AssetDatabase.GetAssetPath(definition));EditorUtility.SetDirty(definition);AssetDatabase.SaveAssets();return new{id,humanMotion=output.All(c=>c.humanMotion),parts=partTracks,reachClamped=maxReach,handSurfaceRms=surfaceFit.Rms};
+            ArenaWeaponGripFrame.Save(gun.GetComponent<SoldierWeaponView>(),AssetDatabase.GetAssetPath(view));
+            ArenaWeaponGripFrame.Save(target.weapon,AssetDatabase.GetAssetPath(entry.thirdPersonPrefab));
+            definition.name=Path.GetFileNameWithoutExtension(AssetDatabase.GetAssetPath(definition));EditorUtility.SetDirty(definition);AssetDatabase.SaveAssets();return new{id,humanMotion=output.All(c=>c.humanMotion),parts=partTracks,unreachableHandDistance=maxReach,handSurfaceRms=surfaceFit.Rms};
         }
         finally{Object.DestroyImmediate(source);Object.DestroyImmediate(baselineDefinition);}
+    }
+    static Vector3 ReachOffset(Animator animator,Vector3 rightGoal,Vector3 leftGoal)
+    {
+        var offset=Vector3.zero;
+        for(int pass=0;pass<16;pass++)for(int side=0;side<2;side++)
+        {
+            bool left=side==0;
+            var arm=animator.GetBoneTransform(left?HumanBodyBones.LeftUpperArm:HumanBodyBones.RightUpperArm);
+            var elbow=animator.GetBoneTransform(left?HumanBodyBones.LeftLowerArm:HumanBodyBones.RightLowerArm);
+            var hand=animator.GetBoneTransform(left?HumanBodyBones.LeftHand:HumanBodyBones.RightHand);
+            float reach=Vector3.Distance(arm.position,elbow.position)+Vector3.Distance(elbow.position,hand.position)-.008f;
+            var delta=(left?leftGoal:rightGoal)+offset-arm.position;
+            if(delta.magnitude>reach)offset-=delta.normalized*(delta.magnitude-reach);
+        }
+        return offset;
     }
     static bool HasAuthoredHandAction(GameObject source,Transform gun,AnimationClip clip)
     {

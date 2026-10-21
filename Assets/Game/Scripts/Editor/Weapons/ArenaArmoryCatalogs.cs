@@ -9,8 +9,9 @@ public static class ArenaArmoryCatalogs
     public static ArenaWeaponCatalog.Entry[] ReviewEntries(WeaponAnimationConversionProof[] proofs)
     {
         var source=AssetDatabase.LoadAssetAtPath<ArenaWeaponCatalog>("Assets/Game/Definitions/Weapons/Catalogs/WeaponCatalog.asset");
-        var converted=proofs.Where(p=>p.originalProportions&&p.source.weapon!=p.converted.weapon&&!source.entries.Any(e=>e.weapon==p.source.weapon&&e.polished)).ToArray();
-        return converted.Select(p=>p.converted).Concat(source.entries.Where(e=>!e.polished&&!converted.Any(p=>p.source.weapon==e.weapon)))
+        var fitted=proofs.Where(p=>p.originalProportions&&p.source.weapon!=p.converted.weapon).ToArray();
+        var converted=fitted.Where(p=>!source.entries.Any(e=>e.polished&&(e.weapon==p.source.weapon||e.weapon==p.converted.weapon))).ToArray();
+        return converted.Select(p=>p.converted).Concat(source.entries.Where(e=>!e.polished&&!fitted.Any(p=>p.source.weapon==e.weapon)))
             .OrderBy(e=>e.weapon.displayName).ToArray();
     }
     [MenuItem("Tools/Arena Shooter/Refresh animation review catalog")]

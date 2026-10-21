@@ -23,16 +23,19 @@ public class SoldierWeaponPresentation : MonoBehaviour
     [Min(1)] public float simpleDetailDistance = 70f;
     [Min(0)] public float firingPoseHold = .35f;
 
-    int characterSwayLayer, weaponPoseLayer, weaponSwayLayer, weaponFireLayer, sprintBodyLayer, sprintArmsLayer, bodyFireLayer, bodyReloadLayer, bodyHitLayer;
+    int characterSwayLayer, weaponPoseLayer, weaponSwayLayer, weaponFireLayer, sprintBodyLayer, sprintArmsLayer, bodyFireLayer, bodyReloadLayer, bodyHitLayer, weaponSwitchLayer;
     static readonly int FireActionWeight = Animator.StringToHash("WeaponFireWeight");
     static readonly int FireState = Animator.StringToHash("Fire");
     static readonly int ReloadState = Animator.StringToHash("Reload");
     static readonly int HitState = Animator.StringToHash("HitReaction");
+    static readonly int EquipState = Animator.StringToHash("Equip");
+    static readonly int UnequipState = Animator.StringToHash("Unequip");
     static readonly int EmptyState = Animator.StringToHash("Empty");
 
     SoldierGrenades grenades;
     SoldierController soldier;
     float fullPoseUntil, cosmeticDetail = 1f, nextDetailRefresh;
+    float supportElbowHintWeight, firingElbowHintWeight;
     Rig aimRig;
     RigBuilder rigBuilder;
     RigLayer aimLayer;
@@ -43,6 +46,8 @@ public class SoldierWeaponPresentation : MonoBehaviour
         aimRig=chestAim.GetComponentInParent<Rig>(true);
         rigBuilder=characterAnimator.GetComponent<RigBuilder>();
         aimLayer=rigBuilder.layers.Find(layer=>layer.rig==aimRig);
+        supportElbowHintWeight = supportHand.data.hintWeight;
+        firingElbowHintWeight = firingHand.data.hintWeight;
         ApplyWeapon(weapon);
         actions.FireStarted += PlayFire;
         actions.ReloadStarted += PlayReload;
@@ -53,6 +58,10 @@ public class SoldierWeaponPresentation : MonoBehaviour
     {
         weapon = selectedWeapon;
         SoldierWeaponDefinition set = weapon.definition;
+        // Converted clips supply the elbow bend. Keep hand IK for grip contact,
+        // but do not pull that bend toward hints calibrated for the older poses.
+        SetElbowHintWeight(supportHand, set.thirdPersonAnimatedGrips ? 0f : supportElbowHintWeight);
+        SetElbowHintWeight(firingHand, set.thirdPersonAnimatedGrips ? 0f : firingElbowHintWeight);
         view.armsAnimator.runtimeAnimatorController = set.firstPerson;
         if (GetComponent<SoldierWeaponLoadout>().HasFirstPersonPresentation)
         {
@@ -71,15 +80,18 @@ public class SoldierWeaponPresentation : MonoBehaviour
         bodyFireLayer = characterAnimator.GetLayerIndex("Fire");
         bodyReloadLayer = characterAnimator.GetLayerIndex("Reload");
         bodyHitLayer = characterAnimator.GetLayerIndex("HitReaction");
+        weaponSwitchLayer = characterAnimator.GetLayerIndex("WeaponSwitch");
         if (set.thirdPersonAnimatedGrips)
         {
             if (bodyReloadLayer >= 0) characterAnimator.SetLayerWeight(bodyReloadLayer, 0f);
             if (bodyHitLayer >= 0) characterAnimator.SetLayerWeight(bodyHitLayer, 0f);
+            if (weaponSwitchLayer >= 0) characterAnimator.SetLayerWeight(weaponSwitchLayer, 0f);
             if (set.thirdPersonAuthoredFire && bodyFireLayer >= 0) characterAnimator.SetLayerWeight(bodyFireLayer, 0f);
         }
         if (set.thirdPersonAuthoredFire && bodyFireLayer >= 0)
         {
-            characterAnimator.SetFloat(FireActionWeight, 0f);
+            if (!characterAnimator.IsParameterControlledByCurve(FireActionWeight))
+                characterAnimator.SetFloat(FireActionWeight, 0f);
             characterAnimator.Play(EmptyState, bodyFireLayer, 0f);
         }
         sprintBodyLayer = characterAnimator.GetLayerIndex("SprintBody");
@@ -89,6 +101,13 @@ public class SoldierWeaponPresentation : MonoBehaviour
         fullPoseUntil = Time.time + firingPoseHold;
         nextDetailRefresh = 0f;
         UpdatePresentationQuality();
+    }
+
+    static void SetElbowHintWeight(TwoBoneIKConstraint constraint, float weight)
+    {
+        var data = constraint.data;
+        data.hintWeight = weight;
+        constraint.data = data;
     }
 
     void OnDestroy()
@@ -104,7 +123,7 @@ public class SoldierWeaponPresentation : MonoBehaviour
         float reloadWeight = characterAnimator.GetFloat("WeaponReloadWeight");
         float fireWeight = AuthoredFireWeight();
         if (fireWeight > 0f) fullPoseUntil = Time.time + firingPoseHold;
-        UpdateRigWeights(reloadWeight);
+        UpdateRigWeights(reloadWeight, fireWeight);
         UpdateMovementMotion();
         UpdateWeaponLayers(reloadWeight, fireWeight);
         UpdateWeaponPlacement(reloadWeight);
@@ -144,7 +163,7 @@ public class SoldierWeaponPresentation : MonoBehaviour
             characterAnimator.IsInTransition(layer) && characterAnimator.GetNextAnimatorStateInfo(layer).shortNameHash == state;
     }
 
-    void UpdateRigWeights(float weight)
+    void UpdateRigWeights(float weight, float fireWeight)
     {
         float throwing=grenades && grenades.IsThrowing?1f:0f;
         aimRig.weight=1f-throwing;
@@ -159,7 +178,9 @@ public class SoldierWeaponPresentation : MonoBehaviour
         sprint *= (1f - weight) * (1f - throwing);
         characterAnimator.SetLayerWeight(sprintBodyLayer, sprint);
         characterAnimator.SetLayerWeight(sprintArmsLayer, sprint);
-        chestAim.weight = (weapon.definition.thirdPersonAnimatedGrips ? 1f : 1f-weight) * (1f - sprint) * (1f - throwing);
+        // Reloads may own the torso. Bolt/pump cycling owns only the arms and hands,
+        // so aiming must keep its torso pose instead of snapping back to the action baseline.
+        chestAim.weight = (1f-weight) * (1f-sprint) * (1f-throwing);
         // Authored weapon actions animate the existing weapon-relative grip targets.
         // Keeping IK active makes the hand path follow the player's aiming frame.
         firingHand.weight = weapon.definition.thirdPersonAnimatedGrips ? (1f-sprint)*(1f-throwing) : chestAim.weight;
@@ -188,6 +209,8 @@ public class SoldierWeaponPresentation : MonoBehaviour
             // A Humanoid layer's empty state can still output default muscles.
             // Give it ownership only while its action is running or blending out.
             if (bodyReloadLayer >= 0) characterAnimator.SetLayerWeight(bodyReloadLayer, ActionActive(bodyReloadLayer, ReloadState) ? 1f : 0f);
+            if (weaponSwitchLayer >= 0) characterAnimator.SetLayerWeight(weaponSwitchLayer,
+                ActionActive(weaponSwitchLayer, EquipState) || ActionActive(weaponSwitchLayer, UnequipState) ? 1f : 0f);
             if (bodyHitLayer >= 0) characterAnimator.SetLayerWeight(bodyHitLayer, ActionActive(bodyHitLayer, HitState) ? 1f : 0f);
             if (weapon.definition.thirdPersonAuthoredFire && bodyFireLayer >= 0)
                 characterAnimator.SetLayerWeight(bodyFireLayer, ActionActive(bodyFireLayer, FireState) ? 1f : 0f);
@@ -206,8 +229,10 @@ public class SoldierWeaponPresentation : MonoBehaviour
         float aimBlend = view.PlacementAimBlend;
         Vector3 holdPosition = Vector3.Lerp(set.thirdPersonHipAimPosition,
             set.thirdPersonAimPosition, aimBlend);
-        // Fade to the authored reload pivot independently of the hold pose.
-        aimPivot.localPosition = Vector3.Lerp(holdPosition, set.thirdPersonReloadPosition, weight);
+        // Converted clips already contain the complete reload motion. Applying the
+        // legacy reload offset again pushes their calibrated hand targets out of reach.
+        aimPivot.localPosition = set.thirdPersonAnimatedGrips ? holdPosition
+            : Vector3.Lerp(holdPosition, set.thirdPersonReloadPosition, weight);
         // The rig aims this pivot after the current spine pose is evaluated,
         // before weapon following and hand IK. Reload uses its authored frame.
         aimPivot.localRotation = Quaternion.identity;
@@ -230,7 +255,8 @@ public class SoldierWeaponPresentation : MonoBehaviour
     void CancelReload()
     {
         characterAnimator.ResetTrigger("WeaponReload");
-        characterAnimator.SetFloat("WeaponReloadWeight", 0f);
+        if (!characterAnimator.IsParameterControlledByCurve("WeaponReloadWeight"))
+            characterAnimator.SetFloat("WeaponReloadWeight", 0f);
         characterAnimator.Play("Idle", weaponPoseLayer, 0f);
         partsAnimator.ResetTrigger("Reload");
         partsAnimator.Play("Idle", 0, 0f);

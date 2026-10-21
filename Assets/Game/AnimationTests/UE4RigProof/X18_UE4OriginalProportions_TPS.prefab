@@ -295,6 +295,7 @@ Transform:
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 3992943427588251040}
+  - {fileID: 2648920961191391842}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &4545713502039508530
@@ -325,6 +326,7 @@ MonoBehaviour:
   rearSight: {fileID: 1891367150087930519}
   frontSight: {fileID: 8789078757125447682}
   sightPlacementRoot: {fileID: 0}
+  gripFrame: {fileID: 2648920961191391842}
   attachments:
   - kind: 0
     socket: {fileID: 337777654914723286}
@@ -418,12 +420,12 @@ MonoBehaviour:
       scale: {x: 1, y: 1, z: 1}
   thirdPersonHands:
     leftGrip:
-      position: {x: -0.028352091, y: -0.094085544, z: -0.09457799}
-      rotation: {x: 0.52911544, y: -0.43850616, z: -0.62349916, w: -0.37282443}
+      position: {x: -0.016608085, y: -0.08605219, z: -0.015839877}
+      rotation: {x: 0.51987815, y: -0.42623755, z: -0.63602066, w: -0.3788482}
       scale: {x: 1, y: 1, z: 1}
     rightGrip:
-      position: {x: 0.035763, y: -0.0896514, z: -0.12693012}
-      rotation: {x: 0.5645177, y: -0.18355146, z: 0.6844174, w: 0.423322}
+      position: {x: 0.04609501, y: -0.07615024, z: -0.04749605}
+      rotation: {x: 0.57444656, y: -0.18768455, z: 0.67797965, w: 0.41848466}
       scale: {x: 1, y: 1, z: 1}
     leftElbow:
       position: {x: -0.21095397, y: -0.19182038, z: -0.101692855}
@@ -1239,6 +1241,37 @@ MonoBehaviour:
   builtInSightRenderers: []
   opticMountRenderers: []
   sideMountSights: []
+--- !u!1 &7214880038056123350
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 2648920961191391842}
+  m_Layer: 0
+  m_Name: GripFrame
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &2648920961191391842
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7214880038056123350}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0.000000014901163, y: -0.00000008940698, z: -0, w: 1}
+  m_LocalPosition: {x: 0.03366438, y: -0.017609948, z: 0.04170993}
+  m_LocalScale: {x: 0.9999999, y: 1.0000002, z: 0.99999994}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1749031307929999139}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &7249423778563331839
 GameObject:
   m_ObjectHideFlags: 0
