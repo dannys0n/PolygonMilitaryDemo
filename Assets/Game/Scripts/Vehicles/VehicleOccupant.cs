@@ -351,6 +351,7 @@ public class VehicleOccupant : MonoBehaviour
         seatPose = life.actions.animator.GetComponent<VehicleSeatPose>();
         if (!seatPose) seatPose = life.actions.animator.gameObject.AddComponent<VehicleSeatPose>();
         var seated = vehicle.seats[seat];
+        GetComponent<VehicleCrewAppearance>()?.Apply(vehicle, seated);
         if(vehicle.hasRenderedInterior && seated.showCharacter) seatPose.Begin(life.actions.animator, seated, seated.leftGrip, seated.rightGrip);
         var humanoidBones = new HashSet<Transform>();
         foreach(HumanBodyBones bone in System.Enum.GetValues(typeof(HumanBodyBones)))
@@ -437,6 +438,7 @@ public class VehicleOccupant : MonoBehaviour
         if (seat.role == Vehicle.SeatRole.Driver)
             vehicle.DriverInput = default;
         if (seatPose) seatPose.End();
+        GetComponent<VehicleCrewAppearance>()?.Restore();
         MountedVehicle = null;
         transform.SetParent(originalParent, true);
         transform.SetPositionAndRotation(position, Quaternion.Euler(0, vehicle.transform.eulerAngles.y, 0));
@@ -583,6 +585,7 @@ public class VehicleOccupant : MonoBehaviour
         var vehicle=MountedVehicle;
         var seat=vehicle.seats[index];
         seatPose.End();
+        GetComponent<VehicleCrewAppearance>()?.Apply(vehicle, seat);
         transform.SetParent(seat.anchor,false);transform.SetLocalPositionAndRotation(Vector3.zero,Quaternion.identity);
         if(vehicle.hasRenderedInterior && seat.showCharacter) seatPose.Begin(life.actions.animator, seat, seat.leftGrip, seat.rightGrip);
         else life.actions.animator.enabled=false;

@@ -72,6 +72,18 @@ public class SoldierFirstPersonBody : MonoBehaviour
                 }
         if (isActiveAndEnabled) Subscribe();
     }
+    // Appearance changes are infrequent; update the existing headless skins once.
+    public void RefreshAppearance()
+    {
+        foreach (var part in parts)
+        {
+            if (!part.fullBody || !part.firstPerson) continue;
+            part.firstPerson.sharedMesh = part.fullBody.sharedMesh;
+            part.firstPerson.sharedMaterials = part.fullBody.sharedMaterials;
+            part.firstPerson.localBounds = part.fullBody.localBounds;
+        }
+    }
+
     public void PrepareForVehicleSpectating()
     {
         if (!initialized) BuildParts();
