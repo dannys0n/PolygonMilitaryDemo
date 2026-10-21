@@ -43,6 +43,8 @@ public static class ArenaWeaponProportionComparisonBuilder
    // File stamps catch the change; refresh the dependency list when it actually changes.
    files=AssetDatabase.GetDependencies(profilePath,true).OrderBy(sourcePath=>sourcePath,StringComparer.Ordinal).ToArray();fingerprint=Fingerprint(files);
    var p=AssetDatabase.LoadAssetAtPath<WeaponAnimationConversionProof>(profilePath);
+   var productionPair=AssetDatabase.LoadAssetAtPath<WeaponAnimationConversionProof>(Root+"/OriginalProportions/"+p.converted.weapon.catalogId+"/Conversion.asset");
+   if(productionPair && productionPair.source.weapon==productionPair.converted.weapon)continue;
    var entry=p.converted;string folder=Path.GetDirectoryName(AssetDatabase.GetAssetPath(p)).Replace('\\','/');
    // Regenerate the shared motion wrapper without re-solving the accepted reload.
    AnimationClip Raw(string name)=>AssetDatabase.LoadAssetAtPath<AnimationClip>(folder+"/"+name+"_UE4.anim");
@@ -54,6 +56,8 @@ public static class ArenaWeaponProportionComparisonBuilder
    if(stamp==null){stamp=new PairStamp{path=profilePath};stamps.items.Add(stamp);}
    stamp.fingerprint=fingerprint;stamp.sourceFiles=files;stamp.output=output+"/Conversion.asset";
    var existingProof=AssetDatabase.LoadAssetAtPath<WeaponAnimationConversionProof>(output+"/Conversion.asset");
+   // Production assets are now authoritative; review rebuilding must not replace them.
+   if(existingProof && existingProof.source.weapon==existingProof.converted.weapon)continue;
    if(!regenerateMotion&&old!=null&&existingProof&&existingProof.comparisonFingerprint==fingerprint)continue;
    string label=Label(p)+" (Mesh Adjusted - Deprecated)";if(entry.weapon.displayName!=label){entry.weapon.displayName=label;EditorUtility.SetDirty(entry.weapon);}
    if(!AssetDatabase.IsValidFolder(output)){Directory.CreateDirectory(output);AssetDatabase.Refresh();}
@@ -73,7 +77,7 @@ public static class ArenaWeaponProportionComparisonBuilder
     var bones=fps.GetComponentsInChildren<Transform>(true).GroupBy(t=>t.name).ToDictionary(g=>g.Key,g=>g.First());
     skin.sharedMesh=original.sharedMesh;skin.sharedMaterials=original.sharedMaterials;skin.bones=original.bones.Select(b=>bones[b.name]).ToArray();skin.rootBone=bones[original.rootBone.name];
     }
-    var view=fps.GetComponent<SoldierWeaponView>();if(view.grenadeView)view.grenadeView=AssetDatabase.LoadAssetAtPath<AuthoredGrenadeView>("Assets/Game/AnimationTests/UE4RigProof/Grenade_UE4OriginalProportions_FPS.prefab");
+    var view=fps.GetComponent<SoldierWeaponView>();if(view.grenadeView)view.grenadeView=AssetDatabase.LoadAssetAtPath<AuthoredGrenadeView>("Assets/Game/Prefabs/Players/Visuals/ScaledGrenadeView.prefab");
     foreach(var weapon in fps.GetComponentsInChildren<SoldierWeapon>(true))weapon.definition=def;tps.GetComponent<SoldierWeapon>().definition=def;
     var fp=PrefabUtility.SaveAsPrefabAsset(fps,old!=null?AssetDatabase.GetAssetPath(old.firstPersonPrefab):output+"/FPS.prefab").GetComponent<SoldierWeaponView>();
     var tp=PrefabUtility.SaveAsPrefabAsset(tps,old!=null?AssetDatabase.GetAssetPath(old.thirdPersonPrefab):output+"/TPS.prefab").GetComponent<SoldierWeaponView>();

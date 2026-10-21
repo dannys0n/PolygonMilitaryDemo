@@ -10,7 +10,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: e1581f75ea1b1174bb590cd07a1ac30c, type: 3}
-  m_Name: SVD
+  m_Name: Weapon
   m_EditorClassIdentifier: Assembly-CSharp::SoldierWeaponDefinition
   catalogId: legacy-svd
   displayName: SVD
@@ -18,14 +18,15 @@ MonoBehaviour:
   isUtility: 0
   infiniteAmmunition: 0
   rocketProjectile: {fileID: 0}
+  useAuthoredReload: 1
   thrownExplosive: {fileID: 0}
   spreadDegrees: 0
   icon: {fileID: -3403326567130185808, guid: bcfd364c755d7574ebd6299143fc6d29, type: 3}
   firstPerson: {fileID: 22100000, guid: a68a159567cfc2e4cb326e616c33e83c, type: 2}
-  firstPersonParts: {fileID: 22100000, guid: 1800e2c6f6e512d4bb97d29a1872183b, type: 2}
+  firstPersonParts: {fileID: 9100000, guid: bb43fb69ecbcffd4299f1d193b2972f9, type: 2}
   thirdPerson: {fileID: 22100000, guid: a239c2773db821047a943abdd720b696, type: 2}
-  showFirstPersonHands: 1
-  reloadDuration: 4.5466666
+  showFirstPersonHands: 0
+  reloadDuration: 3.5000002
   magazineCapacity: 10
   startingReserveAmmo: 40
   damage: 70
@@ -38,8 +39,8 @@ MonoBehaviour:
   thirdPersonReloadPosition: {x: -0.23988478, y: -0.33304784, z: -0.16561978}
   builtInIronEyeDistance: 0.25
   viewOffset: {x: 0, y: 0, z: 0}
-  hipFireOffset: {x: 0, y: -0.05, z: 0.08}
-  aimOffset: {x: -0.020788347, y: -0.043, z: 0.05}
+  hipFireOffset: {x: 0, y: 0, z: 0}
+  aimOffset: {x: 0, y: 0, z: 0}
   viewRotationOffset: {x: 0, y: 0, z: 0}
   viewRotationPivot: {x: 0, y: 0, z: 0}
   hipFireRotationOffset: {x: 0, y: 0, z: 0}

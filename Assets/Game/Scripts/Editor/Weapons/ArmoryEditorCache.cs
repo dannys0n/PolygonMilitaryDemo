@@ -44,7 +44,7 @@ public static class ArmoryEditorCache
                     {
                         foreach(var loader in wall.gameObject.scene.GetRootGameObjects().SelectMany(r=>r.GetComponentsInChildren<ArmoryReviewLoadout>(true)))loader.library=cache;
                         var preview=wall.gameObject.scene.GetRootGameObjects().SelectMany(r=>r.GetComponentsInChildren<WeaponConversionPreview>(true)).FirstOrDefault();
-                        if(preview){var items=cache.items.Where(i=>i.kind==ArmoryDisplayCache.Kind.Weapon).ToArray();preview.proofPaths=items.Select(i=>i.proofPath).ToArray();preview.proofLabels=items.Select(i=>i.title).ToArray();}
+                        if(preview){var items=cache.items.Where(i=>i.kind==ArmoryDisplayCache.Kind.Weapon&&!string.IsNullOrEmpty(i.proofPath)).ToArray();preview.proofPaths=items.Select(i=>i.proofPath).ToArray();preview.proofLabels=items.Select(i=>i.title).ToArray();}
                     }
                 }
         }
@@ -157,11 +157,11 @@ public static class ArmoryEditorCache
         var loader=loadout.GetComponent<ArmoryReviewLoadout>();if(!loader)loader=loadout.gameObject.AddComponent<ArmoryReviewLoadout>();
         loader.library=cache;loader.loadout=loadout;loadout.slots=Array.Empty<SoldierWeaponLoadout.Slot>();loadout.selectedSlot=0;if(PrefabUtility.IsPartOfPrefabInstance(loadout))PrefabUtility.RecordPrefabInstancePropertyModifications(loadout);EditorUtility.SetDirty(loadout);EditorUtility.SetDirty(loader);
         var preview=roots.SelectMany(r=>r.GetComponentsInChildren<WeaponConversionPreview>(true)).Single();
-        var weapons=cache.items.Where(i=>i.kind==ArmoryDisplayCache.Kind.Weapon).ToArray();
+        var weapons=cache.items.Where(i=>i.kind==ArmoryDisplayCache.Kind.Weapon&&!string.IsNullOrEmpty(i.proofPath)).ToArray();
         preview.proofs=Array.Empty<WeaponAnimationConversionProof>();preview.proofPaths=weapons.Select(i=>i.proofPath).ToArray();preview.proofLabels=weapons.Select(i=>i.title).ToArray();
         EditorSceneManager.MarkSceneDirty(scene);
     }
     [MenuItem("Tools/Arena Shooter/Animation Tests/Refresh armory displays")]
     public static void RefreshOpen()
-    {LastRebuilt=LastChecked=0;foreach(var wall in Object.FindObjectsByType<ArmoryWall>(FindObjectsInactive.Include))Ensure(wall);Debug.Log("Armory cache: "+LastRebuilt+" changed displays rebuilt.");}
+    {ArenaArmoryCatalogs.Refresh();LastRebuilt=LastChecked=0;foreach(var wall in Object.FindObjectsByType<ArmoryWall>(FindObjectsInactive.Include))Ensure(wall);Debug.Log("Armory cache: "+LastRebuilt+" changed displays rebuilt.");}
 }

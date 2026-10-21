@@ -430,9 +430,9 @@ MonoBehaviour:
   - {fileID: 11400000, guid: aa7d65b2f0dbb3446bb064c28216adc4, type: 2}
   - {fileID: 11400000, guid: 2c04d93907919254f97c56ca25fae557, type: 2}
   - {fileID: 11400000, guid: 5afec82beb434b343b579a3e84704f98, type: 2}
-  referenceWeaponPosition: {x: 0.020788364, y: -0.013840865, z: 0.20903198}
-  referenceWeaponRotation: {x: 0, y: 0, z: 0, w: 1}
-  referenceWeaponScale: {x: 1.0000005, y: 1.0000002, z: 1.0000002}
+  referenceWeaponPosition: {x: 0.069629006, y: -0.055289626, z: 0.27759528}
+  referenceWeaponRotation: {x: -5.168191e-15, y: 1, z: -0.0000000782311, w: -0.00000006606312}
+  referenceWeaponScale: {x: 1, y: 1, z: 1}
   referenceCameraPosition: {x: 9.592327e-14, y: 0.00000023841858, z: 0.000000320524}
   referenceCameraRotation: {x: 0, y: 0, z: 0, w: 1}
 --- !u!114 &8419075021378431557
@@ -518,6 +518,11 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::SoldierWeaponView
   loadedProjectile: {fileID: 0}
   animator: {fileID: 3190631432597311227}
+  animationOverride: {fileID: 0}
+  sharedFirstPersonRig: {fileID: 0}
+  sharedWeaponMountPath: 
+  independentFirstPersonFrame: 0
+  grenadeView: {fileID: 0}
   mountName: SVD
   mountPosition: {x: 0, y: 0, z: 0}
   mountScale: {x: 1, y: 1, z: 1}
@@ -526,6 +531,7 @@ MonoBehaviour:
   opticMount: {fileID: 5664232863709718251}
   rearSight: {fileID: 2048173607437286353}
   frontSight: {fileID: 1637648796607134674}
+  sightPlacementRoot: {fileID: 0}
   attachments:
   - kind: 0
     socket: {fileID: 5196895292826319722}

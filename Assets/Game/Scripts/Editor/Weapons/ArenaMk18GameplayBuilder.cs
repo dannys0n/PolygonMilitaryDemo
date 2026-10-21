@@ -86,7 +86,29 @@ public static class ArenaMk18GameplayBuilder
  }
  public static void CalibrateSights(GameObject thirdPerson,SoldierWeaponView view)
  {
-  var sights=thirdPerson.GetComponent<SoldierWeaponSights>();var frame=Matrix4x4.TRS(view.mountPosition,view.mountRotation,view.mountScale)*view.transform.worldToLocalMatrix*view.sightPlacementRoot.localToWorldMatrix;
+  var sights=thirdPerson.GetComponent<SoldierWeaponSights>();
+  var frame=Matrix4x4.TRS(view.mountPosition,view.mountRotation,view.mountScale)*view.transform.worldToLocalMatrix*view.sightPlacementRoot.localToWorldMatrix;
+  if(view.sharedFirstPersonRig)
+  {
+   // The gun's mount TRS is relative to the shared rig, not FirstPersonView.
+   // Sample its neutral authored pose before saving the existing ADS solver's frame.
+   var rig=Object.Instantiate(view.sharedFirstPersonRig);
+   try
+   {
+    var shared=rig.GetComponent<SoldierSharedFirstPersonRig>();
+    rig.transform.SetLocalPositionAndRotation(shared.mountPosition,shared.mountRotation);rig.transform.localScale=shared.mountScale;
+    var mount=string.IsNullOrEmpty(view.sharedWeaponMountPath)?shared.weaponMount:rig.transform.Find(view.sharedWeaponMountPath);
+    if(!mount)throw new InvalidOperationException("Missing shared FPS weapon mount for "+view.name);
+    var weapon=Object.Instantiate(view,mount);weapon.name="SourceWeapon";
+    weapon.transform.SetLocalPositionAndRotation(view.mountPosition,view.mountRotation);weapon.transform.localScale=view.mountScale;
+    var idle=ArenaWeaponAnimationSource.State(view.animationOverride,"Base Layer","Idle");
+    if(!idle)throw new InvalidOperationException("Missing neutral FPS pose for "+view.name);
+    idle.SampleAnimation(rig,0);
+    var root=weapon.sightPlacementRoot?weapon.sightPlacementRoot:weapon.transform;
+    frame=Matrix4x4.TRS(shared.mountPosition,shared.mountRotation,shared.mountScale)*rig.transform.worldToLocalMatrix*root.localToWorldMatrix;
+   }
+   finally{Object.DestroyImmediate(rig);}
+  }
   sights.referenceWeaponPosition=frame.GetColumn(3);sights.referenceWeaponRotation=frame.rotation;sights.referenceWeaponScale=frame.lossyScale;
  }
 }

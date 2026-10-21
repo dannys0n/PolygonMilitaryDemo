@@ -13,7 +13,7 @@ using Object = UnityEngine.Object;
 public static class ArenaSharedWeaponRigBuilder
 {
     public const string Folder = "Assets/Game/AnimationTests/UE4RigProof/Shared";
-    public const string ScaledRigPath = Folder + "/ScaledFPSRig.prefab";
+    public const string ScaledRigPath = "Assets/Game/Prefabs/Players/Visuals/ScaledFPSRig.prefab";
     public const string AdjustedRigPath = Folder + "/MeshAdjustedFPSRig.prefab";
 
     public sealed class Report

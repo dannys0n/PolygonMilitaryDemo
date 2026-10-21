@@ -15,7 +15,7 @@ public static class ArenaPolygonWeaponConversionBuilder
  public static object Build(string id,bool rebuildReload=true)
  {
   if(EditorApplication.isPlayingOrWillChangePlaymode||EditorApplication.isCompiling||EditorUtility.scriptCompilationFailed)throw new InvalidOperationException("Use Edit Mode after compilation completes.");
-  var entry=Source(id);string folder=Folder(id);Directory.CreateDirectory(folder);AssetDatabase.Refresh();
+  var entry=Source(id);if(entry.firstPersonPrefab.sharedFirstPersonRig)throw new InvalidOperationException("This weapon is already promoted. Edit its production prefab and definition directly.");string folder=Folder(id);Directory.CreateDirectory(folder);AssetDatabase.Refresh();
   using var evaluated=new ArenaMk18PoseFit.Source(entry);var source=evaluated.animator.gameObject;
   var arms=Clone(AssetDatabase.LoadAssetAtPath<GameObject>("Assets/FPSAnimationPack/Meshes/Characters/FPS_Arms_UE4/SK_Arms_Mono.fbx"));var fps=new GameObject(entry.weapon.displayName+"_Polygon_UE4_FPS");Avatar sourceAvatar=null,targetAvatar=null;
   try
@@ -81,14 +81,14 @@ public static class ArenaPolygonWeaponConversionBuilder
   if(EditorApplication.isPlayingOrWillChangePlaymode)throw new Exception("Use Edit Mode");
   var proofs=AssetDatabase.FindAssets("t:WeaponAnimationConversionProof",new[]{Root}).Select(AssetDatabase.GUIDToAssetPath).Select(AssetDatabase.LoadAssetAtPath<WeaponAnimationConversionProof>).OrderBy(p=>p.converted.weapon.displayName).ToArray();
   if(proofs.Any(p=>!p||(!p.thirdPersonProof&&!(p.sharedBodyPrefab&&p.sharedBodyWeaponPrefab))))throw new Exception("Finish all conversions first");
-  BuildReview(proofs.Where(p=>p.originalProportions).ToArray(),"Assets/Game/AnimationTests/UE4RigProof/OriginalProportionsCatalog.asset",ScaledReviewScene);
+  BuildReview(proofs.Where(p=>p.originalProportions && p.source.weapon!=p.converted.weapon).ToArray(),"Assets/Game/AnimationTests/UE4RigProof/OriginalProportionsCatalog.asset",ScaledReviewScene);
   AssetDatabase.SaveAssets();return new{scaled=proofs.Count(p=>p.originalProportions),scene=ScaledReviewScene};
  }
  static void BuildReview(WeaponAnimationConversionProof[] proofs,string catalogPath,string scenePath)
  {
   var catalog=AssetDatabase.LoadAssetAtPath<ArenaWeaponCatalog>(catalogPath);
   if(!catalog){catalog=ScriptableObject.CreateInstance<ArenaWeaponCatalog>();AssetDatabase.CreateAsset(catalog,catalogPath);}
-  catalog.entries=proofs.Select(p=>p.converted).ToArray();EditorUtility.SetDirty(catalog);
+  catalog.entries=ArenaArmoryCatalogs.ReviewEntries(proofs);EditorUtility.SetDirty(catalog);
   var scene=EditorSceneManager.OpenScene(scenePath);
   foreach(var wall in Object.FindObjectsByType<ArmoryWall>()){wall.catalog=catalog;EditorUtility.SetDirty(wall);}
   foreach(var binding in Object.FindObjectsByType<SoldierWeaponCatalogBinding>())

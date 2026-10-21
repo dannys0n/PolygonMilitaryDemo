@@ -19,7 +19,7 @@ public static class ArenaUe4RigProofBuilder
     const string Id = "ue4-rig-proof-mg5";
     const string IdPrefix = "ue4-rig-proof-";
     public const string PreviewRigPath = Root + "/PolygonArms_UE4.prefab";
-    public const string OriginalPreviewRigPath = Root + "/PolygonArms_UE4OriginalProportions.prefab";
+    public const string OriginalPreviewRigPath = "Assets/Game/Models/Characters/ScaledSoldier/ArmsRig.prefab";
     static ArenaUe4RigProofBuilder() => FpsPackPreviewCatalog.AdditionalModels += PreviewModels;
 
     static T Save<T>(T asset, string path) where T : Object
@@ -237,7 +237,7 @@ public static class ArenaUe4RigProofBuilder
         result.RecalculateNormals(); result.RecalculateTangents(); result.RecalculateBounds();
         Directory.CreateDirectory("Library/AnimationTests");
         File.WriteAllText("Library/AnimationTests/" + (originalProportions ? "Ue4OriginalProportions.txt" : "Ue4RigFit.txt"), $"Uniform scale: {fittedScale:F6}\nTemplate: left Polygon arm\nMirrored vertex pairs: {count}\nMirrored skin weights: exact\nOriginal proportions: {originalProportions}\nFinger surface-fit pairs: {contactVertices}\n");
-        return Save(result, Root + "/" + meshName + ".asset");
+        return Save(result, originalProportions ? "Assets/Game/Models/Characters/ScaledSoldier/Arms.asset" : Root + "/" + meshName + ".asset");
     }
 
     static void ReplaceArms(GameObject root, Mesh mesh, SkinnedMeshRenderer polygon)
@@ -312,7 +312,7 @@ public static class ArenaUe4RigProofBuilder
                 finally { Object.DestroyImmediate(art); }
             }).ToArray();
             clip.SampleAnimation(grenade, 0);
-            return PrefabUtility.SaveAsPrefabAsset(grenade, Root + "/" + grenade.name + ".prefab").GetComponent<AuthoredGrenadeView>();
+            return PrefabUtility.SaveAsPrefabAsset(grenade, originalProportions ? "Assets/Game/Prefabs/Players/Visuals/ScaledGrenadeView.prefab" : Root + "/" + grenade.name + ".prefab").GetComponent<AuthoredGrenadeView>();
         }
         finally { Object.DestroyImmediate(grenade); }
     }
