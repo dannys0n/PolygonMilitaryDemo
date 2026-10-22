@@ -12,7 +12,8 @@ public class ArmoryController : MonoBehaviour
     public SoldierHitscan shooting;
     public SoldierHealth health;
     public TMP_Text status, equipment;
-    public CanvasGroup crosshair;
+    public CanvasGroup crosshair, hitMarker;
+    float hitUntil;
     public ArmoryWall wall;
     [NonSerialized] public ArmoryTarget[] targets;
     readonly Dictionary<int,List<WeaponAttachmentDefinition>> selections = new();
@@ -36,6 +37,7 @@ public class ArmoryController : MonoBehaviour
         loadout.ResetAmmunition();
         loadout.ConfigureAvailableSlots(Enumerable.Range(0,loadout.slots.Length).ToArray());
         shooting.ShotInteraction += Interact;
+        CombatEvents.DamageConfirmed += OnDamageConfirmed;
         status.text = "Shoot a weapon to equip it. Shoot an attachment again to remove it.";
     }
 
@@ -54,9 +56,15 @@ public class ArmoryController : MonoBehaviour
         return false;
     }
 
+    void OnDamageConfirmed(CombatEvents.ConfirmedDamage hit)
+    {
+        if(hit.attacker==loadout.gameObject && hit.target!=loadout.gameObject)hitUntil=Time.time+.18f;
+    }
+
     void LateUpdate()
     {
         crosshair.alpha=1f-loadout.presentation.view.AimBlend;
+        if(hitMarker)hitMarker.alpha=Mathf.Clamp01((hitUntil-Time.time)/.18f);
         if(!Input.GetMouseButton(0))heldTarget=null;
         // Present the outgoing shot before switching equipment or replacing attachments.
         if(pending && !loadout.IsSwitching)
@@ -137,6 +145,7 @@ public class ArmoryController : MonoBehaviour
     void OnDestroy()
     {
         shooting.ShotInteraction-=Interact;
+        CombatEvents.DamageConfirmed-=OnDamageConfirmed;
         health.DamageFilter=null;
         foreach(var definition in runtimeDefinitions)Destroy(definition);
     }

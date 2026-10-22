@@ -3,6 +3,8 @@ using UnityEngine;
 public class SoldierHealth : MonoBehaviour
 {
     [Min(1f)] public float maxHealth = 200f;
+    [Tooltip("Accept damage and feedback without losing health, for practice targets.")]
+    public bool infiniteHealth;
     public float CurrentHealth { get; private set; }
     public bool IsDead => CurrentHealth <= 0f;
     // The accepted hit retains its firing system even after the shooter switches seats or weapons.
@@ -23,9 +25,9 @@ public class SoldierHealth : MonoBehaviour
         if (DamageFilter != null && !DamageFilter(source)) return false;
         LastDamageIcon = weaponIcon;
         float previous=CurrentHealth;
-        CurrentHealth = Mathf.Max(0f, CurrentHealth - amount);
+        if (!infiniteHealth) CurrentHealth = Mathf.Max(0f, CurrentHealth - amount);
         bool died = IsDead;
-        CombatEvents.ConfirmDamage(source,gameObject,previous-CurrentHealth,died);
+        CombatEvents.ConfirmDamage(source,gameObject,infiniteHealth?amount:previous-CurrentHealth,died);
         Damaged?.Invoke(amount, source);
         if(damageOrigin.HasValue) DirectionalDamage?.Invoke(amount, damageOrigin.Value);
         else if(source && source != gameObject && !source.transform.IsChildOf(transform))
