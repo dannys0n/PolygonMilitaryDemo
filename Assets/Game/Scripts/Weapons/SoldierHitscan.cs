@@ -33,9 +33,8 @@ public class SoldierHitscan : MonoBehaviour
     }
 
     // The shot resolver accepts an authoritative world-space aim without needing a camera.
-    public ShotResult Fire(SoldierWeaponDefinition weapon, Transform muzzle, Ray aim, Vector3 up, Vector3 inheritedVelocity)
+    public ShotResult Fire(SoldierWeaponDefinition weapon, Transform muzzle, Ray aim, Vector3 up, Vector3 inheritedVelocity, float hipSpreadDegrees = 0f)
     {
-        Quaternion orientation=Quaternion.LookRotation(aim.direction,up);
         if (ShotInteraction != null)
             foreach (System.Func<Ray, bool> handler in ShotInteraction.GetInvocationList())
                 if (handler(aim))
@@ -44,6 +43,9 @@ public class SoldierHitscan : MonoBehaviour
                     ShotResolved?.Invoke(interaction);
                     return interaction;
                 }
+        if (!weapon.UsesSpread)
+            aim.direction = SpreadDirection(aim.direction, up, weapon.spreadDegrees + hipSpreadDegrees);
+        var orientation = Quaternion.LookRotation(aim.direction, up);
         if(weapon.rocketProjectile)
         {
             Vector3 target=ClosestHit(aim,weapon.range,out var hit)?hit.point:aim.GetPoint(weapon.range);
@@ -59,15 +61,10 @@ public class SoldierHitscan : MonoBehaviour
             var shot=new ShotResult{origin=muzzle.position,point=aim.GetPoint(weapon.range)};ShotResolved?.Invoke(shot);return shot;
         }
         showShotVisual=BulletTracer.ShowVisual(++visualShot,weapon.roundsPerMinute);
-        return weapon.UsesSpread ? FireSpread(weapon, muzzle, aim) : FireBullet(weapon, muzzle, aim, orientation);
+        return weapon.UsesSpread ? FireSpread(weapon, muzzle, aim, Mathf.Max(weapon.spreadDegrees, hipSpreadDegrees)) : FireBullet(weapon, muzzle, aim);
     }
-    ShotResult FireBullet(SoldierWeaponDefinition weapon, Transform muzzle, Ray cameraRay, Quaternion orientation)
+    ShotResult FireBullet(SoldierWeaponDefinition weapon, Transform muzzle, Ray cameraRay)
     {
-        if(weapon.spreadDegrees>0)
-        {
-            Vector2 spread=Random.insideUnitCircle*Mathf.Tan(weapon.spreadDegrees*Mathf.Deg2Rad);
-            cameraRay.direction=(cameraRay.direction+orientation*Vector3.right*spread.x+orientation*Vector3.up*spread.y).normalized;
-        }
         Vector3 point = cameraRay.GetPoint(weapon.range);
         if (ClosestHit(cameraRay, weapon.range, out RaycastHit aimHit)) point = aimHit.point;
 
@@ -90,6 +87,15 @@ public class SoldierHitscan : MonoBehaviour
         return Finish(result, weapon);
     }
 
+    // Uniform sampling over the aiming disk; angle is its cone half-angle.
+    public static Vector3 SpreadDirection(Vector3 direction, Vector3 up, float degrees)
+    {
+        if (degrees <= 0f) return direction.normalized;
+        var basis = Quaternion.LookRotation(direction, up);
+        Vector2 disk = Random.insideUnitCircle * Mathf.Tan(degrees * Mathf.Deg2Rad);
+        return (direction.normalized + basis * new Vector3(disk.x, disk.y, 0f)).normalized;
+    }
+
     struct SpreadHit
     {
         public SoldierHealth health;
@@ -100,7 +106,7 @@ public class SoldierHitscan : MonoBehaviour
     }
     readonly Dictionary<GameObject, SpreadHit> spreadHits = new Dictionary<GameObject, SpreadHit>();
 
-    ShotResult FireSpread(SoldierWeaponDefinition weapon, Transform muzzle, Ray aim)
+    ShotResult FireSpread(SoldierWeaponDefinition weapon, Transform muzzle, Ray aim, float coneDegrees)
     {
         var result = new ShotResult { origin = muzzle.position, point = aim.GetPoint(weapon.range) };
         if (TryMuzzleBlock(result.origin, out var cover, out var coverPoint))
@@ -112,7 +118,7 @@ public class SoldierHitscan : MonoBehaviour
         { result.collider = centerHit.collider; result.point = centerHit.point; }
 
         spreadHits.Clear();
-        float slope = Mathf.Tan(weapon.spreadDegrees * Mathf.Deg2Rad);
+        float slope = Mathf.Tan(coneDegrees * Mathf.Deg2Rad);
         float halfRange = weapon.range * .5f;
         // One broadphase query encloses the cone; the actual hit test is its radius at target depth.
         float radius = Mathf.Sqrt(halfRange * halfRange + weapon.range * weapon.range * slope * slope);

@@ -21,6 +21,14 @@ public class SoldierWeaponDefinition : ScriptableObject
     [Tooltip("Half-angle of the shotgun spread cone. Damage is a single radius check per target, not individual pellet traces.")]
     [Range(0,20)] public float spreadDegrees;
     public bool UsesSpread => category == WeaponCategory.Shotgun && spreadDegrees > 0f;
+    [Header("Hip-fire accuracy")]
+    [Tooltip("Resting hip-fire cone half-angle in degrees. ADS retains the existing aimed accuracy.")]
+    [Range(0f, 12f)] public float hipFireSpreadDegrees = 2.5f;
+    [Min(0f)] public float hipBloomPerShot = .72f;
+    [Min(0f)] public float maximumHipBloom = 1.92f;
+    [Min(0f)] public float hipBloomRecoveryDelay = .055f;
+    [Min(.01f)] public float hipBloomRecoveryTime = .16f;
+    public bool UsesLauncherCrosshair => category == WeaponCategory.Launcher || rocketProjectile || thrownExplosive;
     [Header("UI")]
     public Sprite icon;
     public enum SprintStyle { Regular, Tactical }

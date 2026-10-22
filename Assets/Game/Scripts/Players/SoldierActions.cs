@@ -23,6 +23,25 @@ public class SoldierActions : MonoBehaviour
     private SoldierWeaponDefinition reloadDefinition;
     private float reloadEndTime, reloadDuration;
     private bool reloadEquipStarted;
+    SoldierWeaponDefinition spreadWeapon;
+    float hipBloom, recoverHipBloomAt;
+
+    public float HipSpreadAt(float now)
+    {
+        if (!loadout || loadout.slots.Length == 0) return 0f;
+        var definition = loadout.slots[loadout.selectedSlot].definition;
+        if (spreadWeapon != definition) { spreadWeapon = definition; hipBloom = 0f; }
+        float baseSpread = definition.UsesSpread ? definition.spreadDegrees : definition.hipFireSpreadDegrees;
+        return baseSpread + RecoveredHipBloom(definition, now);
+    }
+    float RecoveredHipBloom(SoldierWeaponDefinition definition, float now)
+        => hipBloom * Mathf.Exp(-Mathf.Max(0f, now - recoverHipBloomAt) / Mathf.Max(.01f, definition.hipBloomRecoveryTime));
+    void RecordHipShot(SoldierWeaponDefinition definition, float now, bool aiming)
+    {
+        hipBloom = aiming ? 0f : Mathf.Min(definition.maximumHipBloom,
+            RecoveredHipBloom(definition, now) + definition.hipBloomPerShot);
+        recoverHipBloomAt = now + definition.hipBloomRecoveryDelay;
+    }
     public bool IsSwapReload => IsReloading && reloadDefinition.UsesSwapReload;
     public bool ReloadHasRound => IsSwapReload && reloadEquipStarted;
     public bool IsReloading { get; private set; }
@@ -37,6 +56,7 @@ public class SoldierActions : MonoBehaviour
     // Gameplay clock can be supplied by the simulation owner; UI/animation stay frame driven.
     public void Tick(float now)
     {
+        if (firstPersonView && firstPersonView.WantsToAim) hipBloom = 0f;
         if (!IsReloading) return;
         if (IsSwapReload && !reloadEquipStarted && now >= reloadEndTime-reloadDefinition.equipDuration)
         {
@@ -61,7 +81,12 @@ public class SoldierActions : MonoBehaviour
     {
         if (!CanFire || aim.direction.sqrMagnitude<.000001f) return false;
         if (!loadout.EquippedState.TryConsumeRound(now, loadout.EquippedWeapon.definition)) return false;
-        shooting.Fire(loadout.EquippedWeapon.definition,loadout.EquippedMuzzle,aim,up,movement.Velocity);
+        var definition = loadout.EquippedWeapon.definition;
+        bool aiming = firstPersonView && firstPersonView.WantsToAim;
+        float hipSpread = HipSpreadAt(now);
+        shooting.Fire(definition,loadout.EquippedMuzzle,aim,up,movement.Velocity,
+            aiming ? 0f : hipSpread);
+        RecordHipShot(definition, now, aiming);
         loadout.RefreshLoadedProjectiles();
         ShotFired?.Invoke();
         PresentFire();
@@ -110,6 +135,7 @@ public class SoldierActions : MonoBehaviour
     // Reset pending actions before death, despawn, or a later respawn reset.
     public void CancelActions()
     {
+        hipBloom = 0f; spreadWeapon = null;
         if(launchers)launchers.Unequip();
         if(grenades)grenades.CancelThrow();
         CancelReload();

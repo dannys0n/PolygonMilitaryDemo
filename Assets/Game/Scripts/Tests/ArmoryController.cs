@@ -36,6 +36,8 @@ public class ArmoryController : MonoBehaviour
         }
         loadout.ResetAmmunition();
         loadout.ConfigureAvailableSlots(Enumerable.Range(0,loadout.slots.Length).ToArray());
+        var reticle = crosshair.GetComponent<WeaponCrosshair>();
+        if (reticle) reticle.actor = loadout.GetComponent<SoldierLife>();
         shooting.ShotInteraction += Interact;
         CombatEvents.DamageConfirmed += OnDamageConfirmed;
         status.text = "Shoot a weapon to equip it. Shoot an attachment again to remove it.";

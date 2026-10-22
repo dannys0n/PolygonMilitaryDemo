@@ -27,13 +27,6 @@ public class GameplayHud : MonoBehaviour
     public RectTransform crosshairRoot;
     public UnityEngine.UI.Graphic[] crosshairSegments;
     public UnityEngine.UI.Image[] spreadCrosshairSegments;
-    public float crosshairSmoothing = 8f;
-    public float minimumCrosshairScale = .15f;
-    [Header("Crosshair shot bloom")]
-    public float shotExpansion = 5f;
-    public float maximumShotExpansion = 20f;
-    public float shotRecoveryDelay = .055f;
-    public float shotRecoveryTime = .16f;
     [Header("Hit and kill feedback")]
     public float hitMarkerDuration = .24f;
     public float killSkullDuration = 5f;
@@ -47,9 +40,9 @@ public class GameplayHud : MonoBehaviour
     readonly List<(string attacker, string victim, Sprite weapon, float expires)> kills = new List<(string,string,Sprite,float)>();
     readonly List<float> skullExpires = new List<float>();
     readonly List<RectTransform> radarDots = new List<RectTransform>();
-    float crosshairScale = 1f, hitUntil, medalUntil, nextRefresh, lastKill = -100f;
-    float shotSpread, recoverSpreadAt, killHitUntil;
-    Vector2[] crosshairRestPositions, spreadRestPositions;
+    float hitUntil, medalUntil, nextRefresh, lastKill = -100f;
+    float killHitUntil;
+    WeaponCrosshair weaponCrosshair;
     int streak, multiKill;
     string accentHex;
     AISpectator localSpectator;
@@ -77,8 +70,8 @@ public class GameplayHud : MonoBehaviour
         damageDirection.rectTransform.anchorMin=damageDirection.rectTransform.anchorMax=new Vector2(.5f,.5f);
         damageDirection.rectTransform.sizeDelta=new Vector2(600,600);
         damageDirection.hud=this;
-        crosshairRestPositions = crosshairSegments.Select(s => s.rectTransform.anchoredPosition).ToArray();
-        spreadRestPositions = spreadCrosshairSegments.Select(s => s.rectTransform.anchoredPosition).ToArray();
+        weaponCrosshair = WeaponCrosshair.Attach(crosshairRoot, crosshairSegments, spreadCrosshairSegments);
+        weaponCrosshair.actor = player.player;
     }
     void OnEnable()
     {
@@ -88,8 +81,6 @@ public class GameplayHud : MonoBehaviour
     }
     void SubscribePlayer()
     {
-        player.player.actions.FireStarted += OnFire;
-
         player.player.Respawned += OnRespawn;
     }
     void OnDisable()
@@ -102,7 +93,6 @@ public class GameplayHud : MonoBehaviour
     {
         // The character can be destroyed before this separate HUD root during scene unload.
         if (!player || !player.player) return;
-        player.player.actions.FireStarted -= OnFire;
 
         player.player.Respawned -= OnRespawn;
     }
@@ -112,26 +102,11 @@ public class GameplayHud : MonoBehaviour
         bool listening = isActiveAndEnabled;
         if (listening) UnsubscribePlayer();
         player = character;
+        if (weaponCrosshair) weaponCrosshair.actor = character.player;
         OnRespawn(); hitUntil = medalUntil = killHitUntil = 0f; lastKill = -100f; nextRefresh = 0f;
         if (listening) SubscribePlayer();
     }
-    void OnRespawn() { streak = multiKill = 0; shotSpread = 0f; skullExpires.Clear(); medalUntil = 0f; }
-    void OnFire()
-    {
-        if (player.player.view.WantsToAim) return;
-        shotSpread = Mathf.Min(maximumShotExpansion, shotSpread + shotExpansion);
-        recoverSpreadAt = Time.time + shotRecoveryDelay;
-        PositionCrosshair();
-    }
-    void PositionCrosshair()
-    {
-        for (int i = 0; i < crosshairSegments.Length; i++)
-            crosshairSegments[i].rectTransform.anchoredPosition = crosshairRestPositions[i]
-                + crosshairRestPositions[i].normalized * shotSpread;
-        for (int i = 0; i < spreadCrosshairSegments.Length; i++)
-            spreadCrosshairSegments[i].rectTransform.anchoredPosition = spreadRestPositions[i]
-                + spreadRestPositions[i].normalized * shotSpread;
-    }
+    void OnRespawn() { streak = multiKill = 0; skullExpires.Clear(); medalUntil = 0f; }
     void ResetFeedback() { kills.Clear(); medalUntil = hitUntil = killHitUntil = 0f; lastKill = -100f; OnRespawn(); }
     void OnConfirmedDamage(CombatEvents.ConfirmedDamage hit)
     {
@@ -168,18 +143,6 @@ public class GameplayHud : MonoBehaviour
         var life = player.player;
         var grenades=life.GetComponent<SoldierGrenades>();
         var flashColor=flashOverlay.color;flashColor.a=grenades.FlashAlpha;flashOverlay.color=flashColor;
-        // Preserve the original ADS shrink; the renderer snaps strokes to screen pixels.
-        bool visible = !player.health.IsDead && !life.view.WantsToAim
-            && !life.movement.IsRunning && !life.loadout.IsSwitching;
-        crosshairScale = Mathf.Lerp(crosshairScale, visible ? 1f : 0f, 1f - Mathf.Exp(-Time.deltaTime * crosshairSmoothing));
-        crosshairRoot.localScale = Vector3.one * crosshairScale;
-        if (life.view.WantsToAim) shotSpread = 0f;
-        else if (Time.time >= recoverSpreadAt)
-            shotSpread = Mathf.Lerp(shotSpread, 0f, 1f - Mathf.Exp(-Time.deltaTime / Mathf.Max(.01f, shotRecoveryTime)));
-        PositionCrosshair();
-        bool spread = life.loadout.EquippedWeapon.definition.UsesSpread;
-        foreach (var segment in crosshairSegments) segment.enabled = !spread && crosshairScale > minimumCrosshairScale;
-        foreach (var segment in spreadCrosshairSegments) segment.enabled = spread && crosshairScale > minimumCrosshairScale;
         crosshair.alpha = 1f;
         hitMarker.alpha = Time.time < hitUntil ? 1f : 0f;
         medalGroup.alpha = 1f;
