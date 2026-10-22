@@ -12,6 +12,12 @@ public class GrenadeProjectile : MonoBehaviour
         foreach(var collider in source.GetComponentsInChildren<Collider>(true))ProjectilePool.IgnoreCollision(this,GetComponent<Collider>(),collider);
         Invoke(nameof(Detonate),data.fuse);
     }
+    void OnCollisionEnter(Collision collision)
+    {
+        if(collision.contactCount==0)return;
+        var contact=collision.GetContact(0);
+        SurfaceImpact.Report(collision.collider,contact.point,contact.normal);
+    }
     void Detonate()
     {
         GetComponent<Collider>().enabled=false;

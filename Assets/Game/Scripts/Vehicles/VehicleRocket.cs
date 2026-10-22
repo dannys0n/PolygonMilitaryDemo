@@ -113,7 +113,7 @@ public class VehicleRocket : MonoBehaviour
         }
         if (found)
         {
-            Explode(nearest.point,nearest.normal);
+            Impact(nearest.collider,nearest.point,nearest.normal);
             return;
         }
         previous = body.position;
@@ -123,7 +123,7 @@ public class VehicleRocket : MonoBehaviour
         if (body && !IgnoreHit(collision.collider) && collision.contactCount > 0)
         {
             var contact=collision.GetContact(0);
-            Explode(contact.point,contact.normal);
+            Impact(collision.collider,contact.point,contact.normal);
         }
     }
     void OnTriggerEnter(Collider collider)
@@ -140,11 +140,17 @@ public class VehicleRocket : MonoBehaviour
             && collider.Raycast(new Ray(previous,travel.normalized),out var hit,travel.magnitude+.05f))
         {point=hit.point;normal=hit.normal;}
         if(normal.sqrMagnitude<.0001f)normal=-body.linearVelocity;
-        Explode(point,normal.sqrMagnitude>.0001f?normal.normalized:Vector3.up);
+        Impact(collider,point,normal.sqrMagnitude>.0001f?normal.normalized:Vector3.up);
     }
     bool IgnoreHit(Collider collider)
     {
         return collider.transform.IsChildOf(transform) || (owner && collider.transform.IsChildOf(owner));
+    }
+    void Impact(Collider surface,Vector3 point,Vector3 normal)
+    {
+        if(exploded)return;
+        SurfaceImpact.Report(surface,point,normal);
+        Explode(point,normal);
     }
     void Explode(Vector3 point,Vector3 normal)
     {

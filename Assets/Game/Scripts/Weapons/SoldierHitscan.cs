@@ -21,6 +21,7 @@ public class SoldierHitscan : MonoBehaviour
     {
         public Vector3 origin;
         public Vector3 point;
+        public Vector3 normal;
         public Collider collider;
         public bool damaged;
         public bool killed;
@@ -70,9 +71,9 @@ public class SoldierHitscan : MonoBehaviour
 
         Vector3 origin = muzzle.position;
         var result = new ShotResult { origin = origin, point = point };
-        if (TryMuzzleBlock(origin, out var cover, out var coverPoint))
+        if (TryMuzzleBlock(origin, out var cover, out var coverPoint, out var coverNormal))
         {
-            result.collider = cover; result.point = coverPoint;
+            result.collider = cover; result.point = coverPoint; result.normal = coverNormal;
             return Finish(result, weapon);
         }
 
@@ -83,6 +84,7 @@ public class SoldierHitscan : MonoBehaviour
         {
             result.collider = hit.collider;
             result.point = hit.point;
+            result.normal = hit.normal;
         }
         return Finish(result, weapon);
     }
@@ -109,13 +111,13 @@ public class SoldierHitscan : MonoBehaviour
     ShotResult FireSpread(SoldierWeaponDefinition weapon, Transform muzzle, Ray aim, float coneDegrees)
     {
         var result = new ShotResult { origin = muzzle.position, point = aim.GetPoint(weapon.range) };
-        if (TryMuzzleBlock(result.origin, out var cover, out var coverPoint))
+        if (TryMuzzleBlock(result.origin, out var cover, out var coverPoint, out var coverNormal))
         {
-            result.collider = cover; result.point = coverPoint;
+            result.collider = cover; result.point = coverPoint; result.normal = coverNormal;
             return Publish(result);
         }
         if (ClosestHit(aim, weapon.range, out var centerHit))
-        { result.collider = centerHit.collider; result.point = centerHit.point; }
+        { result.collider = centerHit.collider; result.point = centerHit.point; result.normal = centerHit.normal; }
 
         spreadHits.Clear();
         float slope = Mathf.Tan(coneDegrees * Mathf.Deg2Rad);
@@ -169,7 +171,7 @@ public class SoldierHitscan : MonoBehaviour
         return vehicle && vehicle.gameObject == owner;
     }
 
-    bool TryMuzzleBlock(Vector3 origin, out Collider cover, out Vector3 point)
+    bool TryMuzzleBlock(Vector3 origin, out Collider cover, out Vector3 point, out Vector3 normal)
     {
         int count=CombatQueries.OverlapSphere(origin,muzzleClearance,
             ProjectileCollision.WithoutProjectiles(hitLayers),QueryTriggerInteraction.Collide,ref overlapHits);
@@ -183,14 +185,15 @@ public class SoldierHitscan : MonoBehaviour
                 // cannot supply ClosestPoint; use the muzzle for impact feedback.
                 point = collider is MeshCollider mesh && !mesh.convex
                     ? origin : collider.ClosestPoint(origin);
+                normal = (origin - point).normalized;
                 return true;
             }
         }
         Vector3 firingOrigin = transform.position + Vector3.up * GetComponent<SoldierPhysicsBody>().height * .75f;
         Vector3 toMuzzle = origin - firingOrigin;
         if (ClosestHit(new Ray(firingOrigin, toMuzzle), toMuzzle.magnitude, out var hit))
-        { cover = hit.collider; point = hit.point; return true; }
-        cover = null; point = default; return false;
+        { cover = hit.collider; point = hit.point; normal = hit.normal; return true; }
+        cover = null; point = default; normal = default; return false;
     }
 
     ShotResult Finish(ShotResult result, SoldierWeaponDefinition weapon)
@@ -211,6 +214,7 @@ public class SoldierHitscan : MonoBehaviour
 
     ShotResult Publish(ShotResult result)
     {
+        SurfaceImpact.Report(result.collider,result.point,result.normal);
         if(showShotVisual && !GetComponent<SoldierController>().IsLocallyControlled)
         {
             var loadout=GetComponent<SoldierWeaponLoadout>();
