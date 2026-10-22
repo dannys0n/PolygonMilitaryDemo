@@ -14,7 +14,20 @@ public class SoldierLife : MonoBehaviour
     public event System.Action Respawned;
     public event System.Action Respawning;
     VehicleOccupant vehicleOccupant;
-    void Awake()=>vehicleOccupant=GetComponent<VehicleOccupant>();
+    public const float HumanHealth = 300f;
+    public const float AIHealth = 150f;
+    void Awake()
+    {
+        vehicleOccupant=GetComponent<VehicleOccupant>();
+        ResetInfantryHealth();
+    }
+    void ResetInfantryHealth()
+    {
+        var input=GetComponent<SoldierController>();
+        if(input && input.inputSource)
+            health.maxHealth=input.inputSource is SoldierLocalInput?HumanHealth:AIHealth;
+        health.ResetHealth();
+    }
 
     void OnEnable()
     {
@@ -68,7 +81,7 @@ public class SoldierLife : MonoBehaviour
         look.ResetLook();
         loadout.ResetAmmunition();
         view.CancelReload();
-        health.ResetHealth();
+        ResetInfantryHealth();
         controller.enabled = true;
         SetGameplayAllowed(true);
         Respawned?.Invoke();
