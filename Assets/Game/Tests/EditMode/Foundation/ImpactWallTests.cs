@@ -35,6 +35,27 @@ public class ImpactWallTests
         finally{Object.DestroyImmediate(go);}
     }
     [Test]
+    public void ShootingResetClearsEveryMarkAndReusesTheMesh()
+    {
+        var wallObject=new GameObject("Clear wall test");wallObject.SetActive(false);
+        var resetObject=new GameObject("Reset plate test");
+        try
+        {
+            var wall=wallObject.AddComponent<ArmoryImpactWall>();wall.maximumMarks=4;wallObject.SetActive(true);
+            wall.ReceiveImpact(Vector3.zero,Vector3.forward);wall.ReceiveImpact(Vector3.right,Vector3.forward);
+            var mesh=wallObject.GetComponentInChildren<MeshFilter>().sharedMesh;
+            var receiver=resetObject.AddComponent<ArmoryImpactReset>();receiver.wall=wall;
+            SurfaceImpact.Report(resetObject.AddComponent<BoxCollider>(),Vector3.zero,Vector3.forward);
+            Assert.That(wallObject.GetComponentInChildren<MeshRenderer>().enabled,Is.False);
+            foreach(var color in mesh.colors32)Assert.That(color.a,Is.Zero);
+            wall.ReceiveImpact(Vector3.up,Vector3.forward);
+            Assert.That(wallObject.GetComponentInChildren<MeshFilter>().sharedMesh,Is.SameAs(mesh));
+            int visible=0;foreach(var color in mesh.colors32)if(color.a>0)visible++;
+            Assert.That(visible,Is.EqualTo(4));
+        }
+        finally{Object.DestroyImmediate(resetObject);Object.DestroyImmediate(wallObject);}
+    }
+    [Test]
     public void OrdinarySurfacesDoNotNeedImpactReceivers()
     {
         var go=new GameObject("Ordinary surface");

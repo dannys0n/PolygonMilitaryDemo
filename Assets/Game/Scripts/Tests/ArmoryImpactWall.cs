@@ -51,6 +51,14 @@ public sealed class ArmoryImpactWall : MonoBehaviour, ISurfaceImpactReceiver
         created[next]=Time.time;next=(next+1)%created.Length;count=Mathf.Min(count+1,created.Length);
         marks.vertices=vertices;marks.colors32=colors;marks.RecalculateBounds();markerRenderer.enabled=true;
     }
+    public void ClearMarks()
+    {
+        next = count = 0;
+        if (!marks) return;
+        System.Array.Clear(colors, 0, colors.Length);
+        marks.colors32 = colors;
+        markerRenderer.enabled = false;
+    }
     public float Opacity(float age) => Mathf.Clamp01(1f-Mathf.Max(0f,age-holdDuration)/Mathf.Max(.1f,fadeDuration));
     void Update()
     {
