@@ -2,7 +2,7 @@ using UnityEngine;
 
 public class SoldierHealth : MonoBehaviour
 {
-    [Min(1f)] public float maxHealth = 150f;
+    [Min(1f)] public float maxHealth = 200f;
     public float CurrentHealth { get; private set; }
     public bool IsDead => CurrentHealth <= 0f;
     // The accepted hit retains its firing system even after the shooter switches seats or weapons.
