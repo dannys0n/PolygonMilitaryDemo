@@ -79,7 +79,7 @@ public class ConquestRules : ArenaMatchRules
     public override bool TryChooseSpawn(ArenaParticipant actor, Dictionary<Transform,float> history, out Transform spawn)
     {
         spawn=null;
-        if(HasEnded || actor.RespawnRemaining>0 || actor.NeedsClassSelection || NeedsDeployment(actor) && !approved.Contains(actor))return false;
+        if(HasEnded || actor.RespawnRemaining>0 || NeedsDeployment(actor) && !approved.Contains(actor))return false;
         // Dedicated crews return to HQ near vehicle pads instead of repeatedly
         // deploying into the middle of infantry flag fights.
         if(squads && squads.IsVehicleSquad(actor) && actor.GetComponent<ArenaVehicleAI>()

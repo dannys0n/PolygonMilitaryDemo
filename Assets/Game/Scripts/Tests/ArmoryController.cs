@@ -4,7 +4,7 @@ using System.Linq;
 using UnityEngine;
 using TMPro;
 
-// Scene-only equipment sandbox: selection does not edit saved classes or definitions.
+// Scene-only equipment sandbox: selection does not edit saved definitions.
 [DefaultExecutionOrder(100)]
 public class ArmoryController : MonoBehaviour
 {

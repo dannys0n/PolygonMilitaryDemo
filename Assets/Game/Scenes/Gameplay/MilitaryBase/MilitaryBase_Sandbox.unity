@@ -27989,7 +27989,7 @@ GameObject:
   - component: {fileID: 148970309}
   - component: {fileID: 148970308}
   m_Layer: 0
-  m_Name: Current class
+  m_Name: Deployment equipment
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -28015,7 +28015,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: CLASS
+  m_text: RANDOM EQUIPMENT
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 0b65c99348f068b49bef5db0bb76a6e4, type: 2}
   m_sharedMaterial: {fileID: 2100000, guid: 3d3f0dd4e9160b242b848a52491e4bd9, type: 2}
@@ -136466,12 +136466,11 @@ MonoBehaviour:
   participant: {fileID: 1303078716}
   input: {fileID: 1303078717}
   pause: {fileID: 8143868062870770226}
-  classMenu: {fileID: 0}
   spectator: {fileID: 118423078}
   panel: {fileID: 880383083}
   baseButton: {fileID: 1822807326}
   deployButton: {fileID: 1774859014}
-  classButton: {fileID: 942627523}
+  returnButton: {fileID: 942627523}
   flagButtons:
   - {fileID: 1177020338}
   - {fileID: 1046221873}
@@ -136481,7 +136480,7 @@ MonoBehaviour:
   - {fileID: 967758810}
   - {fileID: 1467906858}
   status: {fileID: 1109703010}
-  className: {fileID: 148970308}
+  equipmentLabel: {fileID: 148970308}
 --- !u!114 &724522004
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -172040,7 +172039,7 @@ GameObject:
   - component: {fileID: 942627523}
   - component: {fileID: 942627524}
   m_Layer: 0
-  m_Name: Change class
+  m_Name: Return to battle
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -185759,7 +185758,6 @@ MonoBehaviour:
   match: {fileID: 1015117810}
   vehicleAgentType: -334000983
   allowAIHelicopters: 1
-  autoSelectLocalClass: 0
   landingZones:
   - {fileID: 0}
   - {fileID: 0}
@@ -451287,7 +451285,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: fd56653bc9369a1408156bc881dc0baa, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ArenaPauseMenu
-  classMenu: {fileID: 0}
   menuFont: {fileID: 11400000, guid: 0b65c99348f068b49bef5db0bb76a6e4, type: 2}
   normalText: {fileID: 2100000, guid: 0408e7d6f97ccdd47ae0036cc1088d50, type: 2}
   selectedText: {fileID: 2100000, guid: 8cf014b61b53768448107a5239386636, type: 2}

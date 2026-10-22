@@ -59,7 +59,7 @@ public sealed class CombinedArmsTestScenario : MonoBehaviour
         {
             var actor=actors[i];int side=(int)actor.team,index=i%count;
             var point=accuracyTest?new Vector3(side==0?-12:12,.15f,index*8):new Vector3((index%4-1.5f)*4,.2f,(side==0?-1:1)*(62+index/4*4));
-            actor.SelectClass(match.settings.classes[0]);actor.Respawn(point,Quaternion.Euler(0,accuracyTest?(side==0?90:-90):(side==0?0:180),0));
+            actor.Respawn(point,Quaternion.Euler(0,accuracyTest?(side==0?90:-90):(side==0?0:180),0));
             var ai=actor.GetComponent<ArenaAIInput>();ai.enabled=true;ai.HoldMovement=false;
             actor.GetComponent<SoldierController>().SetControl(ai, SoldierControlRole.AI, false);
             var drive=actor.GetComponent<ArenaVehicleAI>();drive.enabled=!accuracyTest;

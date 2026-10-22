@@ -121,7 +121,7 @@ public sealed class AIBehaviorTestScenario : MonoBehaviour
         if(!match.IsRunning)match.BeginMatch();
         if(!ArenaSpawnSelection.TryFindPosition(match,actor,position,out var validPosition))
         {RemovePlayer(actor);status="No valid nearby spawn position; remove a player or select another vehicle.";yield break;}
-        actor.SelectClass(match.settings.classes[0]);actor.Respawn(validPosition,Vehicle.transform.rotation);
+        actor.Respawn(validPosition,Vehicle.transform.rotation);
         actor.GetComponent<ArenaAIInput>().enabled=true;actor.GetComponent<ArenaVehicleAI>().enabled=true;
         pendingPlayers.Remove(actor);ApplyTransportOrder(actor);Running=true;
     }
@@ -208,7 +208,7 @@ public sealed class AIBehaviorTestScenario : MonoBehaviour
     {
         ResetWorld();for(int i=0;i<4;i++)Spawn(new Vector3(i%2==0?-10:10,.2f,(i/2)*5),i);
         population.SetActive(true);yield return null;match.BeginMatch();
-        for(int i=0;i<Actors.Count;i++){var a=Actors[i];a.team=i%2==0?ArenaParticipant.Team.Red:ArenaParticipant.Team.Blue;a.SelectClass(match.settings.classes[0]);a.Respawn(new Vector3(i%2==0?-10:10,.2f,(i/2)*5),Quaternion.Euler(0,i%2==0?90:-90,0));var ai=a.GetComponent<ArenaAIInput>();ai.enabled=true;a.GetComponent<SoldierController>().SetControl(ai, SoldierControlRole.AI, false);}
+        for(int i=0;i<Actors.Count;i++){var a=Actors[i];a.team=i%2==0?ArenaParticipant.Team.Red:ArenaParticipant.Team.Blue;a.Respawn(new Vector3(i%2==0?-10:10,.2f,(i/2)*5),Quaternion.Euler(0,i%2==0?90:-90,0));var ai=a.GetComponent<ArenaAIInput>();ai.enabled=true;a.GetComponent<SoldierController>().SetControl(ai, SoldierControlRole.AI, false);}
         Running=true;status="Two versus two: production perception, bursts, damage, death and ragdolls.";
     }
     public void StartVehicleCombat()=>StartCoroutine(VehicleCombat());

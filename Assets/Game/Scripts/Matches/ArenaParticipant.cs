@@ -11,27 +11,6 @@ public class ArenaParticipant : MonoBehaviour
     public SoldierLife player;
     [Tooltip("Optional in a scene with one ArenaMatch; assigned automatically for newly added actors.")]
     public ArenaMatch match;
-    public ArenaClassDefinition SelectedClass { get; private set; }
-    public ArenaClassDefinition ActiveClass { get; private set; }
-    Vector3 openingPosition;
-    Quaternion openingRotation;
-    bool waitingForClass;
-    public bool NeedsClassSelection => IsHumanControlled && !SelectedClass
-        && !(match && match.rules is SandboxConquestRules);
-    public void SelectClass(ArenaClassDefinition choice)
-    {
-        if (!choice.isCustom && System.Array.IndexOf(match.settings.classes, choice) < 0)
-            throw new System.ArgumentException("Class is not allowed by this match.");
-        choice.ResolveSlots(player.loadout);
-        var previous = SelectedClass;
-        SelectedClass = choice.isCustom ? Instantiate(choice) : choice;
-        if (previous && previous.isCustom) Destroy(previous);
-        if (waitingForClass && match.IsRunning && (!match.rules || !match.rules.NeedsDeployment(this)))
-        {
-            waitingForClass = false;
-            Respawn(openingPosition, openingRotation);
-        }
-    }
     public int Kills { get; internal set; }
     public int Deaths { get; internal set; }
     public int Captures { get; internal set; }
@@ -101,44 +80,16 @@ public class ArenaParticipant : MonoBehaviour
     public void Respawn(Vector3 position, Quaternion rotation)
     {
         if (IsSpectator) return;
-        var randomEquipment = match.GetComponent<ArenaRandomLoadouts>();
-        if (player && randomEquipment) randomEquipment.Apply(this);
-        else if (player && match.settings.randomizeAIClassOnRespawn && GetComponent<ArenaAIInput>())
-            SelectClass(match.settings.classes[Random.Range(0, match.settings.classes.Length)]);
-        if (player && !SelectedClass)
-        {
-            if (NeedsClassSelection)
-            {
-                openingPosition = position; openingRotation = rotation;
-                waitingForClass = true; IsAwaitingSpawn = true;
-                player.SetGameplayAllowed(false);
-                if (match.rules && match.rules.NeedsDeployment(this))
-                {
-                    // Keep the waiting camera at the opening base, not the prefab's old position.
-                    player.controller.enabled = false;
-                    transform.SetPositionAndRotation(position, rotation);
-                    player.look.ResetLook();
-                    player.controller.enabled = true;
-                }
-                return;
-            }
-            SelectClass(match.settings.classes[Random.Range(0, match.settings.classes.Length)]);
-        }
-        waitingForClass = false;
         CancelRespawn();
         LastShotTime = float.NegativeInfinity;
         IsAwaitingSpawn = false;
         if (player)
         {
-            int[] slots = SelectedClass.ResolveSlots(player.loadout);
-            ActiveClass = SelectedClass;
             player.SetGameplayAllowed(false);
-            player.loadout.ConfigureAvailableSlots(slots);
-            player.loadout.SetClassSights(SelectedClass.primarySight, SelectedClass.secondarySight);
-            player.loadout.SetClassAttachments(SelectedClass.primaryAttachments,SelectedClass.secondaryAttachments);
+            var equipment=match.GetComponent<ArenaRandomLoadouts>();
+            if(!equipment)equipment=match.gameObject.AddComponent<ArenaRandomLoadouts>();
+            equipment.Apply(this);
             player.Respawn(position, rotation);
-            var utilities=GetComponent<SoldierUtilitySlots>();if(utilities)utilities.Configure(SelectedClass.utilities);
-            GetComponent<SoldierGrenades>().SelectType(SelectedClass.grenadeIndex);
         }
         else
         {

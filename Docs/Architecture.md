@@ -6,6 +6,7 @@ The offline sandbox is the common starting point for separate NGO and AtlasNet b
 
 - Gameplay map: `Assets/Game/Scenes/Gameplay/MilitaryBase/MilitaryBase_Sandbox.unity`.
 - Equipment: `Assets/Game/Definitions/Weapons/Catalogs/WeaponCatalog.asset`. Polished flags drive sandbox availability. IDs and Unity GUIDs must remain stable; display names may change.
+- `ArenaRandomLoadouts` equips a random primary, pistol, compatible sights/attachments and grenade on every respawn. Utility slots retain the player prefab defaults. Its spawn policy and the shared catalog code live in `Scripts/Matches/Equipment`.
 - Shared character rigs and equipped weapon views stay under the existing game prefab/model folders. Source animation imports remain authoring inputs, not duplicate gameplay implementations.
 
 ## Boundaries

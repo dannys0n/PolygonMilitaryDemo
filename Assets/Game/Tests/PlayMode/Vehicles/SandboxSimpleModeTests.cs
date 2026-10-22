@@ -267,11 +267,11 @@ public class SandboxSimpleModeTests
             var input=actor.GetComponent(T("SandboxInfantryInput"));
             Assert.AreEqual(4f,Get(input,"aimSettleTime"));Assert.AreEqual(1f,Get(input,"reactionTime"));Assert.AreEqual(2,Get(input,"burstRounds"));
             if((bool)Get(actor,"IsAwaitingSpawn"))continue; // Local player now chooses deployment before receiving equipment.
-            var choice = Get(actor, "SelectedClass"); Assert.NotNull(choice);
-            foreach (string weapon in new[] { "primary", "secondary" })
-                Assert.IsTrue((bool)Get(Call(catalog, "Find", Get(choice, weapon)), "polished"));
             var loadout = Get(Get(actor, "player"), "loadout");
-            Assert.DoesNotThrow(() => Call(choice, "ResolveSlots", loadout), "Random scopes and attachments must be compatible with their weapon.");
+            var slots=(Array)Get(loadout,"slots");
+            var selected=(int[])Get(loadout,"AvailableSlots");Assert.AreEqual(2,selected.Length);
+            foreach(int index in selected)
+                Assert.IsTrue((bool)Get(Call(catalog,"Find",Get(slots.GetValue(index),"definition")),"polished"));
         }
         var first = (Component)Get(infantry[0], "participant");
         var otherZone = infantry.First(i => Get(i, "objective") != Get(infantry[0], "objective"));
@@ -280,7 +280,7 @@ public class SandboxSimpleModeTests
         Assert.IsFalse((bool)Call(infantry[0], "Eligible", airCrew), "Infantry must ignore aircraft crews.");
         Assert.IsFalse((bool)Call(rules, "CanDamage", first, airCrew), "Air combat must not damage the isolated ground battles.");
     }
-    [UnityTest] public IEnumerator PlayerDeploymentReplacesClassSelectionAndSupportsFlagsVehiclesAndPause()
+    [UnityTest] public IEnumerator PlayerDeploymentSupportsFlagsVehiclesAndPause()
     {
         yield return Load();
         yield return null;
@@ -288,9 +288,6 @@ public class SandboxSimpleModeTests
         var actor=(Component)Get(menu,"participant");
         Assert.IsTrue((bool)Get(menu,"IsVisible"));
         Assert.IsTrue((bool)Get(actor,"IsAwaitingSpawn"));
-        Assert.IsFalse((bool)Get(actor,"NeedsClassSelection"));
-        Assert.IsNull(Get(menu,"classMenu"), "Sandbox deployment must not depend on a hidden class selector.");
-        Assert.AreEqual(0, All("ArenaClassMenu").Length);
         Assert.NotNull(Get(Get(menu,"pause"),"normalText"));
         Assert.NotNull(Get(Get(menu,"pause"),"menuFont"));
         var initialPause=Get(menu,"pause");
@@ -311,7 +308,7 @@ public class SandboxSimpleModeTests
             Assert.IsFalse((bool)Get(actor,"IsAwaitingSpawn"));
             Assert.IsFalse((bool)Get(menu,"IsVisible"));
             Assert.AreEqual(point,Get(actor.GetComponent(T("SandboxInfantryInput")),"objective"));
-            Assert.NotNull(Get(actor,"SelectedClass"));
+            Assert.AreEqual(2,((int[])Get(Get(Get(actor,"player"),"loadout"),"AvailableSlots")).Length);
         }
         var pause=Get(menu,"pause");Call(pause,"Pause");
         ((UnityEngine.UI.Button)Get(pause,"deploymentButton")).onClick.Invoke();

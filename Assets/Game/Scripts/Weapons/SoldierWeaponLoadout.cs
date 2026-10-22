@@ -268,8 +268,8 @@ public class SoldierWeaponLoadout : MonoBehaviour
     public bool TryCycleSight(){if(!CanChangeSight)return false;EquippedSights.Cycle();slots[selectedSlot].selectedSight=EquippedSights.SelectedSight;slots[selectedSlot].alternateSight=false;return true;}
     public void SetSight(WeaponSightDefinition sight){EquippedSights.SetSight(sight);slots[selectedSlot].selectedSight=EquippedSights.SelectedSight;slots[selectedSlot].alternateSight=EquippedSights.AlternateSightActive;}
     public void SetAttachments(WeaponAttachmentDefinition[] attachments){slots[selectedSlot].selectedAttachments=(WeaponAttachmentDefinition[])attachments.Clone();EquippedAttachments.Apply(attachments,presentation.view);}
-    public void SetClassSights(WeaponSightDefinition primary,WeaponSightDefinition secondary){for(int i=0;i<AvailableSlots.Length;i++){var slot=slots[AvailableSlots[i]];var selected=i==0?primary:secondary;slot.selectedSight=selected?selected:slot.thirdPersonPrefab.GetComponent<SoldierWeaponSights>().BareSight;slot.alternateSight=false;}ApplySelections();}
-    public void SetClassAttachments(WeaponAttachmentDefinition[] primary,WeaponAttachmentDefinition[] secondary){for(int i=0;i<AvailableSlots.Length;i++)slots[AvailableSlots[i]].selectedAttachments=(WeaponAttachmentDefinition[])(i==0?primary:secondary).Clone();ApplySelections();}
+    public void SetSpawnSights(WeaponSightDefinition primary,WeaponSightDefinition secondary){for(int i=0;i<AvailableSlots.Length;i++){var slot=slots[AvailableSlots[i]];var selected=i==0?primary:secondary;slot.selectedSight=selected?selected:slot.thirdPersonPrefab.GetComponent<SoldierWeaponSights>().BareSight;slot.alternateSight=false;}ApplySelections();}
+    public void SetSpawnAttachments(WeaponAttachmentDefinition[] primary,WeaponAttachmentDefinition[] secondary){for(int i=0;i<AvailableSlots.Length;i++)slots[AvailableSlots[i]].selectedAttachments=(WeaponAttachmentDefinition[])(i==0?primary:secondary).Clone();ApplySelections();}
     public void SetEquippedVisible(bool visible)
     {
         equippedVisible=visible;

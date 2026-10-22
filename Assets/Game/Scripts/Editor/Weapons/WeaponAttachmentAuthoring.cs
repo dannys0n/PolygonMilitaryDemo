@@ -87,8 +87,6 @@ public static class WeaponAttachmentAuthoring
             }
         }
         EditorUtility.SetDirty(catalog);
-        var menu=AssetDatabase.LoadAssetAtPath<ArenaClassMenuCatalog>(ClassMenuPreviewBuilder.CatalogAsset);
-        if(menu){menu.RefreshWeaponFacts();EditorUtility.SetDirty(menu);}
         AssetDatabase.SaveAssets();
         return count;
     }

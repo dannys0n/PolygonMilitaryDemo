@@ -10,18 +10,18 @@ public class ConquestDeploymentMenu : MonoBehaviour
     public ArenaParticipant participant;
     public SoldierLocalInput input;
     public ArenaPauseMenu pause;
-    public ArenaClassMenu classMenu;
-    public Material NormalText => pause.normalText ? pause.normalText : classMenu ? classMenu.normalText : null;
-    public Material SelectedText => pause.selectedText ? pause.selectedText : classMenu ? classMenu.selectedText : null;
-    bool ClassMenuVisible => classMenu && classMenu.IsVisible;
+    public Material NormalText => pause.normalText;
+    public Material SelectedText => pause.selectedText;
     public ArenaAISpectator spectator;
     public GameObject panel;
-    public Button baseButton, deployButton, classButton;
+    public Button baseButton, deployButton;
+    [UnityEngine.Serialization.FormerlySerializedAs("classButton")] public Button returnButton;
     public Button[] flagButtons;
     public Button[] squadButtons=System.Array.Empty<Button>();
     readonly System.Collections.Generic.List<ArenaParticipant> squadMembers=new System.Collections.Generic.List<ArenaParticipant>();
     ArenaParticipant selectedMember;
-    public TMP_Text status, className;
+    public TMP_Text status;
+    [UnityEngine.Serialization.FormerlySerializedAs("className")] public TMP_Text equipmentLabel;
     ConquestCapturePoint selected;
     bool visible, requested, previousInputBlocked, previousSpectatorBlocked, restoreOnRestart;
     float nextAttempt;
@@ -81,13 +81,7 @@ public class ConquestDeploymentMenu : MonoBehaviour
             });
         }
         deployButton.onClick.AddListener(RequestDeployment);
-        classButton.onClick.AddListener(()=>
-        {
-            if(IsSandbox){CloseTacticalMap();return;}
-            requested=false;rules.CancelDeployment(participant);
-            // Hand input ownership back before the class menu takes it.
-            SetVisible(false);if(classMenu)classMenu.Open();
-        });
+        returnButton.onClick.AddListener(()=>CloseTacticalMap());
     }
     static void StyleLocation(Button button)
     {
@@ -115,7 +109,7 @@ public class ConquestDeploymentMenu : MonoBehaviour
     {
         bool waiting=participant.health.IsDead || participant.IsAwaitingSpawn;
         if(!waiting && !redeploying)requested=false;
-        bool unobstructed=participant.match.IsRunning && !pause.IsPaused && !ClassMenuVisible;
+        bool unobstructed=participant.match.IsRunning && !pause.IsPaused;
         if(Input.GetKeyDown(KeyCode.M) && unobstructed && !waiting)
         {
             tacticalMap=!tacticalMap;
@@ -123,17 +117,17 @@ public class ConquestDeploymentMenu : MonoBehaviour
         }
         if(waiting || !unobstructed)tacticalMap=false;
         bool show=rules.NeedsDeployment(participant) && (!spectator || !spectator.IsWatchingDeath)
-            && !participant.IsSpectator && participant.match.IsRunning && waiting && !participant.NeedsClassSelection && !pause.IsPaused && !ClassMenuVisible;
+            && !participant.IsSpectator && participant.match.IsRunning && waiting && !pause.IsPaused;
         show|=tacticalMap || redeploying && unobstructed;
         SetVisible(show);
         if(!show)return;
         deployButton.gameObject.SetActive(!tacticalMap);
-        classButton.gameObject.SetActive(!tacticalMap && (!IsSandbox || redeploying));
-        if(IsSandbox)classButton.GetComponentInChildren<TMP_Text>().text="RETURN TO BATTLE";
+        returnButton.gameObject.SetActive(!tacticalMap && redeploying);
+        returnButton.GetComponentInChildren<TMP_Text>().text="RETURN TO BATTLE";
         if(!tacticalMap && (!rules.CanDeploy(participant,selected) || selectedMember && !rules.squads.CanDeploy(participant,selectedMember)))Select(null);
         Cursor.lockState=CursorLockMode.None;Cursor.visible=true;
         var sandbox=rules as SandboxConquestRules;
-        className.text=IsSandbox ? selected?"INFANTRY / RANDOM POLISHED EQUIPMENT":sandbox.SelectedVehicle?sandbox.SelectedVehicle.displayName.ToUpperInvariant():"SELECT AN HQ VEHICLE" : participant.SelectedClass?participant.SelectedClass.displayName:"";
+        equipmentLabel.text=IsSandbox ? selected?"INFANTRY / RANDOM POLISHED EQUIPMENT":sandbox.SelectedVehicle?sandbox.SelectedVehicle.displayName.ToUpperInvariant():"SELECT AN HQ VEHICLE" : "RANDOM EQUIPMENT";
         baseButton.GetComponentInChildren<TMP_Text>().text=(selected || selectedMember?"":"> ")+"HQ";
         for(int i=0;i<flagButtons.Length;i++)
         {
@@ -155,7 +149,7 @@ public class ConquestDeploymentMenu : MonoBehaviour
             button.interactable=tacticalMap || reason=="";
             button.GetComponentInChildren<TMP_Text>().text=(selectedMember==member?"> ":"")+member.name.ToUpperInvariant()+(reason==""?"": " / "+reason);
         }
-        if(rules.squads)className.text+="  /  "+ConquestSquads.SquadName(rules.squads.SquadOf(participant));
+        if(rules.squads)equipmentLabel.text+="  /  "+ConquestSquads.SquadName(rules.squads.SquadOf(participant));
         bool ready=participant.RespawnRemaining<=0;
         deployButton.interactable=ready && !requested && (!sandbox || selected || sandbox.SelectedVehicle);
         if(!tacticalMap && deployButton.interactable && Input.GetKeyDown(KeyCode.Space))RequestDeployment();
@@ -184,7 +178,7 @@ public class ConquestDeploymentMenu : MonoBehaviour
                 if(spectator)spectator.ControlsBlocked=previousSpectatorBlocked;
             }
             else restoreOnRestart=true;
-            if(!pause.IsPaused && !ClassMenuVisible && participant.match.IsRunning)
+            if(!pause.IsPaused && participant.match.IsRunning)
             {Cursor.lockState=CursorLockMode.Locked;Cursor.visible=false;}
         }
     }

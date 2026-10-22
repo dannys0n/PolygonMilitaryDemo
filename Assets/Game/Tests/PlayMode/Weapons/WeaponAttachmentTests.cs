@@ -156,7 +156,7 @@ public class WeaponAttachmentTests
         finally { camera.targetTexture=null;target.Release();UnityEngine.Object.Destroy(target); }
     }
 
-    [UnityTest] public IEnumerator OpticMountStandardsFilterRuntimeAndClassMenuConsistently()
+    [UnityTest] public IEnumerator OpticMountStandardsFilterRuntimeCatalogConsistently()
     {
         var catalog=AssetDatabase.LoadAssetAtPath<ScriptableObject>("Assets/Game/Definitions/Weapons/Catalogs/WeaponCatalog.asset");
         var entries=((Array)Get(catalog,"entries")).Cast<object>().Where(e=>((Array)Get(e,"sights")).Length>0).ToArray();
@@ -193,13 +193,10 @@ public class WeaponAttachmentTests
         }
         foreach(string name in new[]{"M4","M16A4","MK18","AK-12","HK416","M249","M82","MPX","SCAR-H","KRISS Vector CRB"})
             Assert.IsTrue((bool)Call(Module(name),"Supports",longScope),name+" has enough supported rail for the long mount.");
-        var menu=AssetDatabase.LoadAssetAtPath<ScriptableObject>("Assets/Game/Definitions/UI/ClassMenuCatalog.asset");
         foreach(var entry in entries)
         {
             var definition=Get(entry,"weapon");var module=((Component)Get(entry,"thirdPersonPrefab")).GetComponent(T("SoldierWeaponSights"));
             foreach(var sight in (Array)Get(entry,"sights"))Assert.IsTrue((bool)Call(module,"Supports",sight),(string)Get(definition,"displayName"));
-            var item=((Array)Get(menu,"weapons")).Cast<object>().Single(w=>(string)Get(w,"id")== (string)Get(definition,"catalogId"));
-            CollectionAssert.AreEquivalent(((Array)Get(entry,"sights")).Cast<object>().Select(s=>(string)Get(s,"id")).ToArray(),(string[])Get(item,"sights"));
         }
         var slots=((Array)Get(loadout,"slots")).Cast<object>().ToArray();
         int m4=Array.FindIndex(slots,s=>(string)Get(Get(s,"definition"),"displayName")=="M4");

@@ -110,7 +110,7 @@ public sealed class EntityPerformanceControl : ArenaMatchRules
         if (!owners.TryGetValue(actor, out var unit) || unit.removed || (unit.vehicle && unit.vehicle.IsDestroyed)) return false;
         int seat = unit.actors.IndexOf(actor);
         actor.player.loadout.infiniteAmmunition = unlimitedAmmo;
-        actor.SelectClass(match.settings.classes[0]);
+
         actor.Respawn(unit.position + (unit.vehicle ? Vector3.right * (10 + seat * 2) : Vector3.zero), unit.rotation);
         if (unit.vehicle)
         {

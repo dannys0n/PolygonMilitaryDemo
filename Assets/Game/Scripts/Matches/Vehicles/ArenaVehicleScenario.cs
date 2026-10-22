@@ -6,7 +6,6 @@ public class ArenaVehicleScenario : MonoBehaviour
     public ArenaMatch match;
     public int vehicleAgentType;
     public bool allowAIHelicopters = true;
-    public bool autoSelectLocalClass = true;
     public Transform[] landingZones;
 
     void OnEnable()
@@ -29,14 +28,6 @@ public class ArenaVehicleScenario : MonoBehaviour
                     launcher.ShotFired -= OnVehicleShot;
             }
         OnEnded();
-    }
-
-    void Start()
-    {
-        if (!autoSelectLocalClass) return;
-        foreach (var actor in match.participants)
-            if (actor.IsHumanControlled && !actor.SelectedClass)
-                actor.SelectClass(match.settings.classes[0]);
     }
 
     void Configure(Vehicle vehicle)

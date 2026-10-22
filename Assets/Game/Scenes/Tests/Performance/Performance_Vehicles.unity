@@ -252,7 +252,6 @@ MonoBehaviour:
   match: {fileID: 859785089}
   vehicleAgentType: -334000983
   allowAIHelicopters: 1
-  autoSelectLocalClass: 0
   landingZones: []
 --- !u!4 &454958979
 Transform:
@@ -445,6 +444,7 @@ GameObject:
   - component: {fileID: 859785090}
   - component: {fileID: 859785089}
   - component: {fileID: 859785088}
+  - component: {fileID: 859785091}
   m_Layer: 0
   m_Name: Performance control
   m_TagString: Untagged
@@ -511,6 +511,20 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &859785091
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 859785087}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1cd43dfeb60d4d9ab132a75f7b7cf17d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Game.Runtime::ArenaRandomLoadouts
+  opticChance: 0.75
+  attachmentChance: 0.5
 --- !u!1 &1403139498
 GameObject:
   m_ObjectHideFlags: 0
