@@ -92,7 +92,10 @@ public static class NativeWeaponIntegrationBuilder
    if(key=="Kar98K_UE4")foreach(var pair in ammoRest)
    {
     bool moving=Vector3.Distance(pair.Key.localPosition,pair.Value.localPosition)>.002f||Quaternion.Angle(pair.Key.localRotation,pair.Value.localRotation)>1;
-    var left=Find(fps,"hand_l");var right=Find(fps,"hand_r");bool held=Mathf.Min(Vector3.Distance(pair.Key.position,left.TransformPoint(new Vector3(.045f,0,0))),Vector3.Distance(pair.Key.position,right.TransformPoint(new Vector3(.045f,0,0))))<.10f; bool visible=pair.Key.name=="Clip"?action=="Reload"&&moving&&held:(action=="Fire"||action=="Reload"&&held)&&moving;
+    // The source parks loose rounds below the rifle between insertions.
+    // A fitted hand's proportions must not decide whether its cartridge exists.
+    bool held=pair.Key.localPosition.y>-.30f;
+    bool visible=pair.Key.name=="Clip"?action=="Reload"&&moving&&held:(action=="Fire"||action=="Reload"&&held)&&moving;
     pair.Key.localScale=visible?Vector3.one:Vector3.zero;
    }
    if(key=="MGX5_UE4"&&action=="Reload"&&phase>.23f&&phase<.64f)
