@@ -370,7 +370,7 @@ public static class Ue4RigProofBuilder
             var comparisons = sources.Select(e => BuildWeapon(e, mesh, polygon, grenade, true)).ToArray();
             var accepted = AssetDatabase.LoadAssetAtPath<WeaponCatalog>(Root + "/UE4RigProofCatalog.asset");
             var review = ScriptableObject.CreateInstance<WeaponCatalog>();
-            review.entries = accepted.entries.Concat(comparisons).ToArray();
+            review.entries = (accepted ? accepted.entries : Array.Empty<WeaponCatalog.Entry>()).Concat(comparisons).ToArray();
             review = Save(review, Root + "/OriginalProportionsCatalog.asset");
             AssetDatabase.SaveAssets();
             return new { weapons = review.entries.Length, uniformScale = fittedScale, originalMesh = OriginalPreviewRigPath };
