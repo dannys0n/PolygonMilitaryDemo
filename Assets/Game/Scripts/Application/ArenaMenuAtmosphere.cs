@@ -57,7 +57,7 @@ public class ArenaMenuAtmosphere : MonoBehaviour
             // Brief hold, then a smooth fade. Disable the graphic completely at
             // rest so this costs no full-screen transparency during normal play.
             float remaining = Mathf.Clamp01((damageUntil-Time.unscaledTime) / (DamageDuration-.15f));
-            float alpha = Mathf.SmoothStep(0, 1, remaining) * damageAmount;
+            float alpha = Mathf.SmoothStep(0, 1, remaining) * damageAmount * .5f;
             var tint = Color.white; tint.a = alpha;
             image.color = tint;
             image.enabled = alpha > .001f;

@@ -71,6 +71,11 @@ public class ArenaHud : MonoBehaviour
         var friendlyMarkers=GetComponent<ArenaFriendlyMarkers>();
         if(!friendlyMarkers)friendlyMarkers=gameObject.AddComponent<ArenaFriendlyMarkers>();
         friendlyMarkers.hud=this;
+        var damageDirection=new GameObject("Directional damage",typeof(RectTransform),typeof(CanvasRenderer),typeof(ArenaDamageDirection)).GetComponent<ArenaDamageDirection>();
+        damageDirection.transform.SetParent(GetComponentInParent<Canvas>().transform,false);
+        damageDirection.rectTransform.anchorMin=damageDirection.rectTransform.anchorMax=new Vector2(.5f,.5f);
+        damageDirection.rectTransform.sizeDelta=new Vector2(600,600);
+        damageDirection.hud=this;
         crosshairRestPositions = crosshairSegments.Select(s => s.rectTransform.anchoredPosition).ToArray();
         spreadRestPositions = spreadCrosshairSegments.Select(s => s.rectTransform.anchoredPosition).ToArray();
     }
