@@ -38,7 +38,7 @@ public sealed class SandboxConquestRules : ConquestRules
     public override string ScoreDescription=>"CONTROL SCORE / NO LIMIT";
     public override int ScoreLimit=>Mathf.Max(100,Mathf.Max(redScore,blueScore));
     public override int TeamScore(ArenaParticipant.Team team)=>team==ArenaParticipant.Team.Red?redScore:blueScore;
-    public override bool NeedsDeployment(ArenaParticipant actor)=>actor && actor.GetComponent<SoldierLocalInput>();
+    public override bool NeedsDeployment(ArenaParticipant actor)=>actor && actor.IsHumanControlled;
     public override bool CanDeploy(ArenaParticipant actor,ConquestCapturePoint point)=>!point || System.Array.Exists(infantryZones,z=>z && z.point==point);
     public override void Begin(ArenaMatch match)
     {
@@ -176,7 +176,7 @@ public sealed class SandboxConquestRules : ConquestRules
                 var actor=source?source.GetComponentInParent<ArenaParticipant>():null;
                 if(!actor)return true;
                 var attacker=CrewFlight(actor);
-                return actor.GetComponent<SoldierLocalInput>()?actor.team!=flight.team:
+                return actor.IsHumanControlled?actor.team!=flight.team:
                     attacker!=null&&attacker.battle==flight.battle&&attacker.team!=flight.team;
             };
             flight.respawns++;

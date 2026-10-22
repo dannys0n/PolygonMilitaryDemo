@@ -20,7 +20,7 @@ public class HelicopterFlightAssist
     {
         var vehicle = motor.vehicle;
         var body = vehicle.Body;
-        bool active = powered && !input.directFlight && (assistEnabled || (vehicle.Driver && !vehicle.Driver.IsLocal));
+        bool active = powered && !input.directFlight && (assistEnabled || (vehicle.Driver && vehicle.Driver.IsAI));
         if (!active)
         {
             wasActive = holdingPosition = false;
@@ -34,7 +34,7 @@ public class HelicopterFlightAssist
             cyclicAcceleration = Vector3.zero;
         }
         wasActive = true;
-        bool hold = vehicle.Driver && vehicle.Driver.IsLocal && input.move.sqrMagnitude < .001f
+        bool hold = vehicle.Driver && vehicle.Driver.IsHuman && input.move.sqrMagnitude < .001f
             && Mathf.Abs(input.lift) < .01f && !input.aim && !motor.Grounded;
         if (hold && !holdingPosition)
         {

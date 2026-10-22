@@ -74,7 +74,7 @@ public sealed class AIBehaviorTestScenario : MonoBehaviour
         if(!Vehicle||!Vehicle.Driver){status="Fill functional seats first.";return;}
         foreach(var actor in Actors)if(actor.GetComponent<VehicleOccupant>().IsMounted)
         {
-            var infantry=actor.GetComponent<ArenaAIInput>();infantry.enabled=true;actor.GetComponent<SoldierController>().inputSource=infantry;
+            var infantry=actor.GetComponent<ArenaAIInput>();infantry.enabled=true;actor.GetComponent<SoldierController>().SetControl(infantry, SoldierControlRole.AI, false);
             var ai=actor.GetComponent<ArenaVehicleAI>();ai.enabled=true;ai.SetTravelGoal(transportDestination);
         }
         Running=true;status="Production vehicle AI driving/flying to the test destination. Passenger exits remain available.";
@@ -94,7 +94,7 @@ public sealed class AIBehaviorTestScenario : MonoBehaviour
         var vehicleAI=g.GetComponent<ArenaVehicleAI>();
         if(vehicleAI){vehicleAI.SetPilotControl(ControlFor(team));vehicleAI.enabled=false;}
         var view=g.GetComponent<SoldierFirstPersonView>();view.firstPerson=false;view.playerCamera.enabled=false;
-        var source=g.AddComponent<TransportTaskInput>();g.GetComponent<SoldierController>().inputSource=source;
+        var source=g.AddComponent<TransportTaskInput>();g.GetComponent<SoldierController>().SetControl(source, SoldierControlRole.AI, false);
         g.transform.position=position;Actors.Add(actor);staging.SetActive(true);return actor;
     }
     public void ResetScenario(){StopAllCoroutines();ResetWorld();}
@@ -146,7 +146,7 @@ public sealed class AIBehaviorTestScenario : MonoBehaviour
     {
         if(!actor||pendingPlayers.Contains(actor))return;
         actor.GetComponent<ArenaVehicleAI>().SetTransportOrder(Vehicle,EnterRequested);
-        actor.GetComponent<SoldierController>().inputSource=actor.GetComponent<ArenaAIInput>();
+        actor.GetComponent<SoldierController>().SetControl(actor.GetComponent<ArenaAIInput>(), SoldierControlRole.AI, false);
     }
     public void FillSeats()=>StartCoroutine(Fill());
     IEnumerator Fill()
@@ -197,7 +197,7 @@ public sealed class AIBehaviorTestScenario : MonoBehaviour
             var occupant=actor.GetComponent<VehicleOccupant>();
             if(!occupant.IsMounted||Vehicle.seats[occupant.SeatIndex].role!=Vehicle.SeatRole.Passenger)continue;
             var infantry=actor.GetComponent<ArenaAIInput>();infantry.enabled=true;
-            actor.GetComponent<SoldierController>().inputSource=infantry;
+            actor.GetComponent<SoldierController>().SetControl(infantry, SoldierControlRole.AI, false);
             var ai=actor.GetComponent<ArenaVehicleAI>();ai.enabled=true;ai.SetTransportOrder(Vehicle,false);
             while(occupant.IsMounted&&Time.time<deadline)yield return new WaitForSeconds(.2f);
         }
@@ -208,7 +208,7 @@ public sealed class AIBehaviorTestScenario : MonoBehaviour
     {
         ResetWorld();for(int i=0;i<4;i++)Spawn(new Vector3(i%2==0?-10:10,.2f,(i/2)*5),i);
         population.SetActive(true);yield return null;match.BeginMatch();
-        for(int i=0;i<Actors.Count;i++){var a=Actors[i];a.team=i%2==0?ArenaParticipant.Team.Red:ArenaParticipant.Team.Blue;a.SelectClass(match.settings.classes[0]);a.Respawn(new Vector3(i%2==0?-10:10,.2f,(i/2)*5),Quaternion.Euler(0,i%2==0?90:-90,0));var ai=a.GetComponent<ArenaAIInput>();ai.enabled=true;a.GetComponent<SoldierController>().inputSource=ai;}
+        for(int i=0;i<Actors.Count;i++){var a=Actors[i];a.team=i%2==0?ArenaParticipant.Team.Red:ArenaParticipant.Team.Blue;a.SelectClass(match.settings.classes[0]);a.Respawn(new Vector3(i%2==0?-10:10,.2f,(i/2)*5),Quaternion.Euler(0,i%2==0?90:-90,0));var ai=a.GetComponent<ArenaAIInput>();ai.enabled=true;a.GetComponent<SoldierController>().SetControl(ai, SoldierControlRole.AI, false);}
         Running=true;status="Two versus two: production perception, bursts, damage, death and ragdolls.";
     }
     public void StartVehicleCombat()=>StartCoroutine(VehicleCombat());
@@ -253,7 +253,7 @@ public sealed class AIBehaviorTestScenario : MonoBehaviour
             {
                 var actor=Actors[index++];actor.Respawn(vehicle.transform.position+Vector3.right*10,vehicle.transform.rotation);
                 var occupant=actor.GetComponent<VehicleOccupant>();occupant.faction=(int)actor.team;
-                var ai=actor.GetComponent<ArenaAIInput>();ai.enabled=true;actor.GetComponent<SoldierController>().inputSource=ai;
+                var ai=actor.GetComponent<ArenaAIInput>();ai.enabled=true;actor.GetComponent<SoldierController>().SetControl(ai, SoldierControlRole.AI, false);
                 // A controlled initial condition, not a boarding test: the complete crew starts seated.
                 vehicle.seats[seat].occupant=occupant;occupant.Mount(vehicle,seat);
                 actor.GetComponent<ArenaVehicleAI>().enabled=true;

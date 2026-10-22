@@ -35,7 +35,7 @@ public class ArenaVehicleScenario : MonoBehaviour
     {
         if (!autoSelectLocalClass) return;
         foreach (var actor in match.participants)
-            if (actor.GetComponent<SoldierLocalInput>() && !actor.SelectedClass)
+            if (actor.IsHumanControlled && !actor.SelectedClass)
                 actor.SelectClass(match.settings.classes[0]);
     }
 

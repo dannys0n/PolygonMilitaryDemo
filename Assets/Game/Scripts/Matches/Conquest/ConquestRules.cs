@@ -74,7 +74,7 @@ public class ConquestRules : ArenaMatchRules
     public void CancelDeployment(ArenaParticipant actor) => approved.Remove(actor);
     protected bool DeploymentApproved(ArenaParticipant actor) => approved.Contains(actor);
     protected ConquestCapturePoint DeploymentPoint(ArenaParticipant actor) => deployments.TryGetValue(actor,out var point)?point:null;
-    public override bool NeedsDeployment(ArenaParticipant actor) => actor.player && actor.GetComponent<SoldierLocalInput>();
+    public override bool NeedsDeployment(ArenaParticipant actor) => actor.player && actor.IsHumanControlled;
     public override IEnumerable<ArenaParticipant> SquadMembers(ArenaParticipant actor) => squads ? squads.Members(actor) : null;
     public override bool TryChooseSpawn(ArenaParticipant actor, Dictionary<Transform,float> history, out Transform spawn)
     {

@@ -217,7 +217,7 @@ public class Vehicle : MonoBehaviour
         // Seats being authored are unavailable until their placement and exit are assigned.
         if (!seat.anchor || !seat.exit)
             return false;
-        if (seat.occupant || (!actor.IsLocal && seat.reservation && seat.reservation != actor && Time.time < seat.reservedUntil))
+        if (seat.occupant || (actor.IsAI && seat.reservation && seat.reservation != actor && Time.time < seat.reservedUntil))
             return false;
         foreach (var s in seats)
             if (s.occupant && s.occupant.faction >= 0 && actor.faction >= 0 && s.occupant.faction != actor.faction)
@@ -238,10 +238,9 @@ public class Vehicle : MonoBehaviour
     }
     bool CanDisplaceAI(VehicleOccupant actor,int index)
     {
-        if(!actor||!actor.IsLocal||actor.IsMounted||actor.life.health.IsDead||IsDestroyed||index<0||index>=seats.Length)return false;
+        if(!actor||actor.IsAI||actor.IsMounted||actor.life.health.IsDead||IsDestroyed||index<0||index>=seats.Length)return false;
         var seat=seats[index];var occupant=seat.occupant;
-        if(!seat.anchor||!seat.exit||!occupant||occupant.IsLocal||occupant.life.health.IsDead
-            ||!(occupant.soldier.inputSource is ArenaAIInput))return false;
+        if(!seat.anchor||!seat.exit||!occupant||!occupant.IsAI||occupant.life.health.IsDead)return false;
         foreach(var other in seats)
             if(other.occupant&&actor.faction>=0&&other.occupant.faction>=0&&actor.faction!=other.occupant.faction)return false;
         return true;
@@ -306,10 +305,10 @@ public class Vehicle : MonoBehaviour
     }
     public bool Board(VehicleOccupant actor, int index)
     {
-        if ((!CanBoard(actor, index) && !CanDisplaceAI(actor,index)) || (!actor.IsLocal && Body.linearVelocity.magnitude > 3f)
+        if ((!CanBoard(actor, index) && !CanDisplaceAI(actor,index)) || (actor.IsAI && Body.linearVelocity.magnitude > 3f)
             || !IsInsideEntryBox(actor.transform.position))
             return false;
-        if (!actor.IsLocal && !motor.CanDisembark)
+        if (actor.IsAI && !motor.CanDisembark)
             return false;
         // Validate entry before ejecting anyone; a remote/out-of-range request has no side effects.
         if(seats[index].occupant&&!seats[index].occupant.Leave(true))return false;

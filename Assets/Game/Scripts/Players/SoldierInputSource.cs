@@ -20,4 +20,5 @@ public abstract class SoldierInputSource : MonoBehaviour
 {
     // Called once each frame, even when gameplay is blocked. One-shot requests are not queued.
     public abstract SoldierInputFrame ReadInput();
+    public virtual VehicleControlFrame ReadVehicleInput(VehicleOccupant occupant) => default;
 }

@@ -3,6 +3,8 @@ using UnityEngine;
 public class ArenaParticipant : MonoBehaviour
 {
     public enum Team { Red, Blue }
+    public bool IsHumanControlled => player && player.GetComponent<SoldierController>().IsHumanControlled;
+    public bool IsLocalPlayer => player && player.GetComponent<SoldierController>().IsLocallyControlled;
     public Team team;
     public SoldierHealth health;
     [Tooltip("Optional: stationary test targets have health but no player lifecycle.")]
@@ -14,7 +16,7 @@ public class ArenaParticipant : MonoBehaviour
     Vector3 openingPosition;
     Quaternion openingRotation;
     bool waitingForClass;
-    public bool NeedsClassSelection => player && GetComponent<SoldierLocalInput>() && !SelectedClass
+    public bool NeedsClassSelection => IsHumanControlled && !SelectedClass
         && !(match && match.rules is SandboxConquestRules);
     public void SelectClass(ArenaClassDefinition choice)
     {
@@ -61,7 +63,7 @@ public class ArenaParticipant : MonoBehaviour
     {
         health.Died += OnDied;
         health.DamageFilter = CanReceiveDamage;
-        if (player) player.actions.FireStarted += RecordShot;
+        if (player) player.actions.ShotFired += RecordShot;
         match.Register(this);
     }
 
@@ -69,7 +71,7 @@ public class ArenaParticipant : MonoBehaviour
     {
         health.Died -= OnDied;
         health.DamageFilter = null;
-        if (player) player.actions.FireStarted -= RecordShot;
+        if (player) player.actions.ShotFired -= RecordShot;
         CancelRespawn();
         match.Unregister(this);
     }

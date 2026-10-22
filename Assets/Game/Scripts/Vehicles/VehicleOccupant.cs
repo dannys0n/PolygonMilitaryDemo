@@ -18,7 +18,9 @@ public class VehicleOccupant : MonoBehaviour
     public Quaternion EntryLocalRotation { get; private set; }
     public Vector3 ExitLocalPosition { get; private set; }
     public bool IsMounted => MountedVehicle;
-    public bool IsLocal => soldier.inputSource is SoldierLocalInput;
+    public bool IsLocal => soldier.IsLocallyControlled;
+    public bool IsAI => soldier.IsAIControlled;
+    public bool IsHuman => soldier.IsHumanControlled;
     readonly Dictionary<Behaviour, bool> behaviours = new Dictionary<Behaviour, bool>();
     readonly Dictionary<Renderer, bool> renderers = new Dictionary<Renderer, bool>();
     readonly Dictionary<Renderer, UnityEngine.Rendering.ShadowCastingMode> shadowModes = new Dictionary<Renderer, UnityEngine.Rendering.ShadowCastingMode>();
@@ -38,7 +40,7 @@ public class VehicleOccupant : MonoBehaviour
     bool[] listenerEnabled;
     bool previousCameraEnabled;
     float lastVehicleYaw, yaw, pitch = 14, flightYaw, flightPitch, exitHeld, hornUntil, freelookYaw, freelookPitch;
-    bool interactionConsumed;
+    bool interactionConsumed, aimHeld;
     bool cockpitView;
     public bool CockpitView
     {
@@ -105,11 +107,19 @@ public class VehicleOccupant : MonoBehaviour
     }
     void Update()
     {
-        if (!IsLocal)
+        if(!IsLocal || !soldier.inputSource || !soldier.inputSource.isActiveAndEnabled)return;
+        ApplyControl(soldier.inputSource.ReadVehicleInput(this),Time.deltaTime);
+    }
+
+    // Accept the same command regardless of where it came from. No device polling here.
+    public void ApplyControl(VehicleControlFrame input, float deltaTime)
+    {
+        aimHeld=input.active && input.lookAllowed && input.aim;
+        if(!input.active)
+        {
+            if(IsMounted && MountedVehicle.seats[SeatIndex].role==Vehicle.SeatRole.Driver)MountedVehicle.DriverInput=default;
             return;
-        var local = (SoldierLocalInput)soldier.inputSource;
-        if (!local.isActiveAndEnabled || local.InputBlocked || Time.timeScale == 0)
-            return;
+        }
         if (life.health.IsDead || !life.actions.enabled && !IsMounted)
         {
             Prompt = "";
@@ -143,32 +153,22 @@ public class VehicleOccupant : MonoBehaviour
             }
             Prompt = best ? "HOLD [E] " + (best.seats[seat].occupant?"REPLACE AI / ":"ENTER ") + best.displayName + " / " + best.seats[seat].name : "";
             if(doorControl)Prompt += doorControl.operateTogether ? "   TAP [E] DOORS" : "   TAP [E] DOOR";
-            if(Cursor.lockState == CursorLockMode.Locked)
+            if(input.lookAllowed)
             {
-                if(Input.GetKeyDown(KeyCode.E)){exitHeld=0;interactionConsumed=false;}
-                if(Input.GetKey(KeyCode.E) && !interactionConsumed)
+                if(input.interactPressed){exitHeld=0;interactionConsumed=false;}
+                if(input.interactHeld && !interactionConsumed)
                 {
-                    exitHeld+=Time.deltaTime;
+                    exitHeld+=deltaTime;
                     if(exitHeld>=.35f){interactionConsumed=true;if(best)best.BoardFirstAvailable(this);}
                 }
-                if(Input.GetKeyUp(KeyCode.E)){if(!interactionConsumed&&doorControl)doorControl.TryToggle(transform.position);exitHeld=0;}
+                if(input.interactReleased){if(!interactionConsumed&&doorControl)doorControl.TryToggle(transform.position);exitHeld=0;}
             }
             return;
         }
-        if (Input.GetKeyDown(KeyCode.Escape))
-        {
-            Cursor.lockState = CursorLockMode.None;
-            Cursor.visible = true;
-        }
-        if (Input.GetMouseButtonDown(0))
-        {
-            Cursor.lockState = CursorLockMode.Locked;
-            Cursor.visible = false;
-        }
         Prompt = "HOLD [E] EXIT   [F1-F" + MountedVehicle.seats.Length + "] SEATS";
-        if (Cursor.lockState != CursorLockMode.Locked) { MountedVehicle.DriverInput = default; return; }
-        if(Input.GetKeyDown(KeyCode.E)){exitHeld=0;interactionConsumed=false;}
-        if(Input.GetKeyUp(KeyCode.E))
+        if (!input.lookAllowed) { if(MountedVehicle.seats[SeatIndex].role==Vehicle.SeatRole.Driver)MountedVehicle.DriverInput = default; return; }
+        if(input.interactPressed){exitHeld=0;interactionConsumed=false;}
+        if(input.interactReleased)
         {
             if(!interactionConsumed)
             {
@@ -181,15 +181,13 @@ public class VehicleOccupant : MonoBehaviour
             }
             exitHeld=0;
         }
-        if(Input.GetKey(KeyCode.E))exitHeld+=Time.deltaTime;
+        if(input.interactHeld)exitHeld+=deltaTime;
         if (exitHeld >= .35f) { interactionConsumed=true; Leave(false); exitHeld = 0; return; }
         int pages=(MountedVehicle.seats.Length+11)/12;
-        if(Input.GetKeyDown(KeyCode.PageDown))SeatPage=(SeatPage+1)%pages;
-        if(Input.GetKeyDown(KeyCode.PageUp))SeatPage=(SeatPage+pages-1)%pages;
-        for (int i=0;i<12;i++)
-            if (Input.GetKeyDown((KeyCode)((int)KeyCode.F1+i))) SwitchSeat(SeatPage*12+i);
-        if (Input.GetKeyDown(KeyCode.V)) CockpitView = !CockpitView;
-        if (Input.GetKeyDown(KeyCode.C))
+        SeatPage=(SeatPage+input.seatPageDelta%pages+pages)%pages;
+        if(input.seatSelection>0 && input.seatSelection<=12)SwitchSeat(SeatPage*12+input.seatSelection-1);
+        if (input.toggleView) CockpitView = !CockpitView;
+        if (input.toggleFreelook)
         {
             Freelook = !Freelook;
             if (Freelook && MountedVehicle.seats[SeatIndex].role != Vehicle.SeatRole.Driver) { flightYaw = yaw; flightPitch = pitch; }
@@ -198,25 +196,24 @@ public class VehicleOccupant : MonoBehaviour
         }
         var vehicle = MountedVehicle;
         var role = vehicle.seats[SeatIndex].role;
-        if(Input.GetKeyDown(KeyCode.X))vehicle.GetComponent<VehicleCountermeasures>()?.TryDeploy(this);
+        if(input.countermeasures)vehicle.GetComponent<VehicleCountermeasures>()?.TryDeploy(this);
         bool aircraft = vehicle.IsAircraft;
         var weaponSystems = vehicle.GetComponent<VehicleWeaponSystems>();
         if (weaponSystems)
         {
-            for (int i=0;i<9;i++) if(Input.GetKeyDown((KeyCode)((int)KeyCode.Alpha1+i))) weaponSystems.Select(this,i);
-            float scroll=Input.GetAxisRaw("Mouse ScrollWheel");
-            if(Mathf.Abs(scroll)>.01f)weaponSystems.Cycle(this,scroll>0?1:-1);
+            if(input.weaponSelection>0)weaponSystems.Select(this,input.weaponSelection-1);
+            if(input.weaponCycle!=0)weaponSystems.Cycle(this,input.weaponCycle);
         }
-        if (aircraft && role == Vehicle.SeatRole.Driver && Input.GetKeyDown(KeyCode.T))
+        if (aircraft && role == Vehicle.SeatRole.Driver && input.toggleFlightAssist)
         {
             vehicle.FlightAssistEnabled = !vehicle.FlightAssistEnabled;
-            yaw = flightYaw = vehicleCamera.transform.eulerAngles.y;
-            pitch = flightPitch = Mathf.DeltaAngle(0, vehicleCamera.transform.eulerAngles.x);
+            if(vehicleCamera)
+            {
+                yaw = flightYaw = vehicleCamera.transform.eulerAngles.y;
+                pitch = flightPitch = Mathf.DeltaAngle(0, vehicleCamera.transform.eulerAngles.x);
+            }
         }
-        Vector2 mouse = new Vector2(Input.GetAxisRaw("Mouse X"), Input.GetAxisRaw("Mouse Y"));
-        if (aircraft && role == Vehicle.SeatRole.Driver && !vehicle.FlightAssistEnabled)
-            mouse = Vector2.ClampMagnitude(mouse,1f);
-        mouse *= local.EffectiveSensitivity;
+        Vector2 mouse = input.lookDelta;
         bool driverWeapon = role==Vehicle.SeatRole.Driver && (weaponSystems ? weaponSystems.Current(this)!=null : (vehicle.turret && vehicle.turret.controlRole==Vehicle.SeatRole.Driver) || (vehicle.GetComponent<VehicleLauncher>() && vehicle.GetComponent<VehicleLauncher>().controlRole==Vehicle.SeatRole.Driver));
         if ((!aircraft && role == Vehicle.SeatRole.Driver && !driverWeapon) || role == Vehicle.SeatRole.Passenger)
             yaw += Mathf.DeltaAngle(lastVehicleYaw, vehicle.transform.eulerAngles.y);
@@ -235,7 +232,7 @@ public class VehicleOccupant : MonoBehaviour
             Quaternion weaponView = aircraft && role==Vehicle.SeatRole.Driver && !vehicle.FlightAssistEnabled && !Freelook
                 ? vehicle.Body.rotation : Quaternion.Euler(pitch,yaw,0);
             if(!Freelook) weaponSystems.AimAt(this,new Ray(CameraPosition(vehicle,weaponView,role==Vehicle.SeatRole.Gunner,aircraft,aircraft&&role==Vehicle.SeatRole.Driver),weaponView*Vector3.forward));
-            if(Input.GetMouseButton(0))weaponSystems.TryFire(this);
+            if(input.fire)weaponSystems.TryFire(this);
         }
         if (role == Vehicle.SeatRole.Driver)
         {
@@ -258,25 +255,25 @@ public class VehicleOccupant : MonoBehaviour
                 flightPitch = Mathf.Clamp(flightPitch,-maxAimPitch,maxAimPitch);
             }
             vehicle.DriverInput = new VehicleInput {
-                move = Vector2.ClampMagnitude(new Vector2(Input.GetAxisRaw("Horizontal"), Input.GetAxisRaw("Vertical")),1),
-                lift = (Input.GetKey(KeyCode.Space)?1:0) - (Input.GetKey(KeyCode.LeftControl)?1:0),
+                move = Vector2.ClampMagnitude(new Vector2(input.move.x, input.move.y),1),
+                lift = (input.brake?1:0) - (input.lower?1:0),
                 heading = flightYaw, movementHeading = Freelook ? freelookYaw : yaw, viewPitch = flightPitch, directionalFlight = aircraft,
-                aim = aircraft && !Freelook && Input.GetMouseButton(1),
+                aim = aircraft && !Freelook && aimHeld,
                 pitchRate = Freelook ? 0 : Mathf.Clamp(-mouse.y * .35f,-1,1), yaw = Freelook ? 0 : Mathf.Clamp(mouse.x * .35f,-1,1),
-                handbrake = !aircraft && Input.GetKey(KeyCode.Z), boost = !aircraft && Input.GetKey(KeyCode.LeftShift)
+                handbrake = !aircraft && input.handbrake, boost = !aircraft && input.boost
             };
             if (vehicle.motor is JetMotor)
             {
                 var jetInput = vehicle.DriverInput;
-                jetInput.move = new Vector2(Freelook ? 0 : Mathf.Clamp(mouse.x, -1, 1), Input.GetAxisRaw("Vertical"));
+                jetInput.move = new Vector2(Freelook ? 0 : Mathf.Clamp(mouse.x, -1, 1), input.move.y);
                 jetInput.pitchRate = Freelook ? 0 : Mathf.Clamp(-mouse.y, -1, 1);
-                jetInput.yaw = Input.GetAxisRaw("Horizontal");
-                jetInput.boost = Input.GetKey(KeyCode.LeftShift);
-                jetInput.brake = Input.GetKey(KeyCode.Space);
+                jetInput.yaw = input.move.x;
+                jetInput.boost = input.boost;
+                jetInput.brake = input.brake;
                 vehicle.DriverInput = jetInput;
             }
-            if (!aircraft && Input.GetKeyDown(KeyCode.H)) hornUntil = Time.time + .35f;
-            if (!weaponSystems && aircraft && Input.GetMouseButton(0) && vehicle.TryGetComponent<VehicleLauncher>(out var launcher)) launcher.TryFire(this);
+            if (!aircraft && input.horn) hornUntil = Time.time + .35f;
+            if (!weaponSystems && aircraft && input.fire && vehicle.TryGetComponent<VehicleLauncher>(out var launcher)) launcher.TryFire(this);
             if (!weaponSystems && !aircraft && !Freelook)
             {
                 Quaternion view = Quaternion.Euler(pitch,yaw,0);
@@ -284,12 +281,12 @@ public class VehicleOccupant : MonoBehaviour
                 if(vehicle.turret && vehicle.turret.controlRole==Vehicle.SeatRole.Driver)
                 {
                     vehicle.turret.AimAt(aimRay);
-                    if(Input.GetMouseButton(0)) vehicle.turret.TryFire(this);
+                    if(input.fire) vehicle.turret.TryFire(this);
                 }
                 if(vehicle.TryGetComponent<VehicleLauncherMount>(out var mount))
                 {
                     mount.AimAt(aimRay);
-                    if(Input.GetMouseButton(0) && vehicle.TryGetComponent<VehicleLauncher>(out var groundLauncher)) groundLauncher.TryFire(this);
+                    if(input.fire && vehicle.TryGetComponent<VehicleLauncher>(out var groundLauncher)) groundLauncher.TryFire(this);
                 }
             }
         }
@@ -300,9 +297,9 @@ public class VehicleOccupant : MonoBehaviour
                 Quaternion view = Quaternion.Euler(pitch,yaw,0);
                 vehicle.turret.AimAt(new Ray(CameraPosition(vehicle,view,true,aircraft,false),view*Vector3.forward));
             }
-            if(Input.GetMouseButton(0)) vehicle.turret.TryFire(this);
+            if(input.fire) vehicle.turret.TryFire(this);
         }
-        if (vehicleCamera) vehicleCamera.fieldOfView = OpticalADSActive ? vehicle.GetComponent<VehicleAttackSight>().OpticalFieldOfView : Input.GetMouseButton(1) && (aircraft || role==Vehicle.SeatRole.Gunner || driverWeapon) ? 50 : 70;
+        if (vehicleCamera) vehicleCamera.fieldOfView = OpticalADSActive ? vehicle.GetComponent<VehicleAttackSight>().OpticalFieldOfView : aimHeld && (aircraft || role==Vehicle.SeatRole.Gunner || driverWeapon) ? 50 : 70;
     }
 
     public void Mount(Vehicle vehicle, int seat)
@@ -563,8 +560,8 @@ public class VehicleOccupant : MonoBehaviour
         if (displaced)
         {
             // Players may trade seats with an AI driver/pilot, never another player.
-            if (!IsLocal || seat.role!=Vehicle.SeatRole.Driver
-                || !(displaced.soldier.inputSource is ArenaAIInput) || displaced.life.health.IsDead
+            if (!IsHuman || seat.role!=Vehicle.SeatRole.Driver
+                || !displaced.IsAI || displaced.life.health.IsDead
                 || (faction>=0 && displaced.faction>=0 && faction!=displaced.faction)) return false;
         }
         seat.reservation=null;
@@ -607,7 +604,7 @@ public class VehicleOccupant : MonoBehaviour
         seatedVisible=visible;
         foreach(var skin in seatedBody) if(skin){skin.enabled=visible;skin.forceRenderingOff=!visible;skin.shadowCastingMode=UnityEngine.Rendering.ShadowCastingMode.On;}
     }
-    public bool OpticalADSActive { get { var sight=MountedVehicle?MountedVehicle.GetComponent<VehicleAttackSight>():null; return IsMounted && IsLocal && sight && sight.IsDocumentedTankSight && sight.DisplaysForSeat(SeatIndex) && Input.GetMouseButton(1) && !Freelook; } }
+    public bool OpticalADSActive { get { var sight=MountedVehicle?MountedVehicle.GetComponent<VehicleAttackSight>():null; return IsMounted && IsLocal && sight && sight.IsDocumentedTankSight && sight.DisplaysForSeat(SeatIndex) && aimHeld && !Freelook; } }
     void LateUpdate()
     {
         if(IsMounted) UpdateSeatedVisibility();

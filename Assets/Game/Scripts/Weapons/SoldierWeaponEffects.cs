@@ -37,7 +37,7 @@ public class SoldierWeaponEffects : MonoBehaviour
         ClearEffects();
     }
 
-    bool IsLocalOwner => controller.inputSource is SoldierLocalInput local && local.isActiveAndEnabled;
+    bool IsLocalOwner => controller.IsLocallyControlled && controller.inputSource && controller.inputSource.isActiveAndEnabled;
     bool CanIlluminate => loadout.HasFirstPersonPresentation && view.firstPerson && view.playerCamera.enabled && IsLocalOwner;
 
     void OnShot() => pendingShots.Enqueue(loadout.selectedSlot);

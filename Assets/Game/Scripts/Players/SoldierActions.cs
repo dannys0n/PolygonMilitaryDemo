@@ -15,6 +15,7 @@ public class SoldierActions : MonoBehaviour
     public FireMode fireMode => loadout.EquippedWeapon.definition.fireMode;
     public float roundsPerMinute => loadout.EquippedWeapon.definition.roundsPerMinute;
     public event System.Action FireStarted;
+    public event System.Action ShotFired;
     public event System.Action ReloadStarted;
     public event System.Action ReloadCompleted;
     public event System.Action ReloadCanceled;
@@ -31,32 +32,44 @@ public class SoldierActions : MonoBehaviour
 
     void Awake() { loadout=GetComponent<SoldierWeaponLoadout>(); grenades=GetComponent<SoldierGrenades>(); launchers=GetComponent<SoldierUtilitySlots>(); }
 
-    void Update()
+    void Update() => Tick(Time.time);
+
+    // Gameplay clock can be supplied by the simulation owner; UI/animation stay frame driven.
+    public void Tick(float now)
     {
         if (!IsReloading) return;
-        if (IsSwapReload && !reloadEquipStarted && Time.time >= reloadEndTime-reloadDefinition.equipDuration)
+        if (IsSwapReload && !reloadEquipStarted && now >= reloadEndTime-reloadDefinition.equipDuration)
         {
             reloadEquipStarted=true;
             loadout.RefreshLoadedProjectiles();
             loadout.PlayWeaponSwitch("Equip");
         }
-        if (Time.time < reloadEndTime) return;
+        if (now < reloadEndTime) return;
         IsReloading = false;
         reloadingWeapon.CompleteReload(reloadDefinition);
         ReloadCompleted?.Invoke();
     }
 
-    public bool TryFire()
+    public bool TryFire() => TryFire(Time.time);
+    bool CanFire => enabled && !IsThrowing && !IsReloading && !loadout.IsSwitching && !movement.IsRunning;
+    public bool TryFire(float now)
     {
-        if (!enabled ||  IsThrowing || IsReloading || loadout.IsSwitching || movement.IsRunning) return false;
-        if (!loadout.EquippedState.TryConsumeRound(Time.time, loadout.EquippedWeapon.definition)) return false;
-        shooting.Fire(loadout.EquippedWeapon.definition, loadout.EquippedMuzzle);
+        if(!CanFire)return false;
+        return TryFire(now,shooting.AimRay,shooting.AimUp);
+    }
+    public bool TryFire(float now, Ray aim, Vector3 up)
+    {
+        if (!CanFire || aim.direction.sqrMagnitude<.000001f) return false;
+        if (!loadout.EquippedState.TryConsumeRound(now, loadout.EquippedWeapon.definition)) return false;
+        shooting.Fire(loadout.EquippedWeapon.definition,loadout.EquippedMuzzle,aim,up,movement.Velocity);
         loadout.RefreshLoadedProjectiles();
+        ShotFired?.Invoke();
         PresentFire();
         return true;
     }
 
-    public bool TryReload()
+    public bool TryReload() => TryReload(Time.time);
+    public bool TryReload(float now)
     {
         if (!enabled ||  IsThrowing || IsReloading || loadout.IsSwitching) return false;
         if (!loadout.EquippedState.CanReload(loadout.EquippedWeapon.definition)) return false;
@@ -65,7 +78,7 @@ public class SoldierActions : MonoBehaviour
         reloadDefinition = loadout.EquippedWeapon.definition;
         reloadDuration = IsSwapReload ? Mathf.Max(reloadDefinition.reloadDuration,
             reloadDefinition.unequipDuration+reloadDefinition.equipDuration) : reloadDefinition.reloadDuration;
-        reloadEndTime = Time.time + reloadDuration;
+        reloadEndTime = now + reloadDuration;
         reloadEquipStarted=false;
         animator.ResetTrigger("Fire");
         if(IsSwapReload)
@@ -115,7 +128,8 @@ public class SoldierActions : MonoBehaviour
 
     public void PlayFire() => TryFire();
 
-    private void PresentFire()
+    // Cosmetic replay never consumes ammunition, resolves hits, or spawns projectiles.
+    public void PresentFire()
     {
         animator.ResetTrigger("Fire");
         animator.SetTrigger("Fire");

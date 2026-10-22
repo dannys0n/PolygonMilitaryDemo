@@ -28,7 +28,7 @@ public class SoldierFirstPersonBody : MonoBehaviour
         occupant = GetComponent<VehicleOccupant>();
         health = GetComponent<SoldierHealth>();
         loadout = GetComponent<SoldierWeaponLoadout>();
-        if (soldier.inputSource is SoldierLocalInput) BuildParts();
+        if (soldier.IsLocallyControlled) BuildParts();
     }
 
     void BuildParts()
@@ -91,7 +91,7 @@ public class SoldierFirstPersonBody : MonoBehaviour
 
     void LateUpdate()
     {
-        if (!initialized && soldier.inputSource is SoldierLocalInput) BuildParts();
+        if (!initialized && soldier.IsLocallyControlled) BuildParts();
         if (!initialized) return;
         bool needed = NeedsBodyCopy();
         if (!needed)
@@ -127,11 +127,11 @@ public class SoldierFirstPersonBody : MonoBehaviour
             var seat = occupant.MountedVehicle.seats[occupant.SeatIndex];
             if (!occupant.MountedVehicle.hasRenderedInterior || !seat.showCharacter || seat.externalView || seat.weaponMountedView) return false;
             var vehicleCamera = occupant.ActiveVehicleCamera;
-            return (soldier.inputSource is SoldierLocalInput && occupant.CockpitView
+            return (soldier.IsLocallyControlled && occupant.CockpitView
                     && vehicleCamera && vehicleCamera.isActiveAndEnabled)
                 || (view.firstPerson && view.NeedsCameraAnimation);
         }
-        return soldier.inputSource is SoldierLocalInput && view.firstPerson && view.NeedsCameraAnimation
+        return soldier.IsLocallyControlled && view.firstPerson && view.NeedsCameraAnimation
             && !(loadout.FirstPersonView && loadout.FirstPersonView.independentFirstPersonFrame);
     }
 
@@ -183,7 +183,7 @@ public class SoldierFirstPersonBody : MonoBehaviour
     void BeginCamera(Camera camera)
     {
         if (!initialized) return;
-        bool owner = soldier.inputSource is SoldierLocalInput;
+        bool owner = soldier.IsLocallyControlled;
         bool vehiclePerspective = occupant && occupant.IsMounted && camera == view.playerCamera && view.firstPerson;
         if (health.IsDead) { SetHeadless(false); renderStates.Clear(); return; }
         if (!owner && !vehiclePerspective && renderStates.Count == 0) return;

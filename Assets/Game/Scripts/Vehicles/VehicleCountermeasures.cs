@@ -42,7 +42,7 @@ public sealed class VehicleCountermeasures : MonoBehaviour
             }
         if(relevant){if(firstThreat<0)firstThreat=Time.time;}else firstThreat=-1;
         var driver=vehicle.Driver;
-        if(automaticForAI && driver && !driver.IsLocal && !vehicle.IsDestroyed)
+        if(automaticForAI && driver && driver.IsAI && !vehicle.IsDestroyed)
         {
             if(firstThreat>=0 && Time.time-firstThreat>=.5f)TryDeploy(driver);
             else if(smoke && vehicle.Health<lastHealth)TryDeploy(driver);

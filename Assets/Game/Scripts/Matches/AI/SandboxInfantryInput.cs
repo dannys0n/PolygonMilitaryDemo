@@ -60,13 +60,13 @@ public class SandboxInfantryInput : SoldierInputSource
     void OnEnable()
     {
         if (life) life.Respawned += ResetIntent;
-        if (soldier && soldier.actions) soldier.actions.FireStarted += OnShot;
+        if (soldier && soldier.actions) soldier.actions.ShotFired += OnShot;
         ResetIntent();
     }
     void OnDisable()
     {
         if (life) life.Respawned -= ResetIntent;
-        if (soldier && soldier.actions) soldier.actions.FireStarted -= OnShot;
+        if (soldier && soldier.actions) soldier.actions.ShotFired -= OnShot;
         if (agent && agent.enabled && agent.isOnNavMesh) agent.ResetPath();
     }
     public void Configure(ConquestCapturePoint point)

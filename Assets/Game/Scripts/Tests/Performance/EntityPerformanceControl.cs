@@ -130,7 +130,7 @@ public sealed class EntityPerformanceControl : ArenaMatchRules
         var driver = actor.GetComponent<ArenaVehicleAI>();
         if (basic) basic.enabled = active && seated;
         if (simple) { simple.enabled = active && !seated; if (active && !seated) simple.Configure(objective); }
-        actor.GetComponent<SoldierController>().inputSource = seated ? basic : simple;
+        actor.GetComponent<SoldierController>().SetControl(seated ? basic : simple, SoldierControlRole.AI, false);
         // Production vehicle AI dismounts on disable. Preserve the seated baseline when idling it.
         var occupant = actor.GetComponent<VehicleOccupant>();
         var vehicle = occupant.MountedVehicle;

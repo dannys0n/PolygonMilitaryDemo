@@ -4,7 +4,7 @@ using NUnit.Framework;using UnityEngine;using UnityEngine.SceneManagement;using 
 public class MountedPerformanceTests
 {
  const BindingFlags F=BindingFlags.Public|BindingFlags.NonPublic|BindingFlags.Instance;
- static Type T(string n)=>UnityEditor.TypeCache.GetTypesDerivedFrom<MonoBehaviour>().First(t=>t.Name==n);
+ static Type T(string n)=>AppDomain.CurrentDomain.GetAssemblies().Select(a=>a.GetType(n)).First(t=>t!=null);
  static object Get(object o,string n)=>o.GetType().GetProperty(n,F)?.GetValue(o)??o.GetType().GetField(n,F)?.GetValue(o);
  static object Call(object o,string n,params object[] args)=>o.GetType().GetMethod(n,F).Invoke(o,args);
  Component control;
@@ -157,7 +157,7 @@ public class MountedPerformanceTests
   Count(0,1);yield return null;yield return new WaitForSeconds(.3f);
   var actor=Actors[0];var rider=actor.GetComponent(T("VehicleOccupant"));var vehicle=(Component)Get(rider,"MountedVehicle");int index=(int)Get(rider,"SeatIndex");
   Call(rider,"Leave",true);var soldier=(Component)Get(rider,"soldier");
-  var input=(Behaviour)actor.gameObject.AddComponent(T("SoldierLocalInput"));input.enabled=false;soldier.GetType().GetField("inputSource").SetValue(soldier,input);
+  var input=(Behaviour)actor.gameObject.AddComponent(T("SoldierLocalInput"));input.enabled=false;soldier.GetType().GetMethod("SetControl").Invoke(soldier,new object[]{input,Enum.Parse(T("SoldierControlRole"),"Human"),true});
   Call(rider,"Mount",vehicle,index);var seat=((Array)Get(vehicle,"seats")).GetValue(index);seat.GetType().GetField("occupant").SetValue(seat,rider);
   rider.GetType().GetProperty("CockpitView",F).SetValue(rider,true);yield return null;yield return null;
   var camera=(Camera)Get(rider,"ActiveVehicleCamera");var body=(Behaviour)actor.GetComponent(T("SoldierFirstPersonBody"));var eye=(Transform)Get(seat,"eye");

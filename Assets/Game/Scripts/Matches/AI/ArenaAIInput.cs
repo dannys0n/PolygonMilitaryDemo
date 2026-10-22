@@ -154,8 +154,8 @@ public class ArenaAIInput : SoldierInputSource
         agent.updatePosition = agent.updateRotation = agent.updateUpAxis = false;
         agent.radius=Mathf.Max(agent.radius,life.controller.radius+avoidanceClearance);
     }
-    void OnEnable() { life.Respawned += ResetIntent; life.health.Died += OnDied; life.health.Damaged += OnDamaged; soldier.actions.FireStarted += OnShot; }
-    void OnDisable() { life.Respawned -= ResetIntent; life.health.Died -= OnDied; life.health.Damaged -= OnDamaged; soldier.actions.FireStarted -= OnShot; ResetIntent(); }
+    void OnEnable() { life.Respawned += ResetIntent; life.health.Died += OnDied; life.health.Damaged += OnDamaged; soldier.actions.ShotFired += OnShot; }
+    void OnDisable() { life.Respawned -= ResetIntent; life.health.Died -= OnDied; life.health.Damaged -= OnDamaged; soldier.actions.ShotFired -= OnShot; ResetIntent(); }
     void OnDied(GameObject source) => ResetIntent();
     void OnShot() { burstShots++; LastCombatTime = Time.time; }
     void OnDamaged(float amount, GameObject source)

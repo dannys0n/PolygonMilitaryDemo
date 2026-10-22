@@ -63,7 +63,7 @@ public sealed class InfantryDeathTestScenario : MonoBehaviour
             var ragdoll=actor.GetComponent<SoldierRagdoll>();ragdoll.enabled=ragdollEnabled;
             if(!fallImpulseEnabled)ragdoll.fallImpulse=0;
             var input=actor.AddComponent<InfantryDeathTestInput>();input.walking=testCase==TestCase.Walking;
-            actor.GetComponent<SoldierController>().inputSource=input;
+            actor.GetComponent<SoldierController>().SetControl(input, SoldierControlRole.AI, false);
             Vector3 point=new Vector3(i%3*crowdSpacing,.08f,i/3*crowdSpacing);
             actor.transform.SetPositionAndRotation(point,Quaternion.identity);
             var sample=new Sample{life=life,ragdoll=ragdoll,input=input,spawn=point};Actors.Add(sample);

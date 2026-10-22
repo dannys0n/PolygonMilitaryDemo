@@ -41,6 +41,33 @@ public class SoldierLocalInput : SoldierInputSource
         return input;
     }
 
+    public override VehicleControlFrame ReadVehicleInput(VehicleOccupant occupant)
+    {
+        if(InputBlocked || Time.timeScale==0)return default;
+        if(occupant.IsMounted)
+        {
+            if(Input.GetKeyDown(KeyCode.Escape))SetCursorLocked(false);
+            if(Input.GetMouseButtonDown(0))SetCursorLocked(true);
+        }
+        var mouse=new Vector2(Input.GetAxisRaw("Mouse X"),Input.GetAxisRaw("Mouse Y"));
+        var vehicle=occupant.MountedVehicle;
+        if(vehicle && vehicle.IsAircraft && vehicle.seats[occupant.SeatIndex].role==Vehicle.SeatRole.Driver && !vehicle.FlightAssistEnabled)
+            mouse=Vector2.ClampMagnitude(mouse,1f);
+        var frame=new VehicleControlFrame {
+            active=true, lookAllowed=Cursor.lockState==CursorLockMode.Locked,
+            interactPressed=Input.GetKeyDown(KeyCode.E),interactHeld=Input.GetKey(KeyCode.E),interactReleased=Input.GetKeyUp(KeyCode.E),
+            fire=Input.GetMouseButton(0),aim=Input.GetMouseButton(1),
+            boost=Input.GetKey(KeyCode.LeftShift),brake=Input.GetKey(KeyCode.Space),lower=Input.GetKey(KeyCode.LeftControl),handbrake=Input.GetKey(KeyCode.Z),horn=Input.GetKeyDown(KeyCode.H),
+            toggleView=Input.GetKeyDown(KeyCode.V),toggleFreelook=Input.GetKeyDown(KeyCode.C),toggleFlightAssist=Input.GetKeyDown(KeyCode.T),countermeasures=Input.GetKeyDown(KeyCode.X),
+            move=new Vector2(Input.GetAxisRaw("Horizontal"),Input.GetAxisRaw("Vertical")),lookDelta=mouse*EffectiveSensitivity,
+            seatPageDelta=(Input.GetKeyDown(KeyCode.PageDown)?1:0)-(Input.GetKeyDown(KeyCode.PageUp)?1:0)
+        };
+        for(int i=0;i<12;i++)if(Input.GetKeyDown((KeyCode)((int)KeyCode.F1+i)))frame.seatSelection=i+1;
+        for(int i=0;i<9;i++)if(Input.GetKeyDown((KeyCode)((int)KeyCode.Alpha1+i)))frame.weaponSelection=i+1;
+        float scroll=Input.GetAxisRaw("Mouse ScrollWheel");frame.weaponCycle=Mathf.Abs(scroll)>.01f?(scroll>0?1:-1):0;
+        return frame;
+    }
+
     static void SetCursorLocked(bool locked)
     {
         Cursor.lockState = locked ? CursorLockMode.Locked : CursorLockMode.None;

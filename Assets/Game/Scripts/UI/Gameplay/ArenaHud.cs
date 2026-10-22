@@ -162,7 +162,7 @@ public class ArenaHud : MonoBehaviour
     void Update()
     {
         if (allowLocalShortcuts && Input.GetKeyDown(KeyCode.Backspace)) match.BeginMatch();
-        if (allowLocalShortcuts && player.GetComponent<SoldierLocalInput>() && Input.GetKeyDown(KeyCode.K))
+        if (allowLocalShortcuts && player.IsLocalPlayer && Input.GetKeyDown(KeyCode.K))
             player.health.ApplyDamage(player.health.maxHealth, player.gameObject);
         var life = player.player;
         var grenades=life.GetComponent<SoldierGrenades>();

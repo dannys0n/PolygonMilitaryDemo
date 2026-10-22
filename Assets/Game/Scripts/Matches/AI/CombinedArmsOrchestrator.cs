@@ -88,7 +88,7 @@ public sealed class CombinedArmsOrchestrator : MonoBehaviour
     static bool HasHumanCrew(Vehicle vehicle)
     {
         foreach(var seat in vehicle.seats)
-            if(seat.occupant && !(seat.occupant.soldier.inputSource is ArenaAIInput))return true;
+            if(seat.occupant && seat.occupant.IsHuman)return true;
         return false;
     }
     Order DriverOrder(Vehicle vehicle)
@@ -246,7 +246,7 @@ public sealed class CombinedArmsOrchestrator : MonoBehaviour
         if(driver!=null && driver!=order){order.objective=driver.objective;order.destination=driver.destination;}
         if(!TryGetDestination(order.actor,out var goal))return;
         var seat=order.vehicle.seats[ai.occupant.SeatIndex];
-        bool humanDriver=order.vehicle.Driver && !(order.vehicle.Driver.soldier.inputSource is ArenaAIInput);
+        bool humanDriver=order.vehicle.Driver && order.vehicle.Driver.IsHuman;
         bool dismount=seat.role==Vehicle.SeatRole.Passenger && order.vehicle.CanExit
             && (!order.vehicle.IsAircraft || humanDriver)
             && (Vector3.Distance(order.vehicle.transform.position,goal)<dismountRadius || order.actor.GetComponent<ArenaAIInput>().IsCombatAlert);

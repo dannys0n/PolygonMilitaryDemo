@@ -15,7 +15,7 @@ public class PresentationPolicyTests
     static Type T(string name)=>UnityEditor.TypeCache.GetTypesDerivedFrom<MonoBehaviour>().First(t=>t.Name==name);
     static object Get(object target,string name)=>target.GetType().GetProperty(name,Flags)?.GetValue(target)??target.GetType().GetField(name,Flags)?.GetValue(target);
     static void Set(object target,string name,object value)=>target.GetType().GetField(name,Flags).SetValue(target,value);
-    static object Call(object target,string name,params object[] args)=>target.GetType().GetMethod(name,Flags).Invoke(target,args);
+    static object Call(object target,string name,params object[] args)=>(args.Length==0?target.GetType().GetMethod(name,Flags,null,Type.EmptyTypes,null):target.GetType().GetMethod(name,Flags)).Invoke(target,args);
     Component control;
     ScriptableObject weaponFixture;
     Component[] Actors=>((IEnumerable)Get(Get(control,"match"),"participants")).Cast<Component>().ToArray();

@@ -131,7 +131,7 @@ public class SoldierWeaponPresentation : MonoBehaviour
 
     void UpdatePresentationQuality()
     {
-        bool viewer = soldier && soldier.inputSource is SoldierLocalInput || view.NeedsCameraAnimation;
+        bool viewer = soldier && soldier.IsLocallyControlled || view.NeedsCameraAnimation;
         // Muzzles, hand release points and hit regions use this skeleton too.
         // Keep combat poses current even when the character is outside the view.
         bool fullPose = viewer || view.WantsToAim || actions.IsReloading

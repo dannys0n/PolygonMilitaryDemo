@@ -12,7 +12,7 @@ using UnityEditor.SceneManagement;
 public class SandboxBehaviorTests
 {
     const BindingFlags Flags=BindingFlags.Instance|BindingFlags.Public|BindingFlags.NonPublic;
-    static Type T(string name)=>UnityEditor.TypeCache.GetTypesDerivedFrom<MonoBehaviour>().First(t=>t.Name==name);
+    static Type T(string name)=>AppDomain.CurrentDomain.GetAssemblies().Select(a=>a.GetType(name)).First(t=>t!=null);
     static object Get(object o,string name)=>o.GetType().GetProperty(name,Flags)?.GetValue(o)??o.GetType().GetField(name,Flags)?.GetValue(o);
     static object Call(object o,string name,params object[] args)=>o.GetType().GetMethod(name,Flags).Invoke(o,args);
     static void Set(object o,string name,object value)
@@ -34,7 +34,7 @@ public class SandboxBehaviorTests
         var local=(Behaviour)actor.gameObject.AddComponent(T("SoldierLocalInput"));local.enabled=false;
         ((Behaviour)actor.GetComponent(T("ArenaAIInput"))).enabled=false;
         ((Behaviour)actor.GetComponent(T("ArenaVehicleAI"))).enabled=false;
-        Set(actor.GetComponent(T("SoldierController")),"inputSource",local);
+        Call(actor.GetComponent(T("SoldierController")),"SetControl",local,Enum.Parse(T("SoldierControlRole"),"Human"),true);
     }
     Component scenario;
     IEnumerator Load(string name)

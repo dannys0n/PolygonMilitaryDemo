@@ -119,7 +119,7 @@ public class VehicleTurret : MonoBehaviour
         nextShot = Time.time + 60f / roundsPerMinute;
         bool showVisual=BulletTracer.ShowVisual(++visualShot,roundsPerMinute);
         Vector3 shotDirection=muzzle.forward;
-        if(!gunner.IsLocal && vehicle.motor is HelicopterMotor && (!projectile || projectile.ballistic))
+        if(gunner.IsAI && vehicle.motor is HelicopterMotor && (!projectile || projectile.ballistic))
         {
             // Slight AI-only angular dispersion; ray, projectile and tracer share the same shot.
             Vector2 spread=Random.insideUnitCircle*Mathf.Tan(.45f*Mathf.Deg2Rad);

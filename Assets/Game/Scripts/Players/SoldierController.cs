@@ -1,10 +1,23 @@
 using UnityEngine;
 
+public enum SoldierControlRole { Human, AI }
+
 [DefaultExecutionOrder(-20)]
 public class SoldierController : MonoBehaviour
 {
     [Tooltip("Optional. Without a source the character idles and still simulates gravity.")]
     public SoldierInputSource inputSource;
+    [Header("Character identity")]
+    public SoldierControlRole controlRole = SoldierControlRole.Human;
+    [Tooltip("This machine owns the player camera/input. Independent of human/AI identity.")]
+    public bool isLocalPlayer = true;
+    public bool IsHumanControlled => controlRole == SoldierControlRole.Human;
+    public bool IsAIControlled => controlRole == SoldierControlRole.AI;
+    public bool IsLocallyControlled => isLocalPlayer && IsHumanControlled;
+    public void SetControl(SoldierInputSource source, SoldierControlRole role, bool localPlayer)
+    {
+        inputSource=source; controlRole=role; isLocalPlayer=localPlayer;
+    }
     public SoldierMovement movement;
     public SoldierLook look;
     public SoldierActions actions;

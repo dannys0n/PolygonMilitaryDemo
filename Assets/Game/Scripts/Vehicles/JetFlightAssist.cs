@@ -18,7 +18,7 @@ public class JetFlightAssist
     {
         var body = motor.vehicle.Body;
         bool active = powered && !input.directFlight && input.directionalFlight &&
-            (assistEnabled || (motor.vehicle.Driver && !motor.vehicle.Driver.IsLocal));
+            (assistEnabled || (motor.vehicle.Driver && motor.vehicle.Driver.IsAI));
         if (!active)
         {
             wasActive = false;
@@ -66,7 +66,7 @@ public class JetFlightAssist
         float remaining = error - angularRate * anticipation;
         if (Mathf.Abs(remaining) < .2f) remaining = 0;
         float brakingRate = Mathf.Sqrt(2 * motor.maximumAngularAcceleration * Mathf.Rad2Deg * Mathf.Abs(remaining));
-        float response=aimResponse*(motor.vehicle.Driver && !motor.vehicle.Driver.IsLocal?1.5f:1f);
+        float response=aimResponse*(motor.vehicle.Driver && motor.vehicle.Driver.IsAI?1.5f:1f);
         float desiredRate = Mathf.Clamp(remaining * response, -brakingRate, brakingRate);
         return Mathf.Clamp(desiredRate / Mathf.Max(1, rateLimit), -1, 1);
     }

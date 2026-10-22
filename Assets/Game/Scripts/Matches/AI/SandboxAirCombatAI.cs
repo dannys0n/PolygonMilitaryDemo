@@ -61,12 +61,12 @@ public sealed class SandboxAirCombatAI : MonoBehaviour
         if (!enemy || !enemy.Operational) return;
         // Each station fires its own weapon system; crew never run infantry targeting.
         foreach (var seat in vehicle.seats)
-            if (seat.occupant && !seat.occupant.IsLocal && seat.role != Vehicle.SeatRole.Passenger)
+            if (seat.occupant && seat.occupant.IsAI && seat.role != Vehicle.SeatRole.Passenger)
                 FireStation(seat.occupant);
     }
     void FixedUpdate()
     {
-        if (!Operational || vehicle.Driver.IsLocal) return;
+        if (!Operational || !vehicle.Driver.IsAI) return;
         Vector3 position = vehicle.Body.position;
         Vector3 center = arenaCenter ? arenaCenter.position : Vector3.zero;
         Vector3 destination;

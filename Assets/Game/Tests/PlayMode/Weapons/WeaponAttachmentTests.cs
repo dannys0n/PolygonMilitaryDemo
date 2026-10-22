@@ -18,7 +18,7 @@ public class WeaponAttachmentTests
     static Type T(string name)=>AppDomain.CurrentDomain.GetAssemblies().Select(a=>a.GetType(name)).First(t=>t!=null);
     static object Get(object o,string name){var p=o.GetType().GetProperty(name,Flags);return p!=null?p.GetValue(o):o.GetType().GetField(name,Flags).GetValue(o);}
     static void Set(object o,string name,object v)=>o.GetType().GetField(name,Flags).SetValue(o,v);
-    static object Call(object o,string name,params object[] args)=>o.GetType().GetMethod(name,Flags).Invoke(o,args);
+    static object Call(object o,string name,params object[] args)=>(args.Length==0?o.GetType().GetMethod(name,Flags,null,Type.EmptyTypes,null):o.GetType().GetMethod(name,Flags)).Invoke(o,args);
     GameObject Root(string name){var g=new GameObject(name);roots.Add(g);return g;}
     [UnitySetUp] public IEnumerator Setup()
     {

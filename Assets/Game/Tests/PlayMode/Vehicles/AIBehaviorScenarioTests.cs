@@ -12,7 +12,7 @@ using UnityEditor.SceneManagement;
 public class AIBehaviorScenarioTests
 {
  const BindingFlags Flags=BindingFlags.Public|BindingFlags.NonPublic|BindingFlags.Instance;
- static Type T(string name)=>UnityEditor.TypeCache.GetTypesDerivedFrom<MonoBehaviour>().First(t=>t.Name==name);
+ static Type T(string name)=>AppDomain.CurrentDomain.GetAssemblies().Select(a=>a.GetType(name)).First(t=>t!=null);
  static object Get(object o,string name){var p=o.GetType().GetProperty(name,Flags);return p!=null?p.GetValue(o):o.GetType().GetField(name,Flags).GetValue(o);}
  static void Command(object o,string name)=>o.GetType().GetMethod(name).Invoke(o,null);
  Component scenario;
@@ -162,7 +162,7 @@ public class AIBehaviorScenarioTests
  void MakeLocal(Component actor)
  {
   var local=(Behaviour)actor.GetComponent(T("SoldierLocalInput"));if(!local)local=(Behaviour)actor.gameObject.AddComponent(T("SoldierLocalInput"));local.enabled=false;
-  var controller=actor.GetComponent(T("SoldierController"));controller.GetType().GetField("inputSource").SetValue(controller,local);
+  var controller=actor.GetComponent(T("SoldierController"));controller.GetType().GetMethod("SetControl").Invoke(controller,new object[]{local,Enum.Parse(T("SoldierControlRole"),"Human"),true});
  }
  [UnityTest] public IEnumerator CrowdedSameSideBoardingAvoidsPhysicalPushing()
  {

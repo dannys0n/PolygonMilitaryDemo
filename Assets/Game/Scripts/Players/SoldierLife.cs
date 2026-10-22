@@ -19,13 +19,12 @@ public class SoldierLife : MonoBehaviour
     void Awake()
     {
         vehicleOccupant=GetComponent<VehicleOccupant>();
-        ResetInfantryHealth();
+        ResetHealth();
     }
-    void ResetInfantryHealth()
+    public void ResetHealth()
     {
         var input=GetComponent<SoldierController>();
-        if(input && input.inputSource)
-            health.maxHealth=input.inputSource is SoldierLocalInput?HumanHealth:AIHealth;
+        if(input)health.maxHealth=input.IsHumanControlled?HumanHealth:AIHealth;
         health.ResetHealth();
     }
 
@@ -81,7 +80,7 @@ public class SoldierLife : MonoBehaviour
         look.ResetLook();
         loadout.ResetAmmunition();
         view.CancelReload();
-        ResetInfantryHealth();
+        ResetHealth();
         controller.enabled = true;
         SetGameplayAllowed(true);
         Respawned?.Invoke();

@@ -7,6 +7,8 @@ public class SoldierHitscan : MonoBehaviour
     public LayerMask hitLayers = Physics.DefaultRaycastLayers;
     [Min(.001f)] public float muzzleClearance = .01f;
     public bool drawDebug;
+    public Ray AimRay => aimCamera.ViewportPointToRay(new Vector3(.5f,.5f,0));
+    public Vector3 AimUp => aimCamera.transform.up;
     int visualShot;
     bool showShotVisual;
     RaycastHit[] queryHits = new RaycastHit[32];
@@ -26,7 +28,14 @@ public class SoldierHitscan : MonoBehaviour
 
     public ShotResult Fire(SoldierWeaponDefinition weapon, Transform muzzle)
     {
-        Ray aim=aimCamera.ViewportPointToRay(new Vector3(.5f,.5f,0));
+        return Fire(weapon,muzzle,AimRay,
+            AimUp,GetComponent<SoldierMovement>().Velocity);
+    }
+
+    // The shot resolver accepts an authoritative world-space aim without needing a camera.
+    public ShotResult Fire(SoldierWeaponDefinition weapon, Transform muzzle, Ray aim, Vector3 up, Vector3 inheritedVelocity)
+    {
+        Quaternion orientation=Quaternion.LookRotation(aim.direction,up);
         if (ShotInteraction != null)
             foreach (System.Func<Ray, bool> handler in ShotInteraction.GetInvocationList())
                 if (handler(aim))
@@ -39,26 +48,25 @@ public class SoldierHitscan : MonoBehaviour
         {
             Vector3 target=ClosestHit(aim,weapon.range,out var hit)?hit.point:aim.GetPoint(weapon.range);
             var rocket=ProjectilePool.Spawn(weapon.rocketProjectile,muzzle.position,Quaternion.LookRotation((target-muzzle.position).normalized));
-            rocket.Launch(gameObject,transform,GetComponent<SoldierMovement>().Velocity);
+            rocket.Launch(gameObject,transform,inheritedVelocity);
             var shot=new ShotResult{origin=muzzle.position,point=target};ShotResolved?.Invoke(shot);return shot;
         }
         if(weapon.thrownExplosive)
         {
             var definition=weapon.thrownExplosive;
-            var grenade=ProjectilePool.Spawn(definition.projectile,muzzle.position,aimCamera.transform.rotation);
+            var grenade=ProjectilePool.Spawn(definition.projectile,muzzle.position,orientation);
             grenade.Launch(definition,gameObject,aim.direction*definition.throwSpeed+Vector3.up*definition.upwardSpeed);
             var shot=new ShotResult{origin=muzzle.position,point=aim.GetPoint(weapon.range)};ShotResolved?.Invoke(shot);return shot;
         }
         showShotVisual=BulletTracer.ShowVisual(++visualShot,weapon.roundsPerMinute);
-        return weapon.UsesSpread ? FireSpread(weapon, muzzle, aim) : FireBullet(weapon, muzzle);
+        return weapon.UsesSpread ? FireSpread(weapon, muzzle, aim) : FireBullet(weapon, muzzle, aim, orientation);
     }
-    ShotResult FireBullet(SoldierWeaponDefinition weapon, Transform muzzle)
+    ShotResult FireBullet(SoldierWeaponDefinition weapon, Transform muzzle, Ray cameraRay, Quaternion orientation)
     {
-        Ray cameraRay = aimCamera.ViewportPointToRay(new Vector3(.5f, .5f, 0f));
         if(weapon.spreadDegrees>0)
         {
             Vector2 spread=Random.insideUnitCircle*Mathf.Tan(weapon.spreadDegrees*Mathf.Deg2Rad);
-            cameraRay.direction=(cameraRay.direction+aimCamera.transform.right*spread.x+aimCamera.transform.up*spread.y).normalized;
+            cameraRay.direction=(cameraRay.direction+orientation*Vector3.right*spread.x+orientation*Vector3.up*spread.y).normalized;
         }
         Vector3 point = cameraRay.GetPoint(weapon.range);
         if (ClosestHit(cameraRay, weapon.range, out RaycastHit aimHit)) point = aimHit.point;
@@ -197,7 +205,7 @@ public class SoldierHitscan : MonoBehaviour
 
     ShotResult Publish(ShotResult result)
     {
-        if(showShotVisual && !(GetComponent<SoldierController>().inputSource is SoldierLocalInput))
+        if(showShotVisual && !GetComponent<SoldierController>().IsLocallyControlled)
         {
             var loadout=GetComponent<SoldierWeaponLoadout>();
             var view=GetComponent<SoldierFirstPersonView>();

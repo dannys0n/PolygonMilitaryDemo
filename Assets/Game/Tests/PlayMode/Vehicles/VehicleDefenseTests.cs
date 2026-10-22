@@ -10,7 +10,7 @@ using UnityEngine.TestTools;
 using UnityEditor;
 using Object=UnityEngine.Object;
 
-// Isolate tests without changing the game's predefined Assembly-CSharp boundary.
+// Discover the game runtime types without taking an SDK-specific dependency.
 public class VehicleDefenseTests
 {
     readonly List<GameObject> objects=new List<GameObject>();
@@ -45,7 +45,7 @@ public class VehicleDefenseTests
         var seat=Activator.CreateInstance(T("Vehicle").GetNestedType("Seat"));
         var actorRoot=Root(name+" operator");actorRoot.SetActive(false);
         var actor=actorRoot.AddComponent(T("VehicleOccupant"));Set(actor,"faction",faction);
-        var soldier=(Behaviour)actorRoot.AddComponent(T("SoldierController"));soldier.enabled=false;Set(actor,"soldier",soldier);
+        var soldier=(Behaviour)actorRoot.AddComponent(T("SoldierController"));soldier.enabled=false;Set(soldier,"controlRole",Enum.Parse(T("SoldierControlRole"),"AI"));Set(soldier,"isLocalPlayer",false);Set(actor,"soldier",soldier);
         var life=(Behaviour)actorRoot.AddComponent(T("SoldierLife"));life.enabled=false;
         Set(life,"health",actorRoot.AddComponent(T("SoldierHealth")));Set(actor,"life",life);
         seat.GetType().GetField("occupant").SetValue(seat,actor);
@@ -420,7 +420,7 @@ public class VehicleDefenseTests
     [UnityTest] public IEnumerator AIReactsToIncomingMissile()
     {
         Missile("Infrared","AirToAir",out var target);var seat=((Array)Get(target,"seats")).GetValue(0);var actor=(Component)Get(seat,"occupant");
-        var soldier=actor.gameObject.AddComponent(T("SoldierController"));Set(actor,"soldier",soldier);Set(actor,"<MountedVehicle>k__BackingField",target);
+        var soldier=actor.gameObject.AddComponent(T("SoldierController"));Set(soldier,"controlRole",Enum.Parse(T("SoldierControlRole"),"AI"));Set(soldier,"isLocalPlayer",false);Set(actor,"soldier",soldier);Set(actor,"<MountedVehicle>k__BackingField",target);
         var c=target.gameObject.AddComponent(T("VehicleCountermeasures"));Set(c,"flares",true);Set(c,"dispensers",new[]{target.transform});
         Set(c,"flarePrefab",AssetDatabase.LoadAssetAtPath<GameObject>("Assets/Game/Prefabs/Effects/Vehicles/Countermeasures/Flare.prefab").GetComponent(T("VehicleDecoy")));
         yield return new WaitForSeconds(.7f);Assert.Less((int)Get(c,"Charges"),2);
