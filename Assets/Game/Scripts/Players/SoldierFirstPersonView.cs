@@ -14,6 +14,14 @@ public class SoldierFirstPersonView : MonoBehaviour
     public int firstPersonLayer = 8;
     public int thirdPersonLayer = 9;
 
+    [Header("First-person jump feedback")]
+    [Min(0f)] public float jumpArmsPitch = 2f;
+    [Min(0f)] public float jumpArmsLift = .008f;
+    [Min(.01f)] public float jumpRiseTime = .20f;
+    [Range(0f,1f)] public float jumpAimWeight = .25f;
+    float jumpStarted = float.NegativeInfinity;
+    float jumpLanded = float.PositiveInfinity, jumpLandingWeight;
+
     private SoldierWeaponDefinition definition;
     public float reloadSwayWeight => definition.reloadSwayWeight;
     public float reloadWalkWeight => definition.reloadWalkWeight;
@@ -97,6 +105,50 @@ public class SoldierFirstPersonView : MonoBehaviour
         locomotionLayer = armsAnimator.GetLayerIndex("Locomotion");
         aimTransitionLayer = armsAnimator.GetLayerIndex("Aim Transitions");
         SetFirstPerson(firstPerson);
+    }
+
+    void OnEnable() => GetComponent<SoldierMovement>().Jumped += OnJump;
+    void OnDisable()
+    {
+        GetComponent<SoldierMovement>().Jumped -= OnJump;
+        jumpStarted = float.NegativeInfinity;
+    }
+    void OnJump()
+    {
+        if(firstPerson && NeedsCameraAnimation)
+        {
+            jumpStarted=Time.time; jumpLanded=float.PositiveInfinity;
+        }
+    }
+    void ApplyJumpFeedback()
+    {
+        if(!firstPerson || !NeedsCameraAnimation || !loadout.HasFirstPersonPresentation)return;
+        float age=Time.time-jumpStarted;
+        if(float.IsPositiveInfinity(age) || age<0f)return;
+        float envelope=1f-Mathf.Pow(1f-Mathf.Clamp01(age/jumpRiseTime),3f);
+        if(float.IsPositiveInfinity(jumpLanded) && controller.isGrounded)
+        {
+            jumpLanded=Time.time;
+            jumpLandingWeight=envelope;
+        }
+        // Finish the rise and hold it in the air; only ground contact starts recovery.
+        if(!float.IsPositiveInfinity(jumpLanded))
+        {
+            float landedFor=Time.time-jumpLanded;
+            if(landedFor>=jumpRiseTime){jumpStarted=float.NegativeInfinity;return;}
+            envelope=jumpLandingWeight*Mathf.Pow(1f-Mathf.Clamp01(landedFor/jumpRiseTime),3f);
+        }
+        float weight=envelope*Mathf.Lerp(1f,jumpAimWeight,PlacementAimBlend);
+        if(actions.IsThrowing)weight=0f;
+        var root=firstPersonRoot;
+        var muzzle=loadout.EquippedMuzzle;
+        // Pivot the coherent arms/weapon group near the barrel: the rear rises
+        // more than the muzzle, without separating the hands from their grips.
+        Vector3 pivot=muzzle?root.parent.InverseTransformPoint(muzzle.position)
+            :root.localPosition+root.localRotation*Vector3.forward*.65f;
+        Quaternion impulse=Quaternion.AngleAxis(jumpArmsPitch*weight,Vector3.right);
+        root.localPosition=pivot+impulse*(root.localPosition-pivot)+Vector3.up*(jumpArmsLift*weight);
+        root.localRotation=impulse*root.localRotation;
     }
 
     public void RefreshVisuals()
@@ -220,6 +272,7 @@ public class SoldierFirstPersonView : MonoBehaviour
         }
         if (firstPerson) playerCamera.fieldOfView = Mathf.Lerp(originalFieldOfView, aimFieldOfView, aimBlend);
         ApplyPlacement(PlacementAimBlend);
+        ApplyJumpFeedback();
     }
 
     private void ApplyPlacement(float blend)
@@ -283,6 +336,7 @@ public class SoldierFirstPersonView : MonoBehaviour
     public void ApplyWeaponDefinition(SoldierWeaponDefinition selectedDefinition)
     {
         definition = selectedDefinition;
+        jumpStarted = float.NegativeInfinity;
         // ADS placement speed does not retime the authored additive arm gesture.
         // Compressing both clips to the placement duration made aim-out especially abrupt.
         armsAnimator.SetFloat("AimInSpeed",1f);

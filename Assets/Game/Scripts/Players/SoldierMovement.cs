@@ -13,6 +13,7 @@ public class SoldierMovement : MonoBehaviour
     [Header("Physical movement")]
     [Min(1)] public float groundAcceleration=45,airAcceleration=8;
     public bool IsRunning { get; private set; }
+    public event System.Action Jumped;
     public Vector3 Velocity=>controller.Velocity;
     SoldierFirstPersonView view;
     SoldierLook look;
@@ -66,6 +67,7 @@ public class SoldierMovement : MonoBehaviour
                 float target=controller.GroundVelocity.y+Mathf.Sqrt(2*-Physics.gravity.y*jumpHeight);
                 body.AddForce(Vector3.up*Mathf.Max(0,target-body.linearVelocity.y),ForceMode.VelocityChange);
                 controller.BeginJump();grounded=false;
+                Jumped?.Invoke();
             }
         }
         else if(input.sqrMagnitude>.001f)
