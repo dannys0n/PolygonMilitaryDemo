@@ -8,7 +8,7 @@ public sealed class AIBehaviorTestScenario : MonoBehaviour
 {
     public enum Scenario { PlaneCargoExit, TransportOverflow, InfantryCombat, VehicleCombat }
     public Scenario scenario;
-    public ArenaMatch match;
+    public MatchController match;
     public Vehicle vehiclePrefab;
     public VehicleCatalog vehicleCatalog;
     public Vehicle[] VehicleOptions { get; private set; }=System.Array.Empty<Vehicle>();
@@ -18,7 +18,7 @@ public sealed class AIBehaviorTestScenario : MonoBehaviour
     public Vector3 transportDestination=new Vector3(60,0,80);
     public Vehicle opposingVehiclePrefab;
     public Vehicle groundVehiclePrefab;
-    public ArenaVehicleAI.PilotControl pilotControl=ArenaVehicleAI.PilotControl.VehicleDefault;
+    public VehicleAI.PilotControl pilotControl=VehicleAI.PilotControl.VehicleDefault;
     public bool splitPilotControls;
     public Vehicle Opponent { get; private set; }
     [Range(2,4)] public int combatVehicleCount=2;
@@ -32,11 +32,11 @@ public sealed class AIBehaviorTestScenario : MonoBehaviour
     public BehaviorTestCamera observer;
     public int cargoCount=6;
     public Vehicle Vehicle { get; private set; }
-    public readonly List<ArenaParticipant> Actors=new List<ArenaParticipant>();
+    public readonly List<MatchParticipant> Actors=new List<MatchParticipant>();
     public bool Running { get; private set; }
     public int ErrorCount { get; private set; }
     public int CompletedCount {get{int count=0;foreach(var actor in Actors){var task=actor.GetComponent<TransportTaskInput>();if(task&&task.Completed)count++;}return count;}}
-    readonly HashSet<ArenaParticipant> pendingPlayers=new HashSet<ArenaParticipant>();
+    readonly HashSet<MatchParticipant> pendingPlayers=new HashSet<MatchParticipant>();
     GameObject population;
     VehicleOccupant pilot;
     bool flight;
@@ -46,7 +46,7 @@ public sealed class AIBehaviorTestScenario : MonoBehaviour
     void OnDisable(){Application.logMessageReceived-=Log;CombatEvents.DamageConfirmed-=CountVehicleHit;}
     void CountVehicleHit(CombatEvents.ConfirmedDamage hit)
     {
-        if(hit.attacker && hit.attacker.GetComponentInParent<ArenaParticipant>()
+        if(hit.attacker && hit.attacker.GetComponentInParent<MatchParticipant>()
             && (Vehicle && hit.target==Vehicle.gameObject || CombatVehicles.Any(v=>v && hit.target==v.gameObject)))
         {
             VehicleDamageHits++;
@@ -74,8 +74,8 @@ public sealed class AIBehaviorTestScenario : MonoBehaviour
         if(!Vehicle||!Vehicle.Driver){status="Fill functional seats first.";return;}
         foreach(var actor in Actors)if(actor.GetComponent<VehicleOccupant>().IsMounted)
         {
-            var infantry=actor.GetComponent<ArenaAIInput>();infantry.enabled=true;actor.GetComponent<SoldierController>().SetControl(infantry, SoldierControlRole.AI, false);
-            var ai=actor.GetComponent<ArenaVehicleAI>();ai.enabled=true;ai.SetTravelGoal(transportDestination);
+            var infantry=actor.GetComponent<AIInput>();infantry.enabled=true;actor.GetComponent<SoldierController>().SetControl(infantry, SoldierControlRole.AI, false);
+            var ai=actor.GetComponent<VehicleAI>();ai.enabled=true;ai.SetTravelGoal(transportDestination);
         }
         Running=true;status="Production vehicle AI driving/flying to the test destination. Passenger exits remain available.";
     }
@@ -84,14 +84,14 @@ public sealed class AIBehaviorTestScenario : MonoBehaviour
         var direction=Vector3.ProjectOnPlane(door.interaction.position-Vehicle.transform.TransformPoint(Vehicle.NavigationBounds.center),Vector3.up);
         return direction.sqrMagnitude>.01f?direction.normalized:-Vehicle.transform.forward;
     }
-    ArenaParticipant Spawn(Vector3 position,int index,ArenaParticipant.Team team=ArenaParticipant.Team.Red)
+    MatchParticipant Spawn(Vector3 position,int index,MatchParticipant.Team team=MatchParticipant.Team.Red)
     {
         var staging=new GameObject("Actor initialization");staging.transform.SetParent(population.transform,false);staging.SetActive(false);
         var g=Instantiate(actorPrefab,staging.transform);g.name="Test actor "+index;
-        var actor=g.GetComponent<ArenaParticipant>();actor.match=match;actor.team=team;
+        var actor=g.GetComponent<MatchParticipant>();actor.match=match;actor.team=team;
         var nav=g.GetComponent<UnityEngine.AI.NavMeshAgent>();if(nav)nav.enabled=false;
-        var ai=g.GetComponent<ArenaAIInput>();if(ai)ai.enabled=false;
-        var vehicleAI=g.GetComponent<ArenaVehicleAI>();
+        var ai=g.GetComponent<AIInput>();if(ai)ai.enabled=false;
+        var vehicleAI=g.GetComponent<VehicleAI>();
         if(vehicleAI){vehicleAI.SetPilotControl(ControlFor(team));vehicleAI.enabled=false;}
         var view=g.GetComponent<SoldierFirstPersonView>();view.firstPerson=false;view.playerCamera.enabled=false;
         var source=g.AddComponent<TransportTaskInput>();g.GetComponent<SoldierController>().SetControl(source, SoldierControlRole.AI, false);
@@ -119,17 +119,17 @@ public sealed class AIBehaviorTestScenario : MonoBehaviour
         var actor=Spawn(position,id);pendingPlayers.Add(actor);population.SetActive(true);yield return null;
         if(!actor||!Actors.Contains(actor))yield break;
         if(!match.IsRunning)match.BeginMatch();
-        if(!ArenaSpawnSelection.TryFindPosition(match,actor,position,out var validPosition))
+        if(!SpawnSelection.TryFindPosition(match,actor,position,out var validPosition))
         {RemovePlayer(actor);status="No valid nearby spawn position; remove a player or select another vehicle.";yield break;}
         actor.Respawn(validPosition,Vehicle.transform.rotation);
-        actor.GetComponent<ArenaAIInput>().enabled=true;actor.GetComponent<ArenaVehicleAI>().enabled=true;
+        actor.GetComponent<AIInput>().enabled=true;actor.GetComponent<VehicleAI>().enabled=true;
         pendingPlayers.Remove(actor);ApplyTransportOrder(actor);Running=true;
     }
     public void RemovePlayer(){if(Actors.Count>0)RemovePlayer(Actors[Actors.Count-1]);}
     public void RemovePlayerAt(int index){if(index>=0&&index<Actors.Count)RemovePlayer(Actors[index]);}
-    void RemovePlayer(ArenaParticipant actor)
+    void RemovePlayer(MatchParticipant actor)
     {
-        var ai=actor.GetComponent<ArenaVehicleAI>();ai.SetTransportOrder(null,false);
+        var ai=actor.GetComponent<VehicleAI>();ai.SetTransportOrder(null,false);
         var rider=actor.GetComponent<VehicleOccupant>();if(rider.IsMounted)rider.Leave(true);
         if(observer.follow==actor.transform)observer.follow=null;
         pendingPlayers.Remove(actor);Actors.Remove(actor);actor.gameObject.SetActive(false);Destroy(actor.gameObject);
@@ -142,11 +142,11 @@ public sealed class AIBehaviorTestScenario : MonoBehaviour
         foreach(var actor in Actors)ApplyTransportOrder(actor);
         status=EnterRequested?"Enter requested. AI finds/reserves seats and approaches; excess players wait outside for a free seat.":"Exit requested. AI disembarks through normal exit checks and clears the vehicle.";
     }
-    void ApplyTransportOrder(ArenaParticipant actor)
+    void ApplyTransportOrder(MatchParticipant actor)
     {
         if(!actor||pendingPlayers.Contains(actor))return;
-        actor.GetComponent<ArenaVehicleAI>().SetTransportOrder(Vehicle,EnterRequested);
-        actor.GetComponent<SoldierController>().SetControl(actor.GetComponent<ArenaAIInput>(), SoldierControlRole.AI, false);
+        actor.GetComponent<VehicleAI>().SetTransportOrder(Vehicle,EnterRequested);
+        actor.GetComponent<SoldierController>().SetControl(actor.GetComponent<AIInput>(), SoldierControlRole.AI, false);
     }
     public void FillSeats()=>StartCoroutine(Fill());
     IEnumerator Fill()
@@ -196,9 +196,9 @@ public sealed class AIBehaviorTestScenario : MonoBehaviour
         {
             var occupant=actor.GetComponent<VehicleOccupant>();
             if(!occupant.IsMounted||Vehicle.seats[occupant.SeatIndex].role!=Vehicle.SeatRole.Passenger)continue;
-            var infantry=actor.GetComponent<ArenaAIInput>();infantry.enabled=true;
+            var infantry=actor.GetComponent<AIInput>();infantry.enabled=true;
             actor.GetComponent<SoldierController>().SetControl(infantry, SoldierControlRole.AI, false);
-            var ai=actor.GetComponent<ArenaVehicleAI>();ai.enabled=true;ai.SetTransportOrder(Vehicle,false);
+            var ai=actor.GetComponent<VehicleAI>();ai.enabled=true;ai.SetTransportOrder(Vehicle,false);
             while(occupant.IsMounted&&Time.time<deadline)yield return new WaitForSeconds(.2f);
         }
         Unloading=false;status="Passenger exits finished; driver and gunner retained.";
@@ -208,7 +208,7 @@ public sealed class AIBehaviorTestScenario : MonoBehaviour
     {
         ResetWorld();for(int i=0;i<4;i++)Spawn(new Vector3(i%2==0?-10:10,.2f,(i/2)*5),i);
         population.SetActive(true);yield return null;match.BeginMatch();
-        for(int i=0;i<Actors.Count;i++){var a=Actors[i];a.team=i%2==0?ArenaParticipant.Team.Red:ArenaParticipant.Team.Blue;a.Respawn(new Vector3(i%2==0?-10:10,.2f,(i/2)*5),Quaternion.Euler(0,i%2==0?90:-90,0));var ai=a.GetComponent<ArenaAIInput>();ai.enabled=true;a.GetComponent<SoldierController>().SetControl(ai, SoldierControlRole.AI, false);}
+        for(int i=0;i<Actors.Count;i++){var a=Actors[i];a.team=i%2==0?MatchParticipant.Team.Red:MatchParticipant.Team.Blue;a.Respawn(new Vector3(i%2==0?-10:10,.2f,(i/2)*5),Quaternion.Euler(0,i%2==0?90:-90,0));var ai=a.GetComponent<AIInput>();ai.enabled=true;a.GetComponent<SoldierController>().SetControl(ai, SoldierControlRole.AI, false);}
         Running=true;status="Two versus two: production perception, bursts, damage, death and ragdolls.";
     }
     public void StartVehicleCombat()=>StartCoroutine(VehicleCombat());
@@ -243,7 +243,7 @@ public sealed class AIBehaviorTestScenario : MonoBehaviour
             foreach(var gun in vehicle.GetComponentsInChildren<VehicleTurret>(true))gun.ShotFired+=CountShot;
             foreach(var launcher in vehicle.GetComponentsInChildren<VehicleLauncher>(true))launcher.ShotFired+=CountShot;
             for(int seat=0;seat<vehicle.seats.Length;seat++)
-                Spawn(vehicle.transform.position+Vector3.right*(10+seat*2),Actors.Count,side==0?ArenaParticipant.Team.Red:ArenaParticipant.Team.Blue);
+                Spawn(vehicle.transform.position+Vector3.right*(10+seat*2),Actors.Count,side==0?MatchParticipant.Team.Red:MatchParticipant.Team.Blue);
         }
         population.SetActive(true);yield return null;match.BeginMatch();
         int index=0;
@@ -253,11 +253,11 @@ public sealed class AIBehaviorTestScenario : MonoBehaviour
             {
                 var actor=Actors[index++];actor.Respawn(vehicle.transform.position+Vector3.right*10,vehicle.transform.rotation);
                 var occupant=actor.GetComponent<VehicleOccupant>();occupant.faction=(int)actor.team;
-                var ai=actor.GetComponent<ArenaAIInput>();ai.enabled=true;actor.GetComponent<SoldierController>().SetControl(ai, SoldierControlRole.AI, false);
+                var ai=actor.GetComponent<AIInput>();ai.enabled=true;actor.GetComponent<SoldierController>().SetControl(ai, SoldierControlRole.AI, false);
                 // A controlled initial condition, not a boarding test: the complete crew starts seated.
                 vehicle.seats[seat].occupant=occupant;occupant.Mount(vehicle,seat);
-                actor.GetComponent<ArenaVehicleAI>().enabled=true;
-                if(groundTarget)actor.GetComponent<ArenaVehicleAI>().SetMissionGoal(Vector3.zero,true);
+                actor.GetComponent<VehicleAI>().enabled=true;
+                if(groundTarget)actor.GetComponent<VehicleAI>().SetMissionGoal(Vector3.zero,true);
             }
             vehicle.Body.isKinematic=false;vehicle.Body.collisionDetectionMode=CollisionDetectionMode.ContinuousDynamic;vehicle.enabled=true;
             if(vehicle.motor is JetMotor jet){jet.startingThrottle=.8f;vehicle.Body.linearVelocity=vehicle.transform.forward*jet.maxSpeed*.7f;}
@@ -266,26 +266,26 @@ public sealed class AIBehaviorTestScenario : MonoBehaviour
         ApplyPilotControls();
         status=count+" vehicles ("+((count+1)/2)+" red vs "+(count/2)+" blue), full crews. Reset to repeat.";
     }
-    ArenaVehicleAI.PilotControl ControlFor(ArenaParticipant.Team team)=>splitPilotControls && team==ArenaParticipant.Team.Blue
-        ?ArenaVehicleAI.PilotControl.DirectInputs:pilotControl;
+    VehicleAI.PilotControl ControlFor(MatchParticipant.Team team)=>splitPilotControls && team==MatchParticipant.Team.Blue
+        ?VehicleAI.PilotControl.DirectInputs:pilotControl;
     void ApplyPilotControls()
     {
-        foreach(var actor in Actors)if(actor && actor.TryGetComponent<ArenaVehicleAI>(out var ai))ai.SetPilotControl(ControlFor(actor.team));
-        if(Vehicle && Vehicle.IsAircraft)Vehicle.FlightAssistEnabled=UsesAssist(ArenaParticipant.Team.Red);
-        if(Opponent && Opponent.IsAircraft)Opponent.FlightAssistEnabled=UsesAssist(ArenaParticipant.Team.Blue);
+        foreach(var actor in Actors)if(actor && actor.TryGetComponent<VehicleAI>(out var ai))ai.SetPilotControl(ControlFor(actor.team));
+        if(Vehicle && Vehicle.IsAircraft)Vehicle.FlightAssistEnabled=UsesAssist(MatchParticipant.Team.Red);
+        if(Opponent && Opponent.IsAircraft)Opponent.FlightAssistEnabled=UsesAssist(MatchParticipant.Team.Blue);
         for(int i=2;i<CombatVehicles.Count;i++)if(CombatVehicles[i] && CombatVehicles[i].IsAircraft)
-            CombatVehicles[i].FlightAssistEnabled=UsesAssist(i%2==0?ArenaParticipant.Team.Red:ArenaParticipant.Team.Blue);
+            CombatVehicles[i].FlightAssistEnabled=UsesAssist(i%2==0?MatchParticipant.Team.Red:MatchParticipant.Team.Blue);
     }
-    bool UsesAssist(ArenaParticipant.Team team)=>ControlFor(team)==ArenaVehicleAI.PilotControl.VehicleAssist;
-    public void UseVehicleAssist(){pilotControl=ArenaVehicleAI.PilotControl.VehicleAssist;splitPilotControls=false;ApplyPilotControls();}
-    public void UseDirectInputs(){pilotControl=ArenaVehicleAI.PilotControl.DirectInputs;splitPilotControls=false;ApplyPilotControls();}
-    public void CompareFlightInputs(){pilotControl=ArenaVehicleAI.PilotControl.VehicleAssist;splitPilotControls=true;ApplyPilotControls();}
+    bool UsesAssist(MatchParticipant.Team team)=>ControlFor(team)==VehicleAI.PilotControl.VehicleAssist;
+    public void UseVehicleAssist(){pilotControl=VehicleAI.PilotControl.VehicleAssist;splitPilotControls=false;ApplyPilotControls();}
+    public void UseDirectInputs(){pilotControl=VehicleAI.PilotControl.DirectInputs;splitPilotControls=false;ApplyPilotControls();}
+    public void CompareFlightInputs(){pilotControl=VehicleAI.PilotControl.VehicleAssist;splitPilotControls=true;ApplyPilotControls();}
     void VehicleTelemetry(Vehicle vehicle,string team)
     {
         if(!vehicle)return;
         int occupied=0;foreach(var seat in vehicle.seats)if(seat.occupant)occupied++;
         GUILayout.Label(team+" "+vehicle.displayName+" | seats "+occupied+"/"+vehicle.seats.Length+" | health "+vehicle.Health.ToString("F0")+" | speed "+vehicle.Body.linearVelocity.magnitude.ToString("F0")+" m/s");
-        if(vehicle.Driver && vehicle.Driver.TryGetComponent<ArenaVehicleAI>(out var ai))
+        if(vehicle.Driver && vehicle.Driver.TryGetComponent<VehicleAI>(out var ai))
         {
             GUILayout.Label(ai.Maneuver+" / extensions "+ai.ExtensionCount+" / target "+(ai.CombatTarget?ai.CombatTarget.name:"none")
                 +(Opponent && Vehicle?" / separation "+Vector3.Distance(Vehicle.Body.worldCenterOfMass,Opponent.Body.worldCenterOfMass).ToString("F0")+" m":""));
@@ -313,7 +313,7 @@ public sealed class AIBehaviorTestScenario : MonoBehaviour
             v.transform.SetPositionAndRotation(position,rotation);
             v.Body.linearVelocity=rotation*Vector3.forward*(jet?((JetMotor)v.motor).maxSpeed*.75f:8);
             v.Body.angularVelocity=Vector3.zero;
-            if(v.Driver.TryGetComponent<ArenaVehicleAI>(out var ai))ai.SetTravelGoal(new Vector3(0,0,150));
+            if(v.Driver.TryGetComponent<VehicleAI>(out var ai))ai.SetTravelGoal(new Vector3(0,0,150));
         }
         Physics.SyncTransforms();status=jet?"Turning-chase setup. Watch pursuit / extension / reapproach.":"Closing-pass setup. Watch braking, stand-off and separation.";
     }
@@ -374,7 +374,7 @@ public sealed class AIBehaviorTestScenario : MonoBehaviour
         {
             var rider=actor.GetComponent<VehicleOccupant>();
             string label=scenario==Scenario.TransportOverflow
-                ?actor.name+" / "+(rider.IsMounted?rider.MountedVehicle.seats[rider.SeatIndex].name:EnterRequested?actor.GetComponent<ArenaVehicleAI>().BoardingStatus:"outside")
+                ?actor.name+" / "+(rider.IsMounted?rider.MountedVehicle.seats[rider.SeatIndex].name:EnterRequested?actor.GetComponent<VehicleAI>().BoardingStatus:"outside")
                 :actor.name+" / "+(actor.health.IsDead?"dead":actor.health.CurrentHealth.ToString("F0"));
             GUILayout.BeginHorizontal();if(GUILayout.Button(label))observer.follow=actor.transform;
             if(scenario==Scenario.TransportOverflow&&GUILayout.Button("Remove",GUILayout.Width(65)))RemovePlayer(actor);GUILayout.EndHorizontal();

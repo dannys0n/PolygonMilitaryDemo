@@ -445,11 +445,11 @@ public class VehicleDefenseTests
     {
         var prefab=AssetDatabase.LoadAssetAtPath<GameObject>("Assets/Game/Prefabs/Vehicles/Hummer.prefab");var car=Object.Instantiate(prefab,new Vector3(0,1000,0),Quaternion.identity);objects.Add(car);
         var v=(Behaviour)car.GetComponent(T("Vehicle"));v.enabled=false;car.GetComponent<Rigidbody>().useGravity=false;
-        var match=(Behaviour)Root("Boarding test match").AddComponent(T("ArenaMatch"));match.enabled=false;
+        var match=(Behaviour)Root("Boarding test match").AddComponent(T("MatchController"));match.enabled=false;
         Set(match,"settings",AssetDatabase.LoadAssetAtPath<ScriptableObject>("Assets/Game/Definitions/Matches/Vehicle_Test.asset"));
         var holder=Root("Inactive actor setup");holder.SetActive(false);
         var actorPrefab=AssetDatabase.LoadAssetAtPath<GameObject>("Assets/Game/Prefabs/Matches/Vehicles/Player_Polygon_Vehicles.prefab");var player=Object.Instantiate(actorPrefab,new Vector3(4,1000,0),Quaternion.identity,holder.transform);objects.Add(player);
-        Set(player.GetComponent(T("ArenaParticipant")),"match",match);holder.SetActive(true);
+        Set(player.GetComponent(T("MatchParticipant")),"match",match);holder.SetActive(true);
         var actor=player.GetComponent(T("VehicleOccupant"));var soldier=player.GetComponent(T("SoldierController"));((Behaviour)Get(soldier,"inputSource")).enabled=false;
         yield return null;var entry=(Bounds)Get(v,"EntryBounds");player.transform.position=v.transform.TransformPoint(entry.center+Vector3.right*(entry.extents.x-.2f));Physics.SyncTransforms();
         Assert.IsTrue((bool)Call(v,"BoardFirstAvailable",actor));Assert.AreEqual(v,Get(actor,"MountedVehicle"));

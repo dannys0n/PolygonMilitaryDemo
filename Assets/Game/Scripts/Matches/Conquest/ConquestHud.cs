@@ -2,11 +2,11 @@ using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
 
-// Presentation only. Works with the player already handed to ArenaHud by spectators.
+// Presentation only. Works with the player already handed to GameplayHud by spectators.
 public class ConquestHud : MonoBehaviour
 {
     public ConquestRules rules;
-    public ArenaHud hud;
+    public GameplayHud hud;
     public RectTransform root;
     public TMP_Text[] flagLabels, worldLabels;
     public GameObject capturePanel;
@@ -17,9 +17,9 @@ public class ConquestHud : MonoBehaviour
     public Image captureFilament;
     float nextRefresh;
     Camera viewingCamera;
-    ArenaAISpectator spectator;
+    AISpectator spectator;
     int presentedPoints=-1;
-    void Start(){spectator=FindAnyObjectByType<ArenaAISpectator>();EnsureObjectiveEntries();}
+    void Start(){spectator=FindAnyObjectByType<AISpectator>();EnsureObjectiveEntries();}
     void EnsureObjectiveEntries()
     {
         int count=rules.points.Length;
@@ -95,17 +95,17 @@ public class ConquestHud : MonoBehaviour
             if(!flagBackgrounds[i])continue;
             bool active=i<rules.points.Length && rules.points[i]==current;
             flagBackgrounds[i].gameObject.SetActive(i<rules.points.Length && hud.match.IsRunning);
-            flagBackgrounds[i].color=ArenaHudTheme.SectionBackground;
+            flagBackgrounds[i].color=HudTheme.SectionBackground;
         }
         if(current)
         {
             bool friendly=current.Owner==actor.team;
-            bool opposing=current.Progress*(actor.team==ArenaParticipant.Team.Red?-1:1)<0;
+            bool opposing=current.Progress*(actor.team==MatchParticipant.Team.Red?-1:1)<0;
             string status=current.IsContested?"CONTESTED":friendly?"DEFENDING":opposing?"NEUTRALIZING":"CAPTURING";
             captureLabel.text="<color=#FF8C1F>"+current.letter+"</color>  "+current.displayName.ToUpperInvariant()+"\n<size=14>"+status+"  /  "+current.Count(actor.team)+" FRIENDLY</size>";
             if(captureFilament)captureFilament.color=new Color(1,1,1,current.IsContested?.72f:.46f);
             captureProgress.fillAmount=Mathf.Abs(current.Progress);
-            captureProgress.color=ConquestCapturePoint.TeamColor(current.Progress<0?ArenaParticipant.Team.Red:ArenaParticipant.Team.Blue);
+            captureProgress.color=ConquestCapturePoint.TeamColor(current.Progress<0?MatchParticipant.Team.Red:MatchParticipant.Team.Blue);
         }
         for(int i=0;i<rules.points.Length;i++)
         {

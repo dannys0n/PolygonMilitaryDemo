@@ -6,13 +6,13 @@ using UnityEngine;
 public sealed class CombinedArmsTestScenario : MonoBehaviour
 {
     public bool accuracyTest;
-    public ArenaMatch match;
+    public MatchController match;
     public CombinedArmsOrchestrator orchestrator;
     public GameObject actorPrefab;
     public Vehicle[] vehiclePrefabs;
     public BehaviorTestCamera observer;
     public int actorsPerTeam=12;
-    readonly List<ArenaParticipant> actors=new List<ArenaParticipant>();
+    readonly List<MatchParticipant> actors=new List<MatchParticipant>();
     readonly List<Vehicle> vehicles=new List<Vehicle>();
     GameObject population;
     bool settingUp,holdInfantry;
@@ -47,7 +47,7 @@ public sealed class CombinedArmsTestScenario : MonoBehaviour
             for(int i=0;i<count;i++)
             {
                 var g=Instantiate(actorPrefab,population.transform);g.name=(side==0?"Red":"Blue")+" test "+(i+1);
-                var actor=g.GetComponent<ArenaParticipant>();actor.match=match;actor.team=(ArenaParticipant.Team)side;
+                var actor=g.GetComponent<MatchParticipant>();actor.match=match;actor.team=(MatchParticipant.Team)side;
                 g.transform.position=new Vector3(i*3,1,side==0?-42:42);
                 g.GetComponent<SoldierFirstPersonView>().firstPerson=false;
                 g.GetComponent<SoldierFirstPersonView>().playerCamera.enabled=false;
@@ -60,9 +60,9 @@ public sealed class CombinedArmsTestScenario : MonoBehaviour
             var actor=actors[i];int side=(int)actor.team,index=i%count;
             var point=accuracyTest?new Vector3(side==0?-12:12,.15f,index*8):new Vector3((index%4-1.5f)*4,.2f,(side==0?-1:1)*(62+index/4*4));
             actor.Respawn(point,Quaternion.Euler(0,accuracyTest?(side==0?90:-90):(side==0?0:180),0));
-            var ai=actor.GetComponent<ArenaAIInput>();ai.enabled=true;ai.HoldMovement=false;
+            var ai=actor.GetComponent<AIInput>();ai.enabled=true;ai.HoldMovement=false;
             actor.GetComponent<SoldierController>().SetControl(ai, SoldierControlRole.AI, false);
-            var drive=actor.GetComponent<ArenaVehicleAI>();drive.enabled=!accuracyTest;
+            var drive=actor.GetComponent<VehicleAI>();drive.enabled=!accuracyTest;
         }
         orchestrator.enabled=!accuracyTest;orchestrator.Replan();settingUp=false;
         status=accuracyTest?"2 vs 2. After 1.5s focus: zero artificial aim error or tracking delay.":"12 vs 12. Production boarding, loading, driving, gunners, objectives and aircraft combat.";
@@ -73,7 +73,7 @@ public sealed class CombinedArmsTestScenario : MonoBehaviour
         foreach(var actor in actors)
         {
             if(!actor||actor.health.IsDead)continue;
-            var ai=actor.GetComponent<ArenaVehicleAI>();if(!ai)continue;
+            var ai=actor.GetComponent<VehicleAI>();if(!ai)continue;
             Vehicle nearest=null;float best=float.PositiveInfinity;
             if(ai.occupant.IsMounted)nearest=ai.occupant.MountedVehicle;
             else foreach(var vehicle in vehicles)if(vehicle&&!vehicle.IsDestroyed){float d=(actor.transform.position-vehicle.transform.position).sqrMagnitude;if(d<best){best=d;nearest=vehicle;}}
@@ -84,7 +84,7 @@ public sealed class CombinedArmsTestScenario : MonoBehaviour
     {
         orchestrator.enabled=false;
         foreach(var actor in actors)if(actor && actor.GetComponent<VehicleOccupant>().IsMounted)
-        {var ai=actor.GetComponent<ArenaVehicleAI>();ai.SetMissionGoal(Vector3.zero,true);ai.HoldDeparture=false;}
+        {var ai=actor.GetComponent<VehicleAI>();ai.SetMissionGoal(Vector3.zero,true);ai.HoldDeparture=false;}
     }
     void OnGUI()
     {
@@ -101,14 +101,14 @@ public sealed class CombinedArmsTestScenario : MonoBehaviour
         else
         {
             if(GUILayout.Button(holdInfantry?"Allow tactical movement":"Hold position (keep aiming)"))
-            {holdInfantry=!holdInfantry;foreach(var actor in actors)actor.GetComponent<ArenaAIInput>().HoldPosition=holdInfantry;}
+            {holdInfantry=!holdInfantry;foreach(var actor in actors)actor.GetComponent<AIInput>().HoldPosition=holdInfantry;}
             if(GUILayout.Button("Restore health"))foreach(var actor in actors)if(!actor.health.IsDead)actor.health.ResetHealth();
         }
         if(GUILayout.Button("Free camera"))observer.follow=null;
         scroll=GUILayout.BeginScrollView(scroll);
         foreach(var actor in actors)if(actor)
         {
-            var ai=actor.GetComponent<ArenaAIInput>();var rider=actor.GetComponent<VehicleOccupant>();
+            var ai=actor.GetComponent<AIInput>();var rider=actor.GetComponent<VehicleOccupant>();
             string line=actor.name+" | "+(actor.health.IsDead?"DEAD":rider.IsMounted?rider.MountedVehicle.displayName:ai.State.ToString());
             if(accuracyTest)line+="\nTarget: "+(ai.Target?ai.Target.name:"none")+" / focus "+ai.FocusSeconds.ToString("F2")+"s / error "+ai.CurrentAimError.ToString("F2")+" deg";
             if(GUILayout.Button(line))observer.follow=actor.transform;

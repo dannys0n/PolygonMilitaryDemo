@@ -7,15 +7,15 @@ using UnityEngine;
 [RequireComponent(typeof(SoldierWeaponLoadout))]
 public sealed class SoldierWeaponCatalogBinding : MonoBehaviour
 {
-    public ArenaWeaponCatalog catalog;
+    public WeaponCatalog catalog;
     void Awake()
     {
-        var actor=GetComponent<ArenaParticipant>();
-        if(actor){var match=actor.match?actor.match:ArenaMatch.FindSceneMatch(gameObject.scene);if(match && match.settings && match.settings.weaponCatalog)catalog=match.settings.weaponCatalog;}
+        var actor=GetComponent<MatchParticipant>();
+        if(actor){var match=actor.match?actor.match:MatchController.FindSceneMatch(gameObject.scene);if(match && match.settings && match.settings.weaponCatalog)catalog=match.settings.weaponCatalog;}
         Initialize(catalog);
     }
     // Configure inactive actors before activation; does not spawn presentation or reset ammo.
-    public void Initialize(ArenaWeaponCatalog source)
+    public void Initialize(WeaponCatalog source)
     {
         catalog=source;
         var loadout=GetComponent<SoldierWeaponLoadout>();

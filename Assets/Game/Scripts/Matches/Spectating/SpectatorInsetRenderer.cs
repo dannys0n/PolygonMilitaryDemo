@@ -5,7 +5,7 @@ using UnityEngine;
 [DefaultExecutionOrder(1200)]
 public sealed class SpectatorInsetRenderer : MonoBehaviour
 {
-    public ArenaAISpectator spectator;
+    public AISpectator spectator;
     Camera previous;
     SoldierScopeView scope;
     float nextCapture;

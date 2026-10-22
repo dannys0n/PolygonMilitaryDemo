@@ -29,27 +29,27 @@ public sealed class InfantryRenderingPerformanceControl : MonoBehaviour
         scripted.enabled = false; // Its match-rule methods remain active; only the duplicate debug panel is suppressed.
         scripted.SetActivity(EntityPerformanceControl.Activity.Idle);
         while (!scripted.match.IsRunning) yield return null;
-        scripted.SetCount(ArenaParticipant.Team.Red, 1);
-        scripted.SetCount(ArenaParticipant.Team.Blue, 1);
+        scripted.SetCount(MatchParticipant.Team.Red, 1);
+        scripted.SetCount(MatchParticipant.Team.Blue, 1);
         // Capture the production loadout after its first pose evaluation, not a prefab T-pose.
         yield return new WaitForSeconds(1);
         staticTemplates = new GameObject[2]; riggedTemplates = new GameObject[2];
         // Actors are root objects in the production test harness.
-        foreach (var actor in FindObjectsByType<ArenaParticipant>())
+        foreach (var actor in FindObjectsByType<MatchParticipant>())
             if (actor.match == scripted.match && !riggedTemplates[(int)actor.team]) Capture(actor);
         if (!riggedTemplates[0] || !riggedTemplates[1])
         {
             status = "Template capture failed. Check the Console.";
             Debug.LogError(status, this); yield break;
         }
-        scripted.SetCount(ArenaParticipant.Team.Red, 0); scripted.SetCount(ArenaParticipant.Team.Blue, 0);
+        scripted.SetCount(MatchParticipant.Team.Red, 0); scripted.SetCount(MatchParticipant.Team.Blue, 0);
         yield return null;
         ready = true;
         status = "Same skins, equipment, spacing, shadows and observer camera.";
-        SetCount(ArenaParticipant.Team.Red, initialPerTeam); SetCount(ArenaParticipant.Team.Blue, initialPerTeam);
+        SetCount(MatchParticipant.Team.Red, initialPerTeam); SetCount(MatchParticipant.Team.Blue, initialPerTeam);
     }
 
-    void Capture(ArenaParticipant actor)
+    void Capture(MatchParticipant actor)
     {
         int team = (int)actor.team;
         if (riggedTemplates[team]) return;
@@ -149,26 +149,26 @@ public sealed class InfantryRenderingPerformanceControl : MonoBehaviour
     {
         if (!ready || representation == value) return;
         ClearVisuals(red); ClearVisuals(blue);
-        scripted.SetCount(ArenaParticipant.Team.Red, 0); scripted.SetCount(ArenaParticipant.Team.Blue, 0);
+        scripted.SetCount(MatchParticipant.Team.Red, 0); scripted.SetCount(MatchParticipant.Team.Blue, 0);
         representation = value;
-        Populate(ArenaParticipant.Team.Red, redCount); Populate(ArenaParticipant.Team.Blue, blueCount);
+        Populate(MatchParticipant.Team.Red, redCount); Populate(MatchParticipant.Team.Blue, blueCount);
     }
-    public void SetCount(ArenaParticipant.Team team, int count)
+    public void SetCount(MatchParticipant.Team team, int count)
     {
         if (!ready) return;
         count = Mathf.Clamp(count, 0, scripted.maximumPerTeam);
-        if (team == ArenaParticipant.Team.Red) { redCount = count; redText = count.ToString(); }
+        if (team == MatchParticipant.Team.Red) { redCount = count; redText = count.ToString(); }
         else { blueCount = count; blueText = count.ToString(); }
         Populate(team, count);
     }
-    void Populate(ArenaParticipant.Team team, int count)
+    void Populate(MatchParticipant.Team team, int count)
     {
         if (representation == Representation.ScriptedInfantry) { scripted.SetCount(team, count); return; }
-        var list = team == ArenaParticipant.Team.Red ? red : blue;
+        var list = team == MatchParticipant.Team.Red ? red : blue;
         while (list.Count > count) { var item = list[list.Count - 1]; list.RemoveAt(list.Count - 1); item.SetActive(false); Destroy(item); }
         while (list.Count < count)
         {
-            int index = list.Count; float side = team == ArenaParticipant.Team.Red ? -1 : 1;
+            int index = list.Count; float side = team == MatchParticipant.Team.Red ? -1 : 1;
             var template = representation == Representation.StaticMeshes ? staticTemplates[(int)team] : riggedTemplates[(int)team];
             var item = Instantiate(template, transform);
             item.name = team + " " + representation + " " + index;
@@ -198,23 +198,23 @@ public sealed class InfantryRenderingPerformanceControl : MonoBehaviour
         GUI.enabled = ready;
         int selected = GUILayout.SelectionGrid((int)representation, Labels, 2);
         if (selected != (int)representation) SetRepresentation((Representation)selected);
-        Row("RED", ArenaParticipant.Team.Red, ref redText); Row("BLUE", ArenaParticipant.Team.Blue, ref blueText);
+        Row("RED", MatchParticipant.Team.Red, ref redText); Row("BLUE", MatchParticipant.Team.Blue, ref blueText);
         if (representation == Representation.ScriptedInfantry)
         {
             int activity = GUILayout.SelectionGrid((int)scripted.activity, Activities, 3);
             if (activity != (int)scripted.activity) scripted.SetActivity((EntityPerformanceControl.Activity)activity);
         }
-        if (GUILayout.Button("Clear both teams")) { SetCount(ArenaParticipant.Team.Red, 0); SetCount(ArenaParticipant.Team.Blue, 0); }
+        if (GUILayout.Button("Clear both teams")) { SetCount(MatchParticipant.Team.Red, 0); SetCount(MatchParticipant.Team.Blue, 0); }
         GUI.enabled = true;
         GUILayout.Label("Frozen/static: identical captured pose. Idle: animation only, no IK.\nFull actor: production scripts, physics and animation.\nWait after changes before profiling. F1 hides this panel.\nRMB + WASD / Q E: fly | Shift: faster.");
         GUILayout.EndArea();
     }
-    void Row(string label, ArenaParticipant.Team team, ref string value)
+    void Row(string label, MatchParticipant.Team team, ref string value)
     {
         GUILayout.BeginHorizontal(); GUILayout.Label(label, GUILayout.Width(40));
         value = GUILayout.TextField(value, 4, GUILayout.Width(55));
         if (GUILayout.Button("Apply") && int.TryParse(value, out int count)) SetCount(team, count);
-        int current = team == ArenaParticipant.Team.Red ? redCount : blueCount;
+        int current = team == MatchParticipant.Team.Red ? redCount : blueCount;
         if (GUILayout.Button("-32")) SetCount(team, current - 32);
         if (GUILayout.Button("+32")) SetCount(team, current + 32);
         GUILayout.EndHorizontal();

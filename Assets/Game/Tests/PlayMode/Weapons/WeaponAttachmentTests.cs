@@ -22,9 +22,9 @@ public class WeaponAttachmentTests
     GameObject Root(string name){var g=new GameObject(name);roots.Add(g);return g;}
     [UnitySetUp] public IEnumerator Setup()
     {
-        var match=(Behaviour)Root("Attachment test match").AddComponent(T("ArenaMatch"));match.enabled=false;Set(match,"settings",AssetDatabase.LoadAssetAtPath<ScriptableObject>("Assets/Game/Definitions/Matches/Vehicle_Test.asset"));
+        var match=(Behaviour)Root("Attachment test match").AddComponent(T("MatchController"));match.enabled=false;Set(match,"settings",AssetDatabase.LoadAssetAtPath<ScriptableObject>("Assets/Game/Definitions/Matches/Vehicle_Test.asset"));
         var holder=Root("Actor fixture");holder.SetActive(false);var prefab=AssetDatabase.LoadAssetAtPath<GameObject>("Assets/Game/Prefabs/Matches/Vehicles/Player_Polygon_Vehicles.prefab");var actor=Object.Instantiate(prefab,Vector3.zero,Quaternion.identity,holder.transform);
-        Set(actor.GetComponent(T("ArenaParticipant")),"match",match);holder.SetActive(true);loadout=actor.GetComponent(T("SoldierWeaponLoadout"));view=actor.GetComponent(T("SoldierFirstPersonView"));actions=actor.GetComponent(T("SoldierActions"));
+        Set(actor.GetComponent(T("MatchParticipant")),"match",match);holder.SetActive(true);loadout=actor.GetComponent(T("SoldierWeaponLoadout"));view=actor.GetComponent(T("SoldierFirstPersonView"));actions=actor.GetComponent(T("SoldierActions"));
         ((Behaviour)actor.GetComponent(T("SoldierLocalInput"))).enabled=false;yield return null;yield return null;
         ((Behaviour)actor.GetComponent(T("SoldierController"))).enabled=false;Call(actor.GetComponent(T("SoldierLife")),"SetGameplayAllowed",true);
         Set(loadout,"infiniteAmmunition",false);Call(loadout,"ResetAmmunition"); // Garage prefab is unlimited; reload tests require finite magazines.

@@ -6,7 +6,7 @@ using UnityEngine;
 // Read-only checks for the production data shared by offline and future network branches.
 public static class PrototypeArchitectureValidation
 {
-    [MenuItem("Tools/Arena Shooter/Validate Prototype Foundation")]
+    [MenuItem("Tools/Game/Validate Prototype Foundation")]
     public static void Validate()
     {
         var errors=Inspect();
@@ -16,7 +16,7 @@ public static class PrototypeArchitectureValidation
     public static string[] Inspect()
     {
         var errors=new List<string>();
-        var catalog=AssetDatabase.LoadAssetAtPath<ArenaWeaponCatalog>("Assets/Game/Definitions/Weapons/Catalogs/WeaponCatalog.asset");
+        var catalog=AssetDatabase.LoadAssetAtPath<WeaponCatalog>("Assets/Game/Definitions/Weapons/Catalogs/WeaponCatalog.asset");
         if(!catalog)return new[]{"Missing production weapon catalog"};
         foreach(var group in catalog.Weapons().GroupBy(e=>e.weapon.catalogId))
             if(string.IsNullOrWhiteSpace(group.Key)||group.Count()!=1)errors.Add("Invalid/duplicate weapon ID: "+group.Key);

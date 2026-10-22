@@ -1,6 +1,6 @@
 using UnityEngine;
 
-[CreateAssetMenu(menuName = "Arena/Vehicle catalog")]
+[CreateAssetMenu(menuName = "Game/Vehicle catalog")]
 public class VehicleCatalog : ScriptableObject
 {
     public Vehicle[] transports = System.Array.Empty<Vehicle>();

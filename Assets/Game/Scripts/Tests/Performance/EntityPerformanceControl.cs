@@ -5,10 +5,10 @@ using UnityEngine.AI;
 using UnityEngine.SceneManagement;
 
 // Control scenes only. Population changes are event driven; no Update or per-frame roster scans.
-public sealed class EntityPerformanceControl : ArenaMatchRules
+public sealed class EntityPerformanceControl : MatchRules
 {
     public enum Activity { Idle, CombatWithoutDamage, Combat }
-    public ArenaMatch match;
+    public MatchController match;
     public GameObject redPrefab, bluePrefab;
     public Vehicle vehiclePrefab;
     public ConquestCapturePoint objective;
@@ -19,7 +19,7 @@ public sealed class EntityPerformanceControl : ArenaMatchRules
     public bool unlimitedAmmo = true;
     public float teamDistance = 40, spacing = 3;
     readonly List<Unit> red = new List<Unit>(), blue = new List<Unit>();
-    readonly Dictionary<ArenaParticipant, Unit> owners = new Dictionary<ArenaParticipant, Unit>();
+    readonly Dictionary<MatchParticipant, Unit> owners = new Dictionary<MatchParticipant, Unit>();
     string redText = "0", blueText = "0";
     static readonly string[] ActivityLabels = { "Idle", "AI + FX", "Combat" };
     string populationLabel = "Infantry bodies / crew: 0";
@@ -28,12 +28,12 @@ public sealed class EntityPerformanceControl : ArenaMatchRules
     sealed class Unit
     {
         public int id;
-        public ArenaParticipant.Team team;
+        public MatchParticipant.Team team;
         public Vector3 position;
         public Quaternion rotation;
         public Vehicle vehicle;
         public GameObject root;
-        public readonly List<ArenaParticipant> actors = new List<ArenaParticipant>();
+        public readonly List<MatchParticipant> actors = new List<MatchParticipant>();
         public bool removed;
     }
     public int RedCount => red.Count;
@@ -44,30 +44,30 @@ public sealed class EntityPerformanceControl : ArenaMatchRules
     public override bool HasEnded => false;
     public override bool UsesMatchTimer => false;
     public override bool UsesCustomSpawning => true;
-    public override int TeamScore(ArenaParticipant.Team team) => 0;
-    public override void Begin(ArenaMatch owner) => match = owner;
+    public override int TeamScore(MatchParticipant.Team team) => 0;
+    public override void Begin(MatchController owner) => match = owner;
     public override void Tick(float deltaTime) { }
-    public override void OnSpawned(ArenaParticipant actor, bool wasDead) { }
-    public override bool TryChooseSpawn(ArenaParticipant actor, Dictionary<Transform, float> history, out Transform spawn) { spawn = null; return false; }
-    public override bool CanDamage(ArenaParticipant victim, ArenaParticipant attacker) => activity == Activity.Combat;
+    public override void OnSpawned(MatchParticipant actor, bool wasDead) { }
+    public override bool TryChooseSpawn(MatchParticipant actor, Dictionary<Transform, float> history, out Transform spawn) { spawn = null; return false; }
+    public override bool CanDamage(MatchParticipant victim, MatchParticipant attacker) => activity == Activity.Combat;
     IEnumerator Start()
     {
         while (!match.IsRunning) yield return null;
-        if (initialRed > 0 && red.Count == 0) SetCount(ArenaParticipant.Team.Red, initialRed);
-        if (initialBlue > 0 && blue.Count == 0) SetCount(ArenaParticipant.Team.Blue, initialBlue);
+        if (initialRed > 0 && red.Count == 0) SetCount(MatchParticipant.Team.Red, initialRed);
+        if (initialBlue > 0 && blue.Count == 0) SetCount(MatchParticipant.Team.Blue, initialBlue);
     }
-    public void SetCount(ArenaParticipant.Team team, int count)
+    public void SetCount(MatchParticipant.Team team, int count)
     {
-        var units = team == ArenaParticipant.Team.Red ? red : blue;
+        var units = team == MatchParticipant.Team.Red ? red : blue;
         count = Mathf.Clamp(count, 0, maximumPerTeam);
         while (units.Count > count) { var unit = units[units.Count - 1]; units.RemoveAt(units.Count - 1); Remove(unit); }
         while (units.Count < count) units.Add(Create(team, units.Count));
         redText = red.Count.ToString(); blueText = blue.Count.ToString();
         populationLabel = "Infantry bodies / crew: " + owners.Count;
     }
-    Unit Create(ArenaParticipant.Team team, int index)
+    Unit Create(MatchParticipant.Team team, int index)
     {
-        float side = team == ArenaParticipant.Team.Red ? -1 : 1;
+        float side = team == MatchParticipant.Team.Red ? -1 : 1;
         var unit = new Unit { id = nextId++, team = team,
             position = new Vector3(((index % 8 + 1) / 2) * (index % 2 == 0 ? -spacing : spacing), .15f, side * (teamDistance * .5f + index / 8 * spacing)),
             rotation = Quaternion.Euler(0, side < 0 ? 0 : 180, 0) };
@@ -82,13 +82,13 @@ public sealed class EntityPerformanceControl : ArenaMatchRules
         int crew = unit.vehicle ? unit.vehicle.seats.Length : 1;
         for (int seat = 0; seat < crew; seat++)
         {
-            var root = Instantiate(team == ArenaParticipant.Team.Red ? redPrefab : bluePrefab, unit.root.transform);
-            var actor = root.GetComponent<ArenaParticipant>();
+            var root = Instantiate(team == MatchParticipant.Team.Red ? redPrefab : bluePrefab, unit.root.transform);
+            var actor = root.GetComponent<MatchParticipant>();
             actor.match = match; actor.team = team;
             root.name = team + " " + unit.id + " crew " + seat;
-            var ai = root.GetComponent<ArenaAIInput>(); if (ai) ai.enabled = false;
+            var ai = root.GetComponent<AIInput>(); if (ai) ai.enabled = false;
             var simple = root.GetComponent<SandboxInfantryInput>(); if (simple) simple.enabled = false;
-            var vehicleAI = root.GetComponent<ArenaVehicleAI>(); if (vehicleAI) vehicleAI.enabled = false;
+            var vehicleAI = root.GetComponent<VehicleAI>(); if (vehicleAI) vehicleAI.enabled = false;
             var nav = root.GetComponent<NavMeshAgent>(); if (nav) nav.enabled = false;
             var view = root.GetComponent<SoldierFirstPersonView>();
             view.firstPerson = false; view.playerCamera.enabled = false;
@@ -101,11 +101,11 @@ public sealed class EntityPerformanceControl : ArenaMatchRules
             var teamFilter = unit.vehicle.DamageFilter;
             unit.vehicle.DamageFilter = source => AllowVehicleDamage(source) && (teamFilter == null || teamFilter(source));
         }
-        // ArenaMatch processes registered joins on its next tick.
+        // MatchController processes registered joins on its next tick.
         return unit;
     }
     bool AllowVehicleDamage(GameObject source) => activity == Activity.Combat;
-    public override bool TrySpawn(ArenaParticipant actor)
+    public override bool TrySpawn(MatchParticipant actor)
     {
         if (!owners.TryGetValue(actor, out var unit) || unit.removed || (unit.vehicle && unit.vehicle.IsDestroyed)) return false;
         int seat = unit.actors.IndexOf(actor);
@@ -122,12 +122,12 @@ public sealed class EntityPerformanceControl : ArenaMatchRules
         Configure(actor, unit.vehicle != null);
         return true;
     }
-    void Configure(ArenaParticipant actor, bool seated)
+    void Configure(MatchParticipant actor, bool seated)
     {
         bool active = activity != Activity.Idle;
-        var basic = actor.GetComponent<ArenaAIInput>();
+        var basic = actor.GetComponent<AIInput>();
         var simple = actor.GetComponent<SandboxInfantryInput>();
-        var driver = actor.GetComponent<ArenaVehicleAI>();
+        var driver = actor.GetComponent<VehicleAI>();
         if (basic) basic.enabled = active && seated;
         if (simple) { simple.enabled = active && !seated; if (active && !seated) simple.Configure(objective); }
         actor.GetComponent<SoldierController>().SetControl(seated ? basic : simple, SoldierControlRole.AI, false);
@@ -156,7 +156,7 @@ public sealed class EntityPerformanceControl : ArenaMatchRules
     {
         yield return new WaitForSeconds(3);
         if (shuttingDown || unit.removed) yield break;
-        var units = unit.team == ArenaParticipant.Team.Red ? red : blue;
+        var units = unit.team == MatchParticipant.Team.Red ? red : blue;
         int index = units.IndexOf(unit);
         if (index < 0) yield break;
         Remove(unit);
@@ -185,8 +185,8 @@ public sealed class EntityPerformanceControl : ArenaMatchRules
         if (!showControls) return;
         GUILayout.BeginArea(new Rect(12, 48, 350, 400), GUI.skin.box);
         GUILayout.Label(vehiclePrefab ? "VEHICLE BASELINE (counts include full crews)" : "INFANTRY BASELINE");
-        Row("RED", ArenaParticipant.Team.Red, ref redText);
-        Row("BLUE", ArenaParticipant.Team.Blue, ref blueText);
+        Row("RED", MatchParticipant.Team.Red, ref redText);
+        Row("BLUE", MatchParticipant.Team.Blue, ref blueText);
         GUILayout.Label(populationLabel);
         int selected = GUILayout.SelectionGrid((int)activity, ActivityLabels, 3);
         if (selected != (int)activity) SetActivity((Activity)selected);
@@ -202,17 +202,17 @@ public sealed class EntityPerformanceControl : ArenaMatchRules
                 foreach (var slot in loadout.slots) if (slot.state != null) slot.state.InfiniteOverride = unlimited;
             }
         }
-        if (GUILayout.Button("Clear both teams")) { SetCount(ArenaParticipant.Team.Red, 0); SetCount(ArenaParticipant.Team.Blue, 0); }
+        if (GUILayout.Button("Clear both teams")) { SetCount(MatchParticipant.Team.Red, 0); SetCount(MatchParticipant.Team.Blue, 0); }
         if (GUILayout.Button("Reload scene (cold population / pool reset)")) SceneManager.LoadScene(SceneManager.GetActiveScene().path);
         GUILayout.Label("RMB + WASD / Q E: fly | Shift: faster\nF1: hide controls. Keep the same camera for comparisons.\nUse Unity Profiler or a standalone Development Build.");
         GUILayout.EndArea();
     }
-    void Row(string label, ArenaParticipant.Team team, ref string text)
+    void Row(string label, MatchParticipant.Team team, ref string text)
     {
         GUILayout.BeginHorizontal(); GUILayout.Label(label, GUILayout.Width(40));
         text = GUILayout.TextField(text, 3, GUILayout.Width(45));
         if (GUILayout.Button("Apply") && int.TryParse(text, out int count)) SetCount(team, count);
-        int current = team == ArenaParticipant.Team.Red ? red.Count : blue.Count;
+        int current = team == MatchParticipant.Team.Red ? red.Count : blue.Count;
         if (GUILayout.Button("-10")) SetCount(team, current - 10);
         if (GUILayout.Button("+10")) SetCount(team, current + 10);
         GUILayout.EndHorizontal();

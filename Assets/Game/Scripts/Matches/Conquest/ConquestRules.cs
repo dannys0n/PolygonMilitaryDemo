@@ -2,7 +2,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.AI;
 
-public class ConquestRules : ArenaMatchRules
+public class ConquestRules : MatchRules
 {
     [Header("Tickets")]
     [Min(1)] public int startingTickets=300;
@@ -21,18 +21,18 @@ public class ConquestRules : ArenaMatchRules
     public override bool HasEnded => redTickets<=0 || blueTickets<=0;
     public int RedTickets => redTickets;
     public int BlueTickets => blueTickets;
-    public override int TeamScore(ArenaParticipant.Team team) => team==ArenaParticipant.Team.Red ? redTickets : blueTickets;
-    ArenaMatch match;
+    public override int TeamScore(MatchParticipant.Team team) => team==MatchParticipant.Team.Red ? redTickets : blueTickets;
+    MatchController match;
     int redTickets,blueTickets;
     float captureClock,bleedClock;
-    readonly Dictionary<ArenaParticipant,ConquestCapturePoint> deployments=new Dictionary<ArenaParticipant,ConquestCapturePoint>();
-    readonly Dictionary<ArenaParticipant,ArenaParticipant> squadDeployments=new Dictionary<ArenaParticipant,ArenaParticipant>();
-    readonly HashSet<ArenaParticipant> approved=new HashSet<ArenaParticipant>();
-    readonly Dictionary<ArenaParticipant,Assignment> assignments=new Dictionary<ArenaParticipant,Assignment>();
+    readonly Dictionary<MatchParticipant,ConquestCapturePoint> deployments=new Dictionary<MatchParticipant,ConquestCapturePoint>();
+    readonly Dictionary<MatchParticipant,MatchParticipant> squadDeployments=new Dictionary<MatchParticipant,MatchParticipant>();
+    readonly HashSet<MatchParticipant> approved=new HashSet<MatchParticipant>();
+    readonly Dictionary<MatchParticipant,Assignment> assignments=new Dictionary<MatchParticipant,Assignment>();
     readonly List<Transform> candidates=new List<Transform>();
     NavMeshPath query;
     struct Assignment { public ConquestCapturePoint point; public Vector3 destination; public float reconsiderAt; }
-    public override void Begin(ArenaMatch owner)
+    public override void Begin(MatchController owner)
     {
         match=owner;redTickets=blueTickets=startingTickets;captureClock=bleedClock=0;
         deployments.Clear();squadDeployments.Clear();approved.Clear();assignments.Clear();
@@ -60,33 +60,33 @@ public class ConquestRules : ArenaMatchRules
         {
             bleedClock-=bleedInterval;
             int red=0,blue=0;
-            foreach(var point in points){if(point.Owner==ArenaParticipant.Team.Red)red++;else if(point.Owner==ArenaParticipant.Team.Blue)blue++;}
+            foreach(var point in points){if(point.Owner==MatchParticipant.Team.Red)red++;else if(point.Owner==MatchParticipant.Team.Blue)blue++;}
             int threshold=points.Length/2;
             if(red>threshold)blueTickets=Mathf.Max(0,blueTickets-(red-threshold)*ticketsPerExtraFlag);
             if(blue>threshold)redTickets=Mathf.Max(0,redTickets-(blue-threshold)*ticketsPerExtraFlag);
         }
     }
-    public virtual bool CanDeploy(ArenaParticipant actor, ConquestCapturePoint point) => !point || point.Owner==actor.team
-        && point.Count(actor.team==ArenaParticipant.Team.Red?ArenaParticipant.Team.Blue:ArenaParticipant.Team.Red)==0;
-    public void SelectDeployment(ArenaParticipant actor, ConquestCapturePoint point) { deployments[actor]=point;squadDeployments.Remove(actor); }
-    public void SelectSquadDeployment(ArenaParticipant actor,ArenaParticipant member){squadDeployments[actor]=member;deployments[actor]=null;}
-    public void ApproveDeployment(ArenaParticipant actor) => approved.Add(actor);
-    public void CancelDeployment(ArenaParticipant actor) => approved.Remove(actor);
-    protected bool DeploymentApproved(ArenaParticipant actor) => approved.Contains(actor);
-    protected ConquestCapturePoint DeploymentPoint(ArenaParticipant actor) => deployments.TryGetValue(actor,out var point)?point:null;
-    public override bool NeedsDeployment(ArenaParticipant actor) => actor.player && actor.IsHumanControlled;
-    public override IEnumerable<ArenaParticipant> SquadMembers(ArenaParticipant actor) => squads ? squads.Members(actor) : null;
-    public override bool TryChooseSpawn(ArenaParticipant actor, Dictionary<Transform,float> history, out Transform spawn)
+    public virtual bool CanDeploy(MatchParticipant actor, ConquestCapturePoint point) => !point || point.Owner==actor.team
+        && point.Count(actor.team==MatchParticipant.Team.Red?MatchParticipant.Team.Blue:MatchParticipant.Team.Red)==0;
+    public void SelectDeployment(MatchParticipant actor, ConquestCapturePoint point) { deployments[actor]=point;squadDeployments.Remove(actor); }
+    public void SelectSquadDeployment(MatchParticipant actor,MatchParticipant member){squadDeployments[actor]=member;deployments[actor]=null;}
+    public void ApproveDeployment(MatchParticipant actor) => approved.Add(actor);
+    public void CancelDeployment(MatchParticipant actor) => approved.Remove(actor);
+    protected bool DeploymentApproved(MatchParticipant actor) => approved.Contains(actor);
+    protected ConquestCapturePoint DeploymentPoint(MatchParticipant actor) => deployments.TryGetValue(actor,out var point)?point:null;
+    public override bool NeedsDeployment(MatchParticipant actor) => actor.player && actor.IsHumanControlled;
+    public override IEnumerable<MatchParticipant> SquadMembers(MatchParticipant actor) => squads ? squads.Members(actor) : null;
+    public override bool TryChooseSpawn(MatchParticipant actor, Dictionary<Transform,float> history, out Transform spawn)
     {
         spawn=null;
         if(HasEnded || actor.RespawnRemaining>0 || NeedsDeployment(actor) && !approved.Contains(actor))return false;
         // Dedicated crews return to HQ near vehicle pads instead of repeatedly
         // deploying into the middle of infantry flag fights.
-        if(squads && squads.IsVehicleSquad(actor) && actor.GetComponent<ArenaVehicleAI>()
-            && ArenaSpawnSelection.TryChooseFrom(match,actor,actor.team==ArenaParticipant.Team.Red?redBaseSpawns:blueBaseSpawns,history,out spawn))return true;
+        if(squads && squads.IsVehicleSquad(actor) && actor.GetComponent<VehicleAI>()
+            && SpawnSelection.TryChooseFrom(match,actor,actor.team==MatchParticipant.Team.Red?redBaseSpawns:blueBaseSpawns,history,out spawn))return true;
         if(squads)
         {
-            ArenaParticipant mate=null;
+            MatchParticipant mate=null;
             if(NeedsDeployment(actor))squadDeployments.TryGetValue(actor,out mate);
             else
             {
@@ -113,7 +113,7 @@ public class ConquestRules : ArenaMatchRules
             foreach(var point in points)
             {
                 if(!CanDeploy(actor,point))continue;
-                float score=point.Count(actor.team==ArenaParticipant.Team.Red?ArenaParticipant.Team.Blue:ArenaParticipant.Team.Red)*20;
+                float score=point.Count(actor.team==MatchParticipant.Team.Red?MatchParticipant.Team.Blue:MatchParticipant.Team.Red)*20;
                 foreach(var enemy in match.participants)
                     if(enemy.team!=actor.team && !enemy.health.IsDead && !enemy.IsAwaitingSpawn)
                         score=Mathf.Max(score,30-Vector3.Distance(point.transform.position,enemy.transform.position)*.2f);
@@ -122,22 +122,22 @@ public class ConquestRules : ArenaMatchRules
             }
             if(choice)candidates.AddRange(choice.spawnPoints);
         }
-        bool found=ArenaSpawnSelection.TryChooseFrom(match,actor,candidates,history,out spawn);
-        if(!found)found=ArenaSpawnSelection.TryChooseFrom(match,actor,actor.team==ArenaParticipant.Team.Red?redBaseSpawns:blueBaseSpawns,history,out spawn);
+        bool found=SpawnSelection.TryChooseFrom(match,actor,candidates,history,out spawn);
+        if(!found)found=SpawnSelection.TryChooseFrom(match,actor,actor.team==MatchParticipant.Team.Red?redBaseSpawns:blueBaseSpawns,history,out spawn);
         return found;
     }
-    public override void OnSpawned(ArenaParticipant actor, bool wasDead)
+    public override void OnSpawned(MatchParticipant actor, bool wasDead)
     {
         approved.Remove(actor);assignments.Remove(actor);
         if(!wasDead)return;
-        if(actor.team==ArenaParticipant.Team.Red)redTickets=Mathf.Max(0,redTickets-1);else blueTickets=Mathf.Max(0,blueTickets-1);
+        if(actor.team==MatchParticipant.Team.Red)redTickets=Mathf.Max(0,redTickets-1);else blueTickets=Mathf.Max(0,blueTickets-1);
     }
-    public override bool TryGetObjective(ArenaAIInput ai, out Vector3 destination)
+    public override bool TryGetObjective(AIInput ai, out Vector3 destination)
     {
         var actor=ai.participant;
         bool hasAssignment=assignments.TryGetValue(actor,out var current);
         bool captured=hasAssignment && current.point && current.point.Owner==actor.team;
-        bool defending=captured && (current.point.Count(actor.team==ArenaParticipant.Team.Red?ArenaParticipant.Team.Blue:ArenaParticipant.Team.Red)>0
+        bool defending=captured && (current.point.Count(actor.team==MatchParticipant.Team.Red?MatchParticipant.Team.Blue:MatchParticipant.Team.Red)>0
             || Time.time-ai.LastCombatTime<postCaptureDefenseTime);
         if(hasAssignment && (defending || !captured && Time.time<current.reconsiderAt))
         {destination=current.destination;return true;}
@@ -148,14 +148,14 @@ public class ConquestRules : ArenaMatchRules
             foreach(var pair in assignments)
                 if(pair.Key!=actor && pair.Key && pair.Key.team==actor.team && !pair.Key.health.IsDead && !pair.Key.IsAwaitingSpawn && pair.Value.point==point)assigned++;
             bool friendly=point.Owner==actor.team;
-            int enemies=point.Count(actor.team==ArenaParticipant.Team.Red?ArenaParticipant.Team.Blue:ArenaParticipant.Team.Red);
+            int enemies=point.Count(actor.team==MatchParticipant.Team.Red?MatchParticipant.Team.Blue:MatchParticipant.Team.Red);
             // Capturing is not a permanent parking assignment. Quiet owned flags only
             // receive patrol visits when there are no neutral/enemy objectives to attack.
             float priority=friendly ? enemies>0 ? 65 : 0 : point.Owner.HasValue ? 45 : 48;
             float angle=Mathf.Repeat(System.Array.IndexOf(match.participants,actor)*137.5f,360);
             Vector3 proposed=point.transform.position+Quaternion.Euler(0,angle,0)*Vector3.forward*(point.radius*.5f);
             if(!NavMesh.SamplePosition(proposed,out var hit,2,new NavMeshQueryFilter{agentTypeID=ai.agent.agentTypeID,areaMask=ai.agent.areaMask}) || !point.Contains(hit.position))continue;
-            if(!ArenaAITactics.Reachable(ai,hit.position,query,out var reachable,out float distance))continue;
+            if(!AITactics.Reachable(ai,hit.position,query,out var reachable,out float distance))continue;
             // Distribution is a tie-breaker, never a reason to camp at a quiet owned flag.
             float score=priority-Mathf.Min(distance*.12f,12)-Mathf.Min(assigned*2,12)+(current.point==point?3:0)
                 - (captured && !defending && current.point==point ? 35 : 0);

@@ -5,12 +5,12 @@ using UnityEngine;
 // Mounted crew share one hull target; dismounted actors remain individual contacts.
 public sealed class VehicleCombatContacts : MonoBehaviour
 {
-    readonly List<ArenaParticipant> contacts = new List<ArenaParticipant>();
+    readonly List<MatchParticipant> contacts = new List<MatchParticipant>();
     readonly HashSet<Vehicle> hulls = new HashSet<Vehicle>();
-    ArenaMatch owner;
-    ArenaParticipant.Team side;
+    MatchController owner;
+    MatchParticipant.Team side;
     float refreshAt;
-    public IReadOnlyList<ArenaParticipant> Read(ArenaParticipant observer)
+    public IReadOnlyList<MatchParticipant> Read(MatchParticipant observer)
     {
         if(owner == observer.match && side == observer.team && Time.time < refreshAt)return contacts;
         owner=observer.match;side=observer.team;

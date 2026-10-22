@@ -127,6 +127,14 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 754046427236085070, guid: f2496c426cb8ddd4eaba50cbd33b51dc, type: 3}
+      propertyPath: m_EditorClassIdentifier
+      value: Game.Runtime::SensitivitySlider
+      objectReference: {fileID: 0}
+    - target: {fileID: 910000000000000001, guid: f2496c426cb8ddd4eaba50cbd33b51dc, type: 3}
+      propertyPath: m_EditorClassIdentifier
+      value: Game.Runtime::UiPresence
+      objectReference: {fileID: 0}
     - target: {fileID: 1294673936667883315, guid: f2496c426cb8ddd4eaba50cbd33b51dc, type: 3}
       propertyPath: m_AnchorMax.y
       value: 0
@@ -147,9 +155,17 @@ PrefabInstance:
       propertyPath: m_AnchoredPosition.y
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 1528393104177667296, guid: f2496c426cb8ddd4eaba50cbd33b51dc, type: 3}
+      propertyPath: m_EditorClassIdentifier
+      value: Game.Runtime::MenuButtonFeedback
+      objectReference: {fileID: 0}
+    - target: {fileID: 2391284742718080332, guid: f2496c426cb8ddd4eaba50cbd33b51dc, type: 3}
+      propertyPath: m_EditorClassIdentifier
+      value: Game.Runtime::SceneTransition
+      objectReference: {fileID: 0}
     - target: {fileID: 4279343107579700348, guid: f2496c426cb8ddd4eaba50cbd33b51dc, type: 3}
       propertyPath: m_Name
-      value: ArenaPauseUI
+      value: PauseUI
       objectReference: {fileID: 0}
     - target: {fileID: 4447068656624180047, guid: f2496c426cb8ddd4eaba50cbd33b51dc, type: 3}
       propertyPath: m_AnchorMax.y
@@ -270,6 +286,22 @@ PrefabInstance:
     - target: {fileID: 6139964441785330266, guid: f2496c426cb8ddd4eaba50cbd33b51dc, type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6831106803507342656, guid: f2496c426cb8ddd4eaba50cbd33b51dc, type: 3}
+      propertyPath: m_EditorClassIdentifier
+      value: Game.Runtime::MenuButtonFeedback
+      objectReference: {fileID: 0}
+    - target: {fileID: 7101425326048407805, guid: f2496c426cb8ddd4eaba50cbd33b51dc, type: 3}
+      propertyPath: m_EditorClassIdentifier
+      value: Game.Runtime::MenuButtonFeedback
+      objectReference: {fileID: 0}
+    - target: {fileID: 7811672251486694042, guid: f2496c426cb8ddd4eaba50cbd33b51dc, type: 3}
+      propertyPath: m_EditorClassIdentifier
+      value: Game.Runtime::MenuAtmosphere
+      objectReference: {fileID: 0}
+    - target: {fileID: 8143868062979159066, guid: f2496c426cb8ddd4eaba50cbd33b51dc, type: 3}
+      propertyPath: m_EditorClassIdentifier
+      value: Game.Runtime::PauseMenu
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -704,9 +736,21 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 910000000000000001, guid: 9bc7e73776bc2f2408c35c5d455b003e, type: 3}
+      propertyPath: m_EditorClassIdentifier
+      value: Game.Runtime::UiPresence
+      objectReference: {fileID: 0}
+    - target: {fileID: 1042214934887280993, guid: 9bc7e73776bc2f2408c35c5d455b003e, type: 3}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_TargetAssemblyTypeName
+      value: MatchResults, Game.Runtime
+      objectReference: {fileID: 0}
+    - target: {fileID: 2368568229892991794, guid: 9bc7e73776bc2f2408c35c5d455b003e, type: 3}
+      propertyPath: m_EditorClassIdentifier
+      value: Game.Runtime::MatchResults
+      objectReference: {fileID: 0}
     - target: {fileID: 2378278938383109945, guid: 9bc7e73776bc2f2408c35c5d455b003e, type: 3}
       propertyPath: m_Name
-      value: ArenaScoreboard
+      value: Scoreboard
       objectReference: {fileID: 0}
     - target: {fileID: 3460447957579538167, guid: 9bc7e73776bc2f2408c35c5d455b003e, type: 3}
       propertyPath: m_Pivot.x
@@ -788,6 +832,18 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 5837093265616740582, guid: 9bc7e73776bc2f2408c35c5d455b003e, type: 3}
+      propertyPath: m_EditorClassIdentifier
+      value: Game.Runtime::MenuSelectionFeedback
+      objectReference: {fileID: 0}
+    - target: {fileID: 7528081201920736782, guid: 9bc7e73776bc2f2408c35c5d455b003e, type: 3}
+      propertyPath: m_EditorClassIdentifier
+      value: Game.Runtime::MenuSelectionFeedback
+      objectReference: {fileID: 0}
+    - target: {fileID: 8736875459077033860, guid: 9bc7e73776bc2f2408c35c5d455b003e, type: 3}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_TargetAssemblyTypeName
+      value: MatchResults, Game.Runtime
+      objectReference: {fileID: 0}
     - target: {fileID: 8953703325559028104, guid: 9bc7e73776bc2f2408c35c5d455b003e, type: 3}
       propertyPath: match
       value: 
@@ -796,6 +852,10 @@ PrefabInstance:
       propertyPath: localPlayer
       value: 
       objectReference: {fileID: 1724297057}
+    - target: {fileID: 8953703325559028104, guid: 9bc7e73776bc2f2408c35c5d455b003e, type: 3}
+      propertyPath: m_EditorClassIdentifier
+      value: Game.Runtime::Scoreboard
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -812,7 +872,7 @@ GameObject:
   - component: {fileID: 1418754103}
   - component: {fileID: 1418754102}
   m_Layer: 0
-  m_Name: Arena Navigation
+  m_Name: Navigation
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -1020,6 +1080,10 @@ PrefabInstance:
       propertyPath: player
       value: 
       objectReference: {fileID: 1724297057}
+    - target: {fileID: 658327651397801665, guid: dd5f2de6f1c43a24b9acd4c11f298ea7, type: 3}
+      propertyPath: m_EditorClassIdentifier
+      value: Game.Runtime::GameplayHud
+      objectReference: {fileID: 0}
     - target: {fileID: 771422760967050227, guid: dd5f2de6f1c43a24b9acd4c11f298ea7, type: 3}
       propertyPath: m_fontColor32.rgba
       value: 16777215
@@ -1027,6 +1091,18 @@ PrefabInstance:
     - target: {fileID: 771422760967050227, guid: dd5f2de6f1c43a24b9acd4c11f298ea7, type: 3}
       propertyPath: m_TextStyleHashCode
       value: -1183493901
+      objectReference: {fileID: 0}
+    - target: {fileID: 812354669159020056, guid: dd5f2de6f1c43a24b9acd4c11f298ea7, type: 3}
+      propertyPath: m_EditorClassIdentifier
+      value: Game.Runtime::CrosshairStroke
+      objectReference: {fileID: 0}
+    - target: {fileID: 910000000000000001, guid: dd5f2de6f1c43a24b9acd4c11f298ea7, type: 3}
+      propertyPath: m_EditorClassIdentifier
+      value: Game.Runtime::UiPresence
+      objectReference: {fileID: 0}
+    - target: {fileID: 1710683231492456567, guid: dd5f2de6f1c43a24b9acd4c11f298ea7, type: 3}
+      propertyPath: m_EditorClassIdentifier
+      value: Game.Runtime::CrosshairStroke
       objectReference: {fileID: 0}
     - target: {fileID: 1846302087490295538, guid: dd5f2de6f1c43a24b9acd4c11f298ea7, type: 3}
       propertyPath: m_TextStyleHashCode
@@ -1056,6 +1132,10 @@ PrefabInstance:
       propertyPath: m_TextStyleHashCode
       value: -1183493901
       objectReference: {fileID: 0}
+    - target: {fileID: 2790515363111838351, guid: dd5f2de6f1c43a24b9acd4c11f298ea7, type: 3}
+      propertyPath: m_EditorClassIdentifier
+      value: Game.Runtime::CrosshairStroke
+      objectReference: {fileID: 0}
     - target: {fileID: 2861179822930657226, guid: dd5f2de6f1c43a24b9acd4c11f298ea7, type: 3}
       propertyPath: m_fontColor32.rgba
       value: 4280257791
@@ -1075,6 +1155,10 @@ PrefabInstance:
     - target: {fileID: 3397114338201379001, guid: dd5f2de6f1c43a24b9acd4c11f298ea7, type: 3}
       propertyPath: m_TextStyleHashCode
       value: -1183493901
+      objectReference: {fileID: 0}
+    - target: {fileID: 3731435327086242486, guid: dd5f2de6f1c43a24b9acd4c11f298ea7, type: 3}
+      propertyPath: m_EditorClassIdentifier
+      value: Game.Runtime::MenuAtmosphere
       objectReference: {fileID: 0}
     - target: {fileID: 4613278009959751219, guid: dd5f2de6f1c43a24b9acd4c11f298ea7, type: 3}
       propertyPath: m_TextStyleHashCode
@@ -1099,6 +1183,10 @@ PrefabInstance:
     - target: {fileID: 6335491805476126334, guid: dd5f2de6f1c43a24b9acd4c11f298ea7, type: 3}
       propertyPath: m_TextStyleHashCode
       value: -1183493901
+      objectReference: {fileID: 0}
+    - target: {fileID: 6569810717177511874, guid: dd5f2de6f1c43a24b9acd4c11f298ea7, type: 3}
+      propertyPath: m_EditorClassIdentifier
+      value: Game.Runtime::CrosshairStroke
       objectReference: {fileID: 0}
     - target: {fileID: 6773603841187313895, guid: dd5f2de6f1c43a24b9acd4c11f298ea7, type: 3}
       propertyPath: m_Pivot.x
@@ -1194,7 +1282,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 8891053353541543429, guid: dd5f2de6f1c43a24b9acd4c11f298ea7, type: 3}
       propertyPath: m_Name
-      value: ArenaGameplayHUD
+      value: GameplayHUD
       objectReference: {fileID: 0}
     - target: {fileID: 8960907993775799448, guid: dd5f2de6f1c43a24b9acd4c11f298ea7, type: 3}
       propertyPath: m_TextStyleHashCode
@@ -1247,7 +1335,7 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 18e192d7e55f8464da1e3579fc199f30, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::ArenaParticipant
+  m_EditorClassIdentifier: Game.Runtime::MatchParticipant
   team: 0
   health: {fileID: 1724297046}
   player: {fileID: 1724297045}
@@ -1263,6 +1351,10 @@ PrefabInstance:
     - target: {fileID: 1054646772298195969, guid: acb21014eddba4a4d92b497670d7a275, type: 3}
       propertyPath: m_Name
       value: Player_Polygon_Local
+      objectReference: {fileID: 0}
+    - target: {fileID: 2334293723585784024, guid: acb21014eddba4a4d92b497670d7a275, type: 3}
+      propertyPath: m_EditorClassIdentifier
+      value: Game.Runtime::SoldierWeaponCatalogBinding
       objectReference: {fileID: 0}
     - target: {fileID: 4090294860037719609, guid: acb21014eddba4a4d92b497670d7a275, type: 3}
       propertyPath: m_LocalPosition.x

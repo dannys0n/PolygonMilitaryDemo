@@ -4,7 +4,7 @@ using UnityEngine;
 public class SoldierLocalInput : SoldierInputSource
 {
     public float sensitivity = 2f;
-    public float EffectiveSensitivity => sensitivity * ArenaMouseSensitivity.Value;
+    public float EffectiveSensitivity => sensitivity * MouseSensitivity.Value;
     SoldierFirstPersonView view;
     void Awake() => view=GetComponent<SoldierFirstPersonView>();
     public bool InputBlocked { get; set; }

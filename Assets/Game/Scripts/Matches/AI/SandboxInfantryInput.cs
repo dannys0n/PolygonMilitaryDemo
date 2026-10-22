@@ -7,7 +7,7 @@ public class SandboxInfantryInput : SoldierInputSource
 {
     public SoldierController soldier;
     public SoldierLife life;
-    public ArenaParticipant participant;
+    public MatchParticipant participant;
     public NavMeshAgent agent;
     public ConquestCapturePoint objective;
     [Header("Simple infantry combat")]
@@ -25,11 +25,11 @@ public class SandboxInfantryInput : SoldierInputSource
     [Header("Objective movement")]
     [Min(.1f)] public float repathInterval = .5f;
     [Min(1)] public float sprintDistance = 15f;
-    public ArenaParticipant Target => target;
+    public MatchParticipant Target => target;
     public Vector3 Destination { get; private set; }
     public bool IsFighting => target && Time.time - seenAt < aimHoldTime;
 
-    ArenaParticipant target;
+    MatchParticipant target;
     VehicleOccupant occupant;
     readonly RaycastHit[] hits = new RaycastHit[32];
     float nextScan, nextPath, seenAt = float.NegativeInfinity, acquiredAt, readyAt;
@@ -38,7 +38,7 @@ public class SandboxInfantryInput : SoldierInputSource
     Vector2 noise;
     Vector3 goalOffset;
     bool visible;
-    ArenaParticipant firingSightTarget;
+    MatchParticipant firingSightTarget;
     SoldierWeaponView firingSightWeapon;
     Vector3 firingSightOrigin, firingSightMuzzle, firingSightPoint;
     float nextFiringSight;
@@ -48,7 +48,7 @@ public class SandboxInfantryInput : SoldierInputSource
     {
         if (!soldier) soldier = GetComponent<SoldierController>();
         if (!life) life = GetComponent<SoldierLife>();
-        if (!participant) participant = GetComponent<ArenaParticipant>();
+        if (!participant) participant = GetComponent<MatchParticipant>();
         if (!agent) agent = GetComponent<NavMeshAgent>();
         occupant = GetComponent<VehicleOccupant>();
         if (agent)
@@ -172,7 +172,7 @@ public class SandboxInfantryInput : SoldierInputSource
         int desired = primary.MagazineAmmo == 0 && primary.ReserveAmmo == 0 && loadout.AvailableSlots.Length > 1 ? 1 : 0;
         return loadout.selectedSlot == loadout.AvailableSlots[desired] ? 0 : desired + 1;
     }
-    bool Eligible(ArenaParticipant enemy)
+    bool Eligible(MatchParticipant enemy)
     {
         if (!enemy || !enemy.isActiveAndEnabled || enemy == participant || enemy.team == participant.team
             || enemy.match != participant.match || enemy.health.IsDead || enemy.IsAwaitingSpawn || enemy.IsSpectator) return false;
@@ -186,7 +186,7 @@ public class SandboxInfantryInput : SoldierInputSource
         if (!Eligible(target)) { target = null; visible = false; }
         if (Time.time < nextScan) return;
         nextScan = Time.time + perceptionInterval;
-        ArenaParticipant found = target && CanSee(target) ? target : null;
+        MatchParticipant found = target && CanSee(target) ? target : null;
         float nearest = sightRange * sightRange;
         if (!found) foreach (var enemy in participant.match.participants)
         {
@@ -203,14 +203,14 @@ public class SandboxInfantryInput : SoldierInputSource
         }
         else if (Time.time - seenAt >= aimHoldTime) target = null;
     }
-    bool CanSee(ArenaParticipant enemy)
+    bool CanSee(MatchParticipant enemy)
     {
         Vector3 delta = AimPoint(enemy) - life.look.aimCamera.transform.position;
         return delta.sqrMagnitude <= sightRange * sightRange
             && Vector3.Angle(Quaternion.Euler(0, life.look.Yaw, 0) * Vector3.forward, delta) <= fieldOfView * .5f
             && ClearShot(enemy);
     }
-    bool ClearShot(ArenaParticipant enemy)
+    bool ClearShot(MatchParticipant enemy)
     {
         Vector3 from = life.look.aimCamera.transform.position, to = AimPoint(enemy), delta = to - from;
         if (GrenadeSmoke.BlocksLine(from, to)) return false;
@@ -225,9 +225,9 @@ public class SandboxInfantryInput : SoldierInputSource
             if (hit.collider.isTrigger && !hit.collider.GetComponent<SoldierHitRegion>()) continue;
             if (hit.distance <= closest) { closest = hit.distance; blocker = hit.collider; }
         }
-        return !blocker || blocker.GetComponentInParent<ArenaParticipant>() == enemy;
+        return !blocker || blocker.GetComponentInParent<MatchParticipant>() == enemy;
     }
-    bool FiringLineClear(ArenaParticipant enemy)
+    bool FiringLineClear(MatchParticipant enemy)
     {
         var weapon = soldier.loadout.ThirdPersonView;
         Vector3 origin = life.look.aimCamera.transform.position;
@@ -248,7 +248,7 @@ public class SandboxInfantryInput : SoldierInputSource
         }
         return firingSightClear;
     }
-    static Vector3 AimPoint(ArenaParticipant enemy) => enemy.transform.position + Vector3.up * 1.25f;
+    static Vector3 AimPoint(MatchParticipant enemy) => enemy.transform.position + Vector3.up * 1.25f;
     static float Heading(Vector3 direction) => Mathf.Atan2(direction.x, direction.z) * Mathf.Rad2Deg;
     static float Elevation(Vector3 direction) => Mathf.Atan2(direction.y, new Vector2(direction.x, direction.z).magnitude) * Mathf.Rad2Deg;
 }

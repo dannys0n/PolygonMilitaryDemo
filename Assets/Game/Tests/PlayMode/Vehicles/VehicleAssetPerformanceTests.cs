@@ -33,7 +33,7 @@ public class VehicleAssetPerformanceTests
         for(int i=0;i<prefabs.Length;i++)Call(control,"SetCount",i,1);
         yield return new WaitForSeconds(2);
         Assert.AreEqual(prefabs.Length,Vehicles.Length);Assert.AreEqual(prefabs.Length,Get(control,"TotalCount"));
-        Assert.IsNull(UnityEngine.Object.FindAnyObjectByType(T("ArenaParticipant")),"Asset baseline must not instantiate infantry or crews.");
+        Assert.IsNull(UnityEngine.Object.FindAnyObjectByType(T("MatchParticipant")),"Asset baseline must not instantiate infantry or crews.");
         foreach(var vehicle in Vehicles)
         {
             Assert.IsFalse((bool)Get(vehicle,"IsDestroyed"));

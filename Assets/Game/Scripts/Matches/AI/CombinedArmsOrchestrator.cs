@@ -7,7 +7,7 @@ using UnityEngine.AI;
 public sealed class CombinedArmsOrchestrator : MonoBehaviour
 {
     public enum Role { Infantry, Armor, Transport, Helicopter, Fighter }
-    public ArenaMatch match;
+    public MatchController match;
     public ConquestRules rules;
     [Min(.2f)] public float decisionInterval=1;
     [Min(1)] public float assignmentDuration=18;
@@ -17,7 +17,7 @@ public sealed class CombinedArmsOrchestrator : MonoBehaviour
     [Min(0)] public int fighterPilotsPerTeam=2,helicopterPilotsPerTeam=2,armorDriversPerTeam=2,transportDriversPerTeam=2;
     public sealed class Order
     {
-        public ArenaParticipant actor;
+        public MatchParticipant actor;
         public Role role;
         public ConquestCapturePoint objective;
         public Vehicle vehicle;
@@ -27,16 +27,16 @@ public sealed class CombinedArmsOrchestrator : MonoBehaviour
         public bool boarded;
         public string status="Moving to objective";
     }
-    readonly Dictionary<ArenaParticipant,Order> orders=new Dictionary<ArenaParticipant,Order>();
-    readonly List<ArenaParticipant> removed=new List<ArenaParticipant>();
+    readonly Dictionary<MatchParticipant,Order> orders=new Dictionary<MatchParticipant,Order>();
+    readonly List<MatchParticipant> removed=new List<MatchParticipant>();
     NavMeshPath objectivePath;
     readonly HashSet<Vehicle> claimed=new HashSet<Vehicle>();
     public IEnumerable<Order> Orders=>orders.Values;
     float nextDecision;
     void Awake(){objectivePath=new NavMeshPath();}
     void Update(){if(match && match.IsRunning && Time.time>=nextDecision){nextDecision=Time.time+decisionInterval;Replan();}}
-    void OnDisable(){foreach(var order in orders.Values)if(order.actor){var ai=order.actor.GetComponent<ArenaVehicleAI>();if(ai){ai.ReleaseMission();ai.MissionManaged=false;}}orders.Clear();}
-    public bool IsCrew(ArenaParticipant actor)=>orders.TryGetValue(actor,out var order) && order.role!=Role.Infantry;
+    void OnDisable(){foreach(var order in orders.Values)if(order.actor){var ai=order.actor.GetComponent<VehicleAI>();if(ai){ai.ReleaseMission();ai.MissionManaged=false;}}orders.Clear();}
+    public bool IsCrew(MatchParticipant actor)=>orders.TryGetValue(actor,out var order) && order.role!=Role.Infantry;
     public Role RoleForIndex(int index)
     {
         if(index<fighterPilotsPerTeam)return Role.Fighter;index-=fighterPilotsPerTeam;
@@ -44,7 +44,7 @@ public sealed class CombinedArmsOrchestrator : MonoBehaviour
         if(index<armorDriversPerTeam)return Role.Armor;index-=armorDriversPerTeam;
         return index<transportDriversPerTeam?Role.Transport:Role.Infantry;
     }
-    public bool TryGetDestination(ArenaParticipant actor,out Vector3 destination)
+    public bool TryGetDestination(MatchParticipant actor,out Vector3 destination)
     {
         if(orders.TryGetValue(actor,out var order) && order.objective)
         {
@@ -61,18 +61,18 @@ public sealed class CombinedArmsOrchestrator : MonoBehaviour
         foreach(var actor in removed)
         {
             Release(orders[actor]);
-            if(actor && actor.TryGetComponent<ArenaVehicleAI>(out var ai))ai.MissionManaged=false;
+            if(actor && actor.TryGetComponent<VehicleAI>(out var ai))ai.MissionManaged=false;
             orders.Remove(actor);
         }
         int red=0,blue=0;
         foreach(var actor in match.participants)
         {
             if(!IsBot(actor))continue;
-            int index=actor.team==ArenaParticipant.Team.Red?red++:blue++;
+            int index=actor.team==MatchParticipant.Team.Red?red++:blue++;
             if(!orders.TryGetValue(actor,out var order))orders[actor]=order=new Order{actor=actor,role=RoleForIndex(index)};
-            var motorAI=actor.GetComponent<ArenaVehicleAI>();if(motorAI)motorAI.MissionManaged=true;
+            var motorAI=actor.GetComponent<VehicleAI>();if(motorAI)motorAI.MissionManaged=true;
             if(actor.health.IsDead || actor.IsAwaitingSpawn){Release(order);order.status="Respawning";continue;}
-            if(!order.objective || Time.time>=order.reconsiderAt || order.objective.Owner==actor.team && Time.time-actor.GetComponent<ArenaAIInput>().LastCombatTime>rules.postCaptureDefenseTime)
+            if(!order.objective || Time.time>=order.reconsiderAt || order.objective.Owner==actor.team && Time.time-actor.GetComponent<AIInput>().LastCombatTime>rules.postCaptureDefenseTime)
                 ChooseObjective(order);
         }
         claimed.Clear();
@@ -83,8 +83,8 @@ public sealed class CombinedArmsOrchestrator : MonoBehaviour
         foreach(var order in orders.Values)if(order.role!=Role.Infantry && Active(order.actor))CommandCrew(order);
         foreach(var order in orders.Values)if(order.role==Role.Infantry && Active(order.actor))CommandInfantry(order);
     }
-    bool Active(ArenaParticipant actor)=>actor && !actor.health.IsDead && !actor.IsAwaitingSpawn;
-    static bool IsBot(ArenaParticipant actor)=>actor && actor.TryGetComponent<SoldierController>(out var controller) && controller.inputSource is ArenaAIInput;
+    bool Active(MatchParticipant actor)=>actor && !actor.health.IsDead && !actor.IsAwaitingSpawn;
+    static bool IsBot(MatchParticipant actor)=>actor && actor.TryGetComponent<SoldierController>(out var controller) && controller.inputSource is AIInput;
     static bool HasHumanCrew(Vehicle vehicle)
     {
         foreach(var seat in vehicle.seats)
@@ -104,7 +104,7 @@ public sealed class CombinedArmsOrchestrator : MonoBehaviour
     void Release(Order order)
     {
         if(order.vehicle && order.actor)order.vehicle.ReleaseReservation(order.actor.GetComponent<VehicleOccupant>());
-        if(order.actor && order.actor.TryGetComponent<ArenaVehicleAI>(out var ai))ai.ReleaseMission();
+        if(order.actor && order.actor.TryGetComponent<VehicleAI>(out var ai))ai.ReleaseMission();
         order.vehicle=null;order.boarded=false;
     }
     void ChooseObjective(Order order)
@@ -115,7 +115,7 @@ public sealed class CombinedArmsOrchestrator : MonoBehaviour
             if(!point)continue;
             int index=System.Array.IndexOf(match.participants,order.actor);
             Vector3 proposed=point.transform.position+Quaternion.Euler(0,index*137.5f,0)*Vector3.forward*Mathf.Min(6,point.radius*.4f);
-            var ai=order.actor.GetComponent<ArenaAIInput>();
+            var ai=order.actor.GetComponent<AIInput>();
             var filter=new NavMeshQueryFilter{agentTypeID=ai.agent.agentTypeID,areaMask=ai.agent.areaMask};
             if(!NavMesh.SamplePosition(proposed,out var hit,3,filter))
                 if(!NavMesh.SamplePosition(point.transform.position,out hit,3,filter))continue;
@@ -133,7 +133,7 @@ public sealed class CombinedArmsOrchestrator : MonoBehaviour
         }
         order.objective=best;order.destination=bestPosition;order.reconsiderAt=Time.time+assignmentDuration;
     }
-    bool Friendly(Vehicle vehicle,ArenaParticipant actor)
+    bool Friendly(Vehicle vehicle,MatchParticipant actor)
     {
         foreach(var seat in vehicle.seats)if(seat.occupant && seat.occupant.faction!=(int)actor.team)return false;
         return true;
@@ -149,7 +149,7 @@ public sealed class CombinedArmsOrchestrator : MonoBehaviour
     }
     void CommandCrew(Order order)
     {
-        var actor=order.actor;var ai=actor.GetComponent<ArenaVehicleAI>();if(!ai)return;
+        var actor=order.actor;var ai=actor.GetComponent<VehicleAI>();if(!ai)return;
         var rider=ai.occupant;
         if(rider.IsMounted)
         {
@@ -164,7 +164,7 @@ public sealed class CombinedArmsOrchestrator : MonoBehaviour
             order.status=ai.HoldDeparture?"Loading crew":"Engage / support objective";
             return;
         }
-        var infantry=actor.GetComponent<ArenaAIInput>();
+        var infantry=actor.GetComponent<AIInput>();
         if(infantry.IsCombatAlert && infantry.Target)
         {
             Release(order);order.retryAt=Time.time+5;order.status="Engage after dismount";return;
@@ -194,7 +194,7 @@ public sealed class CombinedArmsOrchestrator : MonoBehaviour
     }
     void CommandInfantry(Order order)
     {
-        var actor=order.actor;var ai=actor.GetComponent<ArenaVehicleAI>();if(!ai)return;
+        var actor=order.actor;var ai=actor.GetComponent<VehicleAI>();if(!ai)return;
         if(ai.occupant.IsMounted)
         {
             if(ai.occupant.MountedVehicle.seats[ai.occupant.SeatIndex].role==Vehicle.SeatRole.Driver)CommandCrew(order);
@@ -206,7 +206,7 @@ public sealed class CombinedArmsOrchestrator : MonoBehaviour
             || order.vehicle.FirstAvailableSeat(ai.occupant)<0 || order.vehicle.FirstAvailableSeat(ai.occupant)==0 && !HasHumanCrew(order.vehicle) || BoardingStalled(order)))
         {Release(order);order.retryAt=Time.time+20;}
         if(order.vehicle && Time.time<order.retryAt){order.vehicle=null;ai.ReleaseMission();}
-        if(!order.vehicle && Time.time>=order.retryAt && !actor.GetComponent<ArenaAIInput>().IsCombatAlert)
+        if(!order.vehicle && Time.time>=order.retryAt && !actor.GetComponent<AIInput>().IsCombatAlert)
         {
             float best=120*120;
             foreach(var vehicle in Vehicle.Active)
@@ -236,7 +236,7 @@ public sealed class CombinedArmsOrchestrator : MonoBehaviour
         if(order.vehicle){ai.SetTransportOrder(order.vehicle,true);order.status="Board support vehicle";}
         else {ai.ReleaseMission();order.status="Capture / defend objective";}
     }
-    void CommandMountedSupport(Order order,ArenaVehicleAI ai)
+    void CommandMountedSupport(Order order,VehicleAI ai)
     {
         order.vehicle=ai.occupant.MountedVehicle;order.boarded=true;
         // If a human leaves the controls, an existing AI rider can take the vacant driver seat.
@@ -249,7 +249,7 @@ public sealed class CombinedArmsOrchestrator : MonoBehaviour
         bool humanDriver=order.vehicle.Driver && order.vehicle.Driver.IsHuman;
         bool dismount=seat.role==Vehicle.SeatRole.Passenger && order.vehicle.CanExit
             && (!order.vehicle.IsAircraft || humanDriver)
-            && (Vector3.Distance(order.vehicle.transform.position,goal)<dismountRadius || order.actor.GetComponent<ArenaAIInput>().IsCombatAlert);
+            && (Vector3.Distance(order.vehicle.transform.position,goal)<dismountRadius || order.actor.GetComponent<AIInput>().IsCombatAlert);
         ai.HoldDeparture=false;
         if(dismount){ai.SetTransportOrder(order.vehicle,false);order.retryAt=Time.time+20;order.status="Dismount and capture";}
         else {ai.SetMissionGoal(goal,false);order.status=seat.role==Vehicle.SeatRole.Gunner?"Operate weapon":"Ride to objective";}

@@ -2,24 +2,24 @@ using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
 
-// Deployment queues an ordinary ArenaMatch spawn; it never pauses the battle.
+// Deployment queues an ordinary MatchController spawn; it never pauses the battle.
 [DefaultExecutionOrder(500)]
 public class ConquestDeploymentMenu : MonoBehaviour
 {
     public ConquestRules rules;
-    public ArenaParticipant participant;
+    public MatchParticipant participant;
     public SoldierLocalInput input;
-    public ArenaPauseMenu pause;
+    public PauseMenu pause;
     public Material NormalText => pause.normalText;
     public Material SelectedText => pause.selectedText;
-    public ArenaAISpectator spectator;
+    public AISpectator spectator;
     public GameObject panel;
     public Button baseButton, deployButton;
     [UnityEngine.Serialization.FormerlySerializedAs("classButton")] public Button returnButton;
     public Button[] flagButtons;
     public Button[] squadButtons=System.Array.Empty<Button>();
-    readonly System.Collections.Generic.List<ArenaParticipant> squadMembers=new System.Collections.Generic.List<ArenaParticipant>();
-    ArenaParticipant selectedMember;
+    readonly System.Collections.Generic.List<MatchParticipant> squadMembers=new System.Collections.Generic.List<MatchParticipant>();
+    MatchParticipant selectedMember;
     public TMP_Text status;
     [UnityEngine.Serialization.FormerlySerializedAs("className")] public TMP_Text equipmentLabel;
     ConquestCapturePoint selected;
@@ -47,10 +47,10 @@ public class ConquestDeploymentMenu : MonoBehaviour
     }
     public bool IsVisible => visible;
     public ConquestCapturePoint SelectedPoint => selected;
-    public ArenaParticipant SelectedMember => selectedMember;
+    public MatchParticipant SelectedMember => selectedMember;
     public void SelectBase() => Select(null);
     public void SelectFlag(ConquestCapturePoint point) { if(tacticalMap || rules.CanDeploy(participant,point)) Select(point); }
-    public void SelectSquadmate(ArenaParticipant member)
+    public void SelectSquadmate(MatchParticipant member)
     {
         if(tacticalMap){selected=null;selectedMember=member;return;}
         if(!rules.squads || !rules.squads.CanDeploy(participant,member)) return;
@@ -61,8 +61,8 @@ public class ConquestDeploymentMenu : MonoBehaviour
     void Awake()
     {
         panel.SetActive(false);
-        if(panel.TryGetComponent<Image>(out var background))background.color=ArenaHudTheme.FullBackground;
-        ArenaHudTheme.StyleBackgrounds(panel.transform);
+        if(panel.TryGetComponent<Image>(out var background))background.color=HudTheme.FullBackground;
+        HudTheme.StyleBackgrounds(panel.transform);
         StyleLocation(baseButton);
         foreach(var button in flagButtons)StyleLocation(button);
         foreach(var button in squadButtons)StyleLocation(button);
@@ -86,7 +86,7 @@ public class ConquestDeploymentMenu : MonoBehaviour
     static void StyleLocation(Button button)
     {
         if(!button || !button.TryGetComponent<Image>(out var image))return;
-        image.color=ArenaHudTheme.SectionBackground;
+        image.color=HudTheme.SectionBackground;
         var colors=button.colors;
         colors.normalColor=Color.white;colors.highlightedColor=Color.white;
         colors.pressedColor=Color.white;colors.selectedColor=Color.white;

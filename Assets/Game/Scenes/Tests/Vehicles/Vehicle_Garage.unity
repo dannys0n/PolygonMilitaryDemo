@@ -206,7 +206,7 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 18e192d7e55f8464da1e3579fc199f30, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::ArenaParticipant
+  m_EditorClassIdentifier: Game.Runtime::MatchParticipant
 --- !u!1 &37130627
 GameObject:
   m_ObjectHideFlags: 0
@@ -1672,7 +1672,7 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 4d380c660775d5e4ab38b2b474816298, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::ArenaMatch
+  m_EditorClassIdentifier: Game.Runtime::MatchController
   settings: {fileID: 11400000, guid: 01a326d407bbcbd4a98dc880ef4c29ac, type: 2}
   rules: {fileID: 0}
   spawnPoints:
@@ -1692,7 +1692,7 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: abd8244f6eceabc4ba12283af5f6b3e4, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::ArenaVehicleScenario
+  m_EditorClassIdentifier: Game.Runtime::VehicleScenario
   match: {fileID: 180389624}
   vehicleAgentType: -334000983
   allowAIHelicopters: 1
@@ -1724,7 +1724,7 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 1cd43dfeb60d4d9ab132a75f7b7cf17d, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Game.Runtime::ArenaRandomLoadouts
+  m_EditorClassIdentifier: Game.Runtime::RandomLoadouts
   opticChance: 0.75
   attachmentChance: 0.5
 --- !u!1 &181841673
@@ -8318,7 +8318,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 8891053353541543429, guid: dd5f2de6f1c43a24b9acd4c11f298ea7, type: 3}
       propertyPath: m_Name
-      value: ArenaGameplayHUD
+      value: GameplayHUD
       objectReference: {fileID: 0}
     - target: {fileID: 8960907993775799448, guid: dd5f2de6f1c43a24b9acd4c11f298ea7, type: 3}
       propertyPath: m_TextStyleHashCode

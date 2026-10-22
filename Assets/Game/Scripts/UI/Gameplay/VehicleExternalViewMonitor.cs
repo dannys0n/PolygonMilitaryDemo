@@ -8,13 +8,13 @@ using UnityEngine.Rendering.Universal;
 public class VehicleExternalViewMonitor : MonoBehaviour
 {
     VehicleOccupant occupant;
-    ArenaVehicleHud hud;
+    VehicleHud hud;
     RectTransform panel;
     RawImage display;
     Camera monitorCamera;
     RenderTexture texture;
 
-    public void Build(ArenaVehicleHud owner, TMP_Text labelTemplate, Material displayMaterial)
+    public void Build(VehicleHud owner, TMP_Text labelTemplate, Material displayMaterial)
     {
         hud = owner;
         panel = new GameObject("External vehicle monitor", typeof(RectTransform)).GetComponent<RectTransform>();

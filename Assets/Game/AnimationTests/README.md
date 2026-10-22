@@ -8,7 +8,7 @@ Open the regular `Armory` or `Armory_AnimationTests` scene. Shoot a display to e
 
 Source idle weapon tracks are frozen at their reference frame, rather than replaying the animation used to extract that pose. Source equip/unequip play on the base layer so an empty override layer cannot retain the previous switch pose. The Polygon alternatives use the established game controllers and their original switch layers.
 
-Rebuild in Edit Mode using **Tools > Arena Shooter > Animation Tests > Rebuild test weapon variants**. The full command rebuilds UE4 source actions, source variants, Polygon alternatives, and armory references. **Bake Polygon alternatives** only updates the Polygon set. Generated clips are stored in Git LFS. No retargeting or clip sampling runs during gameplay.
+Rebuild in Edit Mode using **Tools > Game > Animation Tests > Rebuild test weapon variants**. The full command rebuilds UE4 source actions, source variants, Polygon alternatives, and armory references. **Bake Polygon alternatives** only updates the Polygon set. Generated clips are stored in Git LFS. No retargeting or clip sampling runs during gameplay.
 
 Default sights/socket calibration on imported source guns still needs per-weapon polish. Polygon alternatives retain the existing equivalent weapon's sights, socket positions and compatible attachments. These test entries stay out of the production weapon catalog.
 

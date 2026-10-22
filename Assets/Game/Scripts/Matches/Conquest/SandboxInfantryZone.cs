@@ -11,7 +11,7 @@ public sealed class SandboxInfantryZone : MonoBehaviour
     readonly RaycastHit[] supportHits=new RaycastHit[32];
     Collider[] standingHits=new Collider[32];
     void Awake(){path=new NavMeshPath();}
-    public bool TryPosition(ArenaParticipant actor,out Vector3 position)
+    public bool TryPosition(MatchParticipant actor,out Vector3 position)
     {
         position=default;if(!point||!respawnBox)return false;
         path ??=new NavMeshPath();
@@ -35,7 +35,7 @@ public sealed class SandboxInfantryZone : MonoBehaviour
             for(int i=0;i<count;i++)
             {
                 var physical=supportHits[i];
-                if(physical.collider.GetComponentInParent<ArenaParticipant>() || physical.collider.GetComponentInParent<Vehicle>())continue;
+                if(physical.collider.GetComponentInParent<MatchParticipant>() || physical.collider.GetComponentInParent<Vehicle>())continue;
                 if(physical.distance<nearest){nearest=physical.distance;support=physical;}
             }
             if(float.IsPositiveInfinity(nearest)||support.normal.y<.5f || Mathf.Abs(support.point.y-hit.position.y)>.5f)continue;

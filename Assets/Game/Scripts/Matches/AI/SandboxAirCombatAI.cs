@@ -11,12 +11,12 @@ public sealed class SandboxAirCombatAI : MonoBehaviour
     static readonly List<SandboxAirCombatAI> active = new List<SandboxAirCombatAI>();
     public static IReadOnlyList<SandboxAirCombatAI> Active => active;
     public Vehicle vehicle;
-    public ArenaParticipant.Team team;
+    public MatchParticipant.Team team;
     public Transform arenaCenter;
     public Battle battle;
     public float orbitRadius = 250, detectionRange = 1600;
     public float pursuitSeconds = 7, extensionSeconds = 4, helicopterSpacing = 100;
-    public ArenaDirectPilot pilot = new ArenaDirectPilot();
+    public DirectPilot pilot = new DirectPilot();
     public FlightState State { get; private set; }
     public Vehicle Target => enemy ? enemy.vehicle : null;
     SandboxAirCombatAI enemy;
@@ -29,7 +29,7 @@ public sealed class SandboxAirCombatAI : MonoBehaviour
     static void ResetRegistry() => active.Clear();
     void OnEnable() { if (!active.Contains(this)) active.Add(this); }
     void OnDisable() { active.Remove(this); if (vehicle) vehicle.DriverInput = default; }
-    public void Configure(Vehicle aircraft, ArenaParticipant.Team faction, Transform center, Battle domain, float radius = 250)
+    public void Configure(Vehicle aircraft, MatchParticipant.Team faction, Transform center, Battle domain, float radius = 250)
     {
         vehicle = aircraft; team = faction; arenaCenter = center; battle = domain;
         orbitRadius = Mathf.Max(100, radius);

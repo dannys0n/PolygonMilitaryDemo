@@ -27,13 +27,13 @@ Use `Player_Polygon_Vehicles.prefab` for a local actor and `Player_Polygon_Vehic
 
 ## AI and navigation
 
-ArenaVehicleAI supplies commands to the same motors used by the local player. It considers a ride only when it saves time over walking, including walking to the vehicle and from the drop-off, boarding overhead, and helicopter takeoff/landing overhead. Bots prioritize current combat over boarding, reserve a reachable seat, and allow a brief crew boarding window before departure.
+VehicleAI supplies commands to the same motors used by the local player. It considers a ride only when it saves time over walking, including walking to the vehicle and from the drop-off, boarding overhead, and helicopter takeoff/landing overhead. Bots prioritize current combat over boarding, reserve a reachable seat, and allow a brief crew boarding window before departure.
 
 Hummers follow a NavMesh path built for the **Hummer** agent type (1.55 m radius), slow for corners, brake for obstacles, and attempt short reverse recovery before abandoning a stuck trip. Infantry queries explicitly use their own agent type. No NavMeshAgent moves a dynamic vehicle Rigidbody. Parked vehicles carve obstacles; occupied/moving vehicles stop carving.
 
 Helicopters climb before translating, use obstacle probes, and land at authored open landing zones. Landing selection excludes occupied zones and other inbound helicopters. Drivers dismount at arrival, nearby combat (cars), serious damage, or repeated route failure. Passengers leave when a landed vehicle has no driver or is critically damaged. These are prototype policies inspired by combined-arms play, not a reproduction of Battlefield's proprietary behavior.
 
-For another arena map: add ArenaVehicleScenario to the match, add VehicleSpawnPoint objects, provide open landing zones, and bake an additional NavMeshSurface for the Hummer agent. Keep infantry and vehicle baking limited to static ground/obstacle layers. Use the vehicle-ready actor variants. Ordinary arena scenes do not enable the vehicle policy.
+For another gameplay map: add VehicleScenario to the match, add VehicleSpawnPoint objects, provide open landing zones, and bake an additional NavMeshSurface for the Hummer agent. Keep infantry and vehicle baking limited to static ground/obstacle layers. Use the vehicle-ready actor variants. Ordinary gameplay scenes do not enable the vehicle policy.
 
 ## Verification and remaining work
 

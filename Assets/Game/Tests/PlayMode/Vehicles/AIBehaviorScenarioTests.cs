@@ -76,7 +76,7 @@ public class AIBehaviorScenarioTests
    until=Time.time+20;while(Time.time<until&&(int)Get(scenario,"VehicleDamageHits")==0)yield return null;
    Assert.Greater((int)Get(scenario,"VehicleDamageHits"),0,name+" must hit a moving opponent, not just fire into empty space");
    Assert.IsTrue((bool)Get(red,"IsDestroyed")||red.transform.position.y>5,name+" surviving red aircraft remains airborne");Assert.IsTrue((bool)Get(blue,"IsDestroyed")||blue.transform.position.y>5,name+" surviving blue aircraft remains airborne");
-   foreach(var actor in (IList)Get(scenario,"Actors"))Assert.IsTrue(((Behaviour)((Component)actor).GetComponent(T("ArenaVehicleAI"))).enabled,"Use the existing production brain");
+   foreach(var actor in (IList)Get(scenario,"Actors"))Assert.IsTrue(((Behaviour)((Component)actor).GetComponent(T("VehicleAI"))).enabled,"Use the existing production brain");
    Assert.AreEqual(0,Get(scenario,"ErrorCount"));
   }
  }
@@ -133,7 +133,7 @@ public class AIBehaviorScenarioTests
   Command(scenario,"FillSeats");yield return new WaitForSeconds(1);
   var vehicle=(Component)Get(scenario,"Vehicle");var seats=(Array)Get(vehicle,"seats");
   foreach(var actor in (IList)Get(scenario,"Actors"))
-  {var component=(Component)actor;component.GetComponent(T("SoldierController")).GetType().GetField("inputSource").SetValue(component.GetComponent(T("SoldierController")),component.GetComponent(T("ArenaAIInput")));}
+  {var component=(Component)actor;component.GetComponent(T("SoldierController")).GetType().GetField("inputSource").SetValue(component.GetComponent(T("SoldierController")),component.GetComponent(T("AIInput")));}
   Command(scenario,"AddPlayer");yield return new WaitForSeconds(.3f);
   var actors=(IList)Get(scenario,"Actors");var player=(Component)actors[actors.Count-1];MakeLocal(player);
   var occupant=player.GetComponent(T("VehicleOccupant"));var ai=Get(seats.GetValue(0),"occupant");
@@ -200,7 +200,7 @@ public class AIBehaviorScenarioTests
   Command(scenario,"AddPlayer");Command(scenario,"AddPlayer");
   yield return new WaitForSeconds(.2f);
   foreach(Component actor in (IList)Get(scenario,"Actors"))
-   Assert.AreEqual(true,Get(actor.GetComponent(T("ArenaVehicleAI")),"enterOrderedVehicle"),"New actors inherit the existing enter order");
+   Assert.AreEqual(true,Get(actor.GetComponent(T("VehicleAI")),"enterOrderedVehicle"),"New actors inherit the existing enter order");
   for(int i=0;i<10;i++){Command(scenario,"EnterAll");yield return new WaitForSeconds(.1f);}
   float until=Time.time+15;while(Time.time<until&&MountedActors()<2)yield return null;
   Assert.AreEqual(2,MountedActors(),"Repeated Enter All must preserve progress and keep seated players inside");
@@ -209,10 +209,10 @@ public class AIBehaviorScenarioTests
   yield return new WaitForSeconds(1);
   Assert.AreEqual(3,((IList)Get(scenario,"Actors")).Count);Assert.AreEqual(0,MountedActors());
   foreach(Component actor in (IList)Get(scenario,"Actors"))
-   Assert.AreEqual(false,Get(actor.GetComponent(T("ArenaVehicleAI")),"enterOrderedVehicle"),"New actors inherit Exit All");
+   Assert.AreEqual(false,Get(actor.GetComponent(T("VehicleAI")),"enterOrderedVehicle"),"New actors inherit Exit All");
   Command(scenario,"AddPlayer");Command(scenario,"EnterAll");Command(scenario,"ExitAll");yield return new WaitForSeconds(.3f);
   foreach(Component actor in (IList)Get(scenario,"Actors"))
-   Assert.AreEqual(false,Get(actor.GetComponent(T("ArenaVehicleAI")),"enterOrderedVehicle"),"Spawning actors use the last command, not a stale snapshot");
+   Assert.AreEqual(false,Get(actor.GetComponent(T("VehicleAI")),"enterOrderedVehicle"),"Spawning actors use the last command, not a stale snapshot");
   Assert.AreEqual(0,Get(scenario,"ErrorCount"));
  }
  [UnityTest] public IEnumerator OutsideEntryMarkersDoNotStrandBoardingAI()
@@ -242,13 +242,13 @@ public class AIBehaviorScenarioTests
    yield return new WaitForSeconds(2);
    Assert.AreEqual(2,((IList)Get(scenario,"Actors")).Count-MountedActors(),"Excess AI wait outside; they must not physically board cargo");
    Command(scenario,"ExitAll");until=Time.time+25;
-   while(Time.time<until&&(MountedActors()>0||((IList)Get(scenario,"Actors")).Cast<Component>().Any(a=>(string)Get(a.GetComponent(T("ArenaVehicleAI")),"BoardingStatus")!="Outside")))yield return null;
+   while(Time.time<until&&(MountedActors()>0||((IList)Get(scenario,"Actors")).Cast<Component>().Any(a=>(string)Get(a.GetComponent(T("VehicleAI")),"BoardingStatus")!="Outside")))yield return null;
    Assert.AreEqual(0,MountedActors());
    var footprint=(Bounds)Get(vehicle,"NavigationBounds");
    foreach(Component actor in (IList)Get(scenario,"Actors"))
    {
-    Assert.IsInstanceOf(T("ArenaAIInput"),Get(actor.GetComponent(T("SoldierController")),"inputSource"),"Exit must use production navigation, not straight-line test movement");
-    Assert.AreEqual("Outside",Get(actor.GetComponent(T("ArenaVehicleAI")),"BoardingStatus"));
+    Assert.IsInstanceOf(T("AIInput"),Get(actor.GetComponent(T("SoldierController")),"inputSource"),"Exit must use production navigation, not straight-line test movement");
+    Assert.AreEqual("Outside",Get(actor.GetComponent(T("VehicleAI")),"BoardingStatus"));
     Assert.IsFalse(footprint.Contains(vehicle.transform.InverseTransformPoint(actor.transform.position)),"No actor remains inside the canopy or vehicle footprint");
     var support=(Rigidbody)Get(actor.GetComponent(T("SoldierPhysicsBody")),"Support");
     Assert.IsFalse(support&&support.GetComponent(T("SoldierPhysicsBody")),"No actor finishes the exit standing on a teammate");
@@ -269,7 +269,7 @@ public class AIBehaviorScenarioTests
   // Keep both alive long enough to evaluate the maneuver, without modifying their motors/AI.
   foreach(var v in new[]{red,blue})v.GetType().GetField("DamageFilter").SetValue(v,new Func<GameObject,bool>(_=>false));
   Command(scenario,"SetAircraftClosePass");
-  var brains=new[]{red,blue}.Select(v=>((Component)Get(v,"Driver")).GetComponent(T("ArenaVehicleAI"))).ToArray();
+  var brains=new[]{red,blue}.Select(v=>((Component)Get(v,"Driver")).GetComponent(T("VehicleAI"))).ToArray();
   bool extended=false,reengaged=false;float until=Time.time+45;
   while(Time.time<until)
   {
@@ -302,21 +302,21 @@ public class AIBehaviorScenarioTests
   var vehicle=(Component)Get(scenario,"Vehicle");var enemy=(Component)Get(scenario,"Opponent");
   var attacker=(Component)Get(enemy,"Driver");
   var seats=(Array)Get(vehicle,"seats");var passenger=seats.Cast<object>().First(s=>Get(s,"role").ToString()=="Passenger");
-  var rider=(Component)Get(passenger,"occupant");var ai=rider.GetComponent(T("ArenaAIInput"));
+  var rider=(Component)Get(passenger,"occupant");var ai=rider.GetComponent(T("AIInput"));
   vehicle.GetType().GetMethod("ApplyDamage").Invoke(vehicle,new object[]{1f,attacker.gameObject,null});
   Assert.IsTrue((bool)Get(ai,"IsCombatAlert"),"A vehicle hit must notify seated passengers, not just the driver.");
-  Assert.AreEqual(attacker.GetComponent(T("ArenaParticipant")),Get(ai,"Target"));
+  Assert.AreEqual(attacker.GetComponent(T("MatchParticipant")),Get(ai,"Target"));
   rider.GetType().GetMethod("Leave").Invoke(rider,new object[]{true});yield return null;
   Assert.IsTrue((bool)Get(ai,"IsCombatAlert"),"Combat evidence must survive leaving a vehicle.");
-  Assert.AreEqual(attacker.GetComponent(T("ArenaParticipant")),Get(ai,"Target"));
+  Assert.AreEqual(attacker.GetComponent(T("MatchParticipant")),Get(ai,"Target"));
   Assert.AreEqual(0,Get(scenario,"ErrorCount"));
  }
  [UnityTest] public IEnumerator VehicleDetectionDoesNotUseWeaponMaximumRangeOrKeepStaleDistantTargets()
  {
   yield return CombatReady("AI_Tank_Combat");
   var vehicle=(Component)Get(scenario,"Vehicle");var enemy=(Component)Get(scenario,"Opponent");
-  var driver=(Component)Get(vehicle,"Driver");var ai=driver.GetComponent(T("ArenaVehicleAI"));
-  var target=((Component)Get(enemy,"Driver")).GetComponent(T("ArenaParticipant"));
+  var driver=(Component)Get(vehicle,"Driver");var ai=driver.GetComponent(T("VehicleAI"));
+  var target=((Component)Get(enemy,"Driver")).GetComponent(T("MatchParticipant"));
   ai.GetType().GetField("vehicleTarget",Flags).SetValue(ai,target);
   ai.GetType().GetMethod("Contacts",Flags).Invoke(ai,new object[]{vehicle});
   ((Array)Get(ai,"stationTargets")).SetValue(target,1);
@@ -352,8 +352,8 @@ public class AIBehaviorScenarioTests
    float until=Time.time+10;while(Time.time<until&&!(bool)Get(scenario,"CrewReady"))yield return null;
    Assert.IsTrue((bool)Get(scenario,"CrewReady"));
    var vehicle=(Component)Get(scenario,"Vehicle");var opponent=(Component)Get(scenario,"Opponent");
-   var driver=(Component)Get(vehicle,"Driver");var ai=driver.GetComponent(T("ArenaVehicleAI"));var systems=vehicle.GetComponent(T("VehicleWeaponSystems"));
-   var target=((Component)Get(opponent,"Driver")).GetComponent(T("ArenaParticipant"));
+   var driver=(Component)Get(vehicle,"Driver");var ai=driver.GetComponent(T("VehicleAI"));var systems=vehicle.GetComponent(T("VehicleWeaponSystems"));
+   var target=((Component)Get(opponent,"Driver")).GetComponent(T("MatchParticipant"));
    var weapons=(Array)Get(systems,"weapons");var profiles=weapons.Cast<object>().Where(w=>Get(w,"role").ToString()=="Driver").ToArray();
    var typed=Array.CreateInstance(weapons.GetType().GetElementType(),profiles.Length);for(int i=0;i<profiles.Length;i++)typed.SetValue(profiles[i],i);
    var choose=ai.GetType().GetMethod("ChooseAircraftWeapon",Flags);
@@ -387,7 +387,7 @@ public class AIBehaviorScenarioTests
     foreach(var vehicle in vehicles)
     {
      var driver=(Component)Get(vehicle,"Driver");Assert.NotNull(driver,scene+" pilot remains seated");
-     var ai=driver.GetComponent(T("ArenaVehicleAI"));Assert.AreEqual("DirectInputs",Get(ai,"pilotControl").ToString());
+     var ai=driver.GetComponent(T("VehicleAI"));Assert.AreEqual("DirectInputs",Get(ai,"pilotControl").ToString());
      var input=Get(vehicle,"DriverInput");Assert.IsTrue((bool)Get(input,"directFlight"));
      var prepared=vehicle.GetType().GetMethod("PrepareDriverInput").Invoke(vehicle,new[]{input,(object)true});
      foreach(string field in new[]{"move","pitchRate","yaw","lift"})Assert.AreEqual(Get(input,field),Get(prepared,field),"Vehicle assist must not rewrite direct AI "+field);
@@ -416,7 +416,7 @@ public class AIBehaviorScenarioTests
   {
    Assert.IsTrue((bool)Get(Get(vehicle,"DriverInput"),"directFlight"));
    var body=vehicle.GetComponent<Rigidbody>();Vector3 position=body.position,velocity=body.linearVelocity;Quaternion rotation=body.rotation;
-   var ai=((Component)Get(vehicle,"Driver")).GetComponent(T("ArenaVehicleAI"));var pilot=Get(ai,"directPilot");
+   var ai=((Component)Get(vehicle,"Driver")).GetComponent(T("VehicleAI"));var pilot=Get(ai,"directPilot");
    var intent=Get(vehicle,"DriverInput");intent.GetType().GetField("directFlight").SetValue(intent,false);intent.GetType().GetField("directionalFlight").SetValue(intent,true);
    pilot.GetType().GetMethod("ReadInput").Invoke(pilot,new[]{(object)vehicle,intent});
    Assert.AreEqual(position,body.position);Assert.AreEqual(velocity,body.linearVelocity);Assert.AreEqual(rotation,body.rotation,"AI input generation must never move the body directly");
@@ -429,7 +429,7 @@ public class AIBehaviorScenarioTests
   foreach(string side in new[]{"Vehicle","Opponent"})
   {
    var vehicle=Get(scenario,side);foreach(var seat in (Array)Get(vehicle,"seats"))
-   {var occupant=Get(seat,"occupant");Assert.IsTrue((bool)(UnityEngine.Object)occupant,"Every functional seat is occupied");var actor=((Component)occupant).GetComponent(T("ArenaParticipant"));Assert.AreEqual(side=="Vehicle"?"Red":"Blue",Get(actor,"team").ToString());total++;}
+   {var occupant=Get(seat,"occupant");Assert.IsTrue((bool)(UnityEngine.Object)occupant,"Every functional seat is occupied");var actor=((Component)occupant).GetComponent(T("MatchParticipant"));Assert.AreEqual(side=="Vehicle"?"Red":"Blue",Get(actor,"team").ToString());total++;}
   }
   Assert.AreEqual(total,((IList)Get(scenario,"Actors")).Count);
  }

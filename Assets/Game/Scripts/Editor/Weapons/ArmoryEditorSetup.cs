@@ -8,7 +8,7 @@ using Object=UnityEngine.Object;
 
 public static class ArmoryEditorSetup
 {
-    public static void ConfigureReview(Scene scene,ArenaWeaponCatalog catalog)
+    public static void ConfigureReview(Scene scene,WeaponCatalog catalog)
         => Configure(scene, AssetDatabase.GetAssetPath(catalog));
 
     public static void Configure(Scene scene, string catalogPath)

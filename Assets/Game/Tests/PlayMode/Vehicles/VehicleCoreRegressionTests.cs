@@ -31,14 +31,14 @@ public class VehicleCoreRegressionTests
     }
     Component Actor(Vector3 position)
     {
-        if(!match){match=Root("Test match").AddComponent(T("ArenaMatch"));((Behaviour)match).enabled=false;Set(match,"settings",AssetDatabase.LoadAssetAtPath<ScriptableObject>("Assets/Game/Definitions/Matches/Vehicle_Test.asset"));}
+        if(!match){match=Root("Test match").AddComponent(T("MatchController"));((Behaviour)match).enabled=false;Set(match,"settings",AssetDatabase.LoadAssetAtPath<ScriptableObject>("Assets/Game/Definitions/Matches/Vehicle_Test.asset"));}
         var holder=Root("Inactive actor setup");holder.SetActive(false);
         var prefab=AssetDatabase.LoadAssetAtPath<GameObject>("Assets/Game/Prefabs/Matches/Vehicles/Player_Polygon_VehicleAI.prefab");
         var g=Object.Instantiate(prefab,position,Quaternion.identity,holder.transform);roots.Add(g);
-        Set(g.GetComponent(T("ArenaParticipant")),"match",match);
-        foreach(string type in new[]{"ArenaAIInput","ArenaVehicleAI","SoldierController","ArenaParticipant"}){var b=g.GetComponent(T(type)) as Behaviour;if(b)b.enabled=false;}
+        Set(g.GetComponent(T("MatchParticipant")),"match",match);
+        foreach(string type in new[]{"AIInput","VehicleAI","SoldierController","MatchParticipant"}){var b=g.GetComponent(T(type)) as Behaviour;if(b)b.enabled=false;}
         var nav=g.GetComponent<UnityEngine.AI.NavMeshAgent>();if(nav)nav.enabled=false;
-        holder.SetActive(true);return g.GetComponent(T("ArenaVehicleAI"));
+        holder.SetActive(true);return g.GetComponent(T("VehicleAI"));
     }
     [UnityTest] public IEnumerator InfantryBodyHitSurvivesPhysicsLayerSetup()
     {
@@ -70,7 +70,7 @@ public class VehicleCoreRegressionTests
     [UnityTest] public IEnumerator NearbyVehicleBehindIsVisibleButInfantryStillUsesItsCone()
     {
         var observer=Actor(new Vector3(0,1000,0));var enemy=Actor(new Vector3(0,1000,-12));yield return null;
-        var input=observer.GetComponent(T("ArenaAIInput"));var target=enemy.GetComponent(T("ArenaParticipant"));
+        var input=observer.GetComponent(T("AIInput"));var target=enemy.GetComponent(T("MatchParticipant"));
         observer.transform.rotation=Quaternion.identity;
         Assert.IsFalse((bool)Call(input,"CanSee",target),"On-foot infantry behind the observer stays outside its cone");
         var vehicle=Vehicle("Combat/PickupTechnical");vehicle.transform.position=new Vector3(0,1000,-12);

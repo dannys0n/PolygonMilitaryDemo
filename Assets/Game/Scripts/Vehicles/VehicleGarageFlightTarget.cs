@@ -32,9 +32,9 @@ public class VehicleGarageFlightTarget : MonoBehaviour
         pilotContainer = new GameObject("Garage target pilot");
         pilotContainer.SetActive(false);
         var actor = Instantiate(pilotPrefab, pilotContainer.transform);
-        foreach (var brain in actor.GetComponents<ArenaAIInput>()) brain.enabled = false;
-        foreach (var brain in actor.GetComponents<ArenaVehicleAI>()) brain.enabled = false;
-        var participant = actor.GetComponent<ArenaParticipant>();
+        foreach (var brain in actor.GetComponents<AIInput>()) brain.enabled = false;
+        foreach (var brain in actor.GetComponents<VehicleAI>()) brain.enabled = false;
+        var participant = actor.GetComponent<MatchParticipant>();
         if (participant) participant.enabled = false;
         pilot = actor.GetComponent<VehicleOccupant>();
         pilot.faction = 1;

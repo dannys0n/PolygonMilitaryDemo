@@ -102,13 +102,13 @@ public class MountedPerformanceTests
  [UnityTest] public IEnumerator SharedContactsDeduplicateHullsAndRefreshAfterCrewDismounts()
  {
   yield return Load();var actor=Actors.First(a=>Get(a,"team").ToString()=="Red");
-  var ai=actor.GetComponent(T("ArenaVehicleAI"));var vehicle=(Component)Get(actor.GetComponent(T("VehicleOccupant")),"MountedVehicle");
+  var ai=actor.GetComponent(T("VehicleAI"));var vehicle=(Component)Get(actor.GetComponent(T("VehicleOccupant")),"MountedVehicle");
   var list=(IEnumerable)Call(ai,"Contacts",vehicle);
   Assert.AreEqual(1,list.Cast<object>().Count(),"The three hostile crew members share a single target hull.");
   var shared=vehicle.GetComponent(T("VehicleCombatContacts"));Assert.IsNotNull(shared);
   var red=Actors.Where(a=>Get(a,"team").ToString()=="Red").ToArray();
-  Call(red[1].GetComponent(T("ArenaVehicleAI")),"Contacts",vehicle);
-  Assert.AreSame(shared,Get(red[1].GetComponent(T("ArenaVehicleAI")),"contacts"));
+  Call(red[1].GetComponent(T("VehicleAI")),"Contacts",vehicle);
+  Assert.AreSame(shared,Get(red[1].GetComponent(T("VehicleAI")),"contacts"));
   var blue=Actors.First(a=>Get(a,"team").ToString()=="Blue");Call(blue.GetComponent(T("VehicleOccupant")),"Leave",true);
   yield return new WaitForSeconds(.25f);
   list=(IEnumerable)Call(shared,"Read",actor);Assert.AreEqual(2,list.Cast<object>().Count(),"A dismounted infantry contact must separate from its former hull.");
@@ -203,7 +203,7 @@ public class MountedPerformanceTests
  }
  [UnityTest] public IEnumerator EmptyTargetSearchesRespectTheSameBudgetAsSuccessfulSearches()
  {
-  yield return Load(0);var actor=Actors[0];var ai=actor.GetComponent(T("ArenaVehicleAI"));
+  yield return Load(0);var actor=Actors[0];var ai=actor.GetComponent(T("VehicleAI"));
   var vehicle=(Component)Get(actor.GetComponent(T("VehicleOccupant")),"MountedVehicle");
   var origin=vehicle.transform.position+Vector3.up*2;
   Assert.IsNull(Call(ai,"FindVehicleTarget",vehicle,origin,100f,true,false));

@@ -189,7 +189,7 @@ public class WeaponViewPlacementWindow : EditorWindow
         EditorGUI.BeginChangeCheck();
         var rearDefinition=sights.ActiveRearIronDefinition;
         var weapon=player.GetComponent<SoldierWeaponPresentation>().weapon.definition;
-        var weaponAsset=EditorUtility.IsPersistent(weapon)?weapon:AssetDatabase.LoadAssetAtPath<ArenaWeaponCatalog>("Assets/Game/Definitions/Weapons/Catalogs/WeaponCatalog.asset").FindWeapon(weapon.catalogId);
+        var weaponAsset=EditorUtility.IsPersistent(weapon)?weapon:AssetDatabase.LoadAssetAtPath<WeaponCatalog>("Assets/Game/Definitions/Weapons/Catalogs/WeaponCatalog.asset").FindWeapon(weapon.catalogId);
         Object distanceAsset=alternate ? attachment.SourcePrefab : sights.UsesOpticEyeDistance ? sight : rearDefinition ? rearDefinition : (Object)weaponAsset;
         EditorGUILayout.ObjectField("Eye distance owner",distanceAsset,typeof(Object),false);
         float distance=EditorGUILayout.FloatField("Eye distance",sights.EyeDistance);

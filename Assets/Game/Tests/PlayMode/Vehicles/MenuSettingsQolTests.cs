@@ -21,7 +21,7 @@ public class MenuSettingsQolTests
 
     [SetUp] public void Setup()
     {
-        preference = T("ArenaMouseSensitivity");
+        preference = T("MouseSensitivity");
         hadPreference = PlayerPrefs.HasKey(Key);
         previous = (float)Value;
     }
@@ -38,7 +38,7 @@ public class MenuSettingsQolTests
     {
         var root = new GameObject(name, typeof(RectTransform)); roots.Add(root); root.SetActive(false);
         var slider = root.AddComponent(T("UnityEngine.UI.Slider"));
-        var binding = root.AddComponent(T("ArenaSensitivitySlider"));
+        var binding = root.AddComponent(T("SensitivitySlider"));
         binding.GetType().GetField("slider").SetValue(binding, slider);
         root.SetActive(true);
         return slider;
@@ -66,8 +66,8 @@ public class MenuSettingsQolTests
         Assert.AreEqual(2.25f, main.GetType().GetProperty("value").GetValue(main));
         Value = 100f; Assert.AreEqual(4f, Value);
         Value = 0f; Assert.AreEqual(.1f, Value);
-        Assert.IsNull(T("ArenaSensitivitySlider").GetMethod("Update", BindingFlags.NonPublic | BindingFlags.Instance));
-        Assert.IsTrue(((string)T("ArenaLobbyMenu").GetField("SandboxScenePath").GetRawConstantValue()).EndsWith("MilitaryBase_Sandbox.unity"));
+        Assert.IsNull(T("SensitivitySlider").GetMethod("Update", BindingFlags.NonPublic | BindingFlags.Instance));
+        Assert.IsTrue(((string)T("LobbyMenu").GetField("SandboxScenePath").GetRawConstantValue()).EndsWith("MilitaryBase_Sandbox.unity"));
     }
 }
 #endif

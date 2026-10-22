@@ -6,7 +6,7 @@ using UnityEngine;
 public sealed class InfantryDeathTestScenario : MonoBehaviour
 {
     public enum TestCase { Standing, Walking, Jumping, Crowd }
-    public ArenaMatch match;
+    public MatchController match;
     public GameObject actorPrefab;
     public BehaviorTestCamera observer;
     public TestCase testCase;
@@ -55,9 +55,9 @@ public sealed class InfantryDeathTestScenario : MonoBehaviour
         for(int i=0;i<count;i++)
         {
             var actor=Instantiate(actorPrefab,population.transform);actor.name="Infantry "+(i+1);
-            var participant=actor.GetComponent<ArenaParticipant>();participant.match=match;participant.enabled=false;
+            var participant=actor.GetComponent<MatchParticipant>();participant.match=match;participant.enabled=false;
             foreach(var behaviour in actor.GetComponents<Behaviour>())
-                if(behaviour is ArenaAIInput || behaviour is ArenaVehicleAI || behaviour is SoldierLocalInput || behaviour is SandboxInfantryInput || behaviour is UnityEngine.AI.NavMeshAgent)behaviour.enabled=false;
+                if(behaviour is AIInput || behaviour is VehicleAI || behaviour is SoldierLocalInput || behaviour is SandboxInfantryInput || behaviour is UnityEngine.AI.NavMeshAgent)behaviour.enabled=false;
             var life=actor.GetComponent<SoldierLife>();
             life.view.firstPerson=false;life.view.playerCamera.enabled=false;
             var ragdoll=actor.GetComponent<SoldierRagdoll>();ragdoll.enabled=ragdollEnabled;

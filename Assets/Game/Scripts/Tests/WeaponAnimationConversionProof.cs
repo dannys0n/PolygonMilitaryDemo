@@ -5,7 +5,7 @@ using UnityEngine;
 public sealed class WeaponAnimationConversionProof : ScriptableObject
 {
     [HideInInspector] public RuntimeAnimatorController thirdPersonSourceController, thirdPersonSourceParts;
-    public ArenaWeaponCatalog.Entry source, converted;
+    public WeaponCatalog.Entry source, converted;
     public bool originalProportions;
     [HideInInspector] public string comparisonFingerprint;
     public GameObject thirdPersonProof;

@@ -16,7 +16,7 @@ public sealed class ArmoryAssetIndex
     public Weapon[] weapons;
     public string[] sightPaths, attachmentPaths;
 
-    public ArenaWeaponCatalog.Entry LoadWeapon(string id)
+    public WeaponCatalog.Entry LoadWeapon(string id)
     {
 #if UNITY_EDITOR
         var item = weapons.FirstOrDefault(w => w.id == id)
@@ -25,7 +25,7 @@ public sealed class ArmoryAssetIndex
         var first = UnityEditor.AssetDatabase.LoadAssetAtPath<GameObject>(item.firstPersonPath);
         var third = UnityEditor.AssetDatabase.LoadAssetAtPath<GameObject>(item.thirdPersonPath);
         if (!definition || !first || !third) throw new InvalidOperationException("Incomplete armory weapon: " + item.title);
-        return new ArenaWeaponCatalog.Entry { weapon = definition,
+        return new WeaponCatalog.Entry { weapon = definition,
             firstPersonPrefab = first.GetComponent<SoldierWeaponView>(),
             thirdPersonPrefab = third.GetComponent<SoldierWeaponView>(), basePrefab = third };
 #else

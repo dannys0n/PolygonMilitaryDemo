@@ -73,7 +73,7 @@ public class EntityPerformanceControlTests
         Assert.AreEqual(expected,Actors.Length);
         Assert.IsTrue(Actors.All(a=>(bool)Get(a.GetComponent(T("VehicleOccupant")),"IsMounted")));
         Mode(1);yield return new WaitForSeconds(1);
-        Assert.IsTrue(Actors.All(a=>((Behaviour)a.GetComponent(T("ArenaVehicleAI"))).enabled));
+        Assert.IsTrue(Actors.All(a=>((Behaviour)a.GetComponent(T("VehicleAI"))).enabled));
         float firingDeadline=Time.time+15;
         while(Vehicles.All(v=>(float)Get(v.GetComponentInChildren(T("VehicleTurret")),"NextShotTime")<=0)&&Time.time<firingDeadline)yield return null;
         Assert.IsTrue(Vehicles.Any(v=>(float)Get(v.GetComponentInChildren(T("VehicleTurret")),"NextShotTime")>0),"Active gunners must actually fire, not only enable their AI.");
@@ -82,7 +82,7 @@ public class EntityPerformanceControlTests
         Assert.AreEqual(before,Get(vehicle,"Health"));
         Mode(0);yield return null;
         Assert.IsTrue(Actors.All(a=>(bool)Get(a.GetComponent(T("VehicleOccupant")),"IsMounted")),"Idling production AI must not eject the control crew.");
-        Assert.IsTrue(Actors.All(a=>!((Behaviour)a.GetComponent(T("ArenaVehicleAI"))).enabled));
+        Assert.IsTrue(Actors.All(a=>!((Behaviour)a.GetComponent(T("VehicleAI"))).enabled));
         Mode(2);Call(vehicle,"ApplyBulletDamage",1000000f,null,null);
         Assert.IsTrue((bool)Get(vehicle,"IsDestroyed"));
         yield return new WaitForSeconds(4);

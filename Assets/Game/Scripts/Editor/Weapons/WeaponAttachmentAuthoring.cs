@@ -22,7 +22,7 @@ public static class WeaponAttachmentAuthoring
     public static int Sync()
     {
         if(EditorApplication.isPlaying)throw new InvalidOperationException("Edit Mode required");
-        var catalog=AssetDatabase.LoadAssetAtPath<ArenaWeaponCatalog>("Assets/Game/Definitions/Weapons/Catalogs/WeaponCatalog.asset");
+        var catalog=AssetDatabase.LoadAssetAtPath<WeaponCatalog>("Assets/Game/Definitions/Weapons/Catalogs/WeaponCatalog.asset");
         int count=0;
         foreach(var entry in catalog.entries.Where(e=>e.basePrefab&&e.attachments.Length>0))
         {
@@ -54,7 +54,7 @@ public static class WeaponAttachmentAuthoring
     public static int SyncSightCompatibility()
     {
         if(EditorApplication.isPlaying)throw new InvalidOperationException("Edit Mode required");
-        var catalog=AssetDatabase.LoadAssetAtPath<ArenaWeaponCatalog>("Assets/Game/Definitions/Weapons/Catalogs/WeaponCatalog.asset");
+        var catalog=AssetDatabase.LoadAssetAtPath<WeaponCatalog>("Assets/Game/Definitions/Weapons/Catalogs/WeaponCatalog.asset");
         var all=AssetDatabase.FindAssets("t:WeaponSightDefinition",new[]{"Assets/Game"})
             .Select(g=>AssetDatabase.LoadAssetAtPath<WeaponSightDefinition>(AssetDatabase.GUIDToAssetPath(g))).Where(s=>s).ToArray();
         int count=0;

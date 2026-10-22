@@ -15,7 +15,7 @@ public sealed class SandboxDeploymentVehicles : MonoBehaviour
         public Vehicle vehicle;
         public TMP_Text label;
         public Image background;
-        public ArenaMenuSelectionFeedback feedback;
+        public MenuSelectionFeedback feedback;
     }
     readonly List<Row> rows=new List<Row>();
     Vehicle selectedVehicle;
@@ -35,7 +35,7 @@ public sealed class SandboxDeploymentVehicles : MonoBehaviour
             var label=row.GetComponentInChildren<TMP_Text>();label.text=vehicle.displayName.ToUpperInvariant();
             var icon=row.transform.Find("Vehicle icon").GetComponent<Image>();icon.sprite=vehicle.seatDiagram;icon.enabled=icon.sprite;
             row.gameObject.SetActive(true);
-            rows.Add(new Row { vehicle=vehicle, label=label, background=row.GetComponent<Image>(), feedback=row.GetComponent<ArenaMenuSelectionFeedback>() });
+            rows.Add(new Row { vehicle=vehicle, label=label, background=row.GetComponent<Image>(), feedback=row.GetComponent<MenuSelectionFeedback>() });
         }
     }
     void LateUpdate()
@@ -58,7 +58,7 @@ public sealed class SandboxDeploymentVehicles : MonoBehaviour
                 if(label.fontSharedMaterial!=material)label.fontSharedMaterial=material;
                 label.color=selected?Color.white:new Color(.75f,.75f,.75f);
             }
-            row.background.color=selected?ArenaHudTheme.SectionBackground:Color.clear;
+            row.background.color=selected?HudTheme.SectionBackground:Color.clear;
         }
     }
 }

@@ -5,11 +5,11 @@ public sealed class SandboxConquestRules : ConquestRules
 {
     [System.Serializable] public sealed class Flight
     {
-        public ArenaParticipant.Team team;
+        public MatchParticipant.Team team;
         public SandboxAirCombatAI.Battle battle;
         public Vehicle prefab;
         public Transform openingBase;
-        public ArenaParticipant[] crew;
+        public MatchParticipant[] crew;
         [System.NonSerialized] public Vehicle current;
         [System.NonSerialized] public int respawns;
         [System.NonSerialized] public bool respawning;
@@ -37,10 +37,10 @@ public sealed class SandboxConquestRules : ConquestRules
     public override bool UsesCustomSpawning=>infantryZones.Length>0;
     public override string ScoreDescription=>"CONTROL SCORE / NO LIMIT";
     public override int ScoreLimit=>Mathf.Max(100,Mathf.Max(redScore,blueScore));
-    public override int TeamScore(ArenaParticipant.Team team)=>team==ArenaParticipant.Team.Red?redScore:blueScore;
-    public override bool NeedsDeployment(ArenaParticipant actor)=>actor && actor.IsHumanControlled;
-    public override bool CanDeploy(ArenaParticipant actor,ConquestCapturePoint point)=>!point || System.Array.Exists(infantryZones,z=>z && z.point==point);
-    public override void Begin(ArenaMatch match)
+    public override int TeamScore(MatchParticipant.Team team)=>team==MatchParticipant.Team.Red?redScore:blueScore;
+    public override bool NeedsDeployment(MatchParticipant actor)=>actor && actor.IsHumanControlled;
+    public override bool CanDeploy(MatchParticipant actor,ConquestCapturePoint point)=>!point || System.Array.Exists(infantryZones,z=>z && z.point==point);
+    public override void Begin(MatchController match)
     {
         RetirePlayerVehicle();
         SelectedVehicle=deploymentVehicles.Length>0?deploymentVehicles[0]:null;
@@ -51,13 +51,13 @@ public sealed class SandboxConquestRules : ConquestRules
         }
         base.Begin(match);redScore=blueScore=0;scoreClock=0;UpdateAirCenter();
     }
-    Flight CrewFlight(ArenaParticipant actor)
+    Flight CrewFlight(MatchParticipant actor)
     {
         foreach(var f in flights)if(System.Array.IndexOf(f.crew,actor)>=0)return f;return null;
     }
-    public override float RespawnDelay(ArenaParticipant actor)=>CrewFlight(actor)!=null
+    public override float RespawnDelay(MatchParticipant actor)=>CrewFlight(actor)!=null
         || NeedsDeployment(actor)&&PlayerVehicle&&PlayerVehicle.IsDestroyed?vehicleRespawnDelay:base.RespawnDelay(actor);
-    public override bool CanDamage(ArenaParticipant victim,ArenaParticipant attacker)
+    public override bool CanDamage(MatchParticipant victim,MatchParticipant attacker)
     {
         if(!UsesCustomSpawning)return true;
         var first=CrewFlight(victim);var second=CrewFlight(attacker);
@@ -72,7 +72,7 @@ public sealed class SandboxConquestRules : ConquestRules
         var a=victim.GetComponent<SandboxInfantryInput>();var b=attacker.GetComponent<SandboxInfantryInput>();
         return a&&b&&a.objective==b.objective;
     }
-    public override bool TrySpawn(ArenaParticipant actor)
+    public override bool TrySpawn(MatchParticipant actor)
     {
         if(actor.IsSpectator||actor.RespawnRemaining>0)return false;
         bool local=NeedsDeployment(actor);
@@ -100,7 +100,7 @@ public sealed class SandboxConquestRules : ConquestRules
         }
         return false;
     }
-    void LeavePlayerVehicle(ArenaParticipant actor)
+    void LeavePlayerVehicle(MatchParticipant actor)
     {
         var rider=actor.GetComponent<VehicleOccupant>();if(rider && rider.IsMounted)rider.Leave(true);
         RetirePlayerVehicle();
@@ -112,9 +112,9 @@ public sealed class SandboxConquestRules : ConquestRules
         foreach(var collider in PlayerVehicle.GetComponentsInChildren<Collider>())collider.enabled=false;
         Destroy(PlayerVehicle.gameObject);PlayerVehicle=null;
     }
-    bool SpawnPlayerVehicle(ArenaParticipant actor)
+    bool SpawnPlayerVehicle(MatchParticipant actor)
     {
-        var bases=actor.team==ArenaParticipant.Team.Red?redBaseSpawns:blueBaseSpawns;
+        var bases=actor.team==MatchParticipant.Team.Red?redBaseSpawns:blueBaseSpawns;
         if(!SelectedVehicle || bases.Length==0 || SelectedVehicle.seats.Length==0)return false;
         var origin=bases[0];
         // Pads are authored on open ground. Lift by the chassis bounds so tall vehicles
@@ -173,7 +173,7 @@ public sealed class SandboxConquestRules : ConquestRules
             var v=flight.current=Instantiate(flight.prefab,flight.openingBase.position,flight.openingBase.rotation);
             v.DamageFilter=source=>
             {
-                var actor=source?source.GetComponentInParent<ArenaParticipant>():null;
+                var actor=source?source.GetComponentInParent<MatchParticipant>():null;
                 if(!actor)return true;
                 var attacker=CrewFlight(actor);
                 return actor.IsHumanControlled?actor.team!=flight.team:
@@ -201,11 +201,11 @@ public sealed class SandboxConquestRules : ConquestRules
         if(ticks==0)return;scoreClock-=ticks*interval;
         foreach(var point in points)
         {
-            if(point.Owner==ArenaParticipant.Team.Red)redScore=(int)System.Math.Min(int.MaxValue,(long)redScore+ticks);
-            else if(point.Owner==ArenaParticipant.Team.Blue)blueScore=(int)System.Math.Min(int.MaxValue,(long)blueScore+ticks);
+            if(point.Owner==MatchParticipant.Team.Red)redScore=(int)System.Math.Min(int.MaxValue,(long)redScore+ticks);
+            else if(point.Owner==MatchParticipant.Team.Blue)blueScore=(int)System.Math.Min(int.MaxValue,(long)blueScore+ticks);
         }
     }
-    public override bool TryGetObjective(ArenaAIInput ai,out Vector3 destination)=>base.TryGetObjective(ai,out destination);
-    public override void OnSpawned(ArenaParticipant actor,bool wasDead){}
+    public override bool TryGetObjective(AIInput ai,out Vector3 destination)=>base.TryGetObjective(ai,out destination);
+    public override void OnSpawned(MatchParticipant actor,bool wasDead){}
     void OnDisable(){RetirePlayerVehicle();foreach(var f in flights)if(f.current)Destroy(f.current.gameObject);}
 }

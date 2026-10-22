@@ -22,19 +22,19 @@ public class ConquestDeploymentMap : MonoBehaviour, IScrollHandler, IBeginDragHa
  RenderTexture mapTexture, previewTexture;
  readonly List<Pin> pins=new List<Pin>();
  readonly Dictionary<Canvas,bool> hiddenCanvases=new Dictionary<Canvas,bool>();
- ArenaParticipant[] roster;
+ MatchParticipant[] roster;
  Vector3 center;
  float extent,height,nextPins,nextPreview;
  bool mapDirty=true;
- ArenaParticipant previousMember;
+ MatchParticipant previousMember;
  ConquestCapturePoint previousPoint;
- class Pin {public UnityEngine.UI.Button button;public RectTransform rect;public TMP_Text label;public Image image;public ConquestCapturePoint point;public ArenaParticipant member;public bool teamBase;}
- static readonly Color Orange=ArenaHudTheme.Accent, White=new Color(.92f,.95f,.96f), Green=new Color(.6f,.84f,.42f);
+ class Pin {public UnityEngine.UI.Button button;public RectTransform rect;public TMP_Text label;public Image image;public ConquestCapturePoint point;public MatchParticipant member;public bool teamBase;}
+ static readonly Color Orange=HudTheme.Accent, White=new Color(.92f,.95f,.96f), Green=new Color(.6f,.84f,.42f);
  void OnEnable(){mapDirty=true;nextPins=nextPreview=0;}
  void Initialize()
  {
   var ownCanvas=GetComponentInParent<Canvas>();
-  foreach(var hud in Object.FindObjectsByType<ArenaHud>(FindObjectsInactive.Include))
+  foreach(var hud in Object.FindObjectsByType<GameplayHud>(FindObjectsInactive.Include))
   {
    if(hud.gameObject.scene!=gameObject.scene)continue;
    var canvas=hud.GetComponentInParent<Canvas>();if(!bracketMaterial)bracketMaterial=hud.filamentLine;
@@ -57,12 +57,12 @@ public class ConquestDeploymentMap : MonoBehaviour, IScrollHandler, IBeginDragHa
   center=bounds.center;extent=Mathf.Max(bounds.extents.z,bounds.extents.x/mapCamera.aspect)*1.08f;
   height=bounds.max.y+100;mapCamera.farClipPlane=Mathf.Max(250,height-bounds.min.y+100);
   mapCamera.transform.position=new Vector3(center.x,height,center.z);mapCamera.orthographicSize=extent;
-  selectedBrackets=ArenaHudTheme.SelectionBrackets(pinRoot,bracketMaterial);
+  selectedBrackets=HudTheme.SelectionBrackets(pinRoot,bracketMaterial);
   BuildPins();mapDirty=true;
  }
  Camera CreateCamera(string name,RenderTexture texture)
  {
-  var go=new GameObject(name,typeof(Camera));var c=go.GetComponent<Camera>();c.enabled=false;c.targetTexture=texture;c.clearFlags=CameraClearFlags.SolidColor;c.backgroundColor=ArenaHudTheme.SectionBackground;c.nearClipPlane=.1f;c.farClipPlane=2000;c.cullingMask=~(1<<8);
+  var go=new GameObject(name,typeof(Camera));var c=go.GetComponent<Camera>();c.enabled=false;c.targetTexture=texture;c.clearFlags=CameraClearFlags.SolidColor;c.backgroundColor=HudTheme.SectionBackground;c.nearClipPlane=.1f;c.farClipPlane=2000;c.cullingMask=~(1<<8);
   var data=c.GetUniversalAdditionalCameraData();data.renderPostProcessing=false;data.renderShadows=true;
   return c;
  }
@@ -96,7 +96,7 @@ public class ConquestDeploymentMap : MonoBehaviour, IScrollHandler, IBeginDragHa
   if(Time.unscaledTime>=nextPreview){nextPreview=Time.unscaledTime+.1f;UpdatePreview();}
   if(Input.GetKeyDown(KeyCode.P)){ResetMap();}
  }
- Vector3 BasePosition(){var points=menu.participant.team==ArenaParticipant.Team.Red?menu.rules.redBaseSpawns:menu.rules.blueBaseSpawns;return points[0].position;}
+ Vector3 BasePosition(){var points=menu.participant.team==MatchParticipant.Team.Red?menu.rules.redBaseSpawns:menu.rules.blueBaseSpawns;return points[0].position;}
  void UpdatePins()
  {
   int friendly=0;
@@ -129,7 +129,7 @@ public class ConquestDeploymentMap : MonoBehaviour, IScrollHandler, IBeginDragHa
   else
   {
    Vector3 target=menu.SelectedPoint?menu.SelectedPoint.transform.position:BasePosition();
-   Vector3 backward=menu.SelectedPoint?menu.SelectedPoint.transform.forward:menu.participant.team==ArenaParticipant.Team.Red?Vector3.forward:Vector3.back;
+   Vector3 backward=menu.SelectedPoint?menu.SelectedPoint.transform.forward:menu.participant.team==MatchParticipant.Team.Red?Vector3.forward:Vector3.back;
    Vector3 pivot=target+Vector3.up*2;Vector3 offset=Vector3.up*4-backward*10;
    if(Physics.SphereCast(pivot,.2f,offset.normalized,out var hit,offset.magnitude,Physics.DefaultRaycastLayers,QueryTriggerInteraction.Ignore))offset=offset.normalized*Mathf.Max(1,hit.distance-.25f);
    previewCamera.transform.position=pivot+offset;previewCamera.transform.rotation=Quaternion.LookRotation(pivot-previewCamera.transform.position,Vector3.up);

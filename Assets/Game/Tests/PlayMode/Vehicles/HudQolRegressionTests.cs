@@ -54,13 +54,13 @@ public class HudQolRegressionTests
     [UnityTest] public IEnumerator GameplayDustOnlyAppearsAfterDamageAndClearsOnViewerChange()
     {
         var health=Object("Health").AddComponent(T("SoldierHealth"));
-        var actor=Object("Inactive participant fixture",false).AddComponent(T("ArenaParticipant"));Set(actor,"health",health);
-        var hud=Object("Inactive HUD fixture",false).AddComponent(T("ArenaHud"));Set(hud,"player",actor);
+        var actor=Object("Inactive participant fixture",false).AddComponent(T("MatchParticipant"));Set(actor,"health",health);
+        var hud=Object("Inactive HUD fixture",false).AddComponent(T("GameplayHud"));Set(hud,"player",actor);
         var canvas=Object("Damage canvas").AddComponent<Canvas>();canvas.renderMode=RenderMode.ScreenSpaceOverlay;
         var effectObject=Object("Damage edges",false);effectObject.transform.SetParent(canvas.transform,false);
         var image=effectObject.AddComponent<Image>();
         var material=new Material(Shader.Find("Game/UI/Menu Atmosphere"));created.Add(material);material.SetFloat("_Mode",5);image.material=material;
-        var effect=effectObject.AddComponent(T("ArenaMenuAtmosphere"));effectObject.SetActive(true);
+        var effect=effectObject.AddComponent(T("MenuAtmosphere"));effectObject.SetActive(true);
         Set(effect,"hud",hud);Call(effect,"LateUpdate");
         Assert.IsFalse(image.enabled,"No damage means no full-screen dust draw.");
         Assert.IsTrue((bool)Call(health,"ApplyDamage",25f,null,null));Call(effect,"LateUpdate");

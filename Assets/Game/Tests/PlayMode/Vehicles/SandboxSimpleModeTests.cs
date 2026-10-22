@@ -72,7 +72,7 @@ public class SandboxSimpleModeTests
     [UnityTest] public IEnumerator FriendlyMarkersFollowViewedTeamAndHideSelfEnemiesAndOffscreenPlayers()
     {
         yield return Load();
-        var spectator=All("ArenaAISpectator").Single();
+        var spectator=All("AISpectator").Single();
         Call(spectator,"SetManualSpectating",true);Call(spectator,"SetInterestMode",false);
         var actors=infantry.Select(i=>(Component)Get(i,"participant")).ToArray();
         var viewer=actors.First(a=>Get(a,"team").ToString()=="Red");
@@ -80,7 +80,7 @@ public class SandboxSimpleModeTests
         var enemy=actors.First(a=>Get(a,"team").ToString()=="Blue");
         Time.timeScale=0;
         Call(spectator,"Follow",viewer);Call(spectator,"EnterPerspective");yield return null;
-        var markers=All("ArenaFriendlyMarkers").Single();
+        var markers=All("FriendlyMarkers").Single();
         var camera=(Camera)Get(spectator,"PresentationCamera");
         var animator=(Animator)Get(Get(Get(friendly,"player"),"actions"),"animator");
         Vector3 head=animator.GetBoneTransform(HumanBodyBones.Head).position;
@@ -90,7 +90,7 @@ public class SandboxSimpleModeTests
         Assert.IsFalse((bool)Call(markers,"IsVisible",viewer));
         Assert.IsFalse((bool)Call(markers,"IsVisible",enemy));
         var root=(RectTransform)Get(markers,"root");
-        Assert.AreEqual(0,root.GetComponentsInChildren(T("ArenaUiPerspective"),true).Length,"World markers cannot inherit decorative HUD tilt or look lag.");
+        Assert.AreEqual(0,root.GetComponentsInChildren(T("UiPerspective"),true).Length,"World markers cannot inherit decorative HUD tilt or look lag.");
         camera.transform.rotation=Quaternion.Euler(0,180,0);Call(markers,"LateUpdate");
         Assert.IsFalse((bool)Call(markers,"IsVisible",friendly),"Behind-camera markers must be hidden.");
         camera.transform.rotation=Quaternion.identity;
@@ -105,10 +105,10 @@ public class SandboxSimpleModeTests
     [UnityTest] public IEnumerator SpectatorAircraftHudChangesProfileInBothViewsWithoutStaleInstruments()
     {
         yield return Load();
-        var spectator=All("ArenaAISpectator").Single();
+        var spectator=All("AISpectator").Single();
         Call(spectator,"SetManualSpectating",true);Call(spectator,"SetInterestMode",false);
         yield return null;
-        var hud=All("ArenaVehicleHud").Single();
+        var hud=All("VehicleHud").Single();
         var flights=((IEnumerable)Get(rules,"flights")).Cast<object>().ToArray();
         foreach(string reference in new[]{"F15","Cobra","Su27","LittleBird","F15"})
         {
@@ -133,16 +133,16 @@ public class SandboxSimpleModeTests
     [UnityTest] public IEnumerator SpectatorInterestSwitchesForQuietTimeDwellAndVarietyWithoutInterruptingDeathWatch()
     {
         yield return Load();
-        var spectator = All("ArenaAISpectator").Single();
+        var spectator = All("AISpectator").Single();
         Assert.IsTrue((bool)Get(spectator, "InterestMode"), "Interest mode starts enabled.");
         Call(spectator, "SetManualSpectating", true);
         Set(spectator, "ControlsBlocked", false);
         Call(spectator, "SetInterestMode", true);
-        var director = spectator.GetComponent(T("ArenaSpectatorInterest"));
+        var director = spectator.GetComponent(T("SpectatorInterest"));
         // Drive the director deterministically while gameplay continues normally.
         ((Behaviour)director).enabled = false;
         Call(director, "SetEnabled", true);
-        var actors = All("ArenaParticipant").Where(a => (bool)Call(spectator, "CanFollowFiltered", a)).ToArray();
+        var actors = All("MatchParticipant").Where(a => (bool)Call(spectator, "CanFollowFiltered", a)).ToArray();
         var foot = actors.Where(a => !((bool)Get(a.GetComponent(T("VehicleOccupant")), "IsMounted"))).Take(3).ToArray();
         Assert.AreEqual(3, foot.Length);
         Call(spectator, "Follow", foot[0]);
@@ -188,7 +188,7 @@ public class SandboxSimpleModeTests
         float until = Time.realtimeSinceStartup + 8;
         while (((Array)Get(rules, "flights")).Cast<object>().Any(f => Get(f, "current") == null) && Time.realtimeSinceStartup < until)
         { Time.timeScale = 1; yield return null; }
-        Assert.IsTrue((bool)Get(All("ArenaMatch").Single(), "IsRunning"));
+        Assert.IsTrue((bool)Get(All("MatchController").Single(), "IsRunning"));
     }
     [UnityTearDown] public IEnumerator Cleanup()
     {
@@ -212,7 +212,7 @@ public class SandboxSimpleModeTests
         var blue=UnityEditor.AssetDatabase.LoadAssetAtPath<GameObject>("Assets/Game/Prefabs/Matches/Player_Polygon_AI_Skin01.prefab");
         var redLook=Appearance(red.transform);var blueLook=Appearance(blue.transform);
         CollectionAssert.AreNotEqual(redLook,blueLook);
-        var actors=All("ArenaParticipant");Assert.AreEqual(48,actors.Length);
+        var actors=All("MatchParticipant");Assert.AreEqual(48,actors.Length);
         foreach(var actor in actors)
         {
             CollectionAssert.AreEqual(Get(actor,"team").ToString()=="Blue"?blueLook:redLook,Appearance(actor),actor.name);
@@ -236,7 +236,7 @@ public class SandboxSimpleModeTests
         var zones = ((IEnumerable)Get(rules, "infantryZones")).Cast<Component>().ToArray();
         Assert.AreEqual(3, zones.Length);
         Assert.AreEqual(36, infantry.Length);
-        Assert.AreEqual(48, All("ArenaParticipant").Length);
+        Assert.AreEqual(48, All("MatchParticipant").Length);
         foreach (var zone in zones)
         {
             var point = Get(zone, "point");
@@ -255,12 +255,12 @@ public class SandboxSimpleModeTests
             Assert.NotNull(Get(flight, "current"));
             Assert.AreEqual(Get(flight, "battle").ToString() == "Jets" ? 1 : 2, ((Array)Get(flight, "crew")).Length);
         }
-        foreach (string legacy in new[] { "ArenaAIInput", "ArenaVehicleAI", "CombinedArmsOrchestrator", "VehicleSpawnPoint" })
+        foreach (string legacy in new[] { "AIInput", "VehicleAI", "CombinedArmsOrchestrator", "VehicleSpawnPoint" })
             Assert.AreEqual(0, All(legacy).Length, "Saved sandbox must not retain legacy behavior: " + legacy);
-        var match = All("ArenaMatch").Single();
+        var match = All("MatchController").Single();
         var settings = Get(match, "settings");
         Assert.IsTrue((bool)Get(settings, "polishedWeaponsOnly"));
-        Assert.NotNull(match.GetComponent(T("ArenaRandomLoadouts")));
+        Assert.NotNull(match.GetComponent(T("RandomLoadouts")));
         var catalog = Get(settings, "weaponCatalog");
         foreach (var actor in infantry.Select(i => (Component)Get(i, "participant")))
         {
@@ -342,10 +342,10 @@ public class SandboxSimpleModeTests
     [UnityTest] public IEnumerator SpectatorFiltersCycleAndRecoverWhenMatchingVehiclesBecomeAvailable()
     {
         yield return Load();yield return null;
-        var spectator=All("ArenaAISpectator").Single();
-        var filterType=T("ArenaAISpectator").GetNestedType("FollowFilter");
+        var spectator=All("AISpectator").Single();
+        var filterType=T("AISpectator").GetNestedType("FollowFilter");
         Call(spectator,"SetManualSpectating",true);yield return null;
-        var hud=All("ArenaSpectatorHud").Single();
+        var hud=All("SpectatorHud").Single();
         hud.GetComponentsInChildren<UnityEngine.UI.Button>(true).Single(b=>b.name=="AIRBORNE VEHICLES").onClick.Invoke();
         Assert.AreEqual("AirborneVehicles",Get(spectator,"Filter").ToString(),"HUD buttons must apply the follow filter");
         foreach(string filter in new[]{"Infantry","AirborneVehicles"})
@@ -388,7 +388,7 @@ public class SandboxSimpleModeTests
     [UnityTest] public IEnumerator DefenseOnlyVehicleEquipmentStaysVisibleBetweenReadoutRefreshes()
     {
         yield return Load();yield return null;
-        var spectator=All("ArenaAISpectator").Single();var hud=All("ArenaVehicleHud").Single();
+        var spectator=All("AISpectator").Single();var hud=All("VehicleHud").Single();
         Call(spectator,"SetInterestMode",false);
         var flight=((IEnumerable)Get(rules,"flights")).Cast<object>().First(f=>Get(f,"battle").ToString()=="Jets");
         var vehicle=(Component)Get(flight,"current");
@@ -422,7 +422,7 @@ public class SandboxSimpleModeTests
     [UnityTest] public IEnumerator SpectatorVehicleHudUsesObservedOccupantAndBothPresentationCameras()
     {
         yield return Load();yield return null;
-        var spectator=All("ArenaAISpectator").Single();var hud=All("ArenaVehicleHud").Single();
+        var spectator=All("AISpectator").Single();var hud=All("VehicleHud").Single();
         Call(spectator,"SetInterestMode",false); // This test explicitly controls the followed target.
         Call(spectator,"SetManualSpectating",true);yield return null;
         Assert.IsNull(Get(hud,"player"));
@@ -477,7 +477,7 @@ public class SandboxSimpleModeTests
     {
         yield return Load();
         Assert.AreEqual(3,(float)Get(rules,"vehicleRespawnDelay"));
-        Assert.AreEqual(3,(float)Get(Get(All("ArenaMatch").Single(),"settings"),"respawnDelay"));
+        Assert.AreEqual(3,(float)Get(Get(All("MatchController").Single(),"settings"),"respawnDelay"));
         var input=infantry.First(i=>((Behaviour)i).enabled);((Behaviour)input).enabled=false;
         var actor=(Component)Get(input,"participant");var body=actor.GetComponent<Rigidbody>();
         body.position=new Vector3(-450,20,0);body.linearVelocity=Vector3.right*10000;
@@ -523,7 +523,7 @@ public class SandboxSimpleModeTests
         var attacker=((IEnumerable)Get(enemyFlight,"crew")).Cast<Component>().First();
         Assert.IsFalse((bool)Call(rules,"CanDamage",pilot,attacker),"A cockpit hit must not bypass the coupled aircraft hull.");
         Set(rules,"vehicleRespawnDelay",.6f);
-        var spectator=All("ArenaAISpectator").Single();Call(spectator,"SetManualSpectating",true);yield return null;
+        var spectator=All("AISpectator").Single();Call(spectator,"SetManualSpectating",true);yield return null;
         Assert.IsNull(Get(spectator,"FollowedCharacter"),"Spectating starts in free roam");
         Call(spectator,"Follow",pilot);
         Call(previous, "ApplyDamage", (float)Get(previous, "maxHealth") + 1, null, null);
@@ -557,7 +557,7 @@ public class SandboxSimpleModeTests
         yield return Load();yield return null;
         Set(rules,"vehicleRespawnDelay",.6f);
         var menu=All("ConquestDeploymentMenu").Single();var actor=(Component)Get(menu,"participant");
-        var spectator=All("ArenaAISpectator").Single();
+        var spectator=All("AISpectator").Single();
         var prefab=((IEnumerable)Get(rules,"deploymentVehicles")).Cast<Component>().Single(v=>v.name=="PickupTechnical");
         Call(rules,"SelectVehicle",prefab);Call(menu,"SelectBase");Call(menu,"RequestDeployment");
         yield return null;yield return null;

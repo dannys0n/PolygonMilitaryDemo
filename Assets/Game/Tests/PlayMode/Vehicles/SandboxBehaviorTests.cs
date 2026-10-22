@@ -32,8 +32,8 @@ public class SandboxBehaviorTests
     static void MakeHuman(Component actor)
     {
         var local=(Behaviour)actor.gameObject.AddComponent(T("SoldierLocalInput"));local.enabled=false;
-        ((Behaviour)actor.GetComponent(T("ArenaAIInput"))).enabled=false;
-        ((Behaviour)actor.GetComponent(T("ArenaVehicleAI"))).enabled=false;
+        ((Behaviour)actor.GetComponent(T("AIInput"))).enabled=false;
+        ((Behaviour)actor.GetComponent(T("VehicleAI"))).enabled=false;
         Call(actor.GetComponent(T("SoldierController")),"SetControl",local,Enum.Parse(T("SoldierControlRole"),"Human"),true);
     }
     Component scenario;
@@ -48,7 +48,7 @@ public class SandboxBehaviorTests
     {
         yield return Load("AI_Accuracy");
         var actors=(IList)Get(scenario,"actors");Assert.AreEqual(4,actors.Count);
-        var actor=(Component)actors[0];var enemy=(Component)actors[2];var ai=actor.GetComponent(T("ArenaAIInput"));
+        var actor=(Component)actors[0];var enemy=(Component)actors[2];var ai=actor.GetComponent(T("AIInput"));
         Assert.AreEqual(4f,Get(ai,"aimSettleTime"));Assert.AreEqual(0f,Get(ai,"settledAimError"));
         ai.GetType().GetField("target",Flags).SetValue(ai,enemy);
         ai.GetType().GetField("acquiredAt",Flags).SetValue(ai,Time.time-3.99f);
@@ -64,7 +64,7 @@ public class SandboxBehaviorTests
     {
         yield return Load("AI_Accuracy");
         var actors=((IEnumerable)Get(scenario,"actors")).Cast<Component>().ToArray();
-        var ai=actors[0].GetComponent(T("ArenaAIInput"));
+        var ai=actors[0].GetComponent(T("AIInput"));
         ((Behaviour)ai).enabled=false;
         Set(ai,"target",null);Set(ai,"targetVisible",false);
         Assert.AreEqual(1f,Get(ai,"reactionTime"));
@@ -90,9 +90,9 @@ public class SandboxBehaviorTests
         // Keep the authored TPS camera offset and the production input/shooting path.
         // Stationary opponents isolate aim calibration from tactical movement.
         foreach(var actor in actors)
-            actor.GetComponent(T("ArenaAIInput")).GetType().GetProperty("HoldPosition").SetValue(actor.GetComponent(T("ArenaAIInput")),true);
+            actor.GetComponent(T("AIInput")).GetType().GetProperty("HoldPosition").SetValue(actor.GetComponent(T("AIInput")),true);
         var victim=actors[2];var health=Get(victim,"health");float initial=(float)Get(health,"CurrentHealth");
-        foreach(var actor in actors.Skip(2))((Behaviour)actor.GetComponent(T("ArenaAIInput"))).enabled=false;
+        foreach(var actor in actors.Skip(2))((Behaviour)actor.GetComponent(T("AIInput"))).enabled=false;
         bool damaged=false,killed=false;float until=Time.time+16;
         while(Time.time<until)
         {
@@ -103,7 +103,7 @@ public class SandboxBehaviorTests
         }
         Assert.IsTrue(damaged,"Settled production shots must damage an opposing infantry collider.");
                 string detail=string.Join("\n",actors.Select(a=>{
-            var ai=a.GetComponent(T("ArenaAIInput"));var life=Get(ai,"life");var look=Get(life,"look");var camera=(Camera)Get(look,"aimCamera");
+            var ai=a.GetComponent(T("AIInput"));var life=Get(ai,"life");var look=Get(life,"look");var camera=(Camera)Get(look,"aimCamera");
             var target=Get(ai,"Target") as Component;var loadout=Get(Get(ai,"soldier"),"loadout");var state=Get(loadout,"EquippedState");
             return a.name+" health="+Get(Get(a,"health"),"CurrentHealth")+" kills="+Get(a,"Kills")+" state="+Get(ai,"State")+" target="+(target?target.name:"none")+" yaw="+Get(look,"Yaw")+" camera="+camera.transform.eulerAngles+" error="+(target?Vector3.Angle(camera.transform.forward,target.transform.position+Vector3.up*1.25f-camera.transform.position):0)+" mag="+Get(state,"MagazineAmmo");}));
         Assert.IsTrue(killed,"Production aim must lead to a kill, not just a perfect internal aim point.\n"+detail);
@@ -141,7 +141,7 @@ public class SandboxBehaviorTests
         Call(scenario,"Depart");yield return new WaitForSeconds(12);
         var moving=((IEnumerable)Get(scenario,"vehicles")).Cast<Component>().ToArray();
         string detail=string.Join("\n",moving.Select(v=>{
-            var driver=Get(v,"Driver") as Component;var ai=driver?driver.GetComponent(T("ArenaVehicleAI")):null;
+            var driver=Get(v,"Driver") as Component;var ai=driver?driver.GetComponent(T("VehicleAI")):null;
             var input=Get(v,"DriverInput");var body=v.GetComponent<Rigidbody>();
             return v.name+" at "+v.transform.position+" speed="+body.linearVelocity.magnitude+" driver="+(driver?driver.name:"none")+" input="+Get(input,"move")+" brake="+Get(input,"brake")+" goal="+(ai?Get(ai,"Goal"):"none")+" state="+(ai?Get(ai,"State"):"none");}));
         Assert.IsTrue(moving.Any(v=>v.GetComponent<Rigidbody>().linearVelocity.magnitude>1),"Departure must move a vehicle through its normal motor.\n"+detail);
@@ -160,7 +160,7 @@ public class SandboxBehaviorTests
         Call(orchestrator,"Replan");
         Assert.IsTrue((bool)Call(Rider(human),"SwitchSeat",0));
         Call(orchestrator,"Replan");
-        var botAI=bot.GetComponent(T("ArenaVehicleAI"));
+        var botAI=bot.GetComponent(T("VehicleAI"));
         Assert.AreSame(Rider(human),Get(vehicle,"Driver"));
         Assert.AreEqual(1,Get(Rider(bot),"SeatIndex"));
         Assert.IsFalse((bool)Get(botAI,"MissionCrew"),"A displaced driver must act as support in its actual seat.");
@@ -173,7 +173,7 @@ public class SandboxBehaviorTests
         // Outside entry uses the real displacement path, forcing the bot entirely out.
         Board(human,vehicle,0);Call(orchestrator,"Replan");
         Assert.IsFalse((bool)Get(Rider(bot),"IsMounted"));
-        Assert.IsFalse((bool)Get(bot.GetComponent(T("ArenaAIInput")),"HoldMovement"));
+        Assert.IsFalse((bool)Get(bot.GetComponent(T("AIInput")),"HoldMovement"));
         Assert.IsFalse((bool)Get(botAI,"HoldDeparture"));
         var order=((IEnumerable)Get(orchestrator,"Orders")).Cast<object>().Single(o=>Get(o,"actor")==bot);
         Assert.IsNull(Get(order,"vehicle"));

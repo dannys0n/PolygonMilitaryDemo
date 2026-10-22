@@ -14,6 +14,6 @@ public sealed class ArmoryReviewLoadout : MonoBehaviour
         loadout.selectedSlot=0;
         loadout.slots=new[]{Slot(e)};
     }
-    public static SoldierWeaponLoadout.Slot Slot(ArenaWeaponCatalog.Entry e)=>new SoldierWeaponLoadout.Slot
+    public static SoldierWeaponLoadout.Slot Slot(WeaponCatalog.Entry e)=>new SoldierWeaponLoadout.Slot
     {name=e.weapon.displayName,definition=e.weapon,firstPersonPrefab=e.firstPersonPrefab,thirdPersonPrefab=e.thirdPersonPrefab};
 }

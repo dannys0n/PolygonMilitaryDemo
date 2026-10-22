@@ -4,7 +4,7 @@ using UnityEngine;
 public sealed class FallKillVolume : MonoBehaviour
 {
     [Tooltip("Optional match roster for checks that do not rely on a trigger being crossed.")]
-    public ArenaMatch match;
+    public MatchController match;
     [Tooltip("Disable for perimeter trigger walls; the under-map volume owns the single roster safety check.")]
     public bool pollRoster=true;
     public bool enforceMapFootprint;
@@ -16,7 +16,7 @@ public sealed class FallKillVolume : MonoBehaviour
     void Awake()
     {
         box=GetComponent<BoxCollider>();box.isTrigger=true;
-        if(pollRoster&&!match)foreach(var candidate in FindObjectsByType<ArenaMatch>())
+        if(pollRoster&&!match)foreach(var candidate in FindObjectsByType<MatchController>())
             if(candidate.gameObject.scene==gameObject.scene){match=candidate;break;}
     }
     public bool OutsideWorld(Vector3 position)
