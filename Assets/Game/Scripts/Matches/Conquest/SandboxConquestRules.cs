@@ -57,21 +57,6 @@ public sealed class SandboxConquestRules : ConquestRules
     }
     public override float RespawnDelay(MatchParticipant actor)=>CrewFlight(actor)!=null
         || NeedsDeployment(actor)&&PlayerVehicle&&PlayerVehicle.IsDestroyed?vehicleRespawnDelay:base.RespawnDelay(actor);
-    public override bool CanDamage(MatchParticipant victim,MatchParticipant attacker)
-    {
-        if(!UsesCustomSpawning)return true;
-        var first=CrewFlight(victim);var second=CrewFlight(attacker);
-        if(first!=null||second!=null)
-        {
-            // A crew and its aircraft are one combat unit in this mode. Hull damage
-            // destroys the vehicle, which then kills its occupants; cockpit hitboxes
-            // must not bypass the hull with one infantry-damage cannon hit.
-            return first!=null&&second!=null&&first.battle==second.battle
-                && first.current&&first.current.IsDestroyed;
-        }
-        var a=victim.GetComponent<SandboxInfantryInput>();var b=attacker.GetComponent<SandboxInfantryInput>();
-        return a&&b&&a.objective==b.objective;
-    }
     public override bool TrySpawn(MatchParticipant actor)
     {
         if(actor.IsSpectator||actor.RespawnRemaining>0)return false;
@@ -171,14 +156,6 @@ public sealed class SandboxConquestRules : ConquestRules
                 Destroy(flight.current.gameObject);
             }
             var v=flight.current=Instantiate(flight.prefab,flight.openingBase.position,flight.openingBase.rotation);
-            v.DamageFilter=source=>
-            {
-                var actor=source?source.GetComponentInParent<MatchParticipant>():null;
-                if(!actor)return true;
-                var attacker=CrewFlight(actor);
-                return actor.IsHumanControlled?actor.team!=flight.team:
-                    attacker!=null&&attacker.battle==flight.battle&&attacker.team!=flight.team;
-            };
             flight.respawns++;
             flight.respawning=false;
             for(int i=0;i<flight.crew.Length;i++)

@@ -287,13 +287,18 @@ public class SoldierWeaponLoadout : MonoBehaviour
         float duration=state=="Equip"?definition.equipDuration:definition.unequipDuration;
         arms.SetFloat("WeaponSwitchSpeed",state=="Empty"?1f:WeaponAnimationTiming.Speed(arms,state+"_FirstPerson",duration));
         body.SetFloat("WeaponSwitchSpeed",state=="Empty"?1f:WeaponAnimationTiming.Speed(body,state+"_ThirdPerson",duration));
-        arms.Play(state,arms.GetLayerIndex("WeaponSwitch"),0);
+        // Camera suspension can copy the body's idle (zero) layer weight.
+        // A new swap must explicitly reclaim its presentation layer.
+        int armsSwitchLayer=arms.GetLayerIndex("WeaponSwitch");
+        arms.SetLayerWeight(armsSwitchLayer,1f);
+        arms.Play(state,armsSwitchLayer,0);
         body.Play(state,body.GetLayerIndex("WeaponSwitch"),0);
         if(FirstPersonView && FirstPersonView.animationOverride)
         {
             var authored=FirstPersonView.animator;
             authored.SetFloat("WeaponSwitchSpeed",state=="Empty"?1f:WeaponAnimationTiming.Speed(authored,state+"_FirstPerson",duration));
             int layer=authored.GetLayerIndex("WeaponSwitch");
+            if(layer>=0)authored.SetLayerWeight(layer,1f);
             authored.Play(layer>=0?state:state=="Empty"?"Idle":state,Mathf.Max(0,layer),0);
         }
     }

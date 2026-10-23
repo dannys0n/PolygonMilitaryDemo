@@ -84,6 +84,8 @@ public static class NativeWeaponMeshAdapter
   foreach(var group in groups)
   {
    string semantic=Semantic(group.Key.name);if(group.Key.name=="Bone.002")semantic="Mag";if(group.Key.name=="Bone.003")semantic="Bolt";if(group.Key.name=="Bone.004")semantic="ChargingHandle";Transform match=null;
+   if(key=="MPS5_UE4"&&group.Key.name=="Bone.003")semantic="ChargingHandle";
+   if(key=="MPS5_UE4"&&group.Key.name=="Bone.004")semantic="Bolt";
    string[] aliases=semantic=="Mag"?new[]{"Mag","Magazine","Bag"}:semantic=="Bolt"?new[]{"Bolt","ChargingHandle","Charger","Slider"}:semantic=="Root"?new[]{root.name}:new[]{semantic??""};
    foreach(string name in aliases){match=nativeBones.FirstOrDefault(b=>b.name==name);if(match)break;}
    if(!match)

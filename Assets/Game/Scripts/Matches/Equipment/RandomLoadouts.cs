@@ -27,7 +27,8 @@ public class RandomLoadouts : MonoBehaviour
         var second = secondary[UnityEngine.Random.Range(0, secondary.Count)];
         var loadout=actor.player.loadout;
         loadout.ConfigureAvailableSlots(new[]{Array.FindIndex(loadout.slots,s=>s.definition==first.weapon),Array.FindIndex(loadout.slots,s=>s.definition==second.weapon)});
-        loadout.SetSpawnSights(Sight(first,loadout),Sight(second,loadout));
+        bool sandbox=actor.match.rules is SandboxConquestRules;
+        loadout.SetSpawnSights(Sight(first,loadout,sandbox),Sight(second,loadout,sandbox));
         loadout.SetSpawnAttachments(Attachments(first,loadout),Attachments(second,loadout));
         actor.GetComponent<SoldierGrenades>().SelectType(UnityEngine.Random.Range(0,3));
     }
@@ -38,10 +39,16 @@ public class RandomLoadouts : MonoBehaviour
         && weapon.category!=SoldierWeaponDefinition.WeaponCategory.Melee
         && weapon.category!=SoldierWeaponDefinition.WeaponCategory.Explosive;
 
-    WeaponSightDefinition Sight(WeaponCatalog.Entry entry, SoldierWeaponLoadout loadout)
+    WeaponSightDefinition Sight(WeaponCatalog.Entry entry, SoldierWeaponLoadout loadout, bool sandbox)
     {
         var slot = Array.Find(loadout.slots, s => s.definition == entry.weapon);
-        var options = Array.FindAll(entry.sights, sight => sight && slot.Supports(sight));
+        var category=entry.weapon.category;
+        if(sandbox && (category==SoldierWeaponDefinition.WeaponCategory.Sniper || entry.weapon.displayName.Contains("Python")))
+            return slot.Supports(entry.defaultSight) ? entry.defaultSight : null;
+        bool limitZoom=sandbox && (category==SoldierWeaponDefinition.WeaponCategory.Rifle
+            || category==SoldierWeaponDefinition.WeaponCategory.SMG || category==SoldierWeaponDefinition.WeaponCategory.LMG
+            || category==SoldierWeaponDefinition.WeaponCategory.Shotgun);
+        var options = Array.FindAll(entry.sights, sight => sight && (!limitZoom || sight.magnification<=2f) && slot.Supports(sight));
         return options.Length > 0 && UnityEngine.Random.value < opticChance
             ? options[UnityEngine.Random.Range(0, options.Length)] : null;
     }
