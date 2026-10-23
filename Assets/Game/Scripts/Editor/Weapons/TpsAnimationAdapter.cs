@@ -302,6 +302,10 @@ public static class TpsAnimationAdapter
     }
     // Additional reload variants reuse the same fitting without rewriting idle,
     // firing, controllers, prefab grip poses or the source weapon definition.
+    // Model-specific support-hand variants still use the same offline conversion pipeline.
+    public static object BuildActions(WeaponAnimationConversionProof proof, string folder)
+        => BuildProof(proof, false, folder, false);
+
     public static object BuildReload(WeaponAnimationConversionProof proof, string folder)
         => BuildProof(proof, true, folder, true);
 
