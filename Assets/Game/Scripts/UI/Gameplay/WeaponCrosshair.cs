@@ -9,12 +9,13 @@ public sealed class WeaponCrosshair : MonoBehaviour
     public Graphic[] normalSegments;
     public Image[] shotgunSegments;
     LauncherCrosshair launcher;
+    ShotgunCrosshair shotgun;
     RectTransform root;
     Canvas canvas;
     float visibility = 1f;
     Camera aimCamera;
     SoldierLife cameraOwner;
-    Vector2[] normalDirections, shotgunDirections;
+    Vector2[] normalDirections;
 
     public static WeaponCrosshair Attach(RectTransform root, Graphic[] normal, Image[] shotgun)
     {
@@ -27,13 +28,14 @@ public sealed class WeaponCrosshair : MonoBehaviour
     void Start()
     {
         normalDirections = new Vector2[normalSegments.Length];
-        shotgunDirections = new Vector2[shotgunSegments.Length];
         for (int i = 0; i < normalDirections.Length; i++) normalDirections[i] = normalSegments[i].rectTransform.anchoredPosition.normalized;
-        for (int i = 0; i < shotgunDirections.Length; i++) shotgunDirections[i] = shotgunSegments[i].rectTransform.anchoredPosition.normalized;
         launcher = new GameObject("Launcher reticle", typeof(RectTransform), typeof(CanvasRenderer), typeof(LauncherCrosshair)).GetComponent<LauncherCrosshair>();
         launcher.transform.SetParent(transform, false);
         launcher.rectTransform.sizeDelta = new Vector2(100f, 100f);
         launcher.color = Color.white; launcher.raycastTarget = false;
+        foreach(var segment in shotgunSegments)segment.enabled=false;
+        shotgun=new GameObject("Shotgun reticle",typeof(RectTransform),typeof(CanvasRenderer),typeof(ShotgunCrosshair)).GetComponent<ShotgunCrosshair>();
+        shotgun.transform.SetParent(transform,false);shotgun.color=Color.white;shotgun.raycastTarget=false;
     }
     void LateUpdate()
     {
@@ -46,7 +48,7 @@ public sealed class WeaponCrosshair : MonoBehaviour
         bool show = visibility > .15f;
         bool isLauncher = definition.UsesLauncherCrosshair;
         foreach (var s in normalSegments) s.enabled = show && !isLauncher && !definition.UsesSpread;
-        foreach (var s in shotgunSegments) s.enabled = show && !isLauncher && definition.UsesSpread;
+        shotgun.enabled = show && !isLauncher && definition.UsesSpread;
         launcher.enabled = show && isLauncher;
         if (!show || !aimCamera) return;
         float pixels = Mathf.Tan(actor.actions.HipSpreadAt(Time.time) * Mathf.Deg2Rad)
@@ -57,11 +59,25 @@ public sealed class WeaponCrosshair : MonoBehaviour
         RectTransformUtility.ScreenPointToLocalPointInRectangle(root, center + Vector2.right * pixels, uiCamera, out var right);
         RectTransformUtility.ScreenPointToLocalPointInRectangle(root, center + Vector2.up * pixels, uiCamera, out var up);
         float x = (right - origin).magnitude * visibility, y = (up - origin).magnitude * visibility;
-        var segments = definition.UsesSpread ? (Graphic[])shotgunSegments : normalSegments;
-        for (int i = 0; i < segments.Length; i++)
+        if (definition.UsesSpread)
         {
-            var direction = definition.UsesSpread ? shotgunDirections[i] : normalDirections[i];
-            var segment = segments[i];
+            shotgun.radius = pixels * visibility;
+            float width = 1f;
+            foreach(var segment in normalSegments)
+                if(segment is CrosshairStroke stroke)
+                {
+                    var rect=segment.rectTransform;
+                    var unit=RectTransformUtility.WorldToScreenPoint(uiCamera,rect.TransformPoint(rect.rect.center+Vector2.right));
+                    var pivot=RectTransformUtility.WorldToScreenPoint(uiCamera,rect.TransformPoint(rect.rect.center));
+                    width=stroke.thickness*Vector2.Distance(pivot,unit);
+                    break;
+                }
+            shotgun.thickness = width;
+        }
+        else for (int i = 0; i < normalSegments.Length; i++)
+        {
+            var direction = normalDirections[i];
+            var segment = normalSegments[i];
             var rect = segment.rectTransform;
             Vector2 halfSize = rect.rect.size * .5f;
             if (segment is CrosshairStroke stroke)
