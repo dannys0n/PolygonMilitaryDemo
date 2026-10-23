@@ -120,7 +120,7 @@ public sealed class SpectatorInterest : MonoBehaviour
     }
     public void Tick(float now)
     {
-        if (!Enabled || !spectator.IsSpectating || spectator.ControlsBlocked || spectator.IsWatchingDeath) return;
+        if (!Enabled || !spectator.IsSpectating || spectator.DeploymentActive || spectator.ControlsBlocked || spectator.IsWatchingDeath) return;
         var current = spectator.FollowedCharacter;
         if (current && current != tracked) RecordFollow(current);
         if (current)

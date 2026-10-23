@@ -134,6 +134,17 @@ public class AISpectator : MonoBehaviour
             if (match.IsRunning) match.Spawn(localPlayer);
         }
     }
+    public bool DeploymentActive { get; private set; }
+    public void SetDeploymentActive(bool value)
+    {
+        if(DeploymentActive==value)return;
+        DeploymentActive=value;
+        if(!value || !IsSpectating)return;
+        // Deployment owns the view: discard all follow/death/respawn transitions.
+        StopFollowing();
+        spectatorCamera.enabled=true;
+        yaw=transform.eulerAngles.y;pitch=Mathf.DeltaAngle(0f,transform.eulerAngles.x);
+    }
     public bool ControlsBlocked { get; set; }
     bool bodyDirty;
     VehicleOccupant observedOccupant;
@@ -164,7 +175,7 @@ public class AISpectator : MonoBehaviour
 
     void Update()
     {
-        if (!IsSpectating) return;
+        if (!IsSpectating || DeploymentActive) return;
         if(respawnWatchTarget)
         {
             var target=respawnWatchTarget;
@@ -228,6 +239,7 @@ public class AISpectator : MonoBehaviour
 
     void FollowWithPerspective(MatchParticipant character, bool perspective)
     {
+        if(DeploymentActive)return;
         respawnWatchTarget=null;
         waitingForFilteredTarget = false;
         CancelDeathWatch();
@@ -295,6 +307,7 @@ public class AISpectator : MonoBehaviour
 
     void BeginDeathWatch(GameObject source, bool perspective)
     {
+        if(DeploymentActive)return;
         CancelDeathWatch();
         restorePerspective = perspective;
         ExitPerspective();
@@ -344,6 +357,7 @@ public class AISpectator : MonoBehaviour
         spectatorCamera.enabled = true;
         yaw = localPlayer.transform.eulerAngles.y; pitch = 15f;
         transform.rotation = Quaternion.Euler(pitch, yaw, 0f);
+        if(DeploymentActive){StopFollowing();return;}
         if(vehicleDeath)
         {
             transform.position=localPlayer.transform.position+Vector3.up*3;

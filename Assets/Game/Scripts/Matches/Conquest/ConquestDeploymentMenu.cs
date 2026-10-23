@@ -162,6 +162,7 @@ public class ConquestDeploymentMenu : MonoBehaviour
     }
     void SetVisible(bool value)
     {
+        if(spectator)spectator.SetDeploymentActive(value && !tacticalMap);
         if(value==visible)return;
         visible=value;panel.SetActive(value);
         if(value)
@@ -182,5 +183,5 @@ public class ConquestDeploymentMenu : MonoBehaviour
             {Cursor.lockState=CursorLockMode.Locked;Cursor.visible=false;}
         }
     }
-    void OnDestroy() { participant.match.MatchStarted-=ResetSelection; }
+    void OnDestroy() { if(spectator)spectator.SetDeploymentActive(false);participant.match.MatchStarted-=ResetSelection; }
 }
