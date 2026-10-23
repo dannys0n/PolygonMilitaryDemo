@@ -179,6 +179,14 @@ public static class AnimationTestBuilder
   var result=ScriptableObject.CreateInstance<WeaponCatalog>();result.entries=entries.ToArray();Save(result,Root+"/AnimationTestCatalog.asset");
   AssetDatabase.SaveAssets();File.WriteAllLines(Report,report);return report.ToArray();
  }
+ public static void ConfigureRoundReload(SoldierWeaponDefinition definition, string family)
+ {
+  definition.roundReload = default;
+  if(family != "KXG12" && family != "Kar98K") return;
+  string prefix="Assets/FPSAnimationPack/Actions/UE4/"+family+"/Weapon/AM_W_"+(family=="Kar98K"?"Kar98k":family)+"_Reload_";
+  float Length(string section)=>AssetDatabase.LoadAssetAtPath<AnimationClip>(prefix+section+".anim").length;
+  definition.roundReload=new RoundReloadTiming{enabled=true,openingDuration=Length("Start"),insertionDuration=Length("Loop"),closingDuration=Length("End"),insertAt=family=="Kar98K"?17f/23f:.75f,bakedInsertions=family=="Kar98K"?5:6};
+ }
  static void BuildNative(FpsPackSourceLayout.Preset preset)
  {
   var variant=preset.variants.First(v=>v.rig=="UE4");string key=Clean(preset.id.Substring(3))+"_UE4";
@@ -216,7 +224,7 @@ public static class AnimationTestBuilder
    var definition=UnityEngine.Object.Instantiate(reference.weapon);definition.catalogId="animation-test-"+key;definition.displayName=title;definition.showFirstPersonHands=false;
    definition.viewOffset=definition.hipFireOffset=definition.aimOffset=definition.viewRotationOffset=definition.hipFireRotationOffset=definition.aimRotationOffset=Vector3.zero;
    definition.cameraPositionWeight=definition.cameraRotationWeight=0;definition.builtInIronEyeDistance=.22f;definition.isUtility=preset.family=="RPG7";definition.useAuthoredReload=preset.family=="RPG7";
-   definition.reloadDuration=reloadMerged.length;definition.equipDuration=Mathf.Clamp(equipMerged.length,.35f,1.2f);definition.unequipDuration=Mathf.Clamp(outMerged.length,.35f,1.2f);
+   definition.reloadDuration=reloadMerged.length;ConfigureRoundReload(definition,preset.family);definition.equipDuration=Mathf.Clamp(equipMerged.length,.35f,1.2f);definition.unequipDuration=Mathf.Clamp(outMerged.length,.35f,1.2f);
    definition=Save(definition,Root+"/Definitions/"+key+".asset");
    // FPS source fingers and weapon retain their native shared grip frame.
    var nativeRightInWeapon=gun.transform.InverseTransformPoint(hand.position);var nativeRotationInWeapon=Quaternion.Inverse(gun.transform.rotation)*hand.rotation;

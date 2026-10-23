@@ -23,6 +23,10 @@ public class SoldierActions : MonoBehaviour
     private SoldierWeaponDefinition reloadDefinition;
     private float reloadEndTime, reloadDuration;
     private bool reloadEquipStarted;
+    readonly RoundReloadClock roundReload = new();
+    public event System.Action<float> ReloadSectionChanged;
+    public bool IsRoundReload => IsReloading && reloadDefinition.roundReload.IsValid;
+    public void RequestReloadStop() { if (IsRoundReload) roundReload.RequestStop(); }
     SoldierWeaponDefinition spreadWeapon;
     float hipBloom, recoverHipBloomAt;
 
@@ -46,7 +50,7 @@ public class SoldierActions : MonoBehaviour
     public bool ReloadHasRound => IsSwapReload && reloadEquipStarted;
     public bool IsReloading { get; private set; }
     public float ReloadProgress => IsReloading
-        ? Mathf.Clamp01(1f - (reloadEndTime - Time.time) / reloadDuration)
+        ? IsRoundReload ? roundReload.Progress(Time.time) : Mathf.Clamp01(1f - (reloadEndTime - Time.time) / reloadDuration)
         : 0f;
 
     void Awake() { loadout=GetComponent<SoldierWeaponLoadout>(); grenades=GetComponent<SoldierGrenades>(); launchers=GetComponent<SoldierUtilitySlots>(); }
@@ -58,6 +62,22 @@ public class SoldierActions : MonoBehaviour
     {
         if (firstPersonView && firstPersonView.WantsToAim) hipBloom = 0f;
         if (!IsReloading) return;
+        if (IsRoundReload)
+        {
+            bool changed = roundReload.Tick(now, reloadingWeapon, reloadDefinition);
+            if (roundReload.Current != RoundReloadClock.Phase.Complete)
+            {
+                if (changed) ReloadSectionChanged?.Invoke(roundReload.NormalizedTime);
+                return;
+            }
+            IsReloading = false;
+            // Closing finishes the reload; interruption input never replays an action.
+            animator.ResetTrigger("Reload");
+            animator.Play("Empty", animator.GetLayerIndex("Reload"), 0f);
+            firstPersonView.CancelReload();
+            ReloadCompleted?.Invoke();
+            return;
+        }
         if (IsSwapReload && !reloadEquipStarted && now >= reloadEndTime-reloadDefinition.equipDuration)
         {
             reloadEquipStarted=true;
@@ -74,11 +94,17 @@ public class SoldierActions : MonoBehaviour
     bool CanFire => enabled && !IsThrowing && !IsReloading && !loadout.IsSwitching && !movement.IsRunning;
     public bool TryFire(float now)
     {
+        if (IsRoundReload)
+        {
+            RequestReloadStop();
+            return false;
+        }
         if(!CanFire)return false;
         return TryFire(now,shooting.AimRay,shooting.AimUp);
     }
     public bool TryFire(float now, Ray aim, Vector3 up)
     {
+        if (IsRoundReload) { RequestReloadStop(); return false; }
         if (!CanFire || aim.direction.sqrMagnitude<.000001f) return false;
         if (!loadout.EquippedState.TryConsumeRound(now, loadout.EquippedWeapon.definition)) return false;
         var definition = loadout.EquippedWeapon.definition;
@@ -96,6 +122,7 @@ public class SoldierActions : MonoBehaviour
     public bool TryReload() => TryReload(Time.time);
     public bool TryReload(float now)
     {
+        if (IsRoundReload) { RequestReloadStop(); return false; }
         if (!enabled ||  IsThrowing || IsReloading || loadout.IsSwitching) return false;
         if (!loadout.EquippedState.CanReload(loadout.EquippedWeapon.definition)) return false;
         IsReloading = true;
@@ -105,6 +132,11 @@ public class SoldierActions : MonoBehaviour
             reloadDefinition.unequipDuration+reloadDefinition.equipDuration) : reloadDefinition.reloadDuration;
         reloadEndTime = now + reloadDuration;
         reloadEquipStarted=false;
+        if (IsRoundReload)
+        {
+            int rounds = Mathf.Min(reloadDefinition.magazineCapacity - reloadingWeapon.MagazineAmmo, reloadingWeapon.ReserveAmmo);
+            roundReload.Begin(reloadDefinition.roundReload, reloadDuration, rounds, now);
+        }
         animator.ResetTrigger("Fire");
         if(IsSwapReload)
         {
@@ -117,6 +149,7 @@ public class SoldierActions : MonoBehaviour
             firstPersonView.PlayReload();
         }
         ReloadStarted?.Invoke();
+        if (IsRoundReload) ReloadSectionChanged?.Invoke(0f);
         return true;
     }
 

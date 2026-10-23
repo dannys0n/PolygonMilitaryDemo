@@ -46,8 +46,10 @@ public class SoldierWeaponDefinition : ScriptableObject
     public bool showFirstPersonHands = true;
 
     [Header("Gameplay action timing")]
-    [Tooltip("Gameplay reload duration in seconds. Keep presentation clips aligned with this timing.")]
+    [Tooltip("Magazine reload duration in seconds. For per-round reloads, this is the authored opening + baked insertions + closing duration.")]
     [Min(.01f)] public float reloadDuration = 3f;
+    [Tooltip("Enable for weapons that load one round at a time and have opening, insertion and closing animation sections.")]
+    public RoundReloadTiming roundReload;
 
     [Header("Gameplay weapon settings")]
     [Min(1)] public int magazineCapacity = 30;

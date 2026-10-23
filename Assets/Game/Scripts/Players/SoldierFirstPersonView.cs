@@ -254,6 +254,7 @@ public class SoldierFirstPersonView : MonoBehaviour
     public void SetAimRequested(bool requested)
     {
         aimRequested = requested;
+        if (requested) actions.RequestReloadStop();
         WantsToAim = requested && !IsReloading && !IsEquipping;
     }
 

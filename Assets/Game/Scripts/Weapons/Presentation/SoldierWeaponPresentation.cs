@@ -52,6 +52,8 @@ public class SoldierWeaponPresentation : MonoBehaviour
         actions.FireStarted += PlayFire;
         actions.ReloadStarted += PlayReload;
         actions.ReloadCanceled += CancelReload;
+        actions.ReloadSectionChanged += SeekReload;
+        actions.ReloadCompleted += FinishReload;
     }
 
     public void ApplyWeapon(SoldierWeapon selectedWeapon)
@@ -115,6 +117,8 @@ public class SoldierWeaponPresentation : MonoBehaviour
         actions.FireStarted -= PlayFire;
         actions.ReloadStarted -= PlayReload;
         actions.ReloadCanceled -= CancelReload;
+        actions.ReloadSectionChanged -= SeekReload;
+        actions.ReloadCompleted -= FinishReload;
     }
 
     void Update()
@@ -250,6 +254,39 @@ public class SoldierWeaponPresentation : MonoBehaviour
         characterAnimator.CrossFadeInFixedTime("Fire", weapon.definition.fireBlendTime, weaponFireLayer, 0f);
         partsAnimator.ResetTrigger("Fire");
         partsAnimator.Play("Fire", 0, 0f);
+    }
+
+    void FinishReload()
+    {
+        if (weapon.definition.roundReload.IsValid) CancelReload();
+    }
+
+    void SeekReload(float normalizedTime)
+    {
+        Seek(view.armsAnimator, "Base Layer", normalizedTime, "Reload");
+        if (GetComponent<SoldierWeaponLoadout>().HasFirstPersonPresentation)
+            Seek(view.weaponAnimator, "Base Layer", normalizedTime, "Reload");
+        Seek(characterAnimator, "Reload", normalizedTime, "Reload");
+        Seek(characterAnimator, "WeaponPose", normalizedTime, "WeaponReload");
+        Seek(partsAnimator, "Base Layer", normalizedTime, "Reload");
+    }
+
+    static void Seek(Animator target, string layerName, float normalizedTime, string trigger)
+    {
+        if (!target || !target.runtimeAnimatorController || !target.isInitialized) return;
+        int layer = target.GetLayerIndex(layerName);
+        if (layer < 0) return;
+        int state = Animator.StringToHash(layerName + ".Reload");
+        if (!target.HasState(layer, state)) return;
+        target.ResetTrigger(trigger);
+        if (normalizedTime <= 0f) target.Play(state, layer, 0f);
+        else
+        {
+            // Converted full montages can have slightly different boundary poses.
+            // Blend section jumps using the same offset for hands and mechanisms.
+            float length = target.GetCurrentAnimatorStateInfo(layer).length;
+            target.CrossFadeInFixedTime(state, .08f, layer, normalizedTime * length);
+        }
     }
 
     void CancelReload()

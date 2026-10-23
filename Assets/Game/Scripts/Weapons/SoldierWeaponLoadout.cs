@@ -34,7 +34,13 @@ public class SoldierWeaponLoadout : MonoBehaviour
             nextFireTime=now+60f/Mathf.Max(d.roundsPerMinute,1);return true;
         }
         public bool CanReload(SoldierWeaponDefinition d)=>MagazineAmmo<d.magazineCapacity&&ReserveAmmo>0;
-        public void CompleteReload(SoldierWeaponDefinition d){int count=Mathf.Min(d.magazineCapacity-MagazineAmmo,ReserveAmmo);MagazineAmmo+=count;ReserveAmmo-=count;}
+        public void CompleteReload(SoldierWeaponDefinition d) => ReloadRounds(d, d.magazineCapacity);
+        public void ReloadRounds(SoldierWeaponDefinition d, int requested)
+        {
+            int count = Mathf.Max(0, Mathf.Min(requested, Mathf.Min(d.magazineCapacity - MagazineAmmo, ReserveAmmo)));
+            MagazineAmmo += count;
+            ReserveAmmo -= count;
+        }
     }
     public SoldierMotionGrip firstPersonGripRig;
     public Transform sprintSocket, firstPersonMount, thirdPersonMount;
@@ -239,9 +245,10 @@ public class SoldierWeaponLoadout : MonoBehaviour
     public bool TrySelectUtilityWeapon(int index)=>TrySwitch(index,true);
     bool TrySwitch(int index,bool utility)
     {
-        if(!enabled||index<0||index>=slots.Length||index==selectedSlot||IsSwitching||actions.IsReloading||actions.IsThrowing)return false;
+        if(!enabled||index<0||index>=slots.Length||index==selectedSlot||IsSwitching||actions.IsThrowing)return false;
         if(utility && !slots[index].definition.isUtility)return false;
         if(!utility && Array.IndexOf(AvailableSlots,index)<0)return false;
+        if (actions.IsReloading) { actions.RequestReloadStop(); return false; }
         switchRoutine=StartCoroutine(SwitchWeapon(index));return true;
     }
     IEnumerator SwitchWeapon(int index)
