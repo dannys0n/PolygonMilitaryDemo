@@ -16,6 +16,7 @@ public static class ExplosionDamage
         ()=>new QueryContext(),actionOnRelease:context=>context.Clear(),maxSize:16);
     public static void Apply(Vector3 point,Vector3 normal,float radius,float infantryDamage,float vehicleDamage,GameObject source,Transform ignored,Sprite weaponIcon=null)
     {
+        SurfaceImpact.ReportExplosion(point,radius);
         var context=contexts.Get();
         try
         {

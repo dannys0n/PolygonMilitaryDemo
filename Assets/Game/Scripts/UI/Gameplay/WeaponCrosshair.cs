@@ -61,7 +61,14 @@ public sealed class WeaponCrosshair : MonoBehaviour
         for (int i = 0; i < segments.Length; i++)
         {
             var direction = definition.UsesSpread ? shotgunDirections[i] : normalDirections[i];
-            segments[i].rectTransform.anchoredPosition = new Vector2(direction.x * x, direction.y * y);
+            var segment = segments[i];
+            var rect = segment.rectTransform;
+            Vector2 halfSize = rect.rect.size * .5f;
+            if (segment is CrosshairStroke stroke)
+                halfSize = (stroke.horizontal ? new Vector2(stroke.length, stroke.thickness)
+                    : new Vector2(stroke.thickness, stroke.length)) * .5f;
+            // The empty gap represents the cone; the stroke begins at its boundary.
+            rect.anchoredPosition = new Vector2(direction.x * (x + halfSize.x), direction.y * (y + halfSize.y));
         }
         launcher.radius = Mathf.Max(22f, Mathf.Max(x, y));
     }

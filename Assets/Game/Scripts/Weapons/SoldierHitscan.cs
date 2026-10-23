@@ -117,7 +117,10 @@ public class SoldierHitscan : MonoBehaviour
             return Publish(result);
         }
         if (ClosestHit(aim, weapon.range, out var centerHit))
-        { result.collider = centerHit.collider; result.point = centerHit.point; result.normal = centerHit.normal; }
+        {
+            result.collider = centerHit.collider; result.point = centerHit.point; result.normal = centerHit.normal;
+            SurfaceImpact.ReportSpread(centerHit.collider,centerHit.point,centerHit.normal,aim,coneDegrees,weapon.range);
+        }
 
         spreadHits.Clear();
         float slope = Mathf.Tan(coneDegrees * Mathf.Deg2Rad);
@@ -158,7 +161,7 @@ public class SoldierHitscan : MonoBehaviour
             result.collider = hit.collider; result.point = hit.point; result.damaged = true;
             result.killed |= hit.health ? hit.health.IsDead : hit.vehicle.IsDestroyed;
         }
-        return Publish(result);
+        return Publish(result,false);
     }
 
     bool VisibleTo(Vector3 point, Vector3 origin, GameObject owner)
@@ -212,9 +215,9 @@ public class SoldierHitscan : MonoBehaviour
         return Publish(result);
     }
 
-    ShotResult Publish(ShotResult result)
+    ShotResult Publish(ShotResult result,bool reportSurface=true)
     {
-        SurfaceImpact.Report(result.collider,result.point,result.normal);
+        if(reportSurface)SurfaceImpact.Report(result.collider,result.point,result.normal);
         if(showShotVisual && !GetComponent<SoldierController>().IsLocallyControlled)
         {
             var loadout=GetComponent<SoldierWeaponLoadout>();
