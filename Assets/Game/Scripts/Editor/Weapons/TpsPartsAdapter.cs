@@ -12,7 +12,7 @@ using Object=UnityEngine.Object;
 // the idle values of parts animated by another action, so actions are self-contained.
 public static class TpsPartsAdapter
 {
-    sealed class PoseTrack
+    public sealed class PoseTrack
     {
         public string path;
         public Transform source;
@@ -43,7 +43,7 @@ public static class TpsPartsAdapter
         var curve=new AnimationCurve(kept.Select(i=>new Keyframe(times[i],value(i))).ToArray());
         for(int k=0;k<curve.length;k++){AnimationUtility.SetKeyLeftTangentMode(curve,k,AnimationUtility.TangentMode.Linear);AnimationUtility.SetKeyRightTangentMode(curve,k,AnimationUtility.TangentMode.Linear);}return curve;
     }
-    static void Write(AnimationClip clip,PoseTrack track,float[] times)
+    public static void Write(AnimationClip clip,PoseTrack track,float[] times)
     {
         var q=track.rotations;var p=track.positions;var s=track.scales;
         int[] rotations=Reduce(q.Count,(a,b,i)=>Quaternion.Angle(Quaternion.LerpUnclamped(q[a],q[b],(times[i]-times[a])/(times[b]-times[a])),q[i]),.05f);

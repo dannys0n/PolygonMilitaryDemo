@@ -4,7 +4,7 @@ public sealed class NativePartFit
 {
  sealed class Binding
  {
-  public Transform source,target;public Vector3 p,s,sourceP,sourceS;public Quaternion q,sourceQ,axes;public bool followsParent;public Transform frame;public Matrix4x4 sourceRest,targetRest;public bool projectile;public Quaternion trajectoryAxes=Quaternion.identity;public Vector3 sourceAnchor,targetAnchor;
+  public Transform source,target;public Vector3 p,s,sourceP,sourceS;public Quaternion q,sourceQ,axes;public bool followsParent;public Transform frame;public Matrix4x4 sourceRest,targetRest;public bool projectile;public float rotationScale=1f,translationScale=1f;public Quaternion trajectoryAxes=Quaternion.identity;public Vector3 sourceAnchor,targetAnchor;
  }
  readonly List<Binding> bindings=new();
  sealed class Contact{public Transform source,target;public Matrix4x4 sourceRest,targetRest;public Bounds sourceBounds,targetBounds;}
@@ -45,11 +45,11 @@ public sealed class NativePartFit
   float along=(a*a-b*b+length*length)/(2*length);var elbow=start+axis*along+bend*Mathf.Sqrt(Mathf.Max(0,a*a-along*along));upper.rotation=Quaternion.FromToRotation(forearm.position-start,elbow-start)*upper.rotation;forearm.rotation=Quaternion.FromToRotation(hand.position-forearm.position,start+axis*length-forearm.position)*forearm.rotation;hand.rotation=wrist;
  }
 
- public void Add(Transform source,Transform target,Transform nativeRoot,Transform targetRoot,bool followsParent)
+ public void Add(Transform source,Transform target,Transform nativeRoot,Transform targetRoot,bool followsParent,float rotationScale=1f,float translationScale=1f)
  {
   Quaternion nativeParent=source.parent?Quaternion.Inverse(nativeRoot.rotation)*source.parent.rotation:Quaternion.identity;
   Quaternion targetParent=target.parent?Quaternion.Inverse(targetRoot.rotation)*target.parent.rotation:Quaternion.identity;
-  bindings.Add(new Binding{source=source,target=target,p=target.localPosition,q=target.localRotation,s=target.localScale,sourceP=source.localPosition,sourceQ=source.localRotation,sourceS=source.localScale,axes=Quaternion.Inverse(targetParent)*nativeParent,followsParent=followsParent,frame=nativeRoot,sourceRest=nativeRoot.worldToLocalMatrix*source.localToWorldMatrix,targetRest=nativeRoot.worldToLocalMatrix*target.localToWorldMatrix,projectile=source.name=="Rocket"});
+  bindings.Add(new Binding{source=source,target=target,p=target.localPosition,q=target.localRotation,s=target.localScale,sourceP=source.localPosition,sourceQ=source.localRotation,sourceS=source.localScale,axes=Quaternion.Inverse(targetParent)*nativeParent,followsParent=followsParent,frame=nativeRoot,sourceRest=nativeRoot.worldToLocalMatrix*source.localToWorldMatrix,targetRest=nativeRoot.worldToLocalMatrix*target.localToWorldMatrix,rotationScale=rotationScale,translationScale=translationScale,projectile=source.name=="Rocket"});
  }
  public void Sample(bool adjustHand=true)
  {
@@ -69,7 +69,8 @@ public sealed class NativePartFit
     b.target.localScale=b.s;continue;
    }
    var turn=b.axes*(b.source.localRotation*Quaternion.Inverse(b.sourceQ))*Quaternion.Inverse(b.axes);
-   b.target.SetLocalPositionAndRotation(b.p+b.axes*(b.source.localPosition-b.sourceP),turn*b.q);
+   turn=Quaternion.SlerpUnclamped(Quaternion.identity,turn,b.rotationScale);
+   b.target.SetLocalPositionAndRotation(b.p+b.axes*(b.source.localPosition-b.sourceP)*b.translationScale,turn*b.q);
    Vector3 ratio=new Vector3(b.sourceS.x==0?1:b.source.localScale.x/b.sourceS.x,b.sourceS.y==0?1:b.source.localScale.y/b.sourceS.y,b.sourceS.z==0?1:b.source.localScale.z/b.sourceS.z);b.target.localScale=Vector3.Scale(b.s,ratio);
   }
   if(adjustHand)FitSupportHand();
