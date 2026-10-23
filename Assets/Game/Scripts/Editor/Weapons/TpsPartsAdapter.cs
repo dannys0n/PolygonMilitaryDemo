@@ -83,7 +83,7 @@ public static class TpsPartsAdapter
         string relative=input.path.Substring(prefix.Length);var target=targetRoot.Find(relative)?targetRoot.Find(relative):targetRoot.Find("SourceWeapon/"+relative);if(!target)return false;
         output.path=AnimationUtility.CalculateTransformPath(target,targetRoot);return true;
     }
-    public static int Build(WeaponAnimationConversionProof proof,string folder)
+    public static int Build(WeaponAnimationConversionProof proof,string folder,bool reloadOnly=false)
     {
         if(EditorApplication.isPlayingOrWillChangePlaymode)throw new InvalidOperationException("Use Edit Mode.");
         var entry=proof.converted;var view=entry.firstPersonPrefab;var root=Object.Instantiate(view.sharedFirstPersonRig);
@@ -92,7 +92,7 @@ public static class TpsPartsAdapter
             var rig=root.GetComponent<SoldierSharedFirstPersonRig>();var mount=string.IsNullOrEmpty(view.sharedWeaponMountPath)?rig.weaponMount:root.transform.Find(view.sharedWeaponMountPath);
             var gun=Object.Instantiate(view.gameObject,mount,false);gun.name="SourceWeapon";gun.transform.SetLocalPositionAndRotation(view.mountPosition,view.mountRotation);gun.transform.localScale=view.mountScale;
             var targetRoot=entry.thirdPersonPrefab.animator.transform;string prefix=AnimationUtility.CalculateTransformPath(gun.transform,rig.animator.transform)+"/";
-            var actions=new[]{("Idle",proof.idle),("Reload",proof.reload),("Fire",proof.fire)}.Where(a=>a.Item2).ToArray();
+            var actions=new[]{("Idle",proof.idle),("Reload",proof.reload),("Fire",proof.fire)}.Where(a=>a.Item2&&(!reloadOnly||a.Item1=="Reload")).ToArray();
             var sourcePaths=actions.SelectMany(a=>AnimationUtility.GetCurveBindings(a.Item2)).Where(b=>b.type==typeof(Transform)&&b.path.StartsWith(prefix,StringComparison.Ordinal)).Select(b=>b.path).Distinct().ToArray();
             var paths=sourcePaths.Select(path=>{string relative=path.Substring(prefix.Length);var target=targetRoot.Find(relative)?targetRoot.Find(relative):targetRoot.Find("SourceWeapon/"+relative);return(source:root.transform.Find(path),target:target);}).Where(p=>p.source&&p.target).ToArray();
             if(paths.Length==0)return 0;
@@ -146,6 +146,7 @@ public static class TpsPartsAdapter
                 var settings=AnimationUtility.GetAnimationClipSettings(result);settings.loopTime=action.Item1=="Idle";AnimationUtility.SetAnimationClipSettings(result,settings);
                 result=Save(result,folder+"/"+action.Item1+"Parts.anim");var old=WeaponAnimationSource.State(controller,"Base Layer",action.Item1);if(old)replacements[old]=result;
             }
+            if(reloadOnly) return paths.Length;
             var output=new AnimatorOverrideController(controller);var pairs=new List<KeyValuePair<AnimationClip,AnimationClip>>();output.GetOverrides(pairs);
             for(int i=0;i<pairs.Count;i++){var key=pairs[i].Key;var effective=WeaponAnimationSource.Resolve(controller,key);pairs[i]=new KeyValuePair<AnimationClip,AnimationClip>(key,replacements.TryGetValue(effective,out var next)?next:effective);}
             output.ApplyOverrides(pairs);entry.weapon.thirdPersonParts=Save(output,folder+"/Parts.overrideController");EditorUtility.SetDirty(entry.weapon);AssetDatabase.SaveAssets();return paths.Length;

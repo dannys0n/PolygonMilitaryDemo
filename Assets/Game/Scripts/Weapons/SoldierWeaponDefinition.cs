@@ -45,11 +45,24 @@ public class SoldierWeaponDefinition : ScriptableObject
     [Tooltip("Render FPS arms and apply their grip IK. Weapon animation stays active when disabled.")]
     public bool showFirstPersonHands = true;
 
-    [Header("Gameplay action timing")]
-    [Tooltip("Magazine reload duration in seconds. For per-round reloads, this is the authored opening + baked insertions + closing duration.")]
-    [Min(.01f)] public float reloadDuration = 3f;
-    [Tooltip("Enable for weapons that load one round at a time and have opening, insertion and closing animation sections.")]
-    public RoundReloadTiming roundReload;
+    [Header("Reloads")]
+    [Tooltip("Used when the magazine is empty at the start of a reload.")]
+    public WeaponReloadDefinition fullReload = new() { duration = 3f };
+    [Tooltip("Used when at least one round remains in the magazine.")]
+    public WeaponReloadDefinition tacticalReload = new() { duration = 3f };
+    public WeaponReloadDefinition ReloadFor(int magazineAmmo) => magazineAmmo <= 0 ? fullReload : tacticalReload;
+
+    // Authoring helpers keep builders that set a shared timing concise.
+    public float reloadDuration
+    {
+        get => tacticalReload.duration;
+        set { fullReload.duration = tacticalReload.duration = value; }
+    }
+    public RoundReloadTiming roundReload
+    {
+        get => tacticalReload.roundReload;
+        set { fullReload.roundReload = tacticalReload.roundReload = value; }
+    }
 
     [Header("Gameplay weapon settings")]
     [Min(1)] public int magazineCapacity = 30;

@@ -298,15 +298,24 @@ public static class TpsAnimationAdapter
     public static object BuildProof(string proofPath, bool rebuildParts=true)
     {
         if(EditorApplication.isPlayingOrWillChangePlaymode)throw new InvalidOperationException("Edit Mode only.");
-        var proof=AssetDatabase.LoadAssetAtPath<WeaponAnimationConversionProof>(proofPath);
+        return BuildProof(AssetDatabase.LoadAssetAtPath<WeaponAnimationConversionProof>(proofPath), rebuildParts);
+    }
+    // Additional reload variants reuse the same fitting without rewriting idle,
+    // firing, controllers, prefab grip poses or the source weapon definition.
+    public static object BuildReload(WeaponAnimationConversionProof proof, string folder)
+        => BuildProof(proof, true, folder, true);
+
+    static object BuildProof(WeaponAnimationConversionProof proof, bool rebuildParts, string outputFolder=null, bool reloadOnly=false)
+    {
+        if(EditorApplication.isPlayingOrWillChangePlaymode)throw new InvalidOperationException("Edit Mode only.");
         if(!proof||!proof.originalProportions||!proof.idle||!proof.reload)throw new InvalidOperationException("A complete scaled FPS proof is required.");
-        var entry=proof.converted;var definition=entry.weapon;string id=definition.catalogId;string folder=Root+"/"+id;Folder(folder);
+        var entry=proof.converted;var definition=entry.weapon;string id=definition.catalogId;string folder=outputFolder??Root+"/"+id;Folder(folder);
         if(!proof.thirdPersonSourceController){proof.thirdPersonSourceController=definition.thirdPerson;proof.thirdPersonSourceParts=definition.thirdPersonParts?definition.thirdPersonParts:definition.firstPersonParts;EditorUtility.SetDirty(proof);}
         // Fit against the same mechanism rest pose that gameplay will evaluate.
         // Old TPS part clips can use a different receiver orientation than the FPS source.
-        M249SocketRepair.Repair(proof);
+        if(!reloadOnly) M249SocketRepair.Repair(proof);
         // Mechanism and body channels can be authored independently. A normal full build refreshes both.
-        int partTracks=rebuildParts||!definition.thirdPersonParts?TpsPartsAdapter.Build(proof,folder):0;
+        int partTracks=rebuildParts||!definition.thirdPersonParts?TpsPartsAdapter.Build(proof,folder,reloadOnly):0;
         var baselineDefinition=Object.Instantiate(definition);baselineDefinition.thirdPersonAnimatedGrips=false;baselineDefinition.thirdPerson=proof.thirdPersonSourceController;baselineDefinition.thirdPersonParts=definition.thirdPersonParts;
         var baselineEntry=new WeaponCatalog.Entry{weapon=baselineDefinition,firstPersonPrefab=entry.firstPersonPrefab,thirdPersonPrefab=entry.thirdPersonPrefab};
         var view=entry.firstPersonPrefab;
@@ -414,7 +423,7 @@ public static class TpsAnimationAdapter
             // Locomotion supplies the body baseline only; old TPS reload/idle arm motion is not a transfer source.
             target.Begin(oldIdle);
             bool authoredFire=HasAuthoredHandAction(source,gun.transform,proof.fire);
-            for(int action=0;action<(authoredFire?3:2);action++)
+            for(int action=reloadOnly?1:0;action<(reloadOnly?2:authoredFire?3:2);action++)
             {
                 bool reload=action==1,fire=action==2;
                 var input=reload?proof.reload:fire?proof.fire:proof.idle;float duration=Mathf.Max(.1f,input.length);int frames=Mathf.Max(1,Mathf.CeilToInt(duration*(action>0?60:30)));var bodyTracks=new Curves();var weaponTracks=new Curves();
@@ -424,7 +433,9 @@ public static class TpsAnimationAdapter
                     // Sample mechanisms first, then carry the FPS receiver motion into the
                     // calibrated TPS action frame. Hands are transferred in receiver space.
                     string partAction=reload?"Reload":fire?"Fire":"Idle";
-                    var partClip=WeaponAnimationSource.State(definition.thirdPersonParts,"Base Layer",partAction);
+                    var partClip=reloadOnly&&reload
+                        ? AssetDatabase.LoadAssetAtPath<AnimationClip>(folder+"/ReloadParts.anim")
+                        : WeaponAnimationSource.State(definition.thirdPersonParts,"Base Layer",partAction);
                     if(partClip)partClip.SampleAnimation(target.weapon.animator.gameObject,time);
                     var currentSource=receiver();
                     var desiredReceiverRotation=alignment*currentSource.rotation;
@@ -474,6 +485,7 @@ public static class TpsAnimationAdapter
                 output.Add(Save(bodyTracks.Finish(actionName,action==0,duration),folder+"/"+actionName+".anim"));
                 weaponOutput.Add(Save(weaponTracks.Finish(weaponName,action==0,duration),folder+"/"+weaponName+".anim"));
             }
+            if(reloadOnly) return new{id, humanMotion=output[0].humanMotion, parts=partTracks, unreachableHandDistance=maxReach, handSurfaceRms=surfaceFit.Rms};
             var replacements=new Dictionary<AnimationClip,AnimationClip>();replacements[oldIdle]=output[0];replacements[oldReload]=output[1];replacements[oldHold]=weaponOutput[0];replacements[oldWeaponReload]=weaponOutput[1];
             definition.thirdPersonAnimatedGrips=true;definition.thirdPersonAuthoredFire=authoredFire;
             definition.thirdPerson=Override(baselineDefinition.thirdPerson,replacements,folder+"/Body.overrideController");

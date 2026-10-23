@@ -155,7 +155,10 @@ public class SoldierWeaponLoadout : MonoBehaviour
         EquippedSights.ClearPresentation();
         if(wanted)
         {
-            CreateFirstPerson();FirstPersonView.animator.runtimeAnimatorController=FirstPersonView.animationOverride?FirstPersonView.animationOverride:slots[selectedSlot].definition.firstPersonParts;FirstPersonView.animator.Rebind();
+            CreateFirstPerson();
+            var controller = actions.IsReloading ? FirstPersonView.ReloadAnimation(actions.IsFullReload) : FirstPersonView.animationOverride;
+            FirstPersonView.animator.runtimeAnimatorController = controller ? controller : slots[selectedSlot].definition.firstPersonParts;
+            FirstPersonView.animator.Rebind();
             var source=ThirdPersonView.animator;var target=FirstPersonView.animator;
             foreach(var p in source.parameters)
             {

@@ -14,6 +14,16 @@ public class SoldierWeaponView : MonoBehaviour
     public Animator animator;
     [Tooltip("Optional authored FPS rig controller. The ordinary weapon and gameplay controllers remain shared.")]
     public RuntimeAnimatorController animationOverride;
+    [Tooltip("Optional empty-reload override. Kept on the FPS view so TPS-only displays do not load its arm animations.")]
+    public RuntimeAnimatorController fullReloadAnimationOverride;
+    [Tooltip("Optional partial-reload override; otherwise uses the ordinary animation controller.")]
+    public RuntimeAnimatorController tacticalReloadAnimationOverride;
+    public RuntimeAnimatorController ReloadAnimation(bool empty)
+    {
+        var selected = empty ? fullReloadAnimationOverride : tacticalReloadAnimationOverride;
+        return selected ? selected : animationOverride;
+    }
+
     [Tooltip("Optional shared player-owned FPS rig. This prefab then contains only the weapon.")]
     public GameObject sharedFirstPersonRig;
     [Tooltip("Weapon parent relative to the shared rig root; blank uses its default mount.")]

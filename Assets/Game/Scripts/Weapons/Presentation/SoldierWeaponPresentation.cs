@@ -256,9 +256,32 @@ public class SoldierWeaponPresentation : MonoBehaviour
         partsAnimator.Play("Fire", 0, 0f);
     }
 
+    public void ConfigureReload(WeaponReloadDefinition reload)
+    {
+        // Reload variants share their base state machines, so switching overrides
+        // preserves locomotion, aiming and the current action state.
+        var definition = weapon.definition;
+        SetController(view.armsAnimator, reload.firstPerson ? reload.firstPerson : definition.firstPerson);
+        var loadout = GetComponent<SoldierWeaponLoadout>();
+        if (loadout.HasFirstPersonPresentation)
+        {
+            var controller = loadout.FirstPersonView.ReloadAnimation(actions.IsFullReload);
+            SetController(view.weaponAnimator, controller ? controller : definition.firstPersonParts);
+        }
+        SetController(characterAnimator, reload.thirdPerson ? reload.thirdPerson : definition.thirdPerson);
+        SetController(partsAnimator, reload.thirdPersonParts ? reload.thirdPersonParts
+            : definition.thirdPersonParts ? definition.thirdPersonParts : definition.firstPersonParts);
+    }
+
+    static void SetController(Animator target, RuntimeAnimatorController controller)
+    {
+        if (target && controller && target.runtimeAnimatorController != controller)
+            target.runtimeAnimatorController = controller;
+    }
+
     void FinishReload()
     {
-        if (weapon.definition.roundReload.IsValid) CancelReload();
+        if (actions.CurrentReload.roundReload.IsValid) CancelReload();
     }
 
     void SeekReload(float normalizedTime)

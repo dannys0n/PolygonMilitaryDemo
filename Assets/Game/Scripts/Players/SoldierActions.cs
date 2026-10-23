@@ -25,7 +25,9 @@ public class SoldierActions : MonoBehaviour
     private bool reloadEquipStarted;
     readonly RoundReloadClock roundReload = new();
     public event System.Action<float> ReloadSectionChanged;
-    public bool IsRoundReload => IsReloading && reloadDefinition.roundReload.IsValid;
+    public WeaponReloadDefinition CurrentReload { get; private set; }
+    public bool IsFullReload { get; private set; }
+    public bool IsRoundReload => IsReloading && CurrentReload.roundReload.IsValid;
     public void RequestReloadStop() { if (IsRoundReload) roundReload.RequestStop(); }
     SoldierWeaponDefinition spreadWeapon;
     float hipBloom, recoverHipBloomAt;
@@ -128,15 +130,18 @@ public class SoldierActions : MonoBehaviour
         IsReloading = true;
         reloadingWeapon = loadout.EquippedState;
         reloadDefinition = loadout.EquippedWeapon.definition;
-        reloadDuration = IsSwapReload ? Mathf.Max(reloadDefinition.reloadDuration,
-            reloadDefinition.unequipDuration+reloadDefinition.equipDuration) : reloadDefinition.reloadDuration;
+        IsFullReload = reloadingWeapon.MagazineAmmo <= 0;
+        CurrentReload = reloadDefinition.ReloadFor(reloadingWeapon.MagazineAmmo);
+        reloadDuration = IsSwapReload ? Mathf.Max(CurrentReload.duration,
+            reloadDefinition.unequipDuration+reloadDefinition.equipDuration) : Mathf.Max(.01f, CurrentReload.duration);
         reloadEndTime = now + reloadDuration;
         reloadEquipStarted=false;
         if (IsRoundReload)
         {
             int rounds = Mathf.Min(reloadDefinition.magazineCapacity - reloadingWeapon.MagazineAmmo, reloadingWeapon.ReserveAmmo);
-            roundReload.Begin(reloadDefinition.roundReload, reloadDuration, rounds, now);
+            roundReload.Begin(CurrentReload.roundReload, reloadDuration, rounds, now);
         }
+        loadout.presentation.ConfigureReload(CurrentReload);
         animator.ResetTrigger("Fire");
         if(IsSwapReload)
         {
