@@ -32,6 +32,10 @@ public class SoldierWeaponDefinition : ScriptableObject
     [Header("UI")]
     public Sprite icon;
     public enum SprintStyle { Regular, Tactical }
+    [Header("Animation playback")]
+    [Min(.01f)] public float idleAnimationSpeed = 1f;
+    [Min(.01f)] public float fireAnimationSpeed = 1f;
+
     [Header("Animation controllers")]
     public RuntimeAnimatorController firstPerson;
     public RuntimeAnimatorController firstPersonParts;

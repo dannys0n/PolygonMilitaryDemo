@@ -132,8 +132,8 @@ public class SoldierActions : MonoBehaviour
         reloadDefinition = loadout.EquippedWeapon.definition;
         IsFullReload = reloadingWeapon.MagazineAmmo <= 0;
         CurrentReload = reloadDefinition.ReloadFor(reloadingWeapon.MagazineAmmo);
-        reloadDuration = IsSwapReload ? Mathf.Max(CurrentReload.duration,
-            reloadDefinition.unequipDuration+reloadDefinition.equipDuration) : Mathf.Max(.01f, CurrentReload.duration);
+        reloadDuration = IsSwapReload ? Mathf.Max(CurrentReload.Duration,
+            reloadDefinition.unequipDuration+reloadDefinition.equipDuration) : Mathf.Max(.01f, CurrentReload.Duration);
         reloadEndTime = now + reloadDuration;
         reloadEquipStarted=false;
         if (IsRoundReload)

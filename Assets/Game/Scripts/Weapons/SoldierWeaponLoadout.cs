@@ -173,6 +173,7 @@ public class SoldierWeaponLoadout : MonoBehaviour
                 var state=source.GetCurrentAnimatorStateInfo(i);target.SetLayerWeight(layer,source.GetLayerWeight(i));
                 if(state.fullPathHash!=0 && target.HasState(layer,state.fullPathHash))target.Play(state.fullPathHash,layer,state.normalizedTime);
             }
+            presentation.ConfigureAnimationSpeeds();
             target.Update(0);
         }
         else {ReleaseFirstPerson();presentation.view.weaponAnimator=null;}

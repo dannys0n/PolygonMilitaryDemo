@@ -74,6 +74,7 @@ public class SoldierWeaponPresentation : MonoBehaviour
         characterAnimator.runtimeAnimatorController = set.thirdPerson;
         partsAnimator.runtimeAnimatorController = set.thirdPersonParts ? set.thirdPersonParts : set.firstPersonParts;
         partsAnimator.Rebind();
+        ConfigureAnimationSpeeds();
         view.ApplyWeaponDefinition(set);
         characterSwayLayer = characterAnimator.GetLayerIndex("SourceSway");
         weaponPoseLayer = characterAnimator.GetLayerIndex("WeaponPose");
@@ -271,6 +272,25 @@ public class SoldierWeaponPresentation : MonoBehaviour
         SetController(characterAnimator, reload.thirdPerson ? reload.thirdPerson : definition.thirdPerson);
         SetController(partsAnimator, reload.thirdPersonParts ? reload.thirdPersonParts
             : definition.thirdPersonParts ? definition.thirdPersonParts : definition.firstPersonParts);
+        ConfigureAnimationSpeeds();
+    }
+
+    // Applied only on equip/controller changes; clips stay shared and need no runtime copies.
+    public void ConfigureAnimationSpeeds()
+    {
+        var definition = weapon.definition;
+        float reload = actions.IsReloading ? actions.CurrentReload.PlaybackSpeed : 1f;
+        foreach (var target in new[] { view.armsAnimator, view.weaponAnimator, characterAnimator, partsAnimator })
+        {
+            if (!target || !target.runtimeAnimatorController) continue;
+            foreach (var parameter in target.parameters)
+            {
+                if (parameter.type != AnimatorControllerParameterType.Float) continue;
+                if (parameter.name == "IdlePlaybackRate") target.SetFloat(parameter.nameHash, Mathf.Max(.01f, definition.idleAnimationSpeed));
+                else if (parameter.name == "FirePlaybackRate") target.SetFloat(parameter.nameHash, Mathf.Max(.01f, definition.fireAnimationSpeed));
+                else if (parameter.name == "ReloadPlaybackRate") target.SetFloat(parameter.nameHash, reload);
+            }
+        }
     }
 
     static void SetController(Animator target, RuntimeAnimatorController controller)
