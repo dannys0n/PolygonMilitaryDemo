@@ -81,3 +81,15 @@ Polygon SVD adopts the native SVD FPS idle, firing, full and tactical actions, w
 ### Geometry registration follow-up
 
 SVD's previous magazine was roughly 7 cm behind its source frame. Its receiver is registered forward to the native SVD and its moving magazine is separately dimension-fitted to the native magazine. Reload mechanisms are resampled on the shared full/tactical action clock, rather than correcting the timing of the hand clips. AK receivers are registered forward against the UE4 frame with static model Fit carriers. FAL adopts G3 idle/fire/tactical reference actions, retaining its fitted legacy full reload. These are model-authoring corrections; no gameplay hand-position solver is introduced.
+
+### Repeatable Polygon AK full-reload conversion
+
+`Tools > Weapons > Rebuild Polygon AK Full Reloads` runs `AKFullReloadConversion` in Edit Mode. It always reads the preserved polished clips in `Animations/Weapons/Scaled/legacy-ak12`; it never rebakes a previous conversion. Tactical actions and fitted magazine/mechanism clips are not modified.
+
+The shared arm root and presentation wrappers retain their idle transforms. The `ik_hand_gun` bone owns weapon motion; `SourceWeapon` retains its fixed local placement. Arm goals are rebased in metres and rigid rotations relative to the weapon, while wrist and finger deltas are registered against each idle pose. The magazine-grasp interval is fitted offline against the actual moving magazine. Its frame is `currentMagazineRotation * inverse(idleMagazineRotation) * idleWeaponRotation`; using the current weapon rotation in the final factor applies the weapon motion twice.
+
+Only skeletal/mount tracks belong to the FPS action; moving mechanisms belong to their synchronized part layer. Rebuild validation rejects overlapping bindings or arm-root drift. Both action boundaries match idle. TPS reloads are generated from the same combined FPS action and retained mechanisms. No gameplay-time retargeting or additional hand solver is introduced. Visual contact still requires review when changing model dimensions or source poses.
+
+Weapon motion uses the source camera-space delta (`sourceCurrent * inverse(sourceIdle)`) applied before the target idle orientation. Hand and elbow deltas use the corresponding change of basis. Reusing the source weapon-local axes directly on the registered UE4 frame turns the authored roll into yaw. The AK rotation audit compares 601 samples per weapon against the source, in addition to checking root stability and boundaries.
+
+Charging-handle contact uses each model's outer charging-tab geometry, transformed with the existing animated charging bone. The right distal index bone is fitted during the pull interval, with smooth entry/release and the original wrist rotation retained. The idle return blends both wrist goals and elbow hints; the last 0.12 seconds hold the exact idle skeletal pose. These constraints are baked by the same repeatable converter and do not modify mechanism tracks.
