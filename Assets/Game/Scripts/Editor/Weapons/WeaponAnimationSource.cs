@@ -15,7 +15,7 @@ public static class WeaponAnimationSource
  public static AnimationClip State(RuntimeAnimatorController controller,string layer,string state,int child=0)
  {
   if(!controller)return null;var l=Base(controller).layers.FirstOrDefault(l=>l.name==layer);if(l==null)return null;
-  var s=l.stateMachine.states.FirstOrDefault(s=>s.state.name==state).state;if(!s)return null;var motion=s.motion;
+  var controllerBase=Base(controller);int layerIndex=Array.FindIndex(controllerBase.layers,x=>x.name==layer);var machine=l.syncedLayerIndex>=0?controllerBase.layers[l.syncedLayerIndex].stateMachine:l.stateMachine;var s=machine.states.FirstOrDefault(s=>s.state.name==state).state;if(!s)return null;var motion=l.syncedLayerIndex>=0?controllerBase.GetStateEffectiveMotion(s,layerIndex):s.motion;
   while(motion is BlendTree tree){if(tree.children.Length==0)return null;motion=tree.children[Mathf.Min(child,tree.children.Length-1)].motion;child=0;}
   return motion is AnimationClip clip?Resolve(controller,clip):null;
  }
