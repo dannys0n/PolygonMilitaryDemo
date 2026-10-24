@@ -50,8 +50,20 @@ public class SoldierWeaponAttachments : MonoBehaviour
             sights.SetIronReplacements(rear,front,rearDefinition);
             sights.SetRiser(sightLift);
         }
+        foreach (var mount in mounts)
+        {
+            RefreshAccessoryHardware(mount.firstPerson);
+            RefreshAccessoryHardware(mount.thirdPerson);
+        }
         RefreshIronVisibility();
         view.RefreshVisuals();
+    }
+    void RefreshAccessoryHardware(Transform mount)
+    {
+        if (!mount || !mount.TryGetComponent<WeaponAccessoryMount>(out var socket)) return;
+        bool occupied = System.Array.Exists(selections, a => a && Supports(a) &&
+            System.Array.IndexOf(socket.accessories, a) >= 0);
+        socket.SetVisible(occupied);
     }
     public void ClearPresentation()
     {

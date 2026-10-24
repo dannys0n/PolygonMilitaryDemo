@@ -47,7 +47,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: ec3ca3df3a531bc4b8c934e57ace27a7, type: 3}
-  m_Name:
+  m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::SoldierWeapon
   definition: {fileID: 11400000, guid: 488376b54ef04d249bdf4286c9838108, type: 2}
   firstPersonHands:
@@ -85,8 +85,8 @@ MonoBehaviour:
       rotation: {x: 0, y: 0, z: 0, w: 1}
       scale: {x: 1, y: 1, z: 1}
   sprintSocket:
-    position: {x: 0.2376756, y: 0.027545419, z: -0.05095928}
-    rotation: {x: -0.5462794, y: 0.2772053, z: -0.62047964, w: 0.4896338}
+    position: {x: 0.21887346, y: 0.057050392, z: -0.028724713}
+    rotation: {x: -0.62105495, y: -0.75022733, z: -0.067979954, w: -0.21639901}
     scale: {x: 1, y: 1, z: 1}
 --- !u!114 &3950849211548844894
 MonoBehaviour:
@@ -98,7 +98,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 512880f518f0be24d9c585085f07aaef, type: 3}
-  m_Name:
+  m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::SoldierWeaponSights
   firstPersonMount: {fileID: 0}
   thirdPersonMount: {fileID: 428025032039902567}
@@ -157,7 +157,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: ceae025c8fce5084f8a107452f249ed5, type: 3}
-  m_Name:
+  m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::SoldierWeaponAttachments
   mounts:
   - kind: 0
@@ -192,6 +192,8 @@ MonoBehaviour:
     - {fileID: 11400000, guid: 08463742149c4af44bbb2a8bdf86e1fb, type: 2}
     - {fileID: 11400000, guid: 5b37f3e4ab82cff4babbe03fb09e3903, type: 2}
     - {fileID: 11400000, guid: 90d43aec883151c44a5b3b1ab933e17d, type: 2}
+    - {fileID: 11400000, guid: 6ca3ff31229d3c747ae47a0650054781, type: 2}
+    - {fileID: 11400000, guid: 098b8a8e34819a343a4df90bfa5fe167, type: 2}
     builtInFirstPerson: []
     builtInThirdPerson: []
   - kind: 3
@@ -243,7 +245,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 0b8189414626a4644a1868bfce751d22, type: 3}
-  m_Name:
+  m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::SoldierWeaponView
   loadedProjectile: {fileID: 0}
   animator: {fileID: 3378742251400937573}
@@ -251,7 +253,7 @@ MonoBehaviour:
   fullReloadAnimationOverride: {fileID: 0}
   tacticalReloadAnimationOverride: {fileID: 0}
   sharedFirstPersonRig: {fileID: 0}
-  sharedWeaponMountPath:
+  sharedWeaponMountPath: 
   independentFirstPersonFrame: 0
   grenadeView: {fileID: 0}
   mountName: PW_Assault57
@@ -365,7 +367,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 4e87a14dacfdff14c9c2bb5209f9fa38, type: 3}
-  m_Name:
+  m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::SoldierWeaponSockets
   muzzleFlash: {fileID: 3543788371098209451}
   shellEjection: {fileID: 5265630231411791109}
@@ -386,7 +388,7 @@ Animator:
   m_LinearVelocityBlending: 0
   m_StabilizeFeet: 0
   m_AnimatePhysics: 0
-  m_WarningMessage:
+  m_WarningMessage: 
   m_HasTransformHierarchy: 1
   m_AllowConstantClipSamplingOptimization: 1
   m_KeepAnimatorStateOnDisable: 0
@@ -477,7 +479,13 @@ PrefabInstance:
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 2279197557209808944, guid: 18c588abfe08c894aaf18fbe379e9eb9, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 8296485944092457378}
+    - targetCorrespondingSourceObject: {fileID: 2279197557209808944, guid: 18c588abfe08c894aaf18fbe379e9eb9, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 3338650846765501730}
   m_SourcePrefab: {fileID: 100100000, guid: 18c588abfe08c894aaf18fbe379e9eb9, type: 3}
 --- !u!4 &428025032039902567 stripped
 Transform:
@@ -487,6 +495,11 @@ Transform:
 --- !u!4 &969348007626114530 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 6777229858268192977, guid: 18c588abfe08c894aaf18fbe379e9eb9, type: 3}
+  m_PrefabInstance: {fileID: 6016349809596081459}
+  m_PrefabAsset: {fileID: 0}
+--- !u!137 &1308908883511772331 stripped
+SkinnedMeshRenderer:
+  m_CorrespondingSourceObject: {fileID: 4707515016417649048, guid: 18c588abfe08c894aaf18fbe379e9eb9, type: 3}
   m_PrefabInstance: {fileID: 6016349809596081459}
   m_PrefabAsset: {fileID: 0}
 --- !u!4 &1568535709829109871 stripped
@@ -524,6 +537,50 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 1904205200993628214, guid: 18c588abfe08c894aaf18fbe379e9eb9, type: 3}
   m_PrefabInstance: {fileID: 6016349809596081459}
   m_PrefabAsset: {fileID: 0}
+--- !u!1 &5539155261662127363 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 2279197557209808944, guid: 18c588abfe08c894aaf18fbe379e9eb9, type: 3}
+  m_PrefabInstance: {fileID: 6016349809596081459}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &8296485944092457378
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5539155261662127363}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 03e841738b6be124bbe22cf82e6359c7, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Game.Runtime::WeaponAttachmentSocket
+  supportedSightMounts: 1
+  maximumSightFootprint: 2
+  requiredSightSupports: []
+  placements: []
+  builtInSight: {fileID: 0}
+  builtInSightRenderers: []
+  opticMountRenderers: []
+  sideMountSights: []
+--- !u!114 &3338650846765501730
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5539155261662127363}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d61f5e410c9d28c459f65f3234c1c23d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Game.Runtime::WeaponAccessoryMount
+  accessories:
+  - {fileID: 11400000, guid: ee9f4ce40052a144a94b064ed465443b, type: 2}
+  - {fileID: 11400000, guid: 88ecda950774deb40bd8b6c454c0db39, type: 2}
+  - {fileID: 11400000, guid: 736e9ba785ee69d42898befbf45fc4f9, type: 2}
+  - {fileID: 11400000, guid: 8e570f969a5da9c4fb2ad3e3b7d327d3, type: 2}
+  renderers:
+  - {fileID: 1308908883511772331}
 --- !u!4 &8290242666501708485 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 2338078003837911030, guid: 18c588abfe08c894aaf18fbe379e9eb9, type: 3}
