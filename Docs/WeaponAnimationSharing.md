@@ -71,3 +71,13 @@ Vector's shared model is registered approximately 0.01695 m lower and 0.05878 m 
 USP .45 Tactical and Beretta M9A3 share the M1911 FPS Pack idle, firing, and tactical arm clips; each retains its fitted legacy full reload. SCAR-H, HK416, and MK18 share the M16A4 FPS Pack idle, firing, and tactical clips. SCAR-H additionally references the accepted Polygon M16A4 full reload instead of its former full action. HK416 and MK18 retain fitted full reloads. Tactical TPS body actions reference the native controllers directly; full TPS variants are retained only for differing motion.
 
 Model placement uses the accepted Polygon M1911/M16A4 geometry as the broad registration reference. Static model Fit carriers move sockets and geometry together, and FPS/TPS nest the same model prefab. Weapon-specific mechanism tracks retain their own hinge axes and are sampled on the shared action clock. Legacy FPS placement offsets remain zero. Playback duration remains configured per weapon.
+
+
+### Final SVD and AK batch
+
+Polygon SVD adopts the native SVD FPS idle, firing, full and tactical actions, with shared native TPS body actions and fitted Polygon mechanisms. Polygon AK-12, AK-74 and AKM adopt the native AK-12 idle, firing and tactical actions. Their existing full reload movement is retained and fitted to the new idle grip and finger contacts. FPS/TPS nest the same model prefab, use zero legacy FPS presentation offsets and keep individual playback configuration. The separate AKX200 FPS Pack definition is displayed as AKX200 rather than AK-12 / AKX200; stable catalog identity is retained.
+
+
+### Geometry registration follow-up
+
+SVD's previous magazine was roughly 7 cm behind its source frame. Its receiver is registered forward to the native SVD and its moving magazine is separately dimension-fitted to the native magazine. Reload mechanisms are resampled on the shared full/tactical action clock, rather than correcting the timing of the hand clips. AK receivers are registered forward against the UE4 frame with static model Fit carriers. FAL adopts G3 idle/fire/tactical reference actions, retaining its fitted legacy full reload. These are model-authoring corrections; no gameplay hand-position solver is introduced.

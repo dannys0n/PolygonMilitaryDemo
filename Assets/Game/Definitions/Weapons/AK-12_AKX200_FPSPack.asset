@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: AK-12_AKX200_FPSPack
   m_EditorClassIdentifier: Assembly-CSharp::SoldierWeaponDefinition
   catalogId: ue4-original-proportions-akx200_ue4
-  displayName: AK-12 / AKX200 [FPS Pack] (Scaled)
+  displayName: AKX200 [FPS Pack] (Scaled)
   category: 0
   isUtility: 0
   infiniteAmmunition: 0
@@ -28,6 +28,8 @@ MonoBehaviour:
   hipBloomRecoveryDelay: 0.055
   hipBloomRecoveryTime: 0.16
   icon: {fileID: -2278566297644842510, guid: 37f36c434475fa14ab44be2338a9c81e, type: 3}
+  idleAnimationSpeed: 1
+  fireAnimationSpeed: 1
   firstPerson: {fileID: 22100000, guid: 0fa139095b0b4284abefe0d4ac53902d, type: 2}
   firstPersonParts: {fileID: 9100000, guid: 2e9654754b2230643b7618a735a0d7f9, type: 2}
   thirdPerson: {fileID: 22100000, guid: b22405f27a47e544b931aeec3feaeeb7, type: 2}
@@ -37,6 +39,7 @@ MonoBehaviour:
   showFirstPersonHands: 0
   fullReload:
     duration: 3.0500002
+    playbackSpeed: 0
     firstPerson: {fileID: 22100000, guid: 0fa139095b0b4284abefe0d4ac53902d, type: 2}
     thirdPerson: {fileID: 22100000, guid: b22405f27a47e544b931aeec3feaeeb7, type: 2}
     thirdPersonParts: {fileID: 22100000, guid: f216e08556d4e0040a41ca3716b91160, type: 2}
@@ -49,6 +52,7 @@ MonoBehaviour:
       bakedInsertions: 0
   tacticalReload:
     duration: 2.5333335
+    playbackSpeed: 0
     firstPerson: {fileID: 22100000, guid: 0fa139095b0b4284abefe0d4ac53902d, type: 2}
     thirdPerson: {fileID: 22100000, guid: 46c0015f0e9e2c6419d53746391c345b, type: 2}
     thirdPersonParts: {fileID: 22100000, guid: 691ee363086d631479630efd9b5adeed, type: 2}
